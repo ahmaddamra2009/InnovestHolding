@@ -1,0 +1,13 @@
+@model Faq
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "تعديل السؤال"; }
+<div class="admin-card">
+    <form method="post" asp-action="Edit" asp-controller="Faq">
+        <input type="hidden" name="Id" value="@Model.Id">
+        <div class="form-group"><label>السؤال</label><input type="text" name="Question" class="form-control" value="@Model.Question" required></div>
+        <div class="form-group"><label>الجواب</label><textarea name="Answer" class="form-control" rows="4">@Model.Answer</textarea></div>
+        <div class="form-group"><label>الترتيب</label><input type="number" name="SortOrder" class="form-control" value="@Model.SortOrder"></div>
+        <div class="form-check" style="margin-bottom:20px;"><input type="checkbox" name="IsActive" value="true" @(Model.IsActive ? "checked" : "")> <label>مفعّل</label></div>
+        <button type="submit" class="btn-admin btn-primary">حفظ التعديلات</button>
+        <a href="/Faq" class="btn-admin btn-secondary" style="margin-right:12px;">إلغاء</a>
+    </form>
+</div>

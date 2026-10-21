@@ -1,0 +1,79 @@
+@model List<Registration>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "التسجيلات"; }
+
+@{
+    var unreadCount = Model.Count(r => !r.IsRead);
+    var totalCount = Model.Count;
+}
+
+<div class="stats-cards" style="margin-bottom:24px;">
+    <div class="stat-card-admin">
+        <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div>
+        <div class="stat-card-info"><h3>@totalCount</h3><p>إجمالي التسجيلات</p></div>
+    </div>
+    <div class="stat-card-admin">
+        <div class="stat-card-icon" style="background:linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));"><svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div class="stat-card-info"><h3 style="color:#ef4444;">@unreadCount</h3><p>غير مقروء</p></div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <span class="admin-card-title">جميع التسجيلات</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p style="text-align:center;color:var(--admin-text-muted);padding:40px 0;">لا توجد تسجيلات حتى الآن</p>
+    }
+    else
+    {
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>الحالة</th>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الهاتف</th>
+                    <th>مجال الاهتمام</th>
+                    <th>تاريخ التسجيل</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr style="@(!item.IsRead ? "background:rgba(184,115,50,0.03);font-weight:700;" : "")">
+                    <td>
+                        @if (!item.IsRead)
+                        {
+                            <span class="badge-active" style="background:rgba(239,68,68,0.1);color:#ef4444;">جديد</span>
+                        }
+                        else
+                        {
+                            <span class="badge-active">مقروء</span>
+                        }
+                    </td>
+                    <td><strong>@item.FullName</strong></td>
+                    <td style="direction:ltr;text-align:right;">@item.Email</td>
+                    <td style="direction:ltr;text-align:right;">@item.Phone</td>
+                    <td>@item.Interest</td>
+                    <td style="font-size:0.82rem;color:var(--admin-text-muted);">@item.CreatedAt.ToString("yyyy/MM/dd - hh:mm tt")</td>
+                    <td class="actions">
+                        <form method="post" asp-action="MarkRead" asp-controller="Registrations" style="display:inline;">
+                            <input type="hidden" name="id" value="@item.Id">
+                            <button type="submit" class="btn-admin btn-sm @(item.IsRead ? "btn-secondary" : "btn-primary")">
+                                @(item.IsRead ? "غير مقروء" : "مقروء ✓")
+                            </button>
+                        </form>
+                        <form method="post" asp-action="Delete" asp-controller="Registrations" style="display:inline;">
+                            <input type="hidden" name="id" value="@item.Id">
+                            <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا التسجيل؟')">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

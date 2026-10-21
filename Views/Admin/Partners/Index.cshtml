@@ -1,0 +1,25 @@
+@model List<Partner>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "إدارة الشركاء"; }
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">إضافة شريك جديد</span></div>
+    <form method="post" asp-action="Create" asp-controller="Partners" class="inline-form">
+        <div class="form-group"><label>اسم الشريك</label><input type="text" name="name" class="form-control" placeholder="اسم الشركة أو المؤسسة" required></div>
+        <button type="submit" class="btn-admin btn-primary">إضافة</button>
+    </form>
+</div>
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">الشركاء الحاليون (@Model.Count)</span></div>
+    <table class="admin-table">
+        <thead><tr><th>#</th><th>الاسم</th><th>إجراءات</th></tr></thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.SortOrder</td>
+                <td><strong>@item.Name</strong></td>
+                <td><form method="post" asp-action="Delete" asp-controller="Partners" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا الشريك؟')">حذف</button></form></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

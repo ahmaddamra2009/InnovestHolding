@@ -1,0 +1,16 @@
+@model News
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "تعديل الخبر"; }
+<div class="admin-card">
+    <form method="post" asp-action="Edit" asp-controller="News">
+        <input type="hidden" name="Id" value="@Model.Id">
+        <div class="form-group"><label>العنوان</label><input type="text" name="Title" class="form-control" value="@Model.Title" required></div>
+        <div class="form-group"><label>الملخص</label><textarea name="Summary" class="form-control" rows="3">@Model.Summary</textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group"><label>الفئة</label><input type="text" name="Category" class="form-control" value="@Model.Category"></div>
+            <div class="form-group"><label>التاريخ</label><input type="text" name="NewsDate" class="form-control" value="@Model.NewsDate"></div>
+        </div>
+        <div class="form-check" style="margin-bottom:20px;"><input type="checkbox" name="IsActive" value="true" @(Model.IsActive ? "checked" : "")> <label>مفعّل</label></div>
+        <button type="submit" class="btn-admin btn-primary">حفظ التعديلات</button>
+        <a href="/News" class="btn-admin btn-secondary" style="margin-right:12px;">إلغاء</a>
+    </form>
+</div>

@@ -1,0 +1,15 @@
+@model News
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "إضافة خبر جديد"; }
+<div class="admin-card">
+    <form method="post" asp-action="Create" asp-controller="News">
+        <div class="form-group"><label>العنوان</label><input type="text" name="Title" class="form-control" required></div>
+        <div class="form-group"><label>الملخص</label><textarea name="Summary" class="form-control" rows="3"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group"><label>الفئة</label><input type="text" name="Category" class="form-control" placeholder="شراكات / تدريب / فعاليات"></div>
+            <div class="form-group"><label>التاريخ</label><input type="text" name="NewsDate" class="form-control" placeholder="25 مايو 2026"></div>
+        </div>
+        <div class="form-check" style="margin-bottom:20px;"><input type="checkbox" name="IsActive" value="true" checked> <label>مفعّل</label></div>
+        <button type="submit" class="btn-admin btn-primary">حفظ</button>
+        <a href="/News" class="btn-admin btn-secondary" style="margin-right:12px;">إلغاء</a>
+    </form>
+</div>

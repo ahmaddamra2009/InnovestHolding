@@ -1,0 +1,16 @@
+@model List<Platform>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "إدارة المنصات"; }
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">المنصات (@Model.Count)</span></div>
+    @foreach (var item in Model)
+    {
+        <form method="post" asp-action="Update" asp-controller="Platforms" style="padding:20px;background:var(--admin-bg);border-radius:10px;margin-bottom:16px;">
+            <input type="hidden" name="id" value="@item.Id">
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;align-items:start;">
+                <div class="form-group"><label>اسم المنصة</label><input type="text" name="title" class="form-control" value="@item.Title"></div>
+                <div class="form-group"><label>الوصف</label><textarea name="description" class="form-control" rows="2">@item.Description</textarea></div>
+            </div>
+            <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
+        </form>
+    }
+</div>
