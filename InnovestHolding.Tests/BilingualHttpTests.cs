@@ -802,6 +802,13 @@ public class NavigationMarkupTests(TestAppFactory f)
         var controls = Regex.Match(trigger.Value, "aria-controls=\"([^\"]+)\"").Groups[1].Value;
         Assert.NotEmpty(controls);
         Assert.Contains($"<div class=\"mobile-dropdown-items\" id=\"{controls}\">", html);
+
+        // Desktop trigger: a popup button whose state the page script keeps in aria-expanded.
+        var desktop = Regex.Match(html, "<div class=\"nav-dropdown\">\\s*<a [^>]*>").Value;
+        Assert.Contains("aria-haspopup=\"true\"", desktop);
+        Assert.Contains("aria-expanded=\"false\"", desktop);
+        var menu = Regex.Match(desktop, "aria-controls=\"([^\"]+)\"").Groups[1].Value;
+        Assert.Contains($"<div class=\"dropdown-menu\" id=\"{menu}\">", html);
     }
 
     [Fact]

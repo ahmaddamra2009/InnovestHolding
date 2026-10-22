@@ -37,11 +37,11 @@
           if (item.SubItems.Count > 0)
           {
             <div class="nav-dropdown">
-              <a href="@item.Href" class="nav-link" lang="@item.Title.Lang" dir="@item.Title.Dir">
+              <a href="@item.Href" class="nav-link" aria-haspopup="true" aria-expanded="false" aria-controls="desktop-sub-@i" lang="@item.Title.Lang" dir="@item.Title.Dir">
                 @item.Title
                 <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
               </a>
-              <div class="dropdown-menu">
+              <div class="dropdown-menu" id="desktop-sub-@i">
                 @foreach (var sub in item.SubItems)
                 {
                   <a href="@sub.Href" class="dropdown-item" lang="@sub.Title.Lang" dir="@sub.Title.Dir">

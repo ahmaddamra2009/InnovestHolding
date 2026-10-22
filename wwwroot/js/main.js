@@ -38,11 +38,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const mobileOverlay = document.getElementById('nav-overlay');
   const mobileDropdownTriggers = document.querySelectorAll('.mobile-dropdown-trigger');
   
+  // Collapses every sub-list of the drawer (aria-expanded follows).
+  function collapseMobileDropdowns() {
+    mobileDropdownTriggers.forEach(trigger => {
+      if (trigger.nextElementSibling) trigger.nextElementSibling.classList.remove('open');
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  // Every way of closing the drawer (hamburger, overlay, Escape, a link) goes through here, so the drawer always
+  // reopens with its sub-lists collapsed.
   function toggleMobileMenu() {
     hamburger.classList.toggle('active');
-    mobileNav.classList.toggle('open');
+    const open = mobileNav.classList.toggle('open');
     mobileOverlay.classList.toggle('open');
-    document.body.style.overflow = mobileNav.classList.contains('open') ? 'hidden' : '';
+    document.body.style.overflow = open ? 'hidden' : '';
+    if (!open) collapseMobileDropdowns();
   }
   
   if (hamburger) {
@@ -92,6 +103,42 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape' && mobileNav && mobileNav.classList.contains('open')) {
       toggleMobileMenu();
     }
+  });
+
+  // Desktop dropdown («منصاتنا»): CSS opens it on hover and on keyboard focus (:focus-within). The trigger's
+  // aria-expanded mirrors that, and Escape closes it and puts focus back on the trigger. The "is-dismissed" class keeps
+  // it closed while focus stays on the trigger; leaving the dropdown, or moving into it again, clears it.
+  document.querySelectorAll('header .nav-dropdown').forEach(dropdown => {
+    const trigger = dropdown.querySelector(':scope > .nav-link');
+    if (!trigger) return;
+    const setExpanded = (value) => trigger.setAttribute('aria-expanded', value ? 'true' : 'false');
+    const reopen = () => { dropdown.classList.remove('is-dismissed'); setExpanded(true); };
+
+    dropdown.addEventListener('mouseenter', reopen);
+    dropdown.addEventListener('mouseleave', () => {
+      // Still focused after Escape: stays dismissed (otherwise :focus-within would reopen it as the pointer leaves).
+      if (dropdown.classList.contains('is-dismissed')) return;
+      setExpanded(dropdown.contains(document.activeElement));
+    });
+    dropdown.addEventListener('focusin', (e) => {
+      // Focus arriving on the trigger after Escape must not reopen it; focus on an item (Tab) does.
+      if (e.target === trigger && dropdown.classList.contains('is-dismissed')) return;
+      reopen();
+    });
+    dropdown.addEventListener('focusout', (e) => {
+      if (!dropdown.contains(e.relatedTarget)) {
+        dropdown.classList.remove('is-dismissed');
+        setExpanded(dropdown.matches(':hover'));
+      }
+    });
+    // On the document, so Escape also closes a menu that only the pointer opened (focus is then elsewhere).
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || dropdown.classList.contains('is-dismissed')) return;
+      if (!dropdown.contains(document.activeElement) && !dropdown.matches(':hover')) return;
+      dropdown.classList.add('is-dismissed');
+      setExpanded(false);
+      trigger.focus();
+    });
   });
   
   // ==========================================

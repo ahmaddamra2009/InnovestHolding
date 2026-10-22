@@ -412,6 +412,17 @@ ul { list-style: none; }
   transform: translateY(0);
 }
 
+/* Escape closed it: stays closed while the pointer or focus is still there (main.js clears the class on leaving). */
+.nav-dropdown.is-dismissed .dropdown-menu {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+}
+
+.nav-dropdown.is-dismissed .dropdown-arrow {
+  transform: none;
+}
+
 /* Invisible bridge over the 12px gap between the trigger and the menu, so moving the pointer down does not close it. */
 .dropdown-menu::before {
   content: '';
