@@ -28,7 +28,24 @@ public enum ImageProblem
     Size,
 }
 
+/// <summary>Width and height as the picture is DISPLAYED (a JPEG with EXIF orientation 5–8 has them swapped).</summary>
 public sealed record ImageInfo(ImageFormat Format, int Width, int Height);
+
+/// <summary>
+/// What an image is for, and its limits. Logos are shown a few dozen pixels high, so a heavy original there costs page
+/// weight for nothing (no re-encode by decision): they get a lower cap.
+/// </summary>
+public sealed record ImageUse(string Name, int MaxBytes, int MaxLongSide, long MaxPixels)
+{
+    /// <summary>News, events, pages, founder photo: up to 5 MB, 8000 px per side, 25 MP.</summary>
+    public static readonly ImageUse General = new("general", MediaStore.MaxBytes, ImageInspector.MaxSide, ImageInspector.MaxPixels);
+
+    /// <summary>Partner logos: up to 1 MB and 1200 px on the longest side.</summary>
+    public static readonly ImageUse Logo = new("logo", 1024 * 1024, 1200, 1200L * 1200);
+
+    public bool Allows(ImageInfo info) =>
+        Math.Max(info.Width, info.Height) <= MaxLongSide && (long)info.Width * info.Height <= MaxPixels;
+}
 
 /// <summary>
 /// Strict, header-only inspection of an uploaded image — no decoder, no native code (shared hosting: CTO decision).
@@ -41,7 +58,7 @@ public static class ImageInspector
 {
     public const int MinSide = 16;
     public const int MaxSide = 8000;
-    public const long MaxPixels = 40_000_000;
+    public const long MaxPixels = 25_000_000;
 
     private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
@@ -187,6 +204,7 @@ public static class ImageInspector
         var pos = 2;
         int width = 0, height = 0;
         var sawFrame = false;
+        var rotated = false; // EXIF orientation 5–8: the picture is shown turned a quarter, width and height swap
         while (true)
         {
             // A marker: 0xFF, optional 0xFF fill bytes, then the code.
@@ -198,7 +216,8 @@ public static class ImageInspector
             if (code == 0xD9) // EOI — the end of the image; bytes after it are not copied
             {
                 output?.Write([0xFF, 0xD9]);
-                return sawFrame ? new Walk(ImageProblem.None, width, height) : Corrupt;
+                if (!sawFrame) return Corrupt;
+                return rotated ? new Walk(ImageProblem.None, height, width) : new Walk(ImageProblem.None, width, height);
             }
             if (code is 0xD8 or 0x00 || code is >= 0xD0 and <= 0xD7 || code == 0x01) return Corrupt; // no stray SOI/RST/TEM here
 
@@ -219,12 +238,14 @@ public static class ImageInspector
                 sawFrame = true;
             }
 
+            var orientation = code == 0xE1 ? ExifOrientation(payload) : null;
+            if (orientation is >= 5 and <= 8) rotated = true;
+
             if (output is not null)
             {
                 if (code == 0xE1)
                 {
                     // EXIF (and XMP) dropped; the orientation alone is carried over so phone photos stay upright.
-                    var orientation = ExifOrientation(payload);
                     if (orientation is >= 2 and <= 8) output.Write(MinimalExif(orientation.Value));
                 }
                 else if (KeepJpegSegment(code, payload))
@@ -324,6 +345,7 @@ public static class ImageInspector
         var extended = false;
         var sawBitstream = false;
         var vp8xFlagsAt = -1;
+        int streamWidth = 0, streamHeight = 0;
         while (pos < end)
         {
             if (pos + 8 > end) return Corrupt;
@@ -345,22 +367,16 @@ public static class ImageInspector
                     break;
                 case "VP8 ":
                     if (size < 10 || payload[3] != 0x9D || payload[4] != 0x01 || payload[5] != 0x2A) return Corrupt;
-                    if (!extended)
-                    {
-                        width = BinaryPrimitives.ReadUInt16LittleEndian(payload[6..]) & 0x3FFF;
-                        height = BinaryPrimitives.ReadUInt16LittleEndian(payload[8..]) & 0x3FFF;
-                    }
+                    streamWidth = BinaryPrimitives.ReadUInt16LittleEndian(payload[6..]) & 0x3FFF;
+                    streamHeight = BinaryPrimitives.ReadUInt16LittleEndian(payload[8..]) & 0x3FFF;
                     if (sawBitstream) return Corrupt;
                     sawBitstream = true;
                     break;
                 case "VP8L":
                     if (size < 5 || payload[0] != 0x2F) return Corrupt;
-                    if (!extended)
-                    {
-                        var bits = BinaryPrimitives.ReadUInt32LittleEndian(payload[1..]);
-                        width = 1 + (int)(bits & 0x3FFF);
-                        height = 1 + (int)((bits >> 14) & 0x3FFF);
-                    }
+                    var bits = BinaryPrimitives.ReadUInt32LittleEndian(payload[1..]);
+                    streamWidth = 1 + (int)(bits & 0x3FFF);
+                    streamHeight = 1 + (int)((bits >> 14) & 0x3FFF);
                     if (sawBitstream) return Corrupt;
                     sawBitstream = true;
                     break;
@@ -376,7 +392,12 @@ public static class ImageInspector
                 kept.Add((pos, 8 + (int)padded));
             pos += 8 + (int)padded;
         }
-        if (!sawBitstream || width == 0 || height == 0) return Corrupt;
+        if (!sawBitstream) return Corrupt;
+        // The size that is stored and rendered is the bitstream's: a VP8X canvas must declare exactly that size.
+        if (extended && (width != streamWidth || height != streamHeight)) return Corrupt;
+        width = streamWidth;
+        height = streamHeight;
+        if (width == 0 || height == 0) return Corrupt;
 
         if (output is not null)
         {

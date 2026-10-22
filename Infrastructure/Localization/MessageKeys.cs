@@ -34,6 +34,7 @@ public static class MessageKeys
     public const string ErrorGeneric = "Msg_ErrorGeneric";
     public const string ErrorReference = "Msg_ErrorReference";
     public const string BackToHome = "Msg_BackToHome";
+    public const string LogoLimits = "Msg_LogoLimits";
     public const string EndBeforeStart = "Msg_EndBeforeStart";
     public const string DateRequired = "Msg_DateRequired";
     public const string UtcOffset = "Msg_UtcOffset";
@@ -167,6 +168,8 @@ public static class MessageKeys
         public const string GroupUpdated = "Admin_GroupUpdated";
         public const string GroupDeleted = "Admin_GroupDeleted";
         public const string PhotoSaved = "Admin_PhotoSaved";
+        public const string ImageHintGeneral = "Admin_ImageHintGeneral";
+        public const string ImageHintLogo = "Admin_ImageHintLogo";
     }
 
     public static class Ui

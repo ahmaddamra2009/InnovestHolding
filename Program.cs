@@ -145,13 +145,14 @@ using (var scope = app.Services.CreateScope())
     await TimestampUtcConversion.RunAsync(db, TimeZoneInfo.Local, app.Logger);
 
     // Uploads: the folder exists (a missing one would only break uploads, never the public site), and orphans of a
-    // failed delete or an interrupted save are removed.
+    // failed delete or an interrupted save are moved to the quarantine (never deleted: MediaStore.SweepAsync).
     var media = scope.ServiceProvider.GetRequiredService<MediaStore>();
     try
     {
         Directory.CreateDirectory(media.Root);
-        var swept = await media.SweepAsync(db);
-        app.Logger.LogInformation("Uploads folder ready ({Swept} orphan file(s) removed).", swept);
+        var sweep = await media.SweepAsync(db);
+        app.Logger.LogInformation("Uploads folder ready. Orphan sweep: {Outcome}; {Moved} of {Candidates} file(s) moved to the quarantine.",
+            sweep.Outcome, sweep.Moved, sweep.Candidates);
     }
     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
     {

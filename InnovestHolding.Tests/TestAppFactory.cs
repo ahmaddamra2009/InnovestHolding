@@ -48,6 +48,7 @@ public sealed class TestAppFactory : WebApplicationFactory<Program>
         }
 
         if (Directory.Exists(UploadsRoot)) Directory.Delete(UploadsRoot, recursive: true);
+        if (Directory.Exists(UploadsRoot + "-quarantine")) Directory.Delete(UploadsRoot + "-quarantine", recursive: true);
 
         ClientOptions.BaseAddress = new Uri("https://innovest.test");
         ClientOptions.AllowAutoRedirect = false;

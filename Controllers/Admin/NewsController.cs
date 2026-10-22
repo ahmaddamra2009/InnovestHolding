@@ -43,13 +43,22 @@ public class NewsController : AdminControllerBase
         Map(input, item);
         ApplyImage(_db, null, uploaded, input, m => item.Image = m);
         _db.News.Add(item);
-        await SaveWithImageAsync(_db, uploaded);
-        if (slug.Length == 0)
+        try
         {
-            item.Slug = "news-" + item.Id.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            await _db.SaveChangesAsync();
+            await SaveWithImageAsync(_db, uploaded);
+            if (slug.Length == 0)
+            {
+                item.Slug = "news-" + item.Id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                await SaveWithImageAsync(_db, uploaded); // the row rolls back on failure: its file goes too
+            }
+            await tx.CommitAsync();
         }
-        await tx.CommitAsync();
+        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+        {
+            // Another save took the same slug between the check and this insert (the unique index decided).
+            ModelState.AddModelError("Slug", L(MessageKeys.SlugTaken));
+            return View(CreateView, input);
+        }
         TempData["Success"] = L(MessageKeys.Admin.NewsAdded);
         return RedirectToAction(nameof(Index));
     }
@@ -106,7 +115,15 @@ public class NewsController : AdminControllerBase
         item.SortOrder = input.SortOrder;
         var leaving = ApplyImage(_db, item.Image, uploaded, input, m => item.Image = m);
 
-        await SaveWithImageAsync(_db, uploaded, leaving);
+        try
+        {
+            await SaveWithImageAsync(_db, uploaded, leaving);
+        }
+        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+        {
+            ModelState.AddModelError("Slug", L(MessageKeys.SlugTaken));
+            return View(EditView, input);
+        }
         TempData["Success"] = L(MessageKeys.Admin.NewsUpdated);
         return RedirectToAction(nameof(Index));
     }

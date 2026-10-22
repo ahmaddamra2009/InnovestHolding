@@ -174,7 +174,7 @@
   <data name="Msg_ImageType" xml:space="preserve"><value>الصورة يجب أن تكون بصيغة JPG أو PNG أو WebP (لا يُقبل SVG ولا GIF)</value></data>
   <data name="Msg_ImageMismatch" xml:space="preserve"><value>امتداد الملف ونوعه ومحتواه غير متطابقة — ارفع صورة حقيقية بامتدادها الصحيح</value></data>
   <data name="Msg_ImageCorrupt" xml:space="preserve"><value>ملف الصورة تالف أو غير مكتمل</value></data>
-  <data name="Msg_ImageDimensions" xml:space="preserve"><value>أبعاد الصورة يجب أن تكون بين 16 و8000 بكسل لكل ضلع (40 مليون بكسل كحد أقصى)</value></data>
+  <data name="Msg_ImageDimensions" xml:space="preserve"><value>أبعاد الصورة يجب أن تكون بين 16 و8000 بكسل لكل ضلع (25 مليون بكسل كحد أقصى)</value></data>
   <data name="Msg_ImageAnimated" xml:space="preserve"><value>الصور المتحركة غير مقبولة</value></data>
   <data name="Msg_ImageSize" xml:space="preserve"><value>حجم الصورة يجب ألا يتجاوز 5 ميغابايت</value></data>
   <data name="Msg_ImageStorage" xml:space="preserve"><value>تعذّر حفظ الصورة على الخادم — حاول مرة أخرى أو تواصل مع المسؤول التقني</value></data>
@@ -211,4 +211,7 @@
   <data name="Ui_NewsSource" xml:space="preserve"><value>المصدر</value></data>
   <data name="Ui_ArabicOnlyNotice" xml:space="preserve"><value>هذا المحتوى متوفر باللغة العربية فقط حالياً.</value></data>
   <data name="Ui_ViewDetails" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="Msg_LogoLimits" xml:space="preserve"><value>الشعار يجب ألا يتجاوز 1 ميغابايت و1200 بكسل لأطول ضلع</value></data>
+  <data name="Admin_ImageHintGeneral" xml:space="preserve"><value>JPG أو PNG أو WebP، حتى 5 ميغابايت و8000 بكسل لكل ضلع و25 مليون بكسل. المقاس المقترح 1200×630 (يكفي لصورة المشاركة)، ويُفضّل أقل من 500 كيلوبايت: الصورة تُعرض كما رُفعت. تُحذف بيانات الموقع والكاميرا من الملف عند الرفع.</value></data>
+  <data name="Admin_ImageHintLogo" xml:space="preserve"><value>شعار: JPG أو PNG أو WebP، حتى 1 ميغابايت و1200 بكسل لأطول ضلع. يُعرض بارتفاع نحو 70 بكسل، فيكفي 400 بكسل عرضاً بخلفية شفافة (PNG أو WebP) وحجم أقل من 100 كيلوبايت.</value></data>
 </root>

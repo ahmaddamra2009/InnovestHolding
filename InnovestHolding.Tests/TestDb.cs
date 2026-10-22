@@ -19,7 +19,7 @@ internal static partial class TestDb
     {
         if (string.IsNullOrEmpty(raw)) return "";
         if (!SuffixPattern().IsMatch(raw))
-            throw new InvalidOperationException($"{SuffixVariable} must match ^_[A-Za-z0-9]{{1,20}}$.");
+            throw new InvalidOperationException($"{SuffixVariable} must match ^_[A-Za-z0-9]{{1,20}} (no trailing newline).");
         return raw;
     }
 
@@ -34,6 +34,6 @@ internal static partial class TestDb
             TrustServerCertificate = true,
         }.ConnectionString;
 
-    [GeneratedRegex("^_[A-Za-z0-9]{1,20}$")]
+    [GeneratedRegex(@"^_[A-Za-z0-9]{1,20}\z")]
     private static partial Regex SuffixPattern();
 }

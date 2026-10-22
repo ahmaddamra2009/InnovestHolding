@@ -100,13 +100,10 @@ public abstract class PublicControllerBase : Controller
     /// An unknown slug: when it is an old slug of an item that is still published, 301 to the item's current URL in
     /// the same language (the target is built from the route table and the stored slug only); otherwise the 404 page.
     /// </summary>
-    protected async Task<IActionResult> OldSlugAsync(Data.AppDbContext db, string detailKey, string slug, Func<int, Task<string?>> currentSlug)
+    protected async Task<IActionResult> OldSlugAsync(Data.AppDbContext db, string detailKey, string slug)
     {
         var route = SiteRoutes.Detail(detailKey);
-        var id = await db.SlugRedirects.AsNoTracking()
-            .Where(r => r.EntityType == route.EntityType && r.OldSlug == slug)
-            .Select(r => (int?)r.EntityId).FirstOrDefaultAsync(HttpContext.RequestAborted);
-        if (id is { } entityId && await currentSlug(entityId) is { } current && current != slug)
+        if (await DetailSlugs.CurrentAsync(db, route, slug, HttpContext.RequestAborted) is { } current && current != slug)
             return RedirectPermanent(Request.PathBase + CultureUrls.Detail(detailKey, current, English));
         return await NotFoundPageAsync();
     }

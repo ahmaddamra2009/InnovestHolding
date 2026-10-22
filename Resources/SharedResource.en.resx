@@ -174,7 +174,7 @@
   <data name="Msg_ImageType" xml:space="preserve"><value>The image must be a JPG, PNG or WebP file (SVG and GIF are not accepted)</value></data>
   <data name="Msg_ImageMismatch" xml:space="preserve"><value>The file name, type and content do not match — upload a real image with its own extension</value></data>
   <data name="Msg_ImageCorrupt" xml:space="preserve"><value>The image file is damaged or incomplete</value></data>
-  <data name="Msg_ImageDimensions" xml:space="preserve"><value>Each side of the image must be 16 to 8000 pixels (40 million pixels at most)</value></data>
+  <data name="Msg_ImageDimensions" xml:space="preserve"><value>Each side of the image must be 16 to 8000 pixels (25 million pixels at most)</value></data>
   <data name="Msg_ImageAnimated" xml:space="preserve"><value>Animated images are not accepted</value></data>
   <data name="Msg_ImageSize" xml:space="preserve"><value>The image must not be larger than 5 MB</value></data>
   <data name="Msg_ImageStorage" xml:space="preserve"><value>The image could not be stored on the server — try again or contact the technical administrator</value></data>
@@ -211,4 +211,7 @@
   <data name="Ui_NewsSource" xml:space="preserve"><value>Source</value></data>
   <data name="Ui_ArabicOnlyNotice" xml:space="preserve"><value>This content is currently available in Arabic only.</value></data>
   <data name="Ui_ViewDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="Msg_LogoLimits" xml:space="preserve"><value>A logo must not exceed 1 MB and 1200 pixels on its longest side</value></data>
+  <data name="Admin_ImageHintGeneral" xml:space="preserve"><value>JPG, PNG or WebP, up to 5 MB, 8000 pixels per side and 25 million pixels. Suggested size 1200×630 (enough for the share image), ideally under 500 KB: the picture is served as uploaded. Location and camera data are removed on upload.</value></data>
+  <data name="Admin_ImageHintLogo" xml:space="preserve"><value>Logo: JPG, PNG or WebP, up to 1 MB and 1200 pixels on the longest side. It is shown about 70 pixels high, so 400 pixels wide on a transparent background (PNG or WebP) and under 100 KB is enough.</value></data>
 </root>

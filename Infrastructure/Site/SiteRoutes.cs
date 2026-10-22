@@ -99,15 +99,19 @@ public static class SiteRoutes
         (english ? EnglishPrefix : "") + route.Prefix + slug;
 
     /// <summary>True when <paramref name="path"/> is exactly a detail URL (either language) with a well-formed slug.</summary>
-    public static bool MatchesDetail(string path)
+    public static bool MatchesDetail(string path) => ParseDetail(path) is not null;
+
+    /// <summary>The detail route, slug and language of a canonical detail path, else null.</summary>
+    public static (DetailRoute Route, string Slug, bool English)? ParseDetail(string path)
     {
-        if (path.StartsWith(EnglishPrefix + "/", StringComparison.Ordinal)) path = path[EnglishPrefix.Length..];
+        var english = path.StartsWith(EnglishPrefix + "/", StringComparison.Ordinal);
+        if (english) path = path[EnglishPrefix.Length..];
         foreach (var d in Details)
         {
             if (path.StartsWith(d.Prefix, StringComparison.Ordinal) && Slugs.Pattern().IsMatch(path[d.Prefix.Length..]))
-                return true;
+                return (d, path[d.Prefix.Length..], english);
         }
-        return false;
+        return null;
     }
 
     private static readonly Dictionary<string, SitePage> ByKey = All.ToDictionary(p => p.Key, StringComparer.Ordinal);

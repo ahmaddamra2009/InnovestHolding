@@ -13,7 +13,7 @@ public static partial class MediaEndpoint
     public const string Csp = "default-src 'none'; frame-ancestors 'none'; sandbox";
     public const string CacheControl = "public, max-age=31536000, immutable";
 
-    [GeneratedRegex(@"^/media/([0-9a-f]{32})\.(jpg|png|webp)$")]
+    [GeneratedRegex(@"^/media/([0-9a-f]{32})\.(jpg|png|webp)\z")]
     private static partial Regex PathPattern();
 
     public static IApplicationBuilder UseMediaFiles(this IApplicationBuilder app) =>
@@ -45,7 +45,7 @@ public static partial class MediaEndpoint
                 return;
             }
 
-            await using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 4096, useAsync: true);
+            await using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete, 64 * 1024, useAsync: true);
             var head = new byte[12];
             var read = await stream.ReadAtLeastAsync(head, head.Length, throwOnEndOfStream: false, context.RequestAborted);
             if (ImageInspector.Sniff(head.AsSpan(0, read)) != claimed)
@@ -54,12 +54,30 @@ public static partial class MediaEndpoint
                 return;
             }
 
+            // Validators: the key is the content's identity (a key is never reused), the write time its date.
+            var etag = new Microsoft.Net.Http.Headers.EntityTagHeaderValue("\"" + match.Groups[1].Value + "\"");
+            var modified = new DateTimeOffset(File.GetLastWriteTimeUtc(file), TimeSpan.Zero);
+            modified = modified.AddTicks(-(modified.Ticks % TimeSpan.TicksPerSecond)); // HTTP dates have whole seconds
+            var headers = response.GetTypedHeaders();
+            response.Headers.CacheControl = CacheControl;
+            response.Headers.ContentSecurityPolicy = Csp;
+            headers.ETag = etag;
+            headers.LastModified = modified;
+
+            // Conditional GET: a client (or proxy) that already holds the file gets 304 and no body.
+            var request = context.Request.GetTypedHeaders();
+            var notModified = request.IfNoneMatch is { Count: > 0 } inm
+                ? inm.Any(t => t.Equals(Microsoft.Net.Http.Headers.EntityTagHeaderValue.Any) || t.Compare(etag, useStrongComparison: false))
+                : request.IfModifiedSince is { } since && modified <= since;
+            if (notModified)
+            {
+                response.StatusCode = StatusCodes.Status304NotModified;
+                return;
+            }
+
             response.StatusCode = StatusCodes.Status200OK;
             response.ContentType = ImageInspector.ContentType(claimed);
             response.ContentLength = stream.Length;
-            response.Headers.CacheControl = CacheControl;
-            response.Headers.ContentSecurityPolicy = Csp;
-            response.Headers.ETag = "\"" + match.Groups[1].Value + "\"";
             if (HttpMethods.IsHead(method)) return;
             stream.Position = 0;
             await stream.CopyToAsync(response.Body, context.RequestAborted);

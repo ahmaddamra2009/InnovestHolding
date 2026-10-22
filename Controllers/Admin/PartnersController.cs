@@ -1,5 +1,6 @@
 using InnovestHolding.Data;
 using InnovestHolding.Infrastructure.Localization;
+using InnovestHolding.Infrastructure.Media;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,7 @@ public class PartnersController : AdminControllerBase
     {
         if (!await GroupIsValidAsync(input.PartnerGroupId)) ModelState.AddModelError(nameof(input.PartnerGroupId), L(MessageKeys.InvalidValueNoField));
         if (!ModelState.IsValid) return InvalidRedirect();
-        var uploaded = await UploadImageAsync(input);
+        var uploaded = await UploadImageAsync(input, ImageUse.Logo);
         if (!ModelState.IsValid) return InvalidRedirect();
 
         var maxOrder = await _db.Partners.MaxAsync(p => (int?)p.SortOrder) ?? 0;
@@ -53,7 +54,7 @@ public class PartnersController : AdminControllerBase
 
         var item = await _db.Partners.Include(p => p.Logo).FirstOrDefaultAsync(p => p.Id == input.Id);
         if (item == null) return NotFound();
-        var uploaded = await UploadImageAsync(input);
+        var uploaded = await UploadImageAsync(input, ImageUse.Logo);
         if (!ModelState.IsValid) return InvalidRedirect();
 
         Map(input, item);

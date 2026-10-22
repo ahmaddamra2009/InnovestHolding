@@ -13,7 +13,7 @@ public static partial class Slugs
     public const int MaxLength = 100;
 
     /// <summary>The route-constraint form of <see cref="Pattern"/>.</summary>
-    public const string RouteRegex = "^[a-z0-9]+(-[a-z0-9]+)*$";
+    public const string RouteRegex = @"^[a-z0-9]+(-[a-z0-9]+)*\z";
 
     [GeneratedRegex(RouteRegex)]
     public static partial Regex Pattern();

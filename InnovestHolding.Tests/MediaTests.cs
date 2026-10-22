@@ -16,11 +16,12 @@ public class ImageInspectorTests
         File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "media", name));
 
     [Theory]
-    [InlineData("photo-exif.jpg", ImageFormat.Jpeg, 64, 48)]
+    [InlineData("photo-exif.jpg", ImageFormat.Jpeg, 48, 64)] // 64×48 stored, EXIF orientation 6: displayed 48×64
     [InlineData("og-1200x630.jpg", ImageFormat.Jpeg, 1200, 630)]
     [InlineData("text-chunk.png", ImageFormat.Png, 40, 30)]
     [InlineData("lossy.webp", ImageFormat.WebP, 32, 32)]
     [InlineData("lossless.webp", ImageFormat.WebP, 33, 17)]
+    [InlineData("alpha.webp", ImageFormat.WebP, 30, 20)]
     [InlineData("png-zip-polyglot.png", ImageFormat.Png, 24, 24)]
     public void Accepted_images_report_their_header_dimensions(string file, ImageFormat format, int width, int height)
     {
@@ -42,6 +43,39 @@ public class ImageInspectorTests
     [InlineData("bad-crc.png", ImageProblem.Corrupt)]
     public void Refused_files(string file, ImageProblem expected) =>
         Assert.Equal(expected, ImageInspector.Inspect(Fixture(file), out _));
+
+    internal static byte[] WithPngSize(int width, int height)
+    {
+        var png = Fixture("huge-header.png");
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), (uint)width);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), (uint)height);
+        // IHDR CRC over type + data (bytes 12..29), written at 29.
+        uint c = 0xFFFFFFFF;
+        foreach (var b in png.AsSpan(12, 17)) { c ^= b; for (var k = 0; k < 8; k++) c = (c & 1) != 0 ? 0xEDB88320 ^ (c >> 1) : c >> 1; }
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(29), c ^ 0xFFFFFFFF);
+        return png;
+    }
+
+    [Theory] // 8000 px per side and 25 million pixels at most (header-only check: the pixel data is never decoded)
+    [InlineData(5000, 5000, ImageProblem.None)]
+    [InlineData(5000, 5001, ImageProblem.Dimensions)]
+    [InlineData(8000, 3125, ImageProblem.None)]
+    [InlineData(8001, 100, ImageProblem.Dimensions)]
+    [InlineData(8000, 5000, ImageProblem.Dimensions)]
+    public void Pixel_cap(int width, int height, ImageProblem expected) =>
+        Assert.Equal(expected, ImageInspector.Inspect(WithPngSize(width, height), out _));
+
+    [Fact] // L1: a VP8X canvas that does not match the bitstream is refused (it would store a false size)
+    public void Webp_canvas_must_match_the_bitstream()
+    {
+        var webp = Fixture("alpha.webp");
+        var at = Encoding.Latin1.GetString(webp).IndexOf("VP8X", StringComparison.Ordinal);
+        Assert.True(at > 0, "fixture has no VP8X");
+        Assert.Equal(ImageProblem.None, ImageInspector.Inspect(webp, out _));
+        var forged = (byte[])webp.Clone();
+        forged[at + 8 + 4] = 0x3E; forged[at + 8 + 5] = 0x1F; forged[at + 8 + 6] = 0; // canvas width 7999
+        Assert.Equal(ImageProblem.Corrupt, ImageInspector.Inspect(forged, out _));
+    }
 
     [Fact]
     public void A_truncated_image_is_corrupt()
@@ -104,7 +138,7 @@ public class ImageInspectorTests
 
 /// <summary>Uploads through the admin forms, the /media endpoint, deletion and the janitor (one LocalDB fixture).</summary>
 [Collection("App")]
-public class MediaUploadTests(TestAppFactory f)
+public class MediaUploadTests(TestAppFactory f) : IDisposable
 {
     private static ByteArrayContent FilePart(byte[] data, string contentType)
     {
@@ -148,7 +182,7 @@ public class MediaUploadTests(TestAppFactory f)
         var row = await f.DbAsync(db => db.News.AsNoTracking().Include(n => n.Image).SingleAsync(n => n.TitleAr == title));
         var media = row.Image!;
         Assert.Matches("^[0-9a-f]{32}$", media.FileKey);
-        Assert.Equal(("jpeg", 64, 48, "وصف الصورة", "Picture"), (media.Format, media.Width, media.Height, media.AltAr, media.AltEn));
+        Assert.Equal(("jpeg", 48, 64, "وصف الصورة", "Picture"), (media.Format, media.Width, media.Height, media.AltAr, media.AltEn));
         var path = Path.Combine(TestAppFactory.UploadsRoot, media.FileKey[..2], media.FileKey + ".jpg");
         Assert.True(File.Exists(path));
         Assert.DoesNotContain(StoredFiles(), p => p.Contains("evil", StringComparison.OrdinalIgnoreCase));
@@ -166,7 +200,7 @@ public class MediaUploadTests(TestAppFactory f)
 
         // The public detail page shows it with its size and alt text.
         var page = await f.NewClient().GetStringAsync("/news/" + row.Slug);
-        Assert.Contains($"src=\"/media/{media.FileKey}.jpg\" width=\"64\" height=\"48\" alt=\"وصف الصورة\"", page);
+        Assert.Contains($"src=\"/media/{media.FileKey}.jpg\" width=\"48\" height=\"64\" alt=\"وصف الصورة\"", page);
     }
 
     public static TheoryData<string, string, string, string> RefusedUploads => new()
@@ -247,6 +281,102 @@ public class MediaUploadTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact] // Y2: the stored bytes are sniffed again when served: PNG bytes behind a .jpg name are a 404
+    public async Task Media_rechecks_the_stored_signature()
+    {
+        var store = f.Services.GetRequiredService<MediaStore>();
+        var key = Guid.NewGuid().ToString("N");
+        var path = Path.Combine(store.Root, key[..2], key + ".jpg");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, ImageInspectorTests.Fixture("text-chunk.png"));
+        try
+        {
+            Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync($"/media/{key}.jpg")).StatusCode);
+            File.WriteAllBytes(path, ImageInspectorTests.Fixture("photo-exif.jpg")); // control: real JPEG bytes are served
+            Assert.Equal(HttpStatusCode.OK, (await f.NewClient().GetAsync($"/media/{key}.jpg")).StatusCode);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact] // F1: conditional GET — the ETag (the key) and Last-Modified validate; a holder of the file gets 304, no body
+    public async Task Media_answers_conditional_requests()
+    {
+        var (c, t) = await AdminAsync("/Admin/News/Create");
+        var title = Unique("etag");
+        await CreateNewsAsync(c, t, title, ("a.png", ImageInspectorTests.Fixture("text-chunk.png"), "image/png"));
+        var (id, key) = await f.DbAsync(db => db.News.Where(n => n.TitleAr == title).Select(n => new ValueTuple<int, string>(n.Id, n.Image!.FileKey)).SingleAsync());
+        try
+        {
+            var first = await f.NewClient().GetAsync($"/media/{key}.png");
+            Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+            Assert.Equal($"\"{key}\"", first.Headers.ETag!.Tag);
+            var lastModified = first.Content.Headers.LastModified;
+            Assert.NotNull(lastModified);
+
+            async Task<HttpResponseMessage> Conditional(Action<HttpRequestMessage> set)
+            {
+                var req = new HttpRequestMessage(HttpMethod.Get, $"/media/{key}.png");
+                set(req);
+                return await f.NewClient().SendAsync(req);
+            }
+            var byTag = await Conditional(r => r.Headers.IfNoneMatch.Add(new EntityTagHeaderValue($"\"{key}\"")));
+            Assert.Equal(HttpStatusCode.NotModified, byTag.StatusCode);
+            Assert.Empty(await byTag.Content.ReadAsByteArrayAsync());
+            Assert.Equal(MediaEndpoint.CacheControl, byTag.Headers.CacheControl!.ToString());
+            var byDate = await Conditional(r => r.Headers.IfModifiedSince = lastModified);
+            Assert.Equal(HttpStatusCode.NotModified, byDate.StatusCode);
+            // Controls: another tag, or an older date, get the file.
+            Assert.Equal(HttpStatusCode.OK, (await Conditional(r => r.Headers.IfNoneMatch.Add(new EntityTagHeaderValue("\"other\"")))).StatusCode);
+            Assert.Equal(HttpStatusCode.OK, (await Conditional(r => r.Headers.IfModifiedSince = lastModified!.Value.AddDays(-1))).StatusCode);
+        }
+        finally
+        {
+            await f.DbAsync(async db =>
+            {
+                var n = await db.News.Include(x => x.Image).SingleAsync(x => x.Id == id);
+                db.MediaFiles.Remove(n.Image!);
+                db.News.Remove(n);
+                return await db.SaveChangesAsync();
+            });
+        }
+    }
+
+    [Fact] // F2: a partner logo is capped at 1 MB and 1200 px; the same file is fine as a news image
+    public async Task Logo_has_its_own_cap()
+    {
+        var c = await f.SignedInClientAsync();
+        var token = await c.GetTokenAsync("/Admin/Partners");
+        var page = WebUtility.HtmlDecode(await c.GetStringAsync("/Admin/Partners"));
+        Assert.Contains("1200 بكسل لأطول ضلع", page); // the logo guidance is on the form
+        Assert.Contains("1200×630", WebUtility.HtmlDecode(await c.GetStringAsync("/Admin/News/Create"))); // the general guidance
+
+        var wide = ImageInspectorTests.WithPngSize(1300, 100);
+        var heavy = ImageInspectorTests.WithPngSize(100, 100).Concat(new byte[1024 * 1024]).ToArray(); // padding after IEND
+        foreach (var (name, data) in new[] { ("wide.png", wide), ("heavy.png", heavy) })
+        {
+            var partner = Unique("logo-cap");
+            var r = await c.PostAsync("/Admin/Partners/Create", Multipart(token, (name, data, "image/png"), ("NameAr", partner)));
+            Assert.Equal(HttpStatusCode.Redirect, r.StatusCode);
+            var after = WebUtility.HtmlDecode(await c.GetStringAsync(r.Headers.Location));
+            Assert.Contains("الشعار يجب ألا يتجاوز 1 ميغابايت و1200 بكسل", after);
+            Assert.False(await f.DbAsync(db => db.Partners.AnyAsync(p => p.NameAr == partner)));
+        }
+
+        var title = Unique("wide-news");
+        Assert.Equal(HttpStatusCode.Redirect, (await CreateNewsAsync(c, token, title, ("wide.png", wide, "image/png"))).StatusCode);
+        await f.DbAsync(async db =>
+        {
+            var n = await db.News.Include(x => x.Image).SingleAsync(x => x.TitleAr == title);
+            Assert.Equal(1300, n.Image!.Width);
+            db.MediaFiles.Remove(n.Image);
+            db.News.Remove(n);
+            return await db.SaveChangesAsync();
+        });
+    }
+
     [Fact] // a stored file served under the extension of another format, or by POST, is refused
     public async Task Media_requires_the_stored_format_and_get()
     {
@@ -283,6 +413,9 @@ public class MediaUploadTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync($"/media/{second}.webp")).StatusCode);
         Assert.False(await f.DbAsync(db => db.MediaFiles.AnyAsync(m => m.FileKey == second)));
         Assert.DoesNotContain(StoredFiles(), p => p.Contains(second, StringComparison.Ordinal));
+        // L4: the emptied fan-out folder is removed (unless another file shares it).
+        var dir = Path.Combine(TestAppFactory.UploadsRoot, second[..2]);
+        Assert.True(!Directory.Exists(dir) || Directory.EnumerateFiles(dir).Any());
     }
 
     [Fact] // "remove image" clears it (row and file); the item stays
@@ -430,45 +563,149 @@ public class MediaUploadTests(TestAppFactory f)
         }
     }
 
-    [Fact] // the janitor removes orphans older than 24 h and stale .tmp files, never a file that has a row
-    public async Task Sweep_removes_orphans_only()
+    private MediaStore StoreAt(string root) => new(
+        Microsoft.Extensions.Options.Options.Create(new MediaOptions { RootPath = root }),
+        f.Services.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>(),
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<MediaStore>.Instance, f.Time);
+
+    private readonly List<string> _tempRoots = [];
+
+    /// <summary>A throw-away uploads root (and its quarantine sibling) under one temp folder, removed after the test.</summary>
+    private string TempRoot()
     {
-        var store = f.Services.GetRequiredService<MediaStore>();
-        var orphan = Guid.NewGuid().ToString("N");
-        var young = Guid.NewGuid().ToString("N");
-        var tmp = Guid.NewGuid().ToString("N");
-        var kept = Guid.NewGuid().ToString("N");
-        string Put(string key, string ext, TimeSpan age)
-        {
-            var p = Path.Combine(store.Root, key[..2], key + ext);
-            Directory.CreateDirectory(Path.GetDirectoryName(p)!);
-            File.WriteAllBytes(p, ImageInspectorTests.Fixture("text-chunk.png"));
-            File.SetLastWriteTimeUtc(p, f.Time.GetUtcNow().UtcDateTime - age);
-            return p;
-        }
-        var pOrphan = Put(orphan, ".png", TimeSpan.FromHours(25));
-        var pYoung = Put(young, ".png", TimeSpan.FromHours(2));
-        var pTmp = Put(tmp, ".png.tmp", TimeSpan.FromHours(2));
-        var pKept = Put(kept, ".png", TimeSpan.FromDays(3));
-        await f.DbAsync(db =>
-        {
-            db.MediaFiles.Add(new MediaFile { FileKey = kept, Format = "png", Width = 40, Height = 30, Bytes = 1 });
-            return db.SaveChangesAsync();
-        });
+        var parent = Path.Combine(Path.GetTempPath(), "media-sweep-" + Guid.NewGuid().ToString("N"));
+        _tempRoots.Add(parent);
+        return Path.Combine(parent, "uploads");
+    }
+
+    public void Dispose()
+    {
+        foreach (var parent in _tempRoots.Where(Directory.Exists)) Directory.Delete(parent, recursive: true);
+    }
+
+    private string Put(MediaStore store, string key, string ext, TimeSpan age)
+    {
+        var p = Path.Combine(store.Root, key[..2], key + ext);
+        Directory.CreateDirectory(Path.GetDirectoryName(p)!);
+        File.WriteAllBytes(p, ImageInspectorTests.Fixture("text-chunk.png"));
+        File.SetLastWriteTimeUtc(p, f.Time.GetUtcNow().UtcDateTime - age);
+        return p;
+    }
+
+    private Task<int> AddRowAsync(string key) => f.DbAsync(db =>
+    {
+        db.MediaFiles.Add(new MediaFile { FileKey = key, Format = "png", Width = 40, Height = 30, Bytes = 1 });
+        return db.SaveChangesAsync();
+    });
+
+    private Task<int> RemoveRowAsync(string key) =>
+        f.DbAsync(async db => { db.MediaFiles.Remove(await db.MediaFiles.SingleAsync(m => m.FileKey == key)); return await db.SaveChangesAsync(); });
+
+    [Fact] // the janitor never deletes: old orphans and stale .tmp files go to the quarantine; files with a row stay
+    public async Task Sweep_moves_orphans_to_the_quarantine_and_never_deletes()
+    {
+        var store = f.Services.GetRequiredService<MediaStore>(); // the app's own folder: /media must not serve the quarantine
+        string[] keys = [Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N"), Guid.NewGuid().ToString("N")];
+        var (_, young, tmp, kept) = (keys[0], keys[1], keys[2], keys[3]);
+        // The orphan gets a fan-out prefix no other file uses (none of the folder's and not the other keys'), so the
+        // empty-folder assertion below always runs.
+        var used = (Directory.Exists(store.Root) ? Directory.GetDirectories(store.Root).Select(Path.GetFileName) : [])
+            .Concat([young[..2], tmp[..2], kept[..2]]).ToHashSet(StringComparer.Ordinal);
+        var prefix = Enumerable.Range(0, 256).Select(i => i.ToString("x2")).First(x => !used.Contains(x));
+        var orphan = prefix + Guid.NewGuid().ToString("N")[2..];
+        var pOrphan = Put(store, orphan, ".png", TimeSpan.FromHours(25));
+        var pYoung = Put(store, young, ".png", TimeSpan.FromHours(2));
+        var pTmp = Put(store, tmp, ".png.tmp", TimeSpan.FromHours(2));
+        var pKept = Put(store, kept, ".png", TimeSpan.FromDays(3));
+        await AddRowAsync(kept);
         try
         {
-            var deleted = await f.DbAsync(db => store.SweepAsync(db));
-            Assert.True(deleted >= 2, $"{deleted} deleted");
+            var result = await f.DbAsync(db => store.SweepAsync(db));
+            Assert.Equal("swept", result.Outcome);
+            Assert.True(result.Moved >= 2, $"{result.Moved} moved");
+            var day = Path.Combine(store.QuarantineRoot, f.Time.GetUtcNow().UtcDateTime.ToString("yyyy-MM-dd"));
             Assert.False(File.Exists(pOrphan));
+            Assert.True(File.Exists(Path.Combine(day, orphan + ".png")), "orphan not in the quarantine");
             Assert.False(File.Exists(pTmp));
+            Assert.True(File.Exists(Path.Combine(day, tmp + ".png.tmp")), "tmp not in the quarantine");
             Assert.True(File.Exists(pYoung));
             Assert.True(File.Exists(pKept));
+            Assert.False(Path.GetFullPath(day).StartsWith(store.Root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync($"/media/{orphan}.png")).StatusCode);
+            Assert.Equal(HttpStatusCode.OK, (await f.NewClient().GetAsync($"/media/{kept}.png")).StatusCode);
+            // The orphan's fan-out folder, now empty, is gone; the root is never removed.
+            Assert.False(Directory.Exists(Path.Combine(store.Root, prefix)), "the emptied fan-out folder is still there");
+            Assert.True(Directory.Exists(store.Root));
         }
         finally
         {
-            await f.DbAsync(async db => { db.MediaFiles.Remove(await db.MediaFiles.SingleAsync(m => m.FileKey == kept)); return await db.SaveChangesAsync(); });
+            await RemoveRowAsync(kept);
             File.Delete(pYoung);
             File.Delete(pKept);
+        }
+    }
+
+    [Fact] // a database with no media rows (new, wrong, restored without them) never sweeps
+    public async Task Sweep_is_skipped_when_the_database_has_no_media_rows()
+    {
+        var store = StoreAt(TempRoot());
+        var p = Put(store, Guid.NewGuid().ToString("N"), ".png", TimeSpan.FromDays(30));
+        await using var empty = MigrationTests.NewContext();
+        await empty.Database.EnsureDeletedAsync();
+        await empty.Database.MigrateAsync();
+        Assert.Equal(0, await empty.MediaFiles.CountAsync());
+
+        var result = await store.SweepAsync(empty);
+        Assert.Equal((0, "skipped: the database has no media rows"), (result.Moved, result.Outcome));
+        Assert.True(File.Exists(p));
+        Assert.False(Directory.Exists(store.QuarantineRoot));
+    }
+
+    [Fact] // a folder that belongs to another database is left alone (marker of the first sweep)
+    public async Task Sweep_is_skipped_when_the_folder_belongs_to_another_database()
+    {
+        var store = StoreAt(TempRoot());
+        var kept = Guid.NewGuid().ToString("N");
+        await AddRowAsync(kept);
+        try
+        {
+            Directory.CreateDirectory(store.Root);
+            File.WriteAllText(Path.Combine(store.Root, MediaStore.DatabaseMarker), "OTHER-DATABASE");
+            var p = Put(store, Guid.NewGuid().ToString("N"), ".png", TimeSpan.FromDays(30));
+            var result = await f.DbAsync(db => store.SweepAsync(db));
+            Assert.Equal((0, "skipped: the uploads folder belongs to another database"), (result.Moved, result.Outcome));
+            Assert.True(File.Exists(p));
+
+            // Without the foreign marker the same folder is swept, and the marker is written for this database.
+            File.Delete(Path.Combine(store.Root, MediaStore.DatabaseMarker));
+            Assert.Equal(1, (await f.DbAsync(db => store.SweepAsync(db))).Moved);
+            Assert.False(File.Exists(p));
+            Assert.Matches("^[0-9A-F]{64}$", File.ReadAllText(Path.Combine(store.Root, MediaStore.DatabaseMarker)));
+        }
+        finally
+        {
+            await RemoveRowAsync(kept);
+        }
+    }
+
+    [Theory] // more candidates than the cap: nothing at all is moved (a mass "orphan" signals a mismatch)
+    [InlineData(MediaStore.MaxSweepMoves, MediaStore.MaxSweepMoves)]
+    [InlineData(MediaStore.MaxSweepMoves + 1, 0)]
+    public async Task Sweep_respects_its_cap(int orphans, int expectedMoved)
+    {
+        var store = StoreAt(TempRoot());
+        var kept = Guid.NewGuid().ToString("N");
+        await AddRowAsync(kept);
+        try
+        {
+            for (var i = 0; i < orphans; i++) Put(store, Guid.NewGuid().ToString("N"), ".png", TimeSpan.FromDays(2));
+            var result = await f.DbAsync(db => store.SweepAsync(db));
+            Assert.Equal((expectedMoved, orphans), (result.Moved, result.Candidates));
+            Assert.Equal(orphans - expectedMoved, Directory.GetFiles(store.Root, "*.png", SearchOption.AllDirectories).Length);
+        }
+        finally
+        {
+            await RemoveRowAsync(kept);
         }
     }
 }

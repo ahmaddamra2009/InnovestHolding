@@ -174,17 +174,52 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
 - **«أرقام الأثر»** (`/Admin/Stats`): التسمية بالعربية والإنجليزية، التسمية المختصرة، الرقم، واللاحقة (مثل `+`). الأرقام
   تظهر في الرئيسية وفي «من نحن».
 
-## 9. الأخبار والفعاليات والشركاء
+## 9. الأخبار والفعاليات والشركاء وصفحات التفاصيل
 
-- **«الأخبار»**: إضافة وتعديل وحذف. العنوان والملخص والتصنيف والتاريخ بالعربية والإنجليزية (**التاريخ نص حر** وليس
-  تاريخاً فعلياً). **الرابط** لزر «اقرأ المزيد»: إن تُرك فارغاً لا يظهر الزر. «الترتيب»: الرقم الأصغر أولاً. «مفعّل»
-  يخفي الخبر دون حذفه. الخبر الجديد يظهر أولاً. تظهر الأخبار في صفحة `/news` مرقّمة، وفي الرئيسية أول **عدد الأخبار المعروضة
-  في الصفحة الرئيسية** (النصوص العامة ← «عناوين أقسام الصفحة الرئيسية»، رقم من 1 إلى 50، الافتراضي 6).
-- **«الفعاليات»** (ضمن «منتدى إنوفست العربي»): العنوان والوصف والشهر والمكان والوقت بالعربية والإنجليزية (**نصوص حرة**)،
-  رقم اليوم (1–31)، «الترتيب»، و«مفعّل». تظهر في `/forum/events`، وأول ثلاث منها في صفحة المنتدى.
-- **«الشركاء والرعاة»**: إضافة وتعديل (الاسم بالعربية والإنجليزية، من «تعديل») وحذف، وشارة «ظاهر/مخفي» للإخفاء دون حذف.
-  تظهر في `/forum/partners` وفي الرئيسية.
-- الأخبار والفعاليات والشركاء الحالية **محفوظة كما هي** بعد هذا الإصدار.
+لكل **خبر** و**فعالية** الآن صفحة خاصة: `/news/<الرابط-المختصر>` و`/forum/events/<الرابط-المختصر>` (وتحت `/en`). تظهر
+بطاقات القوائم والرئيسية بروابط إلى هذه الصفحات.
+
+- **«الأخبار»**: إضافة وتعديل وحذف. الحقول: العنوان، **الرابط المختصر**، الملخص (البطاقة وأول فقرة)، **نص الخبر** (سطر فارغ =
+  فقرة جديدة)، الفئة، التاريخ كما يظهر (**نص حر**)، **تاريخ النشر** (لمحركات البحث)، **رابط المصدر** (اختياري: يظهر زر «المصدر»
+  في صفحة الخبر)، **صورة الخبر**، وعنوان ووصف محركات البحث. «الترتيب»: الرقم الأصغر أولاً. «مفعّل» يخفي الخبر دون حذفه.
+  الخبر الجديد يظهر أولاً. تظهر الأخبار في `/news` مرقّمة، وفي الرئيسية أول **عدد الأخبار المعروضة في الصفحة الرئيسية** (النصوص
+  العامة ← «عناوين أقسام الصفحة الرئيسية»، رقم من 1 إلى 50، الافتراضي 6).
+- **«الفعاليات»** (ضمن «منتدى إنوفست العربي»): العنوان، **الرابط المختصر**، الملخص، **الوصف** (نص صفحة الفعالية)، **الموعد**:
+  البدء (بتوقيت مكان الفعالية) والانتهاء (اختياري) و**فرق التوقيت عن UTC** (الافتراضي `+02:00`)، **الحالة** (في موعدها / مؤجلة
+  / ملغاة)، **طريقة الحضور** (حضوري / عن بُعد / حضوري وعن بُعد)، اسم المكان والمدينة والعنوان، **رابط الحضور عن بُعد**
+  (`https://`)، **«التسجيل مفتوح»**، **صورة الفعالية**، ومحركات البحث. اليوم والشهر والوقت النصية حقول بديلة للفعاليات القديمة
+  غير المؤرَّخة. في القوائم تظهر الفعاليات القادمة أولاً (الفعاليات القديمة غير المؤرَّخة قبلها) ثم المنتهية، وتحمل المنتهية
+  والملغاة شارة، ويختفي زر التسجيل تلقائياً بعد الانتهاء أو الإلغاء أو إغلاق التسجيل. تظهر الفعاليات في `/forum/events`، وأول ثلاث
+  في صفحة المنتدى.
+- **«الشركاء والرعاة»**: الاسم بالعربية والإنجليزية، **شعار الشريك** (صورة)، **موقع الشريك** (`https://` اختياري؛ يُفتح برابط
+  `rel="sponsored noopener"`)، **المجموعة**، و**«يظهر في شريط الشركاء في الصفحة الرئيسية»**. **المجموعات** (بطاقة في أسفل
+  الشاشة): عناوين تُرتَّب بها صفحة `/forum/partners` (مثل «الرعاة الرئيسيون»)؛ حذف مجموعة **لا يحذف شركاءها** بل يُعرضون بعد
+  المجموعات. إخفاء شريك دون حذفه بشارة «ظاهر/مخفي».
+- **الرابط المختصر:** أحرف إنجليزية صغيرة وأرقام وشرطات فقط (`innovest-forum-2026`)، حتى 100 حرف، وبعض الكلمات محجوزة (مثل
+  `admin` و`media` و`en`). إن تُرك فارغاً عند الإضافة يُبنى من العنوان الإنجليزي (ويُضاف `-2` عند التكرار)، وإلا `news-<رقم>` أو
+  `event-<رقم>`. **تغييره لاحقاً آمن:** يبقى الرابط القديم يحوّل (301) إلى الجديد، ولا يمكن لعنصر آخر استعمال رابط قديم لعنصر
+  موجود. الأخبار والفعاليات الموجودة أخذت روابط `news-<رقم>` و`event-<رقم>` تلقائياً عند هذا الإصدار.
+- **الإنجليزية:** إن لم يوجد للعنصر عنوان وملخص بالإنجليزية تعرض صفحته الإنجليزية النص العربي مع تنبيه، وتكون **خارج محركات
+  البحث** (`noindex`) وخارج خريطة الموقع، وتشير canonical إلى الصفحة العربية؛ تدخل الفهرس حين يُملأ العنوان والملخص الإنجليزيان.
+- حذف خبر أو فعالية يحذف صفحته وصورته وروابطها القديمة.
+- الأخبار والفعاليات والشركاء الحالية **محفوظة كما هي**، وكل الشركاء يظهرون في الرئيسية بعد الإصدار.
+
+### رفع الصور
+
+حقل «صورة…» موجود في الأخبار والفعاليات والشركاء («الشعار») وصفحات الموقع (تظهر في بطاقة الصفحة وفي مشاركتها) وكلمة المؤسس
+(«النصوص العامة»).
+- **الأنواع:** JPG أو PNG أو WebP فقط. لا SVG ولا GIF ولا ملفات أخرى حتى لو غُيّر امتدادها: يُفحص محتوى الملف نفسه، ويجب أن
+  يتفق الامتداد والنوع والمحتوى.
+- **الأحجام:** حتى **5 ميغابايت** للملف؛ من **16 إلى 8000 بكسل** لكل ضلع، وبما لا يتجاوز **25 مليون بكسل**. الصور المتحركة
+  (APNG وWebP المتحرك) مرفوضة. عند الرفض تظهر رسالة تحت الحقل ولا يُحفظ شيء.
+- **ما يحدث للملف:** يُعاد بناء الملف بعناصر الصورة فقط؛ تُحذف بيانات الموقع الجغرافي والكاميرا (EXIF) والتعليقات وأي بيانات
+  بعد نهاية الصورة، ويبقى اتجاه الصورة وملف الألوان. لا تتغير البكسلات ولا يُضغط الملف من جديد، فارفعوا صورة بحجم مناسب (وزنها
+  هو وزن الصفحة). اسم الملف الأصلي لا يُستعمل أبداً؛ يُعطى الملف مفتاحاً عشوائياً ويُعرض من `/media/<مفتاح>.<امتداد>`.
+- **الاستبدال والحذف:** اختاروا ملفاً جديداً تحت «استبدال الصورة» ثم احفظوا، فيُحذف الملف القديم. لإزالة الصورة علّموا
+  «حذف الصورة الحالية» ثم احفظوا. تُحذف الملفات من الخادم بعد نجاح الحفظ؛ وإن فشل الحفظ لا يبقى الملف الجديد.
+- **النص البديل:** وصف الصورة لقارئ الشاشة بالعربية والإنجليزية؛ إن تُرك فارغاً يُستعمل العنوان.
+- الصورة الأعرض من 1200 بكسل تُستعمل بحجم كبير في المشاركة على وسائل التواصل؛ وإلا تُستعمل صورة الصفحة ثم الصورة الافتراضية.
+- لا ترفعوا صوراً تحتوي بيانات خاصة؛ كل ما يُرفع يظهر للعامة.
 
 ## 10. الأسئلة الشائعة
 
@@ -402,18 +437,57 @@ the same screen. The eight old `#section` menu items were **deactivated, not del
 - **«أرقام الأثر»** (`/Admin/Stats`): label in both languages, short label, number and suffix (e.g. `+`). The figures
   appear on the home page and on About.
 
-## 9. News, events and partners
+## 9. News, events, partners and detail pages
 
-- **«الأخبار»**: add, edit, delete. Title, summary, category and date in both languages (**the date is free text**, not a
-  real date). **Link** of the «اقرأ المزيد» button: hidden when empty. «Order»: lower number first. «Active» hides an item
-  without deleting it. A new item appears first. News is listed on `/news` with paging, and the home page shows the first
-  **number of news items on the home page** (General texts → «عناوين أقسام الصفحة الرئيسية», a whole number from 1 to 50,
-  default 6).
-- **«الفعاليات»** (under «منتدى إنوفست العربي»): title, description, month, place and time in both languages (**all free
-  text**), day number (1-31), order and active. Listed on `/forum/events`; the first three also on the Forum page.
-- **«الشركاء والرعاة»**: add, edit (name in both languages, under «تعديل») and delete, plus a «ظاهر/مخفي» badge to hide
-  without deleting. Shown on `/forum/partners` and on the home page.
-- Existing news, events and partners are **kept unchanged** by this release.
+Every **news item** and **event** now has its own page: `/news/<slug>` and `/forum/events/<slug>` (and under `/en`). The
+cards in the lists and on the home page link to these pages.
+
+- **«الأخبار»**: add, edit, delete. Fields: title, **slug**, summary (card and first paragraph), **article text** (a blank
+  line starts a new paragraph), category, date as shown (**free text**), **published date** (for search engines), **source
+  link** (optional: shows a «source» button on the article), **news image**, and search-engine title and description.
+  «Order»: lower number first. «Active» hides an item without deleting it. A new item appears first. News is listed on
+  `/news` with paging, and the home page shows the first **number of news items on the home page** (General texts →
+  «عناوين أقسام الصفحة الرئيسية», a whole number from 1 to 50, default 6).
+- **«الفعاليات»** (under «منتدى إنوفست العربي»): title, **slug**, summary, **description** (the event page text), **date and
+  time**: start (in the event's local time), optional end and the **UTC offset** (default `+02:00`), **status** (scheduled /
+  postponed / cancelled), **attendance mode** (in person / online / mixed), venue name, city and address, **online link**
+  (`https://`), **«registration open»**, **event image**, and search engines. The day, month and time text fields remain
+  as a fallback for old events without a date. Lists show upcoming events first (old undated ones before them), then past
+  ones; past and cancelled events carry a badge, and the register button disappears automatically after the event ends, when
+  it is cancelled, or when registration is closed. Events are listed on `/forum/events`; the first three also on the Forum page.
+- **«الشركاء والرعاة»**: name in both languages, **partner logo** (image), **partner website** (`https://`, optional; opens
+  with `rel="sponsored noopener"`), **group**, and **«shown in the home page partner strip»**. **Groups** (the card at the
+  bottom of the screen) are the headings that organise `/forum/partners` (e.g. «main sponsors»); deleting a group **does
+  not delete its partners**: they are listed after the groups. Hide a partner without deleting it with the «ظاهر/مخفي» badge.
+- **Slug:** lower-case English letters, digits and hyphens only (`innovest-forum-2026`), up to 100 characters; some words
+  are reserved (e.g. `admin`, `media`, `en`). Left empty when adding, it is built from the English title (`-2` is added on a
+  clash), otherwise `news-<id>` or `event-<id>`. **Changing it later is safe:** the old address keeps redirecting (301) to
+  the new one, and no other item may take an old address of an existing item. Existing news and events received
+  `news-<id>` and `event-<id>` addresses automatically with this release.
+- **English:** an item with no English title and summary shows the Arabic text on its English page with a notice, and that page is
+  **kept out of search engines** (`noindex`) and out of the sitemap, with its canonical pointing at the Arabic page; it enters
+  the index once the English title and summary are filled.
+- Deleting a news item or event deletes its page, its image and its old addresses.
+- Existing news, events and partners are **kept unchanged**, and every partner is shown on the home page after the release.
+
+### Uploading images
+
+An image field exists on news, events, partners («logo»), site pages (shown on the page's card and when it is shared) and the
+founder's photo (General texts).
+- **Types:** JPG, PNG or WebP only. No SVG, no GIF, nothing else, even if the extension is renamed: the file's content is
+  checked, and the extension, the declared type and the content must agree.
+- **Sizes:** up to **5 MB** per file; **16 to 8000 pixels** on each side and no more than **25 million pixels**. Animated images
+  (APNG, animated WebP) are refused. A refused file shows a message under the field and nothing is saved.
+- **What happens to the file:** it is rebuilt from the image parts only; location and camera data (EXIF), comments and any data
+  after the end of the image are removed, while the orientation and colour profile are kept. The pixels are not changed and
+  the file is not recompressed, so upload an image of a sensible size (its weight is the page weight). The original file
+  name is never used: the file gets a random key and is served from `/media/<key>.<ext>`.
+- **Replace and remove:** choose a new file under «استبدال الصورة» and save: the old file is deleted. To remove the image tick
+  «حذف الصورة الحالية» and save. Files are deleted from the server after the save succeeds; if the save fails the new file is not kept.
+- **Alt text:** the image description for screen readers, in Arabic and English; empty means the title is used.
+- An image at least 1200 pixels wide is used at full size when the page is shared on social media; otherwise the page image,
+  then the default image, is used.
+- Do not upload images that contain private data: everything uploaded is public.
 
 ## 10. FAQ
 

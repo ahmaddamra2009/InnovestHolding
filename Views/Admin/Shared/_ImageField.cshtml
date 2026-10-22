@@ -4,6 +4,7 @@
 @{
     var label = ViewData["ImageLabel"] as string ?? "الصورة";
     var prefix = ViewData["ImagePrefix"] as string ?? "";
+    var logo = ViewData["ImageUse"] as string == "logo";
     var errors = ViewData.ModelState.TryGetValue("Image", out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
 }
 <fieldset class="image-field">
@@ -19,7 +20,7 @@
     <div class="form-group">
         <label for="@(prefix)Image">@(Model.Current is null ? "اختر صورة" : "استبدال الصورة")</label>
         <input type="file" id="@(prefix)Image" name="Image" class="form-control@(errors.Count > 0 ? " is-invalid" : "")" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
-        <span class="field-hint">JPG أو PNG أو WebP فقط، حتى 5 ميغابايت، ومن 16 إلى 8000 بكسل لكل ضلع. تُحذف بيانات الموقع والكاميرا من الملف عند الرفع.</span>
+        <span class="field-hint image-hint">@L[logo ? K.Admin.ImageHintLogo : K.Admin.ImageHintGeneral]</span>
         @foreach (var error in errors)
         {
             <span class="field-error">@error</span>

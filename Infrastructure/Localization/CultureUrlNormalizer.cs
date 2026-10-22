@@ -45,6 +45,14 @@ public static class CultureUrlNormalizer
             if ((HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method))
                 && Target(request.Path.Value) is { } target)
             {
+                // A detail URL goes straight to the item's CURRENT slug (an old slug written with capitals or a
+                // trailing slash is one hop, not two). Unknown slugs keep the normalised target (it answers 404).
+                if (SiteRoutes.ParseDetail(target) is { } detail)
+                {
+                    var db = context.RequestServices.GetRequiredService<Data.AppDbContext>();
+                    if (await DetailSlugs.CurrentAsync(db, detail.Route, detail.Slug, context.RequestAborted) is { } current)
+                        target = SiteRoutes.DetailPath(detail.Route, current, detail.English);
+                }
                 context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
                 context.Response.Headers.Location = request.PathBase + target + request.QueryString;
                 return;

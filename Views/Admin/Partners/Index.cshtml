@@ -29,7 +29,7 @@
         <lang-pair label="موقع الشريك (https — اختياري)" name-ar="Url" max="500" ltr="true" placeholder="https://" id-prefix="new-" />
         <div class="form-group"><label for="new-group">المجموعة (في صفحة شركاء المنتدى)</label>@GroupSelect(groups, null, "new-group")</div>
         <div class="form-check" style="margin-bottom:12px;"><input type="checkbox" id="new-home" name="ShowOnHome" value="true" checked> <label for="new-home">يظهر في شريط الشركاء في الصفحة الرئيسية</label><input type="hidden" name="ShowOnHome" value="false"></div>
-        @{ ViewData["ImageLabel"] = "الشعار"; ViewData["ImagePrefix"] = "new-"; }
+        @{ ViewData["ImageLabel"] = "الشعار"; ViewData["ImagePrefix"] = "new-"; ViewData["ImageUse"] = "logo"; }
         <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="new PartnerCreateInput()" view-data="ViewData" />
         <button type="submit" class="btn-admin btn-primary">إضافة</button>
     </form>
@@ -56,7 +56,7 @@
                             <lang-pair label="موقع الشريك (https — اختياري)" name-ar="Url" value-ar="@item.Url" max="500" ltr="true" placeholder="https://" id-prefix="p@(item.Id)-" />
                             <div class="form-group"><label for="p@(item.Id)-group">المجموعة</label>@GroupSelect(groups, item.PartnerGroupId, $"p{item.Id}-group")</div>
                             <div class="form-check" style="margin-bottom:12px;"><input type="checkbox" id="p@(item.Id)-home" name="ShowOnHome" value="true" @(item.ShowOnHome ? "checked" : "")> <label for="p@(item.Id)-home">يظهر في الصفحة الرئيسية</label><input type="hidden" name="ShowOnHome" value="false"></div>
-                            @{ ViewData["ImageLabel"] = "الشعار"; ViewData["ImagePrefix"] = $"p{item.Id}-"; }
+                            @{ ViewData["ImageLabel"] = "الشعار"; ViewData["ImagePrefix"] = $"p{item.Id}-"; ViewData["ImageUse"] = "logo"; }
                             <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="@(new PartnerUpdateInput { Current = current, ImageAltAr = item.Logo?.AltAr, ImageAltEn = item.Logo?.AltEn })" view-data="ViewData" />
                             <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
                         </form>

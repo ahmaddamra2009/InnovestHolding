@@ -15,6 +15,7 @@ public class TestDbTests
     [InlineData("_C2;Server=example.invalid")]
     [InlineData("_a b")]
     [InlineData("_123456789012345678901")]
+    [InlineData("_C2\n")]
     public void Anything_else_is_refused(string raw) => Assert.Throws<InvalidOperationException>(() => TestDb.ReadSuffix(raw));
 
     [Fact]

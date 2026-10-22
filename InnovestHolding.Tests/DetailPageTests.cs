@@ -142,19 +142,32 @@ public class DetailPageTests(TestAppFactory f)
         Assert.Equal("noindex, nofollow", string.Join(",", r.Headers.GetValues("X-Robots-Tag")));
     }
 
-    [Fact]
-    public async Task Inactive_item_is_404_and_not_in_the_sitemap()
+    [Theory] // an unpublished news item or event is a 404 in both languages and absent from the sitemap
+    [InlineData("news")]
+    [InlineData("event")]
+    public async Task Inactive_item_is_404_and_not_in_the_sitemap(string kind)
     {
         var slug = Unique("hidden").ToLowerInvariant();
-        var id = await AddAsync(NewsItem(slug, english: true, active: false));
+        var news = kind == "news";
+        var id = news
+            ? await AddAsync(NewsItem(slug, english: true, active: false))
+            : await AddAsync(new Event
+            {
+                Slug = slug, TitleAr = "فعالية مخفية", TitleEn = "Hidden", SummaryEn = "Summary", DescriptionAr = "وصف",
+                EventDay = 1, EventMonthAr = "مايو", IsActive = false, RegistrationOpen = true,
+            });
+        var path = (news ? "/news/" : "/forum/events/") + slug;
         try
         {
-            Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync("/news/" + slug)).StatusCode);
-            Assert.DoesNotContain($"{Base}/news/{slug}", await SitemapLocsAsync());
+            Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync(path)).StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync("/en" + path)).StatusCode);
+            var locs = await SitemapLocsAsync();
+            Assert.DoesNotContain($"{Base}{path}", locs);
+            Assert.DoesNotContain($"{Base}/en{path}", locs);
         }
         finally
         {
-            await RemoveAsync<News>(id);
+            if (news) await RemoveAsync<News>(id); else await RemoveAsync<Event>(id);
         }
     }
 
@@ -187,6 +200,14 @@ public class DetailPageTests(TestAppFactory f)
             Assert.Equal("/news/" + newSlug, r.Headers.Location!.OriginalString);
             r = await f.NewClient().GetAsync("/en/news/" + oldSlug);
             Assert.Equal("/en/news/" + newSlug, r.Headers.Location!.OriginalString);
+            // An old slug written with capitals or a trailing slash: ONE hop, straight to the current slug.
+            foreach (var (path, target) in new[] { ($"/news/{oldSlug}/", $"/news/{newSlug}"), ($"/EN/News/{oldSlug.ToUpperInvariant()}", $"/en/news/{newSlug}") })
+            {
+                r = await f.NewClient().GetAsync(path);
+                Assert.Equal(HttpStatusCode.MovedPermanently, r.StatusCode);
+                Assert.Equal(target, r.Headers.Location!.OriginalString);
+                Assert.Equal(HttpStatusCode.OK, (await f.NewClient().GetAsync(target)).StatusCode);
+            }
             Assert.Equal(HttpStatusCode.OK, (await f.NewClient().GetAsync("/news/" + newSlug)).StatusCode);
 
             // Another item may take neither the current slug nor the old one.

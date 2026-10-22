@@ -121,8 +121,7 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
             })
             .FirstOrDefaultAsync(HttpContext.RequestAborted);
         if (e is null)
-            return await OldSlugAsync(db, DetailKeys.ForumEvent, slug,
-                id => db.Events.Where(x => x.Id == id && x.IsActive).Select(x => x.Slug).FirstOrDefaultAsync(HttpContext.RequestAborted));
+            return await OldSlugAsync(db, DetailKeys.ForumEvent, slug);
 
         var v = await ViewsAsync();
         var r = e.Row;
@@ -388,8 +387,7 @@ public class NewsroomController(AppDbContext db) : PublicControllerBase
             })
             .FirstOrDefaultAsync(HttpContext.RequestAborted);
         if (n is null)
-            return await OldSlugAsync(db, DetailKeys.NewsItem, slug,
-                id => db.News.Where(x => x.Id == id && x.IsActive).Select(x => x.Slug).FirstOrDefaultAsync(HttpContext.RequestAborted));
+            return await OldSlugAsync(db, DetailKeys.NewsItem, slug);
 
         var v = await ViewsAsync();
         var english = v.English;

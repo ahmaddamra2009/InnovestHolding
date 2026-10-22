@@ -53,6 +53,55 @@ The suite uses its own LocalDB database `InnovestHolding_Tests` (same instance),
 the start of each run; it asserts the server and database name before the host starts and again by effect
 afterwards. All tests must pass.
 
+### Test databases and a second checkout (worktree)
+Set the environment variable `INNOVEST_TEST_DB_SUFFIX` (e.g. `_C2`) before `dotnet test` and every test database gets that
+suffix (`InnovestHolding_Tests_C2`, `InnovestHolding_MigrationTests_C2`, `InnovestHolding_MigrationTests_Model_C2`), so two
+checkouts can run the suite at the same time without dropping each other's database. The value must match `^_[A-Za-z0-9]{1,20}\z`
+(anything else, a trailing newline included, throws); the server stays `(localdb)\InnovestLocal`, built with
+`SqlConnectionStringBuilder` (`InnovestHolding.Tests/TestDb.cs`), and the LocalDB assertions still run. The uploads folder of
+a test run is `%TEMP%\<test database name>_uploads`. In PowerShell: `$env:INNOVEST_TEST_DB_SUFFIX = '_C2'; dotnet test ...`.
+
+## Media pipeline and detail pages (PR-C2)
+
+### Upload pipeline (`Infrastructure/Media/`)
+No native code and no re-encode (shared hosting): the file is validated and rebuilt from its image parts, never decoded.
+- `ImageInspector` (pure): extension, declared content type and magic bytes must agree (jpg/png/webp only; SVG, GIF, HTML
+  refused). It walks the whole container (PNG chunks + CRC, JPEG segments to EOI, WebP RIFF chunks). Limits:
+  `MinSide` 16, `MaxSide` 8000, `MaxPixels` 25 000 000; size <= 5 MB (`MediaStore.MaxBytes`); animated PNG/WebP refused;
+  a WebP VP8X canvas must equal the VP8/VP8L bitstream size, otherwise corrupt. `Sanitize` keeps only image parts (drops
+  EXIF/GPS/XMP/IPTC, comments, text chunks and every byte after the image end; keeps ICC/JFIF/Adobe and a minimal EXIF
+  orientation block) and the result is inspected again.
+- `MediaStore`: root `Uploads:RootPath` (environment variable `Uploads__RootPath`), default `App_Data/uploads` (excluded from
+  build and publish, gitignored). Path `{root}/{key[0..2]}/{key}.{ext}` is built only from a random 32-hex key and the
+  validated format and checked to stay under the root; a client file name never reaches the file system. Write = `.tmp` +
+  `CreateNew` + move; the file is deleted if the database save fails; files of replaced/removed/deleted images are deleted
+  after the commit; an emptied `xx` folder is removed (the root never).
+- Startup sweep (`MediaStore.SweepAsync`, called from `Program.cs`): orphans (a file older than 24 h whose key has no
+  `MediaFiles` row, and `*.tmp` older than 1 h) are **moved, never deleted**, to `{uploads}-quarantine/{yyyy-MM-dd}/`
+  (default `App_Data/uploads-quarantine/`, a sibling of the uploads folder, so `/media` cannot serve it). It is skipped when
+  the database has no `MediaFiles` rows, when the `uploads/.database` marker (SHA-256 of `@@SERVERNAME/DB_NAME()`, written by
+  the first sweep) names another database (logged as an error), and when there are more than 50 candidates (`MaxSweepMoves`;
+  nothing moved, logged as an error). Every start logs the outcome. Nothing purges the quarantine.
+- `/media/{key}.{jpg|png|webp}` (`MediaEndpoint`, GET/HEAD only, otherwise 404/405): re-sniffs the stored bytes; content type
+  from the signature; `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; sandbox`; `Cache-Control: public,
+  max-age=31536000, immutable`; ETag = key; `nosniff` comes from the global middleware.
+- Admin forms with an image use `enctype="multipart/form-data"`, the `_ImageField` partial and an input deriving
+  `ImageFieldsInput` (`Image`, `RemoveImage`, alt Ar/En; `Current` is `[BindNever]`). The upload runs only after the rest of the
+  form validated. The file is never bound to an entity: the controller calls `MediaStore` and stores the `MediaFiles` row id.
+- Resx keys for the messages are in both resx files (parity and "every key used" tests).
+
+### Detail pages and slugs
+`SiteRoutes.Details` holds the two detail routes (`news.item` -> `/news/{slug}`, `forum.event` -> `/forum/events/{slug}`, and
+`/en/...`); the slug is a route constraint (`Slugs.RouteRegex` `^[a-z0-9]+(-[a-z0-9]+)*\z`, max 100, `Slugs.Reserved` words
+refused) and the normaliser 301s other spellings. `SlugRedirects` stores the old slugs: an old slug answers 301 to the
+current one (same language); another item cannot reuse it, the owner can take it back; the redirects go with the item.
+A new slug comes from the English title (`-2`, `-3` on a clash) or `news-{id}` / `event-{id}`; the migration backfilled the
+same form for existing rows. Events carry `StartsAt`/`EndsAt` (UTC) plus their own UTC offset (`default_utc_offset`
+`SiteContents` key, default `+02:00`, no admin screen); lists order upcoming first (undated legacy rows first), then past.
+SEO: `NewsArticle` / `Event` JSON-LD (Event only with a real start date, ISO dates with offset), the breadcrumb ends with the
+item, `og:image` item -> page -> default. An English detail page without an English title and summary renders the Arabic text,
+is `noindex, follow` (meta and header), canonical -> the Arabic URL, no hreflang and out of the sitemap.
+
 ## Never run as Production locally
 The LocalDB guard only covers `Development` and `Testing`. Running the app (`dotnet run` or the dll) with
 `--environment Production`, with no `ASPNETCORE_ENVIRONMENT` set, with `--no-launch-profile`, or with a
@@ -274,3 +323,5 @@ The app and the tests were not run for this note.
 ### Front-end pitfalls (PR-C1)
 - A scroll-reveal element uses the class `active` for "shown" (`.reveal.active`). Never reuse `active` as the open state of a component that is also a `.reveal` element: the FAQ accordion uses `is-open` for that reason (using `active` hid every item after one click). Check such interactions with motion ON; under `prefers-reduced-motion` `.reveal` stays opaque and the bug cannot show.
 - `ContentText.ListItems` splits a content text on the Arabic comma and the Latin comma into chips (fewer than 2 items: no list); the home values card uses it, vision and mission never do.
+
+Verified on 2026-10-22 (PR-C2 sections) by reading the code in the `InnovestHolding-c2` worktree (branch `feature/4-media-detail-pages`, base C1, RE-RUN 1 uncommitted). The app and the tests were not run for this note.

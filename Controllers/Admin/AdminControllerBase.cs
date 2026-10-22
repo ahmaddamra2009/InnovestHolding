@@ -53,8 +53,9 @@ public abstract class AdminControllerBase : Controller
 
     protected MediaStore Media => HttpContext.RequestServices.GetRequiredService<MediaStore>();
 
-    private static string ProblemKey(ImageProblem p) => p switch
+    private static string ProblemKey(ImageProblem p, ImageUse use) => p switch
     {
+        ImageProblem.Size or ImageProblem.Dimensions when use == ImageUse.Logo => MessageKeys.LogoLimits,
         ImageProblem.Size => MessageKeys.ImageSize,
         ImageProblem.Mismatch => MessageKeys.ImageMismatch,
         ImageProblem.Corrupt => MessageKeys.ImageCorrupt,
@@ -67,13 +68,14 @@ public abstract class AdminControllerBase : Controller
     /// Validates and writes the chosen file (if any). On refusal nothing is written and the message goes to ModelState
     /// under "Image". Call only once the rest of the form is valid, so a refused form never leaves a file behind.
     /// </summary>
-    protected async Task<MediaFile?> UploadImageAsync(ImageFieldsInput input)
+    protected async Task<MediaFile?> UploadImageAsync(ImageFieldsInput input, ImageUse? use = null)
     {
         if (!input.HasUpload) return null;
+        use ??= ImageUse.General;
         try
         {
-            var result = await Media.SaveAsync(input.Image!, input.ImageAltAr, input.ImageAltEn, HttpContext.RequestAborted);
-            if (result.File is null) ModelState.AddModelError(nameof(ImageFieldsInput.Image), L(ProblemKey(result.Problem)));
+            var result = await Media.SaveAsync(input.Image!, input.ImageAltAr, input.ImageAltEn, HttpContext.RequestAborted, use);
+            if (result.File is null) ModelState.AddModelError(nameof(ImageFieldsInput.Image), L(ProblemKey(result.Problem, use)));
             return result.File;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -171,6 +173,10 @@ public abstract class AdminControllerBase : Controller
             !await usedByOther(slug)
             && !await db.SlugRedirects.AnyAsync(r => r.EntityType == entityType && r.OldSlug == slug && r.EntityId != selfId);
     }
+
+    /// <summary>A unique-index violation (SQL Server 2601/2627), e.g. two saves racing for the same slug.</summary>
+    protected static bool IsUniqueViolation(DbUpdateException ex) =>
+        ex.InnerException is Microsoft.Data.SqlClient.SqlException { Number: 2601 or 2627 };
 
     /// <summary>
     /// Records a slug change: the old slug redirects to the item; going back to one of the item's own old slugs removes
