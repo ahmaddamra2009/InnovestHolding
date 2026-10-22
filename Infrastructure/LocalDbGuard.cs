@@ -19,8 +19,14 @@ public static class LocalDbGuard
         if (string.IsNullOrWhiteSpace(connectionString)) return false;
         try
         {
-            var dataSource = new SqlConnectionStringBuilder(connectionString).DataSource?.Trim() ?? "";
-            return dataSource.StartsWith(LocalDbPrefix, StringComparison.OrdinalIgnoreCase);
+            // SqlConnectionStringBuilder resolves every server key (Data Source, Server, Address, Addr, Network Address;
+            // the last one wins, as in SqlClient). A failover partner is a second server SqlClient may connect to, so a
+            // string with one is never "LocalDB only"; MultiSubnetFailover has no meaning for LocalDB either.
+            var b = new SqlConnectionStringBuilder(connectionString);
+            var dataSource = b.DataSource?.Trim() ?? "";
+            return dataSource.StartsWith(LocalDbPrefix, StringComparison.OrdinalIgnoreCase)
+                   && string.IsNullOrWhiteSpace(b.FailoverPartner)
+                   && !b.MultiSubnetFailover;
         }
         catch (ArgumentException)
         {

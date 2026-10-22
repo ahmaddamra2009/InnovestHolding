@@ -1,3 +1,4 @@
+using InnovestHolding.Infrastructure;
 using InnovestHolding.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -15,9 +16,14 @@ public static class DbContextRegistration
         services.AddMemoryCache();
         services.TryAddSingleton<ISiteContentCache, SiteContentCache>();
         services.TryAddSingleton<ContentCacheInvalidationInterceptor>();
+        services.TryAddSingleton<ProductionDbGuardInterceptor>();
+        // The production-database guard runs on every connection open (the app, the tests and the EF tools all build
+        // the context through here), so `dotnet ef --connection` cannot bypass it.
         services.AddDbContext<AppDbContext>((sp, options) => options
             .UseSqlServer(connectionString)
-            .AddInterceptors(sp.GetRequiredService<ContentCacheInvalidationInterceptor>()));
+            .AddInterceptors(
+                sp.GetRequiredService<ProductionDbGuardInterceptor>(),
+                sp.GetRequiredService<ContentCacheInvalidationInterceptor>()));
         return services;
     }
 }

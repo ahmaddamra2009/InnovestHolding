@@ -24,6 +24,9 @@ var isTesting = builder.Environment.IsEnvironment("Testing");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (LocalDbGuard.AppliesTo(builder.Environment))
     LocalDbGuard.EnsureLocalDb(connectionString, builder.Environment.EnvironmentName, "configuration");
+// In EVERY environment (Production included): a non-LocalDB database only on the production host (IIS, or the explicit
+// INNOVEST_ALLOW_REMOTE_DB=1). A developer machine pointed at the production database stops here, before any connection.
+ProductionDbGuard.Ensure(connectionString, Environment.GetEnvironmentVariable, "configuration");
 
 // ── Services ──
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(SecurityOptions.SectionName));
@@ -112,6 +115,17 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    // The EFFECTIVE connection (a DI override included) is checked again, in every environment, before the migration;
+    // neither call connects. This final verdict is the one logged; every connection open is checked again by
+    // ProductionDbGuardInterceptor.
+    var finalVerdict = ProductionDbGuard.Ensure(db.Database.GetConnectionString(), Environment.GetEnvironmentVariable, "DbContext");
+    // A remote database is logged as a Warning because Production's minimum log level is Warning (an Information line
+    // would be dropped). Where that line ends up on the host (Event Log, stdout log) has not been verified. Never the
+    // connection string.
+    if (finalVerdict.Decision == ProductionDbGuard.Decision.LocalDb)
+        app.Logger.LogInformation("Database guard: {Decision}", finalVerdict.ToString());
+    else
+        app.Logger.LogWarning("Database guard: remote database allowed by {Decision}", finalVerdict.ToString()); // e.g. "IisHost (APP_POOL_ID)"
     if (LocalDbGuard.AppliesTo(app.Environment))
     {
         // The EFFECTIVE connection the migration will use (catches a DI override too). Does not connect.

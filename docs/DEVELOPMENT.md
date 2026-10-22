@@ -56,8 +56,31 @@ afterwards. All tests must pass.
 ## Never run as Production locally
 The LocalDB guard only covers `Development` and `Testing`. Running the app (`dotnet run` or the dll) with
 `--environment Production`, with no `ASPNETCORE_ENVIRONMENT` set, with `--no-launch-profile`, or with a
-misspelt environment name reads `appsettings.json` - the production connection - and migrates/seeds it on
-startup. Always start with `--launch-profile http`.
+misspelt environment name reads `appsettings.json` - the production connection. Always start with
+`--launch-profile http`.
+
+Since the production-database guard (`Infrastructure/ProductionDbGuard.cs`), such a run **stops before it connects**,
+in every environment: a connection that is not `(localdb)\...` is accepted only when the process is hosted by IIS (any of
+`APP_POOL_ID`, `ASPNETCORE_IIS_PHYSICAL_PATH`, `ASPNETCORE_TOKEN` is set; none is set by `dotnet run` or `dotnet app.dll`)
+or when `INNOVEST_ALLOW_REMOTE_DB=1` is set. The variable that allowed a remote database is logged as a Warning at start. On a developer
+machine neither is set, so the app (and `dotnet ef`, which runs `Program` up to `Build()`) throws
+`ProductionDbGuardException` at configuration time, before any connection, migration or seeding. The same rule is applied
+again to the effective DbContext connection before migrating, and on **every connection open** by
+`ProductionDbGuardInterceptor` (registered in `AddAppDbContext`). That last check is what stops
+`dotnet ef … --connection <remote>`, which replaces the string after start-up (a migrations bundle was not tested). It
+covers only contexts built through `AddAppDbContext`: a hand-built `DbContextOptionsBuilder` (the tests have some), a
+future design-time factory, or opening `GetDbConnection()` directly is not checked by it. It runs before SqlClient, so
+before any name resolution or TCP connect. "LocalDB" means a `(localdb)\...` data source with **no** `Failover Partner` and no
+`MultiSubnetFailover` (a failover partner is a second server SqlClient may connect to). The message never contains the
+connection string. Whether IIS Express sets the IIS markers has not been checked (there is no IIS Express launch
+profile); if it does, a run under IIS Express is treated as an IIS host, so do not point IIS Express at a remote
+database. **Never set `INNOVEST_ALLOW_REMOTE_DB` on a developer machine**; it exists for a production host that is not
+IIS. Checked on 2026-10-22: the app built from this tree, started with
+`ASPNETCORE_ENVIRONMENT=Production` and the fake host `Server=example.invalid`, exited with that exception from
+`Program.cs` (configuration) and printed neither the host nor the password. On 2026-10-23,
+`ef database update --connection "Server=tcp:example.invalid,…"` against a build of this tree exited 1 with the
+guard's `(connection)` refusal, without a connection attempt and without printing the host. The guard is tested in
+`InnovestHolding.Tests/ProductionDbGuardTests.cs` and `ProductionDbGuardConnectionTests.cs`.
 
 `dotnet ef` is different: with `ASPNETCORE_ENVIRONMENT` and `DOTNET_ENVIRONMENT` unset and no connection
 override, `dotnet ef dbcontext info` was run on 2026-10-22 and reported `Data source: (localdb)\InnovestLocal`,
