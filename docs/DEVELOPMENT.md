@@ -269,8 +269,8 @@ Conventions (all in `Controllers/FormsController.Leads.cs`, `FormsController` is
    `Website`); lengths mirror the columns; URLs `[HttpsUrl]`; nothing binds to an entity. Honeypot filled -> answer success and
    write nothing. Choice fields are ids checked against the ACTIVE rows of their own `ContentItems` group (`FormOptions` groups
    in `ContentItemGroups`, loaded by `Infrastructure/Forms/LeadForms.cs`) or an active entity; the row stores the Arabic text
-   (snapshot, cut to the column length). References to entities of another phase go through `ILeadReferences`
-   (`NoLeadReferences` knows none, so an id answers 400 until it is replaced in `Program.cs`).
+   (snapshot, cut to the column length). References to C3 entities go through `ILeadReferences`
+   (`DbLeadReferences`, scoped, always the database: a published AND open opportunity; an active package OF THE POSTED UNIT; any other id answers 400 naming the field). `OpportunityInterests.OpportunityId` and `SponsorshipEnquiries.PackageId` are foreign keys ON DELETE SET NULL (the title snapshot stays); the opportunity page links to `/angel-network/opportunities?opportunity=<id>#interest-section`, which pre-selects it.
 4. **Answer** JSON `{ success, message }` in the page language; a 400 carries `field` (main.js marks it `aria-invalid` and focuses it).
    Store `Culture`, `ConsentAt`, `CreatedAt` (UTC). **Do not log any submitted value** (a test captures the logs and fails on PII).
 5. **Entity + migration:** a table (or columns) with `IsRead`, `Status` (`LeadStatus` int, default 0) and `AdminNote` (nvarchar(2000)) and `CreatedAt` indexes; implement `ILead`; add the type to `LeadInbox`

@@ -257,7 +257,7 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
   المطلوب (**نصان حران**، مثل «عند الطلب»؛ لا يظهر أي رقم لم تكتبوه)، **«متاحة لاستقبال الاهتمام»**، الصورة، الرابط المختصر، محركات البحث.
   - **المسودة والنشر:** تُحفظ الفرصة الجديدة **مسودة** (شارة «مسودة») ولا تظهر في الموقع (ولا في خريطة الموقع، ورابطها 404 للزوار) حتى تُفعّل
     «منشورة». الفرصة المنشورة المغلقة (إن أُلغيت «متاحة…») تظهر بعلامة «مغلقة» بلا زر اهتمام. تُرتَّب المتاحة أولاً.
-  - زر «أبدِ اهتمامك» في صفحة الفرصة (المتاحة) يقود إلى نموذج الاهتمام أسفل صفحة «الفرص» (لا يختار الفرصة تلقائياً بعد).
+  - زر «أبدِ اهتمامك» في صفحة الفرصة (المتاحة) يقود إلى نموذج الاهتمام أسفل صفحة «الفرص» (والفرصة مختارة تلقائياً في قائمة «الفرصة» بالنموذج؛ تعرض القائمة الفرص المنشورة المفتوحة فقط). وفي تفاصيل الطلب يظهر «رقم الفرصة»، أو «حُذفت» إن حُذفت الفرصة بعد الإرسال (يبقى عنوانها المحفوظ). وكذلك «رقم الباقة» لاستفسارات الرعاية، وفي ملف CSV عمودا «المرجع» و«رقم المرجع».
   - **حذف قطاع** من «القطاعات التي نخدمها» مستعمل في فرصة يُرفض برسالة («عطّله بدلاً من حذفه»).
 - **«باقات الرعاية»:** الوحدة (البرنامج التلفزيوني أو المنتدى)، اسم الباقة، **السعر** (نص حر مثل «عند الطلب»)، **المزايا** (ميزة في كل سطر)،
   الترتيب، ظاهرة/مخفية. باقات البرنامج التلفزيوني تظهر في صفحة «الرعاية» (`/tv/sponsorship`) وباقات المنتدى في «الشركاء والرعاة»
@@ -615,7 +615,7 @@ packages). These screens fill the former «coming soon» pages `/forum/speakers`
   - **Draft and publish:** a new opportunity is saved as a **draft** («مسودة» badge) and is not shown on the site (nor in the
     sitemap, and its address is a 404 for visitors) until you set it to **published**. A published opportunity that is not open shows
     a «closed» mark with no interest button. Open ones are listed first.
-  - The «express interest» button on an (open) opportunity leads to the interest form at the bottom of the «Opportunities» page (it does not pre-select the opportunity yet).
+  - The «express interest» button on an (open) opportunity leads to the interest form at the bottom of the «Opportunities» page (with the opportunity pre-selected in the form's «Opportunity» list, which offers only published, open opportunities). A lead's details show the «opportunity number», or «deleted» if the opportunity was deleted after the submission (its saved title stays); sponsorship enquiries show the «package number» the same way, and the CSV has «Reference» and «Reference ID» columns.
   - **Deleting a sector** from «sectors we serve» that an opportunity uses is refused with a message («deactivate it instead»).
 - **Sponsorship packages:** unit (TV program or forum), package name, **price** (free text such as «on request»), **benefits** (one
   per line), order, visible/hidden. TV packages appear on the «Sponsorship» page (`/tv/sponsorship`), forum packages on «Partners and
