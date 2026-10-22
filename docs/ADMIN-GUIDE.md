@@ -159,6 +159,16 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
 `Sitemap:` في `/robots.txt`. إذا تُرك فارغاً في الإنتاج تختفي هذه الوسوم ويعيد `/sitemap.xml` الخطأ 404.
 «صورة المشاركة» مسار داخل الموقع يبدأ بـ `/` (القيمة المبذورة صورة الشعار `/assets/brand/og-default.jpg`).
 
+## 6ب. صور الموقع: الشعار وصورة الواجهة
+
+«الموقع» ← «النصوص العامة»: في أعلى الشاشة نموذج رفع صغير لكل صورة من صور الموقع (يعمل بأداة الرفع نفسها وقيودها: JPG أو PNG أو WebP حتى 5 ميغابايت):
+- **الشعار على خلفية داكنة:** في رأس الموقع وتذييله وبطاقة «من نحن» في الرئيسية. يُفضّل PNG أو WebP بخلفية شفافة.
+- **الشعار على خلفية فاتحة:** شعار المؤسسة الذي تقرؤه محركات البحث (بيانات المؤسسة JSON-LD).
+- **صورة الواجهة في الرئيسية:** تظهر بجانب عنوان الصفحة الرئيسية بدل المثلث البرتقالي المرسوم.
+- **صورة المؤسس:** قسم «كلمة المؤسس» في «من نحن».
+- **الاحتياط:** ما دام حقل الشعارين فارغاً يُستعمل الشعار المرفق مع الموقع، وما دامت صورة الواجهة فارغة يظهر المثلث. زر الحذف يعيد المرفق. لا يتغير
+  شعار لوحة التحكم وصفحة الدخول ولا صورة المشاركة الافتراضية (`seo_og_image`) بهذه الشاشة.
+
 ## 7. روابط إضافية في القائمة (`/Admin/Nav`)
 
 «الموقع» ← «روابط إضافية في القائمة». قائمة الموقع الأساسية صارت من «صفحات الموقع». هذه الشاشة لروابط **إضافية** فقط
@@ -234,11 +244,11 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
   (الأصغر أولاً) يحدد الترتيب.
 - **«المتحدثون» و«الضيوف»** (الحقول نفسها): الاسم، المنصب، الجهة، نبذة، رابط لينكدإن، رابط X (`https://` اختياريان)، **الصورة الشخصية**،
   الرابط المختصر، محركات البحث، الترتيب، ظاهر/مخفي. تظهر الصفحة الإنجليزية في الفهرس حين يُملأ الاسم الإنجليزي (والمنصب والنبذة بالإنجليزية إن
-  وُجدت بالعربية). حذف متحدث يُزيله من فعالياته؛ حذف ضيف يُزيله من حلقاته.
-- **ربط المتحدثين بالفعاليات:** في شاشة تعديل «الفعاليات» مجموعة «متحدثو الفعالية (يظهرون في صفحتها بهذا الترتيب)» بمربعات اختيار؛ تظهر
+  وُجدت بالعربية). حذف متحدث يُزيله من فعالياته؛ حذف ضيف يُزيله من حلقاته. **ملف بلا وصف** (لا نبذة ولا وصف لمحركات البحث) لا يدخل محركات البحث (`noindex`) ولا خريطة الموقع بأي لغة، ويحتاج الإنجليزي وصفه الإنجليزي بنفسه؛ أضيفوا نبذة ليُفهرس. وتظهر في صفحة المتحدث أو الضيف الفعاليات والحلقات **المنشورة فقط**.
+- **ربط المتحدثين بالفعاليات:** في شاشة تعديل «الفعاليات» مجموعة «متحدثو الفعالية (يظهرون في صفحتها بترتيب قائمة «المتحدثون»)» بمربعات اختيار؛ ترتيب الظهور هو **ترتيب قائمة المتحدثين** (حقل «الترتيب» ثم الأقدم إضافةً) لا ترتيب النقر؛ تظهر
   في صفحة الفعالية المتحدثون المنشورون فقط، وفي صفحة المتحدث فعالياته. المتحدث المعطَّل يبقى في القائمة بعلامة ولا يظهر للزوار.
 - **«الحلقات»:** عنوان الحلقة، الملخص، الوصف، **الموسم** و**رقم الحلقة** و**تاريخ العرض** (اختيارية)، **رابط الفيديو**، **الصورة المصغّرة**
-  (ملصق الفيديو وصورة المشاركة)، **ضيوف الحلقة** (مربعات اختيار من «الضيوف»؛ يظهرون بالترتيب)، الرابط المختصر، محركات البحث، الترتيب. ترتَّب
+  (ملصق الفيديو وصورة المشاركة)، **ضيوف الحلقة** (مربعات اختيار من «الضيوف»؛ يظهرون بترتيب قائمة «الضيوف»: «الترتيب» ثم الأقدم إضافةً)، الرابط المختصر، محركات البحث، الترتيب. ترتَّب
   القائمة: الحلقات ذات تاريخ العرض الأحدث أولاً ثم غير المؤرَّخة.
   - **رابط الفيديو** `https://` فقط. رابط **يوتيوب** (`youtube.com/watch?v=…` أو `youtu.be/…` أو `/embed/` أو `/shorts/` أو `/live/` من المواقع
     youtube.com وyoutube-nocookie.com وyoutu.be) يظهر بمشغّل **لا يتصل بيوتيوب إلا عندما يضغط الزائر عليه** (يُستعمل نطاق youtube-nocookie)؛
@@ -457,6 +467,17 @@ value `https://www.innovest-holding.com`). Canonical, hreflang, `og:url`, `/site
 `/robots.txt` are built from it. If it is emptied in production those tags disappear and `/sitemap.xml` returns 404.
 «Share image» is a site path starting with `/` (seeded with the logo image `/assets/brand/og-default.jpg`).
 
+## 6b. Site images: the logo and the hero image
+
+«الموقع» → «النصوص العامة»: at the top of the screen there is one small upload form per site image (same upload tool and limits: JPG,
+PNG or WebP up to 5 MB):
+- **Logo on a dark background:** the site header, the footer and the home «About» card. PNG or WebP with a transparent background is best.
+- **Logo on a light background:** the organisation logo that search engines read (the Organization JSON-LD).
+- **Home hero image:** shown beside the home page heading instead of the drawn orange triangle.
+- **Founder photo:** the «founder's message» block on About.
+- **Fallback:** while a logo field is empty the logo bundled with the site is used, and while the hero image is empty the triangle is shown.
+  Removing an image brings the bundled one back. The admin panel and login logo and the default share image (`seo_og_image`) are not changed by this screen.
+
 ## 7. Extra menu links (`/Admin/Nav`)
 
 «الموقع» → «روابط إضافية في القائمة». The site's main menu now comes from «صفحات الموقع». This screen is only for **extra**
@@ -540,12 +561,14 @@ packages). These screens fill the former «coming soon» pages `/forum/speakers`
 - **Speakers and guests** (the same fields): name, job title, organisation, bio, LinkedIn and X links (optional, `https://`), the
   **portrait**, slug, search engines, order, visible/hidden. The English page is indexed when the English name is filled (and the
   English job title and bio when the Arabic ones exist). Deleting a speaker removes them from their events; deleting a guest
-  removes them from their episodes.
+  removes them from their episodes. A profile **without a description** (no bio and no search-engine description) is kept out of search engines
+  (`noindex`) and out of the sitemap in both languages, and the English page needs its own description; add a bio to have it indexed. A speaker's or
+  guest's page lists only their **published** events and episodes.
 - **Linking speakers to events:** the «الفعاليات» edit screen has a checkbox group «متحدثو الفعالية (يظهرون في صفحتها بهذا الترتيب)».
-  The event page shows only the published speakers; a speaker's page lists their events. A deactivated speaker stays in the list
+  They appear in the **speakers list order** ("Order", then oldest first), not in the order you ticked them. The event page shows only the published speakers; a speaker's page lists their events. A deactivated speaker stays in the list
   with a mark and is not shown to visitors.
 - **Episodes:** title, summary, description, **season**, **episode number** and **air date** (all optional), **video link**,
-  **thumbnail** (the video poster and the share image), **episode guests** (checkboxes from «الضيوف»; shown in that order), slug,
+  **thumbnail** (the video poster and the share image), **episode guests** (checkboxes from «الضيوف»; shown in the guests list order: "Order", then oldest first), slug,
   search engines, order. The list is ordered with the most recent air date first, undated episodes last.
   - **Video link:** `https://` only. A **YouTube** link (`youtube.com/watch?v=...`, `youtu.be/...`, `/embed/`, `/shorts/` or `/live/` on
     youtube.com, youtube-nocookie.com or youtu.be) is shown with a player that **contacts YouTube only when the visitor clicks it**

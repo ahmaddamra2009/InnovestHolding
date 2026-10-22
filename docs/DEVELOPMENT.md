@@ -128,13 +128,25 @@ accepts interest) with a sector FK to `ContentItems` (NO ACTION; the admin refus
 7. Tests: admin both ways (anonymous/token), lifecycle with image + rename 301 + delete, invalid input, hidden/draft items, list
    indexability, migration (only adds tables).
 
+### Shared admin base and caches (PR-C3 review round)
+`Controllers/Admin/EcosystemAdminControllers.cs`: `EcosystemAdminBase` (list paging, temporary/id slugs, `CheckLinks` and `ReplaceLinks<TLink>`
+for ordered checkbox links, shared with the Events form) and `DetailAdminController<TEntity, TInput>`, the one create/edit/delete flow
+(slug check and redirects, image, `{type}-{id}` fallback, link hooks) that People, Episodes and Opportunities derive from; their entities
+implement `IDetailEntity`. News and Events (C2) keep their own flow. `AdminControllerBase.CheckSlugAsync` refuses a typed slug of the automatic
+form `{type}-{digits}` (message `Msg_SlugReserved`) and skips a title-derived candidate in that form (`speaker-987654-2`); an item keeps its own.
+Linked people are shown in the people-list order. Site images: `Infrastructure/Content/SiteImages` is the registry (`logo_on_dark`,
+`logo_on_light`, `hero_image`, `founder_photo`), written by `/Admin/Content/SiteImage` (registry keys only, C2 upload pipeline) and read in one
+query into the snapshot; an empty value falls back to the bundled files. The sitemap is built once per snapshot and base URL (a
+`ConditionalWeakTable` keyed by the snapshot), so any content save, which drops the snapshot, rebuilds it on the next request; rows inserted by raw
+SQL do not appear until the snapshot is invalidated. A test for this exists (`Sitemap_is_cached_until_content_changes`).
+
 ### The YouTube facade (click-to-load)
 The page HTML never contains an iframe or a request to YouTube. `Infrastructure/Content/EcosystemQueries.cs` (`YouTube.VideoId`) accepts
 only https URLs on the default port whose host is `youtube.com`, `www.youtube.com`, `m.youtube.com`, `youtube-nocookie.com`,
 `www.youtube-nocookie.com` or `youtu.be`, in the shapes `watch?v=`, `youtu.be/<id>`, `/embed/<id>`, `/shorts/<id>`, `/live/<id>`, and the
 id must match `^[A-Za-z0-9_-]{11}$`. The view writes only `data-video-id` (with the thumbnail as poster); `wwwroot/js/main.js` builds the
 iframe `https://www.youtube-nocookie.com/embed/<id>` on click and focuses it. Any other https URL is rendered as a plain "watch" link, and
-`VideoObject` JSON-LD is written only for a stored URL. Do not add an `<iframe>` or a YouTube script to a view: a test fails if the page
+`VideoObject` JSON-LD is written only for a stored URL. The iframe carries `sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"`, and the global CSP allows exactly one frame origin (`frame-src https://www.youtube-nocookie.com`, `Infrastructure/SecurityMiddleware.cs`); a non-YouTube video link is a plain link with `rel="noopener noreferrer"`. Do not add an `<iframe>` or a YouTube script to a view: a test fails if the page
 HTML contains an iframe before the click.
 
 ## Never run as Production locally
