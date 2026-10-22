@@ -745,18 +745,18 @@
         </div>
         
         <!-- Form -->
-        <form class="registration-form reveal-left" id="registration-form" method="post">
+        <form class="registration-form reveal-left" id="registration-form" method="post" asp-antiforgery="true">
           <div class="form-group">
             <label for="reg-name">الاسم الكامل</label>
-            <input type="text" id="reg-name" name="fullName" class="form-control" placeholder="أدخل اسمك الكامل" required>
+            <input type="text" id="reg-name" name="fullName" class="form-control" placeholder="أدخل اسمك الكامل" maxlength="200" required>
           </div>
           <div class="form-group">
             <label for="reg-email">البريد الإلكتروني</label>
-            <input type="email" id="reg-email" name="email" class="form-control" placeholder="example@email.com" required dir="ltr" style="text-align:right;">
+            <input type="email" id="reg-email" name="email" class="form-control" placeholder="example@email.com" maxlength="200" required dir="ltr" style="text-align:right;">
           </div>
           <div class="form-group">
             <label for="reg-phone">رقم الهاتف</label>
-            <input type="tel" id="reg-phone" name="phone" class="form-control" placeholder="+962 7XX XXX XXX" dir="ltr" style="text-align:right;">
+            <input type="tel" id="reg-phone" name="phone" class="form-control" placeholder="+962 7XX XXX XXX" maxlength="50" dir="ltr" style="text-align:right;">
           </div>
           <div class="form-group">
             <label for="reg-interest">مجال الاهتمام</label>
@@ -770,6 +770,7 @@
               <option value="المسابقات">المسابقات</option>
             </select>
           </div>
+          <input type="text" name="Website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
           <div id="reg-message" style="display:none;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-weight:700;font-size:0.9rem;"></div>
           <button type="submit" class="form-submit-btn">
             <span>سجّل الآن</span>
@@ -790,7 +791,11 @@
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams(new FormData(form))
           })
-          .then(r => r.json())
+          .then(function (r) {
+            var type = r.headers.get('content-type') || '';
+            if (type.indexOf('application/json') === -1) throw new Error('non-json');
+            return r.json();
+          })
           .then(data => {
             msg.style.display = 'block';
             if (data.success) {
@@ -887,23 +892,24 @@
         
         <!-- Contact Form -->
         <div class="contact-form-wrap reveal-left">
-          <form class="contact-form" id="contact-form" method="post">
+          <form class="contact-form" id="contact-form" method="post" asp-antiforgery="true">
             <div class="form-group">
               <label for="contact-name">الاسم الكامل</label>
-              <input type="text" id="contact-name" name="fullName" class="form-control" placeholder="أدخل اسمك" required>
+              <input type="text" id="contact-name" name="fullName" class="form-control" placeholder="أدخل اسمك" maxlength="200" required>
             </div>
             <div class="form-group">
               <label for="contact-email">البريد الإلكتروني</label>
-              <input type="email" id="contact-email" name="email" class="form-control" placeholder="example@email.com" required dir="ltr" style="text-align:right;">
+              <input type="email" id="contact-email" name="email" class="form-control" placeholder="example@email.com" maxlength="200" required dir="ltr" style="text-align:right;">
             </div>
             <div class="form-group">
               <label for="contact-subject">الموضوع</label>
-              <input type="text" id="contact-subject" name="subject" class="form-control" placeholder="موضوع الرسالة" required>
+              <input type="text" id="contact-subject" name="subject" class="form-control" placeholder="موضوع الرسالة" maxlength="300" required>
             </div>
             <div class="form-group">
               <label for="contact-message">الرسالة</label>
-              <textarea id="contact-message" name="message" class="form-control" placeholder="اكتب رسالتك هنا..." required rows="4"></textarea>
+              <textarea id="contact-message" name="message" class="form-control" placeholder="اكتب رسالتك هنا..." maxlength="4000" required rows="4"></textarea>
             </div>
+            <input type="text" name="Website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
             <div id="contact-msg" style="display:none;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-weight:700;font-size:0.9rem;"></div>
             <button type="submit" class="form-submit-btn">
               <span>إرسال الرسالة</span>
@@ -924,7 +930,11 @@
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               body: new URLSearchParams(new FormData(form))
             })
-            .then(r => r.json())
+            .then(function (r) {
+              var type = r.headers.get('content-type') || '';
+              if (type.indexOf('application/json') === -1) throw new Error('non-json');
+              return r.json();
+            })
             .then(data => {
               msg.style.display = 'block';
               if (data.success) {

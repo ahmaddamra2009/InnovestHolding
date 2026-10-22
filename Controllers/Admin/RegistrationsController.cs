@@ -1,12 +1,10 @@
 using InnovestHolding.Data;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers.Admin;
 
-[Authorize]
-public class RegistrationsController : Controller
+public class RegistrationsController : AdminControllerBase
 {
     private readonly AppDbContext _db;
 

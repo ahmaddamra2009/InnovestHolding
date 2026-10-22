@@ -1,11 +1,13 @@
+@model ChangePasswordInput
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "الإعدادات"; }
 
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">تغيير كلمة المرور</span></div>
     <form method="post" asp-action="ChangePassword" asp-controller="Settings" style="max-width:500px;">
-        <div class="form-group"><label>كلمة المرور الحالية</label><input type="password" name="currentPassword" class="form-control" required></div>
-        <div class="form-group"><label>كلمة المرور الجديدة</label><input type="password" name="newPassword" class="form-control" required></div>
-        <div class="form-group"><label>تأكيد كلمة المرور الجديدة</label><input type="password" name="confirmPassword" class="form-control" required></div>
+        @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
+        <div class="form-group"><label>كلمة المرور الحالية</label><input asp-for="CurrentPassword" class="form-control" maxlength="128" autocomplete="current-password" required><span asp-validation-for="CurrentPassword" class="field-error"></span></div>
+        <div class="form-group"><label>كلمة المرور الجديدة</label><input asp-for="NewPassword" class="form-control" minlength="10" maxlength="64" autocomplete="new-password" required><span asp-validation-for="NewPassword" class="field-error"></span></div>
+        <div class="form-group"><label>تأكيد كلمة المرور الجديدة</label><input asp-for="ConfirmPassword" class="form-control" maxlength="64" autocomplete="new-password" required><span asp-validation-for="ConfirmPassword" class="field-error"></span></div>
         <button type="submit" class="btn-admin btn-primary">تغيير كلمة المرور</button>
     </form>
 </div>

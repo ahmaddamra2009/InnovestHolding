@@ -1,6 +1,12 @@
+using System.Diagnostics;
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure;
+using InnovestHolding.Models;
 using InnovestHolding.ViewModels;
+using InnovestHolding.ViewModels.Public;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers;
@@ -55,39 +61,65 @@ public class HomeController : Controller
         return View(model);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Register(string fullName, string email, string phone, string interest)
+    // Pinned to ONE route (Stage 4 H1): /Home/Register/{id} and /Admin/Home/Register do not reach it.
+    [HttpPost("/Home/Register")]
+    [EnableRateLimiting(RateLimitPolicies.PublicForm)]
+    [RequestSizeLimit(InputLimits.PublicBodyBytes)]
+    public async Task<IActionResult> Register(RegistrationInput input)
     {
-        if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email))
-            return Json(new { success = false, message = "الاسم والبريد الإلكتروني مطلوبان" });
+        // Honeypot filled: answer exactly like a success and write nothing (do not tip off the bot).
+        if (!string.IsNullOrEmpty(input.Website))
+            return Json(new { success = true, message = UserMessages.RegistrationSuccess });
 
-        _db.Registrations.Add(new Models.Registration
+        if (!ModelState.IsValid)
+            return BadRequest(new { success = false, message = FirstError() });
+
+        _db.Registrations.Add(new Registration
         {
-            FullName = fullName,
-            Email = email,
-            Phone = phone ?? "",
-            Interest = interest ?? ""
+            FullName = input.FullName!.Trim(),
+            Email = input.Email!.Trim(),
+            Phone = input.Phone?.Trim() ?? "",
+            Interest = input.Interest!.Trim()
         });
 
         await _db.SaveChangesAsync();
-        return Json(new { success = true, message = "تم التسجيل بنجاح! سنتواصل معك قريباً" });
+        return Json(new { success = true, message = UserMessages.RegistrationSuccess });
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Contact(string fullName, string email, string subject, string message)
+    [HttpPost("/Home/Contact")]
+    [EnableRateLimiting(RateLimitPolicies.PublicForm)]
+    [RequestSizeLimit(InputLimits.PublicBodyBytes)]
+    public async Task<IActionResult> Contact(ContactInput input)
     {
-        if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(message))
-            return Json(new { success = false, message = "جميع الحقول مطلوبة" });
+        if (!string.IsNullOrEmpty(input.Website))
+            return Json(new { success = true, message = UserMessages.ContactSuccess });
 
-        _db.ContactMessages.Add(new Models.ContactMessage
+        if (!ModelState.IsValid)
+            return BadRequest(new { success = false, message = FirstError() });
+
+        _db.ContactMessages.Add(new ContactMessage
         {
-            FullName = fullName,
-            Email = email,
-            Subject = subject ?? "",
-            Message = message
+            FullName = input.FullName!.Trim(),
+            Email = input.Email!.Trim(),
+            Subject = input.Subject!.Trim(),
+            Message = input.Message!.Trim()
         });
 
         await _db.SaveChangesAsync();
-        return Json(new { success = true, message = "تم إرسال رسالتك بنجاح! سنرد عليك في أقرب وقت" });
+        return Json(new { success = true, message = UserMessages.ContactSuccess });
     }
+
+    /// <summary>
+    /// Target of UseExceptionHandler. The handler re-executes the ORIGINAL method, so a failed POST
+    /// arrives here as a POST without a valid token — hence the only [IgnoreAntiforgeryToken] in the app.
+    /// </summary>
+    [AllowAnonymous]
+    [IgnoreAntiforgeryToken]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error() =>
+        View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+
+    private string FirstError() =>
+        ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+            .FirstOrDefault(m => !string.IsNullOrEmpty(m)) ?? string.Format(UserMessages.InvalidValue, "");
 }

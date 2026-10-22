@@ -25,14 +25,14 @@
                 <div class="login-error">@Model.ErrorMessage</div>
             }
 
-            <form asp-action="Login" method="post" class="login-form">
+            <form asp-action="Login" method="post" class="login-form" asp-antiforgery="true">
                 <div class="form-group">
                     <label>اسم المستخدم</label>
-                    <input type="text" name="Username" value="@Model.Username" placeholder="أدخل اسم المستخدم" required autofocus>
+                    <input type="text" name="Username" value="@Model.Username" placeholder="أدخل اسم المستخدم" maxlength="100" autocomplete="username" required autofocus>
                 </div>
                 <div class="form-group">
                     <label>كلمة المرور</label>
-                    <input type="password" name="Password" placeholder="أدخل كلمة المرور" required>
+                    <input type="password" name="Password" placeholder="أدخل كلمة المرور" maxlength="128" autocomplete="current-password" required>
                 </div>
                 <button type="submit" class="login-btn">تسجيل الدخول</button>
             </form>

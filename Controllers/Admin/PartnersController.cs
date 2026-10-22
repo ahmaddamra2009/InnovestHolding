@@ -1,13 +1,12 @@
 using InnovestHolding.Data;
 using InnovestHolding.Models;
-using Microsoft.AspNetCore.Authorization;
+using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers.Admin;
 
-[Authorize]
-public class PartnersController : Controller
+public class PartnersController : AdminControllerBase
 {
     private readonly AppDbContext _db;
 
@@ -15,13 +14,15 @@ public class PartnersController : Controller
 
     public async Task<IActionResult> Index() =>
         View("~/Views/Admin/Partners/Index.cshtml",
-            await _db.Partners.OrderBy(p => p.SortOrder).ToListAsync());
+            await _db.Partners.AsNoTracking().OrderBy(p => p.SortOrder).ToListAsync());
 
     [HttpPost]
-    public async Task<IActionResult> Create(string name)
+    public async Task<IActionResult> Create(PartnerCreateInput input)
     {
+        if (!ModelState.IsValid) return InvalidRedirect();
+
         var maxOrder = await _db.Partners.MaxAsync(p => (int?)p.SortOrder) ?? 0;
-        _db.Partners.Add(new Partner { Name = name, SortOrder = maxOrder + 1 });
+        _db.Partners.Add(new Partner { Name = input.Name!.Trim(), SortOrder = maxOrder + 1 });
         await _db.SaveChangesAsync();
         TempData["Success"] = "تمت إضافة الشريك بنجاح";
         return RedirectToAction(nameof(Index));

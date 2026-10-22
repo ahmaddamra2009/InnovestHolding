@@ -7,8 +7,8 @@
         <form method="post" asp-action="Update" asp-controller="Platforms" style="padding:20px;background:var(--admin-bg);border-radius:10px;margin-bottom:16px;">
             <input type="hidden" name="id" value="@item.Id">
             <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;align-items:start;">
-                <div class="form-group"><label>اسم المنصة</label><input type="text" name="title" class="form-control" value="@item.Title"></div>
-                <div class="form-group"><label>الوصف</label><textarea name="description" class="form-control" rows="2">@item.Description</textarea></div>
+                <div class="form-group"><label>اسم المنصة</label><input type="text" name="title" class="form-control" value="@item.Title" maxlength="200" required></div>
+                <div class="form-group"><label>الوصف</label><textarea name="description" class="form-control" rows="2" maxlength="4000">@item.Description</textarea></div>
             </div>
             <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
         </form>

@@ -1,15 +1,16 @@
-@model News
+@model NewsEditInput
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "تعديل الخبر"; }
 <div class="admin-card">
     <form method="post" asp-action="Edit" asp-controller="News">
-        <input type="hidden" name="Id" value="@Model.Id">
-        <div class="form-group"><label>العنوان</label><input type="text" name="Title" class="form-control" value="@Model.Title" required></div>
-        <div class="form-group"><label>الملخص</label><textarea name="Summary" class="form-control" rows="3">@Model.Summary</textarea></div>
+        @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
+        <input type="hidden" asp-for="Id">
+        <div class="form-group"><label>العنوان</label><input asp-for="Title" class="form-control" maxlength="200" required><span asp-validation-for="Title" class="field-error"></span></div>
+        <div class="form-group"><label>الملخص</label><textarea asp-for="Summary" class="form-control" rows="3" maxlength="4000"></textarea><span asp-validation-for="Summary" class="field-error"></span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div class="form-group"><label>الفئة</label><input type="text" name="Category" class="form-control" value="@Model.Category"></div>
-            <div class="form-group"><label>التاريخ</label><input type="text" name="NewsDate" class="form-control" value="@Model.NewsDate"></div>
+            <div class="form-group"><label>الفئة</label><input asp-for="Category" class="form-control" maxlength="50"><span asp-validation-for="Category" class="field-error"></span></div>
+            <div class="form-group"><label>التاريخ</label><input asp-for="NewsDate" class="form-control" maxlength="50"><span asp-validation-for="NewsDate" class="field-error"></span></div>
         </div>
-        <div class="form-check" style="margin-bottom:20px;"><input type="checkbox" name="IsActive" value="true" @(Model.IsActive ? "checked" : "")> <label>مفعّل</label></div>
+        <div class="form-check" style="margin-bottom:20px;"><input asp-for="IsActive"> <label>مفعّل</label></div>
         <button type="submit" class="btn-admin btn-primary">حفظ التعديلات</button>
         <a href="/News" class="btn-admin btn-secondary" style="margin-right:12px;">إلغاء</a>
     </form>

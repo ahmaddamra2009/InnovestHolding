@@ -1,13 +1,12 @@
 using InnovestHolding.Data;
 using InnovestHolding.Models;
-using Microsoft.AspNetCore.Authorization;
+using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers.Admin;
 
-[Authorize]
-public class NavController : Controller
+public class NavController : AdminControllerBase
 {
     private readonly AppDbContext _db;
 
@@ -15,19 +14,21 @@ public class NavController : Controller
 
     public async Task<IActionResult> Index() =>
         View("~/Views/Admin/Nav/Index.cshtml",
-            await _db.NavItems
+            await _db.NavItems.AsNoTracking()
                 .Include(n => n.SubItems.OrderBy(s => s.SortOrder))
                 .OrderBy(n => n.SortOrder)
                 .ToListAsync());
 
     [HttpPost]
-    public async Task<IActionResult> Create(string title, string href)
+    public async Task<IActionResult> Create(NavItemCreateInput input)
     {
+        if (!ModelState.IsValid) return InvalidRedirect();
+
         var maxOrder = await _db.NavItems.MaxAsync(n => (int?)n.SortOrder) ?? 0;
         _db.NavItems.Add(new NavItem
         {
-            Title = title,
-            Href = href,
+            Title = input.Title!.Trim(),
+            Href = input.Href!.Trim(),
             SortOrder = maxOrder + 1
         });
         await _db.SaveChangesAsync();
@@ -36,15 +37,17 @@ public class NavController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Update(int id, string title, string href, bool hasDropdown, bool isActive)
+    public async Task<IActionResult> Update(NavItemUpdateInput input)
     {
-        var item = await _db.NavItems.FindAsync(id);
+        if (!ModelState.IsValid) return InvalidRedirect();
+
+        var item = await _db.NavItems.FindAsync(input.Id);
         if (item == null) return NotFound();
 
-        item.Title = title;
-        item.Href = href;
-        item.HasDropdown = hasDropdown;
-        item.IsActive = isActive;
+        item.Title = input.Title!.Trim();
+        item.Href = input.Href!.Trim();
+        item.HasDropdown = input.HasDropdown;
+        item.IsActive = input.IsActive;
 
         await _db.SaveChangesAsync();
         TempData["Success"] = "تم تحديث العنصر بنجاح";
@@ -66,21 +69,23 @@ public class NavController : Controller
 
     // ── Sub Items ──
     [HttpPost]
-    public async Task<IActionResult> AddSubItem(int navItemId, string title, string href)
+    public async Task<IActionResult> AddSubItem(NavSubItemCreateInput input)
     {
-        var parent = await _db.NavItems.FindAsync(navItemId);
+        if (!ModelState.IsValid) return InvalidRedirect();
+
+        var parent = await _db.NavItems.FindAsync(input.NavItemId);
         if (parent == null) return NotFound();
 
         parent.HasDropdown = true;
         var maxOrder = await _db.NavSubItems
-            .Where(s => s.NavItemId == navItemId)
+            .Where(s => s.NavItemId == input.NavItemId)
             .MaxAsync(s => (int?)s.SortOrder) ?? 0;
 
         _db.NavSubItems.Add(new NavSubItem
         {
-            NavItemId = navItemId,
-            Title = title,
-            Href = href,
+            NavItemId = input.NavItemId,
+            Title = input.Title!.Trim(),
+            Href = input.Href!.Trim(),
             SortOrder = maxOrder + 1
         });
 

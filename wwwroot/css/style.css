@@ -905,3 +905,6 @@ footer::before {
   footer { padding: 48px 0 0; }
   .footer-col-title { font-size: 0.95rem; }
 }
+
+/* Honeypot field of the public forms: moved off-screen (not display:none — some bots skip those). */
+.hp-field { position: absolute; inset-inline-start: -10000px; inline-size: 1px; block-size: 1px; overflow: hidden; }

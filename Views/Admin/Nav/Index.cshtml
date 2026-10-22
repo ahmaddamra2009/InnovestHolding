@@ -5,8 +5,8 @@
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">إضافة عنصر جديد</span></div>
     <form method="post" asp-action="Create" asp-controller="Nav" class="inline-form">
-        <div class="form-group"><label>الاسم</label><input type="text" name="title" class="form-control" placeholder="اسم العنصر" required></div>
-        <div class="form-group"><label>الرابط</label><input type="text" name="href" class="form-control" placeholder="#section" required></div>
+        <div class="form-group"><label>الاسم</label><input type="text" name="title" class="form-control" placeholder="اسم العنصر" maxlength="100" required></div>
+        <div class="form-group"><label>الرابط</label><input type="text" name="href" class="form-control" placeholder="#section" maxlength="255" required></div>
         <button type="submit" class="btn-admin btn-primary">إضافة</button>
     </form>
 </div>
@@ -29,8 +29,8 @@
                         <input type="hidden" name="id" value="@item.Id">
                         <input type="hidden" name="title" value="@item.Title">
                         <input type="hidden" name="href" value="@item.Href">
-                        <input type="hidden" name="hasDropdown" value="@item.HasDropdown">
-                        <input type="hidden" name="isActive" value="@(!item.IsActive)">
+                        <input type="hidden" name="hasDropdown" value="@(item.HasDropdown ? "true" : "false")">
+                        <input type="hidden" name="isActive" value="@(item.IsActive ? "false" : "true")">
                         <button type="submit" class="btn-admin btn-sm @(item.IsActive ? "btn-danger" : "btn-primary")">@(item.IsActive ? "تعطيل" : "تفعيل")</button>
                     </form>
                     <form method="post" asp-action="Delete" asp-controller="Nav" style="display:inline;">
@@ -59,8 +59,8 @@
                             <!-- Add Sub Item -->
                             <form method="post" asp-action="AddSubItem" asp-controller="Nav" class="inline-form" style="margin-top:8px;padding:12px;">
                                 <input type="hidden" name="navItemId" value="@item.Id">
-                                <div class="form-group"><label>اسم العنصر الفرعي</label><input type="text" name="title" class="form-control" placeholder="اسم العنصر" required></div>
-                                <div class="form-group"><label>الرابط</label><input type="text" name="href" class="form-control" placeholder="#section" required></div>
+                                <div class="form-group"><label>اسم العنصر الفرعي</label><input type="text" name="title" class="form-control" placeholder="اسم العنصر" maxlength="100" required></div>
+                                <div class="form-group"><label>الرابط</label><input type="text" name="href" class="form-control" placeholder="#section" maxlength="255" required></div>
                                 <button type="submit" class="btn-admin btn-primary btn-sm">+ إضافة فرعي</button>
                             </form>
                         </div>

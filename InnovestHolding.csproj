@@ -4,6 +4,10 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- The test project lives in a sub-folder of this project's directory: keep its sources (and
+         its bin/obj) out of the web app's default globs. App_Data holds the data-protection keys
+         written at runtime; it is never part of the build or the publish output. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);InnovestHolding.Tests/**;App_Data/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +17,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The LocalDB connection string is for developer machines only; it is never published. -->
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
 </Project>
