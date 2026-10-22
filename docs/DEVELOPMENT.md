@@ -273,14 +273,16 @@ Conventions (all in `Controllers/FormsController.Leads.cs`, `FormsController` is
    (`NoLeadReferences` knows none, so an id answers 400 until it is replaced in `Program.cs`).
 4. **Answer** JSON `{ success, message }` in the page language; a 400 carries `field` (main.js marks it `aria-invalid` and focuses it).
    Store `Culture`, `ConsentAt`, `CreatedAt` (UTC). **Do not log any submitted value** (a test captures the logs and fails on PII).
-5. **Entity + migration:** a table (or columns) with `IsRead` and `CreatedAt` indexes; add the type to `LeadInbox`
-   (`Types`, `Query`, `UnreadAsync`), to `LeadsController` (`LoadAsync`, `ToggleRead`, `Delete`; the type must match the row's table) and add
+5. **Entity + migration:** a table (or columns) with `IsRead`, `Status` (`LeadStatus` int, default 0) and `AdminNote` (nvarchar(2000)) and `CreatedAt` indexes; implement `ILead`; add the type to `LeadInbox`
+   (`Types`, `Query`, `UnreadAsync`), to `LeadsController` (`FindAsync`, `LoadAsync`, `ToggleRead`, `Update`, `Delete`, `Export`; the type must match the row's table, and `FindAsync` is the one lookup every action uses) and add
    the entity to the content-cache interceptor's `NotContent` list (a lead must not invalidate the site cache).
 6. **View:** a `LeadFormBlock { IsContent = false }` (it does not count as page content, so an otherwise empty page stays
    `noindex`), rendered by `Views/Shared/Blocks/_LeadForm.cshtml` (labels above inputs, required marks, consent, honeypot).
 7. **Texts:** labels in `MessageKeys.Fields`/`Ui` + both resx files; editable texts as `forms`-group keys in `ContentKeys`; the
    consent sentence is the key `forms_consent`. Ship seed rows in the migration, guarded (`WHERE NOT EXISTS` / unchanged
    value), as in the pattern above.
+8. **Status, note and export:** `LeadStatus { New = 0, Contacted = 1, Closed = 2 }` (`Infrastructure/Leads/LeadStatuses.cs`) is stored as int; request/query values are parsed only by `LeadStatuses.Parse` (whitelist `new|contacted|closed`, never `Enum.Parse`); labels are resx keys `Admin_LeadStatus*`. `POST /Admin/Leads/Update` saves status + `AdminNote`. `GET /Admin/Leads/Export` builds the CSV with `LeadCsv` (every cell quoted, quotes doubled, a leading `= + - @ |` or fullwidth `＝ ＋ － ＠` (also after leading whitespace), or a leading TAB/CR, prefixed with `'`; UTF-8 with BOM; headers and words from resx `Admin_Csv*` in the current culture), streamed row by row (`LeadCsv.WriteAsync` over `AsAsyncEnumerable`, no buffering) from the same filtered query as the list; add a new lead type's summary and note to the export rows.
+9. **Volume cap:** `LeadVolumeGuard` (singleton, `TimeProvider`) allows at most `Security:RateLimit:LeadFormGlobalPermitLimit` (300) stored submissions per `LeadFormGlobalWindow` (1 h) per form; call it in the action after validation and before the insert (honeypot and refused posts must not count), and return `FullAsync()` over the cap (JSON 429 `Msg_LeadFormFull` naming SiteContents `contact_email`, generic text when it is empty); the first refusal of each window logs one warning without visitor data. In-memory, per instance. Override with `Security__RateLimit__LeadFormGlobalPermitLimit` / `...Window` (`SecurityOptions.cs`).
 
 ### Brand: tokens and fonts
 Tokens are CSS variables on `:root` at the top of `wwwroot/css/style.css`: `--navy-deep #111145`, `--navy-brand #233082`,

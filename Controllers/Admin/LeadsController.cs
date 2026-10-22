@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.Text;
 using InnovestHolding.Data;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Leads;
@@ -10,6 +9,7 @@ using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 
 namespace InnovestHolding.Controllers.Admin;
 
@@ -58,7 +58,7 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
         var current = PagedListViewModel<LeadRow>.Clamp(page, total, PageSize);
         var rows = await query.OrderByDescending(r => r.CreatedAt).ThenByDescending(r => r.Id)
             .Skip((current - 1) * PageSize).Take(PageSize).ToListAsync();
-        var unread = await LeadInbox.UnreadAsync(db);
+        var unread = await LeadInbox.UnreadForRequestAsync(HttpContext, db);   // the layout's badges reuse it
 
         return View("~/Views/Admin/Leads/Index.cshtml", new LeadsIndexVm(
             new PagedListViewModel<LeadRow> { Items = rows, Page = current, PageSize = PageSize, TotalCount = total, UnreadCount = unread.Leads },
@@ -80,9 +80,8 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
         if (await FindAsync(type, id) is not { } lead) return NotFound();
         lead.IsRead = !lead.IsRead;
         await db.SaveChangesAsync();
-        return fromDetails
-            ? DetailsRedirect(type!, id)
-            : RedirectToAction(nameof(Index), Clean(listType, read, status).Route(page));
+        var back = Clean(listType, read, status);
+        return fromDetails ? DetailsRedirect(type!, id, back, page) : RedirectToAction(nameof(Index), back.Route(page));
     }
 
     /// <summary>The workflow status and the internal note of one lead (the detail screen's form).</summary>
@@ -90,17 +89,19 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
     public async Task<IActionResult> Update(LeadUpdateInput input)
     {
         if (await FindAsync(input.Type, input.Id) is not { } lead) return NotFound();
+        // The list filter the detail screen was opened from: kept through the redirect (re-validated, never a URL).
+        var back = Clean(input.ListType, input.ListRead, input.ListStatus);
         var status = LeadStatuses.Parse(input.Status);
         if (!ModelState.IsValid || status is null)
         {
             TempData["Error"] = ModelState.IsValid ? L(MessageKeys.InvalidValueNoField) : JoinErrors();
-            return DetailsRedirect(input.Type!, input.Id);
+            return DetailsRedirect(input.Type!, input.Id, back, input.ListPage);
         }
         lead.Status = status.Value;
         lead.AdminNote = Optional(input.AdminNote);
         await db.SaveChangesAsync();
         TempData["Success"] = L(MessageKeys.Admin.LeadUpdated);
-        return DetailsRedirect(input.Type!, input.Id);
+        return DetailsRedirect(input.Type!, input.Id, back, input.ListPage);
     }
 
     [HttpPost]
@@ -116,32 +117,29 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
     /// <summary>
     /// The leads of the current filter as CSV for Excel (UTF-8 with a BOM, so Arabic opens correctly), newest first. A GET
     /// behind the admin role that changes nothing. Cells go through <see cref="LeadCsv"/> (quoted; formula-like values
-    /// prefixed with an apostrophe).
+    /// prefixed with an apostrophe); headers and words come from the resx of the current culture. The rows are streamed
+    /// to the response as they are read (no row cap needed: memory stays flat whatever the inbox size).
     /// </summary>
-    public async Task<IActionResult> Export(string? type, string? read, string? status)
+    public async Task Export(string? type, string? read, string? status)
     {
         var filter = Clean(type, read, status);
-        var rows = await Apply(LeadInbox.Query(db, filter.Type), filter)
-            .OrderByDescending(r => r.CreatedAt).ThenByDescending(r => r.Id).ToListAsync();
+        var rows = Apply(LeadInbox.Query(db, filter.Type), filter)
+            .OrderByDescending(r => r.CreatedAt).ThenByDescending(r => r.Id).AsAsyncEnumerable();
 
-        var csv = new StringBuilder();
-        LeadCsv.AppendRow(csv, ["النوع", "الرقم", "التاريخ (UTC)", "الاسم", "البريد الإلكتروني", "الهاتف", "التفاصيل", "الحالة",
-            "مقروء", "لغة الصفحة", "الملاحظة الداخلية"]);
-        foreach (var r in rows)
-        {
-            LeadCsv.AppendRow(csv,
-            [
-                LeadInbox.Label(r.Type), r.Id.ToString(CultureInfo.InvariantCulture),
-                r.CreatedAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), r.Name, r.Email, r.Phone, r.Summary,
-                L(LeadStatuses.LabelKey(r.Status)), r.IsRead ? "نعم" : "لا", r.Culture == "en" ? "English" : "العربية", r.Note,
-            ]);
-        }
+        var name = $"leads-{filter.Type ?? "all"}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture)}.csv";
+        Response.ContentType = "text/csv; charset=utf-8";
+        Response.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = name }.ToString();
         Response.Headers.CacheControl = "no-store";
-        return File(LeadCsv.Utf8WithBom(csv.ToString()), "text/csv; charset=utf-8",
-            $"leads-{filter.Type ?? "all"}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture)}.csv");
+        await LeadCsv.WriteAsync(Response.Body, rows, key => L(key), HttpContext.RequestAborted);
     }
 
-    private RedirectToActionResult DetailsRedirect(string type, int id) => RedirectToAction(nameof(Details), new { id, type });
+    /// <summary>Back to the detail screen, keeping the list filter it was opened from (its back link).</summary>
+    private RedirectToActionResult DetailsRedirect(string type, int id, Filter back, int? page) =>
+        RedirectToAction(nameof(Details), new
+        {
+            id, type, listType = back.Type, read = back.Read,
+            status = back.Status is { } s ? LeadStatuses.Key(s) : null, page = page > 1 ? page : null,
+        });
 
     /// <summary>The tracked lead of that type and id; a type that does not match the row's table finds nothing.</summary>
     private async Task<ILead?> FindAsync(string? type, int id) => type switch
@@ -230,6 +228,12 @@ public sealed class LeadUpdateInput
     [Display(Name = MessageKeys.Fields.AdminNote)]
     [StringLength(LeadLimits.NoteMax, ErrorMessage = MessageKeys.MaxLength)]
     public string? AdminNote { get; set; }
+
+    // The list filter to return to (re-validated by LeadsController.Clean; unknown values are dropped).
+    public string? ListType { get; set; }
+    public string? ListRead { get; set; }
+    public string? ListStatus { get; set; }
+    public int? ListPage { get; set; }
 }
 
 public sealed record LeadsIndexVm(PagedListViewModel<LeadRow> List, LeadsController.Filter Filter, UnreadCounts Unread);

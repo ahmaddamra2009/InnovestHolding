@@ -1,8 +1,8 @@
 @inject InnovestHolding.Data.AppDbContext AdminDb
 @{
     var current = ViewContext.RouteData.Values["controller"]?.ToString();
-    // Unread leads and messages: one query per admin page (the badges of the inbox links).
-    var unread = await InnovestHolding.Infrastructure.Leads.LeadInbox.UnreadAsync(AdminDb, Context.RequestAborted);
+    // Unread leads and messages: one query per admin page (the badges of the inbox links), shared with the controller.
+    var unread = await InnovestHolding.Infrastructure.Leads.LeadInbox.UnreadForRequestAsync(Context, AdminDb);
     var badges = new Dictionary<string, int> { ["Leads"] = unread.Leads, ["Messages"] = unread.Messages };
     // The sidebar: groups of admin screens. Every link is under /Admin/… (the root default route serves only the
     // public site and the login page).

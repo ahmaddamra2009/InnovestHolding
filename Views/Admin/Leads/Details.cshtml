@@ -4,11 +4,13 @@
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = LeadInbox.Label(Model.Type);
+    // The list filter this screen was opened from: the back link and every form below carry it (kept after save/mark).
+    var backStatus = Model.Back.Status is { } listStatus ? LeadStatuses.Key(listStatus) : null;
     var back = "/Admin/Leads" + QueryString.Create(new[]
     {
         new KeyValuePair<string, string?>("type", Model.Back.Type),
         new KeyValuePair<string, string?>("read", Model.Back.Read),
-        new KeyValuePair<string, string?>("status", Model.Back.Status is { } s ? LeadStatuses.Key(s) : null),
+        new KeyValuePair<string, string?>("status", backStatus),
         new KeyValuePair<string, string?>("page", Model.Page?.ToString(System.Globalization.CultureInfo.InvariantCulture)),
     }.Where(p => p.Value is not null));
 }
@@ -49,6 +51,10 @@
     <form method="post" asp-action="Update" asp-controller="Leads" class="lead-update">
         <input type="hidden" name="Type" value="@Model.Type">
         <input type="hidden" name="Id" value="@Model.Id">
+        <input type="hidden" name="ListType" value="@Model.Back.Type">
+        <input type="hidden" name="ListRead" value="@Model.Back.Read">
+        <input type="hidden" name="ListStatus" value="@backStatus">
+        <input type="hidden" name="ListPage" value="@Model.Page">
         <div class="form-group">
             <label for="lead-status-select">الحالة</label>
             <select id="lead-status-select" name="Status" class="form-control">
@@ -70,6 +76,10 @@
             <input type="hidden" name="type" value="@Model.Type">
             <input type="hidden" name="id" value="@Model.Id">
             <input type="hidden" name="fromDetails" value="true">
+            <input type="hidden" name="listType" value="@Model.Back.Type">
+            <input type="hidden" name="read" value="@Model.Back.Read">
+            <input type="hidden" name="status" value="@backStatus">
+            <input type="hidden" name="page" value="@Model.Page">
             <button type="submit" class="btn-admin @(Model.IsRead ? "btn-secondary" : "btn-primary")">@(Model.IsRead ? "تعليم كغير مقروء" : "تعليم كمقروء ✓")</button>
         </form>
         <form method="post" asp-action="Delete" asp-controller="Leads" style="display:inline;">
@@ -77,7 +87,7 @@
             <input type="hidden" name="id" value="@Model.Id">
             <input type="hidden" name="listType" value="@Model.Back.Type">
             <input type="hidden" name="read" value="@Model.Back.Read">
-            <input type="hidden" name="status" value="@(Model.Back.Status is { } bs ? LeadStatuses.Key(bs) : null)">
+            <input type="hidden" name="status" value="@backStatus">
             <input type="hidden" name="page" value="@Model.Page">
             <button type="submit" class="btn-admin btn-danger" onclick="return confirm('حذف هذا الطلب نهائياً؟')">حذف</button>
         </form>

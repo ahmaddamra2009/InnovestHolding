@@ -405,10 +405,57 @@ public class LeadFormTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.OK, (await Post("/en/forms/sponsorship", valid)).StatusCode);
         var full = await Post("/en/forms/sponsorship", valid);
         Assert.Equal(HttpStatusCode.TooManyRequests, full.StatusCode);
-        Assert.Equal(Msg.En(MessageKeys.TooManyRequests), await Message(full));
         Assert.Equal(2, await f.DbAsync(db => db.SponsorshipEnquiries.CountAsync(s => s.Email == email)));
         // another form keeps its own window
         Assert.Equal(HttpStatusCode.OK, (await Post("/forms/opportunity-interest", Base(email))).StatusCode);
+    }
+
+    [Fact] // C4 M1: a full window names another channel (the admin's contact email) and is logged once, without visitor data
+    public async Task A_full_window_names_the_contact_email_and_is_logged_once_without_personal_data()
+    {
+        var sink = new CapturingLoggerProvider();
+        await using var app = f.WithWebHostBuilder(b => b.UseSetting("Security:RateLimit:LeadFormGlobalPermitLimit", "1")
+            .ConfigureLogging(l => l.AddProvider(sink)));
+        async Task<HttpResponseMessage> Post(string path, (string, string)[] body)
+        {
+            var client = app.CreateClient();
+            client.DefaultRequestHeaders.Add(TestClientIpStartupFilter.Header, NewIp());
+            var token = await client.GetTokenAsync(path.StartsWith("/en/") ? "/en/angel-network/opportunities" : "/angel-network/opportunities");
+            return await client.PostAsync(path, Form(token, body));
+        }
+        var contact = await f.DbAsync(db => db.SiteContents.Where(c => c.SectionKey == "contact_email").Select(c => c.ContentAr).SingleAsync());
+        Assert.False(string.IsNullOrWhiteSpace(contact));
+        var name = Unique("Visitor");
+        var email = Unique("full") + "@example.com";
+        (string, string)[] body = [.. Base(email, name)];
+
+        Assert.Equal(HttpStatusCode.OK, (await Post("/forms/opportunity-interest", body)).StatusCode);
+        var en = await Post("/en/forms/opportunity-interest", body);
+        Assert.Equal(HttpStatusCode.TooManyRequests, en.StatusCode);
+        Assert.Equal(Msg.En(MessageKeys.LeadFormFull, contact.Trim()), await Message(en));
+        var ar = await Post("/forms/opportunity-interest", body);
+        Assert.Equal(HttpStatusCode.TooManyRequests, ar.StatusCode);
+        Assert.Equal(Msg.Ar(MessageKeys.LeadFormFull, contact.Trim()), await Message(ar));
+
+        var warnings = sink.Lines.Where(l => l.StartsWith("InnovestHolding.Infrastructure.Forms.LeadVolumeGuard|")).ToList();
+        var warning = Assert.Single(warnings);   // two refusals, one line per window
+        Assert.Contains("OpportunityInterest", warning);
+        Assert.DoesNotContain(sink.Lines, l => l.Contains(email) || l.Contains(name));
+    }
+
+    [Fact] // C4 F1: the Join page reads its option lists only (no events query)
+    public async Task The_join_page_does_not_query_the_events()
+    {
+        var sink = new CapturingLoggerProvider();
+        await using var app = f.WithWebHostBuilder(b => b.ConfigureLogging(l => l.AddProvider(sink)));
+        var client = app.CreateClient();
+        client.DefaultRequestHeaders.Add(TestClientIpStartupFilter.Header, NewIp());
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/angel-network/join")).StatusCode);   // warms the site snapshot
+        sink.Lines.Clear();
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/angel-network/join")).StatusCode);
+        var commands = sink.Lines.Where(l => l.StartsWith("Microsoft.EntityFrameworkCore.Database.Command|Executed DbCommand")).ToList();
+        Assert.Contains(commands, l => l.Contains("[ContentItems]"));   // the sink saw the page's query
+        Assert.DoesNotContain(commands, l => l.Contains("[Events]"));
     }
 
     private Task<int> LeadCount(string email) => f.DbAsync(async db =>

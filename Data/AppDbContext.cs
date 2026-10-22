@@ -218,33 +218,36 @@ public class AppDbContext : DbContext
         });
 
         // ── Lead forms ──
+        // The read-state indexes hold only UNREAD rows (filtered): the badge counts on every admin page read just those,
+        // so their cost follows the unread backlog, not the table size (C4 review F2). Kind is included where the counts
+        // split by kind, so no lookup is needed.
         // Existing registrations came from the quick form: the column default gives them "quick".
         modelBuilder.Entity<Registration>(e =>
         {
             e.Property(r => r.Kind).IsUnicode(false).HasDefaultValue(Registration.Quick);
             // Deleting an event keeps the registrations (EventTitle is a snapshot).
             e.HasOne(r => r.Event).WithMany().HasForeignKey(r => r.EventId).OnDelete(DeleteBehavior.SetNull);
-            e.HasIndex(r => r.IsRead);
+            e.HasIndex(r => r.IsRead).HasFilter(UnreadOnly).IncludeProperties(r => r.Kind);
         });
-        modelBuilder.Entity<ContactMessage>().HasIndex(m => m.IsRead);
+        modelBuilder.Entity<ContactMessage>().HasIndex(m => m.IsRead).HasFilter(UnreadOnly);
 
         modelBuilder.Entity<NetworkApplication>(e =>
         {
             e.Property(a => a.Kind).IsUnicode(false);
             e.HasIndex(a => new { a.Kind, a.CreatedAt });
             e.HasIndex(a => a.CreatedAt);
-            e.HasIndex(a => a.IsRead);
+            e.HasIndex(a => a.IsRead).HasFilter(UnreadOnly).IncludeProperties(a => a.Kind);
         });
         modelBuilder.Entity<SponsorshipEnquiry>(e =>
         {
             e.Property(s => s.Unit).IsUnicode(false);
             e.HasIndex(s => s.CreatedAt);
-            e.HasIndex(s => s.IsRead);
+            e.HasIndex(s => s.IsRead).HasFilter(UnreadOnly);
         });
         modelBuilder.Entity<OpportunityInterest>(e =>
         {
             e.HasIndex(i => i.CreatedAt);
-            e.HasIndex(i => i.IsRead);
+            e.HasIndex(i => i.IsRead).HasFilter(UnreadOnly);
         });
     }
 
@@ -265,4 +268,5 @@ public class AppDbContext : DbContext
             Timestamps(e);
             e.HasOne(x => x.Photo).WithMany().HasForeignKey(x => x.PhotoId).OnDelete(DeleteBehavior.NoAction);
         });
+    private const string UnreadOnly = "[IsRead] = 0";
 }

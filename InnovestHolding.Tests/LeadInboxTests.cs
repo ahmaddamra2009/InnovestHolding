@@ -8,6 +8,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 using static InnovestHolding.Tests.TestHelpers;
 
 namespace InnovestHolding.Tests;
@@ -148,6 +150,95 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/Admin/Leads/Details/{id}?type=quick")).StatusCode);
     }
 
+    [Fact] // the same for the Join table: an investor application's id posted as a startup finds nothing
+    public async Task An_investor_id_posted_as_startup_is_404_on_details_toggle_update_and_delete()
+    {
+        var email = Unique("inv") + "@example.com";
+        var id = await f.DbAsync(async db =>
+        {
+            var a = new NetworkApplication { Kind = NetworkApplication.Investor, FullName = "Investor Row", Email = email, Country = "Egypt",
+                Culture = "ar", ConsentAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow };
+            db.NetworkApplications.Add(a);
+            await db.SaveChangesAsync();
+            return a.Id;
+        });
+        var client = await f.SignedInClientAsync();
+        var token = await client.GetTokenAsync("/Admin/Leads");
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/Admin/Leads/Details/{id}?type=startup")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync("/Admin/Leads/ToggleRead", Form(token, ("type", "startup"), ("id", id.ToString())))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync("/Admin/Leads/Update", Form(token, ("Type", "startup"), ("Id", id.ToString()), ("Status", "closed")))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync("/Admin/Leads/Delete", Form(token, ("type", "startup"), ("id", id.ToString())))).StatusCode);
+        var row = await f.DbAsync(db => db.NetworkApplications.AsNoTracking().SingleAsync(a => a.Id == id));
+        Assert.Equal((false, LeadStatus.New, NetworkApplication.Investor), (row.IsRead, row.Status, row.Kind));
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/Admin/Leads/Details/{id}?type=investor")).StatusCode);
+    }
+
+    [Fact] // C4 Y4: saving or marking on the detail screen returns to it with the list filter it was opened from
+    public async Task Save_and_mark_on_the_detail_screen_keep_the_list_filter()
+    {
+        var (id, _) = await AddSponsorshipAsync();
+        var client = await f.SignedInClientAsync();
+        var detail = await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship&listType=sponsorship&read=unread&status=new&page=2");
+        Assert.Contains("href=\"/Admin/Leads?type=sponsorship&amp;read=unread&amp;status=new&amp;page=2\"", detail);
+        // the forms of the detail page carry the filter
+        Assert.Contains("name=\"ListType\" value=\"sponsorship\"", detail);
+        Assert.Contains("name=\"ListPage\" value=\"2\"", detail);
+        Assert.Contains("name=\"listType\" value=\"sponsorship\"", detail);
+        var token = ExtractToken(detail);
+        var expected = $"/Admin/Leads/Details/{id}?type=sponsorship&listType=sponsorship&read=unread&status=new&page=2";
+
+        var saved = await client.PostAsync("/Admin/Leads/Update", Form(token, ("Type", "sponsorship"), ("Id", id.ToString()), ("Status", "contacted"),
+            ("AdminNote", ""), ("ListType", "sponsorship"), ("ListRead", "unread"), ("ListStatus", "new"), ("ListPage", "2")));
+        Assert.Equal(HttpStatusCode.Redirect, saved.StatusCode);
+        Assert.Equal(expected, saved.Headers.Location!.OriginalString);
+        var invalid = await client.PostAsync("/Admin/Leads/Update", Form(token, ("Type", "sponsorship"), ("Id", id.ToString()), ("Status", "bad"),
+            ("ListType", "sponsorship"), ("ListRead", "unread"), ("ListStatus", "new"), ("ListPage", "2")));
+        Assert.Equal(expected, invalid.Headers.Location!.OriginalString);
+
+        var marked = await client.PostAsync("/Admin/Leads/ToggleRead", Form(token, ("type", "sponsorship"), ("id", id.ToString()), ("fromDetails", "true"),
+            ("listType", "sponsorship"), ("read", "unread"), ("status", "new"), ("page", "2")));
+        Assert.Equal(expected, marked.Headers.Location!.OriginalString);
+
+        // a hostile filter is dropped, never echoed into the redirect
+        var hostile = await client.PostAsync("/Admin/Leads/Update", Form(token, ("Type", "sponsorship"), ("Id", id.ToString()), ("Status", "new"),
+            ("ListType", "//evil.example"), ("ListRead", "x"), ("ListStatus", "2"), ("ListPage", "-1")));
+        Assert.Equal($"/Admin/Leads/Details/{id}?type=sponsorship", hostile.Headers.Location!.OriginalString);
+    }
+
+    [Fact] // C4 F2: the five read-state indexes hold unread rows only; the two kind-split ones include Kind
+    public async Task Read_state_indexes_are_filtered_to_unread_rows()
+    {
+        var rows = await f.DbAsync(db => db.Database.SqlQueryRaw<string>("""
+            SELECT OBJECT_NAME(i.object_id) + '|' + ISNULL(i.filter_definition, '-') + '|' +
+                   ISNULL((SELECT STRING_AGG(c.name, ',') FROM sys.index_columns ic JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+                           WHERE ic.object_id = i.object_id AND ic.index_id = i.index_id AND ic.is_included_column = 1), '-') AS [Value]
+            FROM sys.indexes i WHERE i.name LIKE 'IX[_]%[_]IsRead'
+            """).ToListAsync());
+        Assert.Equal(
+            ["ContactMessages|([IsRead]=(0))|-", "NetworkApplications|([IsRead]=(0))|Kind", "OpportunityInterests|([IsRead]=(0))|-",
+             "Registrations|([IsRead]=(0))|Kind", "SponsorshipEnquiries|([IsRead]=(0))|-"],
+            rows.Order());
+    }
+
+    [Fact] // C4 F3: the inbox list (and the dashboard) share one unread-count query with the layout's sidebar badges
+    public async Task Admin_pages_run_the_unread_count_query_once()
+    {
+        var sink = new CapturingLoggerProvider();
+        await using var app = f.WithWebHostBuilder(b => b.ConfigureLogging(l => l.AddProvider(sink)));
+        var (user, password) = await f.CreateAdminAsync();
+        var client = app.CreateClient();
+        client.DefaultRequestHeaders.Add(TestClientIpStartupFilter.Header, NewIp());
+        Assert.Equal(HttpStatusCode.Redirect, (await client.PostLoginAsync(user, password)).StatusCode);
+        foreach (var path in new[] { "/Admin/Leads", "/Admin/Dashboard" })
+        {
+            sink.Lines.Clear();
+            Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(path)).StatusCode);
+            var commands = sink.Lines.Where(l => l.StartsWith("Microsoft.EntityFrameworkCore.Database.Command|Executed DbCommand")).ToList();
+            Assert.NotEmpty(commands);
+            Assert.Single(commands, l => l.Contains("AS Messages"));
+        }
+    }
+
     [Fact]
     public async Task Status_and_note_are_saved_by_an_antiforgery_post_and_filter_the_list()
     {
@@ -205,9 +296,13 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.OK, r.StatusCode);
         Assert.Equal("text/csv", r.Content.Headers.ContentType!.MediaType);
         Assert.StartsWith("attachment", r.Content.Headers.ContentDisposition!.ToString());
+        Assert.Equal("no-store", r.Headers.CacheControl!.ToString());
+        // streamed (C4 F5): not a buffered body sent with its length (NonValidated: the ContentLength getter would compute one)
+        Assert.False(r.Content.Headers.NonValidated.Contains("Content-Length"));
         var bytes = await r.Content.ReadAsByteArrayAsync();
         Assert.Equal(new byte[] { 0xEF, 0xBB, 0xBF }, bytes[..3]);
         var text = System.Text.Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
+        Assert.StartsWith(LeadCsv.Header(k => Msg.Ar(k)), text);   // the Arabic resx headers (admin requests are Arabic)
         Assert.StartsWith("\"النوع\",", text);
         Assert.Contains("\"'" + formulaName.Replace("\"", "\"\"") + "\"", text);   // apostrophe + doubled quotes
         Assert.Contains("\"'@note\"", text);
@@ -227,8 +322,30 @@ public class LeadInboxTests(TestAppFactory f)
     [InlineData("a\"b", "\"a\"\"b\"")]
     [InlineData("نص عربي", "\"نص عربي\"")]
     [InlineData(null, "\"\"")]
+    // C4 L4: fullwidth forms, the pipe, and whitespace before a formula character
+    [InlineData("＝1+1", "\"'＝1+1\"")]
+    [InlineData("＋20", "\"'＋20\"")]
+    [InlineData("－5", "\"'－5\"")]
+    [InlineData("＠SUM(A1)", "\"'＠SUM(A1)\"")]
+    [InlineData("|calc", "\"'|calc\"")]
+    [InlineData(" =1+1", "\"' =1+1\"")]
+    [InlineData("\n=1+1", "\"'\n=1+1\"")]
+    [InlineData("  \t+1", "\"'  \t+1\"")]
+    [InlineData("a=b", "\"a=b\"")]
+    [InlineData("  text", "\"  text\"")]
     public void Csv_cells_are_quoted_and_formula_prefixes_neutralised(string? value, string expected) =>
         Assert.Equal(expected, LeadCsv.Cell(value));
+
+    [Fact] // headers and words come from the resx of the culture asked for (English here; admin requests are Arabic)
+    public void Csv_header_and_words_follow_the_resx_language()
+    {
+        Assert.Equal("\"Type\",\"No.\",\"Date (UTC)\",\"Name\",\"Email\",\"Phone\",\"Details\",\"Status\",\"Read\",\"Page language\",\"Internal note\"\r\n",
+            LeadCsv.Header(k => Msg.En(k)));
+        var row = LeadCsv.Row(new LeadRow { Type = LeadInbox.Interest, Id = 7, Name = "N", Email = "e@x", Summary = "", Culture = "en", IsRead = true,
+            Status = LeadStatus.Contacted, CreatedAt = new DateTime(2026, 10, 1, 9, 5, 0) }, k => Msg.En(k));
+        Assert.EndsWith("\"Contacted\",\"Yes\",\"English\",\"\"\r\n", row);
+        Assert.Contains("\"7\",\"2026-10-01 09:05\"", row);
+    }
 }
 
 /// <summary>The AddLeadForms migration on a database in the multi-page state (RefineSiteStructure) holding real rows.</summary>
@@ -236,7 +353,7 @@ public class LeadInboxTests(TestAppFactory f)
 public class LeadFormsMigrationTests
 {
     private const string Before = "20261022172550_RefineSiteStructure";
-    private const string LeadForms = "20261022210507_AddLeadForms";
+    private const string LeadForms = "20261022213952_AddLeadForms";
 
     private static async Task<string> Json(AppDbContext db, string sql) =>
         (await db.Database.SqlQueryRaw<string>(sql).ToListAsync()).Single() ?? "";

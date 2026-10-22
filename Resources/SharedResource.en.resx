@@ -25,6 +25,7 @@
   <data name="Msg_RegistrationSuccess" xml:space="preserve"><value>Registration successful! We will contact you soon</value></data>
   <data name="Msg_ContactSuccess" xml:space="preserve"><value>Your message was sent successfully! We will reply as soon as possible</value></data>
   <data name="Msg_TooManyRequests" xml:space="preserve"><value>Too many requests, please try again later</value></data>
+  <data name="Msg_LeadFormFull" xml:space="preserve"><value>We are receiving a high number of requests right now. Please try again later, or email us directly at {0}</value></data>
   <data name="Msg_LoginInvalid" xml:space="preserve"><value>Incorrect username or password</value></data>
   <data name="Msg_LoginLocked" xml:space="preserve"><value>Too many attempts, try again later</value></data>
   <data name="Msg_ErrorTitle" xml:space="preserve"><value>An error occurred</value></data>
@@ -309,5 +310,20 @@
   <data name="Admin_LeadStatusNew" xml:space="preserve"><value>New</value></data>
   <data name="Admin_LeadStatusContacted" xml:space="preserve"><value>Contacted</value></data>
   <data name="Admin_LeadStatusClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Admin_CsvType" xml:space="preserve"><value>Type</value></data>
+  <data name="Admin_CsvId" xml:space="preserve"><value>No.</value></data>
+  <data name="Admin_CsvDate" xml:space="preserve"><value>Date (UTC)</value></data>
+  <data name="Admin_CsvName" xml:space="preserve"><value>Name</value></data>
+  <data name="Admin_CsvEmail" xml:space="preserve"><value>Email</value></data>
+  <data name="Admin_CsvPhone" xml:space="preserve"><value>Phone</value></data>
+  <data name="Admin_CsvDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="Admin_CsvStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="Admin_CsvRead" xml:space="preserve"><value>Read</value></data>
+  <data name="Admin_CsvCulture" xml:space="preserve"><value>Page language</value></data>
+  <data name="Admin_CsvNote" xml:space="preserve"><value>Internal note</value></data>
+  <data name="Admin_CsvYes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Admin_CsvNo" xml:space="preserve"><value>No</value></data>
+  <data name="Admin_CsvArabic" xml:space="preserve"><value>Arabic</value></data>
+  <data name="Admin_CsvEnglish" xml:space="preserve"><value>English</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>Internal note</value></data>
 </root>

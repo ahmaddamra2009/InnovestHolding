@@ -22,8 +22,20 @@ public partial class FormsController
 
     private JsonResult Success(string key) => Json(new { success = true, message = Loc[key].Value });
 
-    /// <summary>The form's global window is full (<see cref="LeadVolumeGuard"/>): the same JSON 429 as the per-IP limit.</summary>
-    private ObjectResult Full() => StatusCode(StatusCodes.Status429TooManyRequests, new { success = false, message = Loc[MessageKeys.TooManyRequests].Value });
+    /// <summary>
+    /// The form's global window is full (<see cref="LeadVolumeGuard"/>): a JSON 429 that names another channel, the
+    /// contact email the admin manages (SiteContents <c>contact_email</c>); the generic 429 text when none is set.
+    /// </summary>
+    private async Task<ObjectResult> FullAsync()
+    {
+        var snapshot = await HttpContext.RequestServices.GetRequiredService<ISiteContentCache>().GetAsync(HttpContext.RequestAborted);
+        var email = snapshot.Content.GetValueOrDefault(ContactEmailKey)?.Ar?.Trim();
+        var message = string.IsNullOrEmpty(email) ? Loc[MessageKeys.TooManyRequests].Value : Loc[MessageKeys.LeadFormFull, email].Value;
+        return StatusCode(StatusCodes.Status429TooManyRequests, new { success = false, message });
+    }
+
+    /// <summary>The SiteContents key of the public contact email (language-neutral; shown in the footer and contact page).</summary>
+    private const string ContactEmailKey = "contact_email";
 
     private bool Admit(string form) => HttpContext.RequestServices.GetRequiredService<LeadVolumeGuard>().TryAcquire(form);
 
@@ -87,7 +99,7 @@ public partial class FormsController
             Culture = Cultures.CurrentName,
             CreatedAt = now,
         });
-        if (!Admit(nameof(ForumRegistration))) return Full();
+        if (!Admit(nameof(ForumRegistration))) return await FullAsync();
         await data.SaveChangesAsync(ct);
         return Success(MessageKeys.ForumRegistrationSuccess);
     }
@@ -163,7 +175,7 @@ public partial class FormsController
             row.Pitch = LeadText.Optional(input.Pitch);
         }
 
-        if (!Admit(nameof(Join))) return Full();
+        if (!Admit(nameof(Join))) return await FullAsync();
         data.NetworkApplications.Add(row);
         await data.SaveChangesAsync(HttpContext.RequestAborted);
         return Success(MessageKeys.JoinSuccess);
@@ -187,7 +199,7 @@ public partial class FormsController
             if (package is null) return BadChoice(F.Package, nameof(input.PackageId));
         }
 
-        if (!Admit(nameof(Sponsorship))) return Full();
+        if (!Admit(nameof(Sponsorship))) return await FullAsync();
         var now = DateTime.UtcNow;
         data.SponsorshipEnquiries.Add(new SponsorshipEnquiry
         {
@@ -225,7 +237,7 @@ public partial class FormsController
             if (opportunity is null) return BadChoice(F.Opportunity, nameof(input.OpportunityId));
         }
 
-        if (!Admit(nameof(OpportunityInterest))) return Full();
+        if (!Admit(nameof(OpportunityInterest))) return await FullAsync();
         var now = DateTime.UtcNow;
         data.OpportunityInterests.Add(new OpportunityInterest
         {

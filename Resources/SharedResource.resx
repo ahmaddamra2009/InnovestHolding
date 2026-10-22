@@ -25,6 +25,7 @@
   <data name="Msg_RegistrationSuccess" xml:space="preserve"><value>تم التسجيل بنجاح! سنتواصل معك قريباً</value></data>
   <data name="Msg_ContactSuccess" xml:space="preserve"><value>تم إرسال رسالتك بنجاح! سنرد عليك في أقرب وقت</value></data>
   <data name="Msg_TooManyRequests" xml:space="preserve"><value>عدد كبير من الطلبات، يرجى المحاولة لاحقاً</value></data>
+  <data name="Msg_LeadFormFull" xml:space="preserve"><value>نستقبل عدداً كبيراً من الطلبات حالياً. يرجى المحاولة لاحقاً، أو مراسلتنا مباشرة على {0}</value></data>
   <data name="Msg_LoginInvalid" xml:space="preserve"><value>اسم المستخدم أو كلمة المرور غير صحيحة</value></data>
   <data name="Msg_LoginLocked" xml:space="preserve"><value>محاولات كثيرة، حاول لاحقاً</value></data>
   <data name="Msg_ErrorTitle" xml:space="preserve"><value>حدث خطأ</value></data>
@@ -309,5 +310,20 @@
   <data name="Admin_LeadStatusNew" xml:space="preserve"><value>جديد</value></data>
   <data name="Admin_LeadStatusContacted" xml:space="preserve"><value>تم التواصل</value></data>
   <data name="Admin_LeadStatusClosed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="Admin_CsvType" xml:space="preserve"><value>النوع</value></data>
+  <data name="Admin_CsvId" xml:space="preserve"><value>الرقم</value></data>
+  <data name="Admin_CsvDate" xml:space="preserve"><value>التاريخ (UTC)</value></data>
+  <data name="Admin_CsvName" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Admin_CsvEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Admin_CsvPhone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="Admin_CsvDetails" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="Admin_CsvStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Admin_CsvRead" xml:space="preserve"><value>مقروء</value></data>
+  <data name="Admin_CsvCulture" xml:space="preserve"><value>لغة الصفحة</value></data>
+  <data name="Admin_CsvNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>
+  <data name="Admin_CsvYes" xml:space="preserve"><value>نعم</value></data>
+  <data name="Admin_CsvNo" xml:space="preserve"><value>لا</value></data>
+  <data name="Admin_CsvArabic" xml:space="preserve"><value>العربية</value></data>
+  <data name="Admin_CsvEnglish" xml:space="preserve"><value>الإنجليزية</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>
 </root>

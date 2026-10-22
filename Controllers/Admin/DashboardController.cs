@@ -25,7 +25,7 @@ public class DashboardController : AdminControllerBase
             UnreadRegistrations = await _db.Registrations.CountAsync(r => !r.IsRead),
             TotalMessages = await _db.ContactMessages.CountAsync(),
             UnreadMessages = await _db.ContactMessages.CountAsync(m => !m.IsRead),
-            UnreadLeads = await Infrastructure.Leads.LeadInbox.UnreadAsync(_db),
+            UnreadLeads = await Infrastructure.Leads.LeadInbox.UnreadForRequestAsync(HttpContext, _db),
         };
 
         return View("~/Views/Admin/Dashboard/Index.cshtml", model);

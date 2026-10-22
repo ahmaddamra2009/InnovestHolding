@@ -34,6 +34,8 @@ public static class MessageKeys
     public const string ConsentRequired = "Msg_ConsentRequired";
     public const string OptionInvalid = "Msg_OptionInvalid";
     public const string TooManyRequests = "Msg_TooManyRequests";
+    /// <summary>A lead form's global cap is full; {0} = the contact email (SiteContents contact_email).</summary>
+    public const string LeadFormFull = "Msg_LeadFormFull";
     public const string LoginInvalid = "Msg_LoginInvalid";
     public const string LoginLocked = "Msg_LoginLocked";
     public const string ErrorTitle = "Msg_ErrorTitle";
@@ -194,6 +196,22 @@ public static class MessageKeys
         public const string LeadStatusNew = "Admin_LeadStatusNew";
         public const string LeadStatusContacted = "Admin_LeadStatusContacted";
         public const string LeadStatusClosed = "Admin_LeadStatusClosed";
+        // The lead CSV export: column headers and cell words (current culture; the admin is Arabic today).
+        public const string CsvType = "Admin_CsvType";
+        public const string CsvId = "Admin_CsvId";
+        public const string CsvDate = "Admin_CsvDate";
+        public const string CsvName = "Admin_CsvName";
+        public const string CsvEmail = "Admin_CsvEmail";
+        public const string CsvPhone = "Admin_CsvPhone";
+        public const string CsvDetails = "Admin_CsvDetails";
+        public const string CsvStatus = "Admin_CsvStatus";
+        public const string CsvRead = "Admin_CsvRead";
+        public const string CsvCulture = "Admin_CsvCulture";
+        public const string CsvNote = "Admin_CsvNote";
+        public const string CsvYes = "Admin_CsvYes";
+        public const string CsvNo = "Admin_CsvNo";
+        public const string CsvArabic = "Admin_CsvArabic";
+        public const string CsvEnglish = "Admin_CsvEnglish";
         public const string OptionAdded = "Admin_OptionAdded";
         public const string OptionUpdated = "Admin_OptionUpdated";
         public const string OptionDeleted = "Admin_OptionDeleted";

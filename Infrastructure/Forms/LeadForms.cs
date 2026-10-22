@@ -13,7 +13,6 @@ public sealed record FormChoice(int Id, string TextAr, string? TextEn);
 /// not show (inactive, another group, unknown id) is refused.
 /// </summary>
 public sealed record LeadFormChoices(
-    IReadOnlyList<FormChoice> Events,
     IReadOnlyList<FormChoice> InvestorTypes,
     IReadOnlyList<FormChoice> TicketSizes,
     IReadOnlyList<FormChoice> Sectors,
@@ -26,6 +25,7 @@ public sealed record LeadFormChoices(
         ContentItemGroups.StartupStages, ContentItemGroups.FundingRanges,
     ];
 
+    /// <summary>The Join form's option lists: one query (the events are not part of it; C4 review F1).</summary>
     public static async Task<LeadFormChoices> LoadAsync(AppDbContext db, CancellationToken ct)
     {
         var items = await db.ContentItems.AsNoTracking()
@@ -33,10 +33,9 @@ public sealed record LeadFormChoices(
             .OrderBy(i => i.SortOrder).ThenBy(i => i.Id)
             .Select(i => new { i.Group, Choice = new FormChoice(i.Id, i.TextAr, i.TextEn) })
             .ToListAsync(ct);
-        var events = await EventsAsync(db, ct);
 
         IReadOnlyList<FormChoice> Of(string group) => items.Where(i => i.Group == group).Select(i => i.Choice).ToList();
-        return new LeadFormChoices(events, Of(ContentItemGroups.InvestorTypes), Of(ContentItemGroups.TicketSizes),
+        return new LeadFormChoices(Of(ContentItemGroups.InvestorTypes), Of(ContentItemGroups.TicketSizes),
             Of(ContentItemGroups.Sectors), Of(ContentItemGroups.StartupStages), Of(ContentItemGroups.FundingRanges));
     }
 

@@ -115,6 +115,20 @@ public static class LeadInbox
         };
     }
 
+    private static readonly object RequestKey = new();
+
+    /// <summary>
+    /// The unread counts once per request: the admin layout (sidebar badges) and the controller that also shows them
+    /// (inbox list, dashboard) share one query instead of running it twice (C4 review F3).
+    /// </summary>
+    public static async Task<UnreadCounts> UnreadForRequestAsync(HttpContext http, AppDbContext db)
+    {
+        if (http.Items.TryGetValue(RequestKey, out var cached) && cached is UnreadCounts counts) return counts;
+        counts = await UnreadAsync(db, http.RequestAborted);
+        http.Items[RequestKey] = counts;
+        return counts;
+    }
+
     /// <summary>Unread rows per type in one statement; the kind values travel as parameters (the model's constants).</summary>
     public static Task<UnreadCounts> UnreadAsync(AppDbContext db, CancellationToken ct = default) =>
         db.Database.SqlQueryRaw<UnreadCounts>(
