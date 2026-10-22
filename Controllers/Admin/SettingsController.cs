@@ -1,40 +1,60 @@
+using System.Security.Claims;
 using InnovestHolding.Data;
-using Microsoft.AspNetCore.Authorization;
+using InnovestHolding.Infrastructure;
+using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers.Admin;
 
-[Authorize]
-public class SettingsController : Controller
+public class SettingsController : AdminControllerBase
 {
+    private const string ViewPath = "~/Views/Admin/Settings/Index.cshtml";
     private readonly AppDbContext _db;
+    private readonly ILoginThrottle _throttle;
 
-    public SettingsController(AppDbContext db) => _db = db;
+    public SettingsController(AppDbContext db, ILoginThrottle throttle)
+    {
+        _db = db;
+        _throttle = throttle;
+    }
 
-    public IActionResult Index() =>
-        View("~/Views/Admin/Settings/Index.cshtml");
+    public IActionResult Index() => View(ViewPath, new ChangePasswordInput());
 
     [HttpPost]
-    public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+    public async Task<IActionResult> ChangePassword(ChangePasswordInput input)
     {
-        if (newPassword != confirmPassword)
+        if (!ModelState.IsValid)
+            return View(ViewPath, new ChangePasswordInput()); // password values are never echoed back
+
+        var id = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var parsed) ? parsed : 0;
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if (user == null)
+            return Challenge();
+
+        // The current-password check is a password guess like a login: same throttle, same account key (L4).
+        var key = LoginKey.ForAccount(user.Id);
+        var ip = RateLimitPolicies.ClientIp(HttpContext);
+        if (_throttle.IsLocked(key, ip))
         {
-            TempData["Error"] = "كلمة المرور الجديدة غير متطابقة";
-            return RedirectToAction(nameof(Index));
+            ModelState.AddModelError(nameof(ChangePasswordInput.CurrentPassword), UserMessages.LoginLocked);
+            return View(ViewPath, new ChangePasswordInput());
         }
 
-        var username = User.Identity?.Name;
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
-
-        if (user == null || !BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash))
+        if (!BCrypt.Net.BCrypt.Verify(input.CurrentPassword, user.PasswordHash))
         {
-            TempData["Error"] = "كلمة المرور الحالية غير صحيحة";
-            return RedirectToAction(nameof(Index));
+            _throttle.RecordFailure(key, ip);
+            ModelState.AddModelError(nameof(ChangePasswordInput.CurrentPassword), UserMessages.CurrentPasswordWrong);
+            return View(ViewPath, new ChangePasswordInput());
         }
+        _throttle.ResetUser(key);
 
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(input.NewPassword);
         await _db.SaveChangesAsync();
+
+        // Every other session carries the old password fingerprint and is rejected on its next request (L3);
+        // this one is re-issued with the new fingerprint so the admin stays signed in here.
+        await AdminSession.SignInAsync(HttpContext, user);
 
         TempData["Success"] = "تم تغيير كلمة المرور بنجاح";
         return RedirectToAction(nameof(Index));

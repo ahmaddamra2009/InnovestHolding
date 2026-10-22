@@ -7,9 +7,9 @@
         <form method="post" asp-action="Update" asp-controller="Stats" style="padding:20px;background:var(--admin-bg);border-radius:10px;margin-bottom:16px;">
             <input type="hidden" name="id" value="@item.Id">
             <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;align-items:start;">
-                <div class="form-group"><label>التسمية</label><input type="text" name="label" class="form-control" value="@item.Label"></div>
-                <div class="form-group"><label>القيمة</label><input type="number" name="value" class="form-control" value="@item.Value"></div>
-                <div class="form-group"><label>اللاحقة</label><input type="text" name="suffix" class="form-control" value="@item.Suffix"></div>
+                <div class="form-group"><label>التسمية</label><input type="text" name="label" class="form-control" value="@item.Label" maxlength="100" required></div>
+                <div class="form-group"><label>القيمة</label><input type="number" name="value" class="form-control" value="@item.Value" min="0" max="1000000000" required></div>
+                <div class="form-group"><label>اللاحقة</label><input type="text" name="suffix" class="form-control" value="@item.Suffix" maxlength="10"></div>
             </div>
             <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
         </form>

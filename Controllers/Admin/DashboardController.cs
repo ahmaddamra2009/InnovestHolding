@@ -1,13 +1,11 @@
 using InnovestHolding.Data;
 using InnovestHolding.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers.Admin;
 
-[Authorize]
-public class DashboardController : Controller
+public class DashboardController : AdminControllerBase
 {
     private readonly AppDbContext _db;
 

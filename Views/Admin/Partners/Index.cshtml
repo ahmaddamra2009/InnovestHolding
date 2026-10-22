@@ -3,7 +3,7 @@
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">إضافة شريك جديد</span></div>
     <form method="post" asp-action="Create" asp-controller="Partners" class="inline-form">
-        <div class="form-group"><label>اسم الشريك</label><input type="text" name="name" class="form-control" placeholder="اسم الشركة أو المؤسسة" required></div>
+        <div class="form-group"><label>اسم الشريك</label><input type="text" name="name" class="form-control" placeholder="اسم الشركة أو المؤسسة" maxlength="200" required></div>
         <button type="submit" class="btn-admin btn-primary">إضافة</button>
     </form>
 </div>

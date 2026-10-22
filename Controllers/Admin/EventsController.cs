@@ -1,30 +1,34 @@
 using InnovestHolding.Data;
 using InnovestHolding.Models;
-using Microsoft.AspNetCore.Authorization;
+using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers.Admin;
 
-[Authorize]
-public class EventsController : Controller
+public class EventsController : AdminControllerBase
 {
+    private const string CreateView = "~/Views/Admin/Events/Create.cshtml";
+    private const string EditView = "~/Views/Admin/Events/Edit.cshtml";
     private readonly AppDbContext _db;
 
     public EventsController(AppDbContext db) => _db = db;
 
     public async Task<IActionResult> Index() =>
         View("~/Views/Admin/Events/Index.cshtml",
-            await _db.Events.OrderBy(e => e.SortOrder).ToListAsync());
+            await _db.Events.AsNoTracking().OrderBy(e => e.SortOrder).ToListAsync());
 
-    public IActionResult Create() =>
-        View("~/Views/Admin/Events/Create.cshtml", new Event());
+    public IActionResult Create() => View(CreateView, new EventInput());
 
     [HttpPost]
-    public async Task<IActionResult> Create(Event model)
+    public async Task<IActionResult> Create(EventInput input)
     {
-        model.SortOrder = (await _db.Events.MaxAsync(e => (int?)e.SortOrder) ?? 0) + 1;
-        _db.Events.Add(model);
+        if (!ModelState.IsValid)
+            return View(CreateView, input);
+
+        var item = new Event { SortOrder = (await _db.Events.MaxAsync(e => (int?)e.SortOrder) ?? 0) + 1 };
+        Map(input, item);
+        _db.Events.Add(item);
         await _db.SaveChangesAsync();
         TempData["Success"] = "تمت إضافة الفعالية بنجاح";
         return RedirectToAction(nameof(Index));
@@ -32,25 +36,33 @@ public class EventsController : Controller
 
     public async Task<IActionResult> Edit(int id)
     {
-        var item = await _db.Events.FindAsync(id);
+        var item = await _db.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
         if (item == null) return NotFound();
-        return View("~/Views/Admin/Events/Edit.cshtml", item);
+        return View(EditView, new EventEditInput
+        {
+            Id = item.Id,
+            Title = item.Title,
+            Description = item.Description,
+            EventDay = item.EventDay,
+            EventMonth = item.EventMonth,
+            Location = item.Location,
+            Time = item.Time,
+            IsActive = item.IsActive,
+            SortOrder = item.SortOrder
+        });
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(Event model)
+    public async Task<IActionResult> Edit(EventEditInput input)
     {
-        var item = await _db.Events.FindAsync(model.Id);
+        if (!ModelState.IsValid)
+            return View(EditView, input);
+
+        var item = await _db.Events.FindAsync(input.Id);
         if (item == null) return NotFound();
 
-        item.Title = model.Title;
-        item.Description = model.Description;
-        item.EventDay = model.EventDay;
-        item.EventMonth = model.EventMonth;
-        item.Location = model.Location;
-        item.Time = model.Time;
-        item.IsActive = model.IsActive;
-        item.SortOrder = model.SortOrder;
+        Map(input, item);
+        item.SortOrder = input.SortOrder;
 
         await _db.SaveChangesAsync();
         TempData["Success"] = "تم تحديث الفعالية بنجاح";
@@ -68,5 +80,16 @@ public class EventsController : Controller
             TempData["Success"] = "تم حذف الفعالية بنجاح";
         }
         return RedirectToAction(nameof(Index));
+    }
+
+    private static void Map(EventInput input, Event item)
+    {
+        item.Title = input.Title!.Trim();
+        item.Description = input.Description?.Trim() ?? "";
+        item.EventDay = input.EventDay!.Value;
+        item.EventMonth = input.EventMonth!.Trim();
+        item.Location = input.Location?.Trim() ?? "";
+        item.Time = input.Time?.Trim() ?? "";
+        item.IsActive = input.IsActive;
     }
 }

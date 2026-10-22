@@ -1,20 +1,21 @@
-@model Dictionary<string, string>
+@model ContentEditInput
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "تعديل المحتوى"; }
 
 <form method="post" asp-action="Edit" asp-controller="Content">
+    @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
     <div class="admin-card">
         <div class="admin-card-header"><span class="admin-card-title">قسم Hero - الصفحة الرئيسية</span></div>
         <div class="form-group">
             <label>العنوان بالعربي</label>
-            <input type="text" name="content[hero_title_ar]" class="form-control" value="@(Model.GetValueOrDefault("hero_title_ar"))">
+            <input type="text" name="content[hero_title_ar]" class="form-control" value="@(Model.Content.GetValueOrDefault("hero_title_ar"))">
         </div>
         <div class="form-group">
             <label>العنوان بالإنجليزي</label>
-            <input type="text" name="content[hero_title_en]" class="form-control" value="@(Model.GetValueOrDefault("hero_title_en"))" dir="ltr">
+            <input type="text" name="content[hero_title_en]" class="form-control" value="@(Model.Content.GetValueOrDefault("hero_title_en"))" dir="ltr">
         </div>
         <div class="form-group">
             <label>العنوان الفرعي</label>
-            <textarea name="content[hero_subtitle]" class="form-control">@(Model.GetValueOrDefault("hero_subtitle"))</textarea>
+            <textarea name="content[hero_subtitle]" class="form-control">@(Model.Content.GetValueOrDefault("hero_subtitle"))</textarea>
         </div>
     </div>
 
@@ -22,33 +23,33 @@
         <div class="admin-card-header"><span class="admin-card-title">قسم من نحن</span></div>
         <div class="form-group">
             <label>النص الأول</label>
-            <textarea name="content[about_text_1]" class="form-control" rows="4">@(Model.GetValueOrDefault("about_text_1"))</textarea>
+            <textarea name="content[about_text_1]" class="form-control" rows="4">@(Model.Content.GetValueOrDefault("about_text_1"))</textarea>
         </div>
         <div class="form-group">
             <label>النص الثاني</label>
-            <textarea name="content[about_text_2]" class="form-control" rows="3">@(Model.GetValueOrDefault("about_text_2"))</textarea>
+            <textarea name="content[about_text_2]" class="form-control" rows="3">@(Model.Content.GetValueOrDefault("about_text_2"))</textarea>
         </div>
         <div class="form-group">
             <label>سنوات الخبرة</label>
-            <input type="text" name="content[about_years]" class="form-control" value="@(Model.GetValueOrDefault("about_years"))">
+            <input type="text" name="content[about_years]" class="form-control" value="@(Model.Content.GetValueOrDefault("about_years"))">
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div class="form-group"><label>عنوان الرؤية</label><input type="text" name="content[vision_title]" class="form-control" value="@(Model.GetValueOrDefault("vision_title"))"></div>
-            <div class="form-group"><label>نص الرؤية</label><input type="text" name="content[vision_text]" class="form-control" value="@(Model.GetValueOrDefault("vision_text"))"></div>
-            <div class="form-group"><label>عنوان الرسالة</label><input type="text" name="content[mission_title]" class="form-control" value="@(Model.GetValueOrDefault("mission_title"))"></div>
-            <div class="form-group"><label>نص الرسالة</label><input type="text" name="content[mission_text]" class="form-control" value="@(Model.GetValueOrDefault("mission_text"))"></div>
-            <div class="form-group"><label>عنوان القيم</label><input type="text" name="content[values_title]" class="form-control" value="@(Model.GetValueOrDefault("values_title"))"></div>
-            <div class="form-group"><label>نص القيم</label><input type="text" name="content[values_text]" class="form-control" value="@(Model.GetValueOrDefault("values_text"))"></div>
+            <div class="form-group"><label>عنوان الرؤية</label><input type="text" name="content[vision_title]" class="form-control" value="@(Model.Content.GetValueOrDefault("vision_title"))"></div>
+            <div class="form-group"><label>نص الرؤية</label><input type="text" name="content[vision_text]" class="form-control" value="@(Model.Content.GetValueOrDefault("vision_text"))"></div>
+            <div class="form-group"><label>عنوان الرسالة</label><input type="text" name="content[mission_title]" class="form-control" value="@(Model.Content.GetValueOrDefault("mission_title"))"></div>
+            <div class="form-group"><label>نص الرسالة</label><input type="text" name="content[mission_text]" class="form-control" value="@(Model.Content.GetValueOrDefault("mission_text"))"></div>
+            <div class="form-group"><label>عنوان القيم</label><input type="text" name="content[values_title]" class="form-control" value="@(Model.Content.GetValueOrDefault("values_title"))"></div>
+            <div class="form-group"><label>نص القيم</label><input type="text" name="content[values_text]" class="form-control" value="@(Model.Content.GetValueOrDefault("values_text"))"></div>
         </div>
     </div>
 
     <div class="admin-card">
         <div class="admin-card-header"><span class="admin-card-title">معلومات التواصل</span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div class="form-group"><label>العنوان</label><input type="text" name="content[contact_address]" class="form-control" value="@(Model.GetValueOrDefault("contact_address"))"></div>
-            <div class="form-group"><label>الهاتف</label><input type="text" name="content[contact_phone]" class="form-control" value="@(Model.GetValueOrDefault("contact_phone"))"></div>
-            <div class="form-group"><label>البريد الإلكتروني</label><input type="text" name="content[contact_email]" class="form-control" value="@(Model.GetValueOrDefault("contact_email"))"></div>
-            <div class="form-group"><label>ساعات العمل</label><input type="text" name="content[contact_hours]" class="form-control" value="@(Model.GetValueOrDefault("contact_hours"))"></div>
+            <div class="form-group"><label>العنوان</label><input type="text" name="content[contact_address]" class="form-control" value="@(Model.Content.GetValueOrDefault("contact_address"))"></div>
+            <div class="form-group"><label>الهاتف</label><input type="text" name="content[contact_phone]" class="form-control" value="@(Model.Content.GetValueOrDefault("contact_phone"))"></div>
+            <div class="form-group"><label>البريد الإلكتروني</label><input type="text" name="content[contact_email]" class="form-control" value="@(Model.Content.GetValueOrDefault("contact_email"))"></div>
+            <div class="form-group"><label>ساعات العمل</label><input type="text" name="content[contact_hours]" class="form-control" value="@(Model.Content.GetValueOrDefault("contact_hours"))"></div>
         </div>
     </div>
 

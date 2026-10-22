@@ -1,12 +1,11 @@
 using InnovestHolding.Data;
-using Microsoft.AspNetCore.Authorization;
+using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers.Admin;
 
-[Authorize]
-public class PlatformsController : Controller
+public class PlatformsController : AdminControllerBase
 {
     private readonly AppDbContext _db;
 
@@ -14,16 +13,18 @@ public class PlatformsController : Controller
 
     public async Task<IActionResult> Index() =>
         View("~/Views/Admin/Platforms/Index.cshtml",
-            await _db.Platforms.OrderBy(p => p.SortOrder).ToListAsync());
+            await _db.Platforms.AsNoTracking().OrderBy(p => p.SortOrder).ToListAsync());
 
     [HttpPost]
-    public async Task<IActionResult> Update(int id, string title, string description)
+    public async Task<IActionResult> Update(PlatformUpdateInput input)
     {
-        var item = await _db.Platforms.FindAsync(id);
+        if (!ModelState.IsValid) return InvalidRedirect();
+
+        var item = await _db.Platforms.FindAsync(input.Id);
         if (item == null) return NotFound();
 
-        item.Title = title;
-        item.Description = description;
+        item.Title = input.Title!.Trim();
+        item.Description = input.Description?.Trim() ?? "";
 
         await _db.SaveChangesAsync();
         TempData["Success"] = "تم تحديث المنصة بنجاح";

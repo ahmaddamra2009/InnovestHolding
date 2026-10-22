@@ -1,48 +1,69 @@
-using System.Security.Claims;
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure;
 using InnovestHolding.ViewModels;
+using InnovestHolding.ViewModels.Account;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers;
 
 public class AccountController : Controller
 {
-    private readonly AppDbContext _db;
+    /// <summary>
+    /// Verified against when the username does not exist, so an unknown user costs the same BCrypt time
+    /// as a wrong password (no timing oracle). Computed once from a random value.
+    /// </summary>
+    private static readonly Lazy<string> DummyHash =
+        new(() => BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N")));
 
-    public AccountController(AppDbContext db) => _db = db;
+    private readonly AppDbContext _db;
+    private readonly ILoginThrottle _throttle;
+
+    public AccountController(AppDbContext db, ILoginThrottle throttle)
+    {
+        _db = db;
+        _throttle = throttle;
+    }
 
     [HttpGet]
     public IActionResult Login() => View(new LoginViewModel());
 
-    [HttpPost]
-    public async Task<IActionResult> Login(LoginViewModel model)
+    // Pinned to ONE route (Stage 4 H1): /Account/Login/{id} and /Admin/Account/Login do not reach it.
+    [HttpPost("/Account/Login")]
+    [EnableRateLimiting(RateLimitPolicies.Login)]
+    public async Task<IActionResult> Login(LoginInput input)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == model.Username);
+        // NFKC + trim: the same canonical form for the lookup and for an unknown-name throttle key.
+        var username = LoginKey.NormalizeName(input.Username);
+        var ip = RateLimitPolicies.ClientIp(HttpContext);
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+        if (!ModelState.IsValid)
+            return LoginView(username, UserMessages.LoginInvalid);
+
+        // Resolve the account first (one indexed query, no BCrypt) so the lockout is counted against the
+        // ACCOUNT, not the spelling: every variant the database's case/width-insensitive collation maps to
+        // this user shares one key (Stage 4 H2). An unknown name gets a normalised key; same message either way.
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username);
+        var key = user is null ? LoginKey.ForUnknownName(username) : LoginKey.ForAccount(user.Id);
+
+        // Locked: no BCrypt.
+        if (_throttle.IsLocked(key, ip))
+            return LoginView(username, UserMessages.LoginLocked);
+
+        var valid = BCrypt.Net.BCrypt.Verify(input.Password, user?.PasswordHash ?? DummyHash.Value);
+
+        if (user == null || !valid)
         {
-            model.ErrorMessage = "اسم المستخدم أو كلمة المرور غير صحيحة";
-            return View(model);
+            _throttle.RecordFailure(key, ip);
+            return LoginView(username, UserMessages.LoginInvalid);
         }
 
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.Name, user.Username),
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Role, "Admin")
-        };
+        _throttle.ResetUser(key); // the IP counter is NOT reset (Stage 4 L2)
 
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            principal,
-            new AuthenticationProperties { IsPersistent = true });
-
+        await AdminSession.SignInAsync(HttpContext, user);
         return RedirectToAction("Index", "Dashboard", new { area = "" });
     }
 
@@ -52,4 +73,7 @@ public class AccountController : Controller
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Login");
     }
+
+    private ViewResult LoginView(string username, string error) =>
+        View(nameof(Login), new LoginViewModel { Username = username, ErrorMessage = error });
 }

@@ -1,12 +1,10 @@
 using InnovestHolding.Data;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers.Admin;
 
-[Authorize]
-public class MessagesController : Controller
+public class MessagesController : AdminControllerBase
 {
     private readonly AppDbContext _db;
 

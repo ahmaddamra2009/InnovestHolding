@@ -5,6 +5,8 @@ VisualStudioVersion = 18.2.11408.102 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InnovestHolding", "InnovestHolding.csproj", "{19758F07-ADB4-5836-8541-27ECD302F5B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InnovestHolding.Tests", "InnovestHolding.Tests\InnovestHolding.Tests.csproj", "{72AD3622-21AA-4DC8-8E1B-ACF78F86E928}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{19758F07-ADB4-5836-8541-27ECD302F5B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19758F07-ADB4-5836-8541-27ECD302F5B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19758F07-ADB4-5836-8541-27ECD302F5B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72AD3622-21AA-4DC8-8E1B-ACF78F86E928}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72AD3622-21AA-4DC8-8E1B-ACF78F86E928}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72AD3622-21AA-4DC8-8E1B-ACF78F86E928}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72AD3622-21AA-4DC8-8E1B-ACF78F86E928}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

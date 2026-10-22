@@ -1,30 +1,34 @@
 using InnovestHolding.Data;
 using InnovestHolding.Models;
-using Microsoft.AspNetCore.Authorization;
+using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers.Admin;
 
-[Authorize]
-public class FaqController : Controller
+public class FaqController : AdminControllerBase
 {
+    private const string CreateView = "~/Views/Admin/Faq/Create.cshtml";
+    private const string EditView = "~/Views/Admin/Faq/Edit.cshtml";
     private readonly AppDbContext _db;
 
     public FaqController(AppDbContext db) => _db = db;
 
     public async Task<IActionResult> Index() =>
         View("~/Views/Admin/Faq/Index.cshtml",
-            await _db.Faqs.OrderBy(f => f.SortOrder).ToListAsync());
+            await _db.Faqs.AsNoTracking().OrderBy(f => f.SortOrder).ToListAsync());
 
-    public IActionResult Create() =>
-        View("~/Views/Admin/Faq/Create.cshtml", new Faq());
+    public IActionResult Create() => View(CreateView, new FaqInput());
 
     [HttpPost]
-    public async Task<IActionResult> Create(Faq model)
+    public async Task<IActionResult> Create(FaqInput input)
     {
-        model.SortOrder = (await _db.Faqs.MaxAsync(f => (int?)f.SortOrder) ?? 0) + 1;
-        _db.Faqs.Add(model);
+        if (!ModelState.IsValid)
+            return View(CreateView, input);
+
+        var item = new Faq { SortOrder = (await _db.Faqs.MaxAsync(f => (int?)f.SortOrder) ?? 0) + 1 };
+        Map(input, item);
+        _db.Faqs.Add(item);
         await _db.SaveChangesAsync();
         TempData["Success"] = "تمت إضافة السؤال بنجاح";
         return RedirectToAction(nameof(Index));
@@ -32,21 +36,29 @@ public class FaqController : Controller
 
     public async Task<IActionResult> Edit(int id)
     {
-        var item = await _db.Faqs.FindAsync(id);
+        var item = await _db.Faqs.AsNoTracking().FirstOrDefaultAsync(f => f.Id == id);
         if (item == null) return NotFound();
-        return View("~/Views/Admin/Faq/Edit.cshtml", item);
+        return View(EditView, new FaqEditInput
+        {
+            Id = item.Id,
+            Question = item.Question,
+            Answer = item.Answer,
+            IsActive = item.IsActive,
+            SortOrder = item.SortOrder
+        });
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(Faq model)
+    public async Task<IActionResult> Edit(FaqEditInput input)
     {
-        var item = await _db.Faqs.FindAsync(model.Id);
+        if (!ModelState.IsValid)
+            return View(EditView, input);
+
+        var item = await _db.Faqs.FindAsync(input.Id);
         if (item == null) return NotFound();
 
-        item.Question = model.Question;
-        item.Answer = model.Answer;
-        item.SortOrder = model.SortOrder;
-        item.IsActive = model.IsActive;
+        Map(input, item);
+        item.SortOrder = input.SortOrder;
 
         await _db.SaveChangesAsync();
         TempData["Success"] = "تم تحديث السؤال بنجاح";
@@ -64,5 +76,12 @@ public class FaqController : Controller
             TempData["Success"] = "تم حذف السؤال بنجاح";
         }
         return RedirectToAction(nameof(Index));
+    }
+
+    private static void Map(FaqInput input, Faq item)
+    {
+        item.Question = input.Question!.Trim();
+        item.Answer = input.Answer!.Trim();
+        item.IsActive = input.IsActive;
     }
 }
