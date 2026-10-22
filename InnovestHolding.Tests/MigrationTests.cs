@@ -141,7 +141,7 @@ public class MigrationTests(TestAppFactory f)
 
         // Only the later migrations (multi-page site) are still pending.
         Assert.Equal(["20261022152940_AddSiteStructure", "20261022153329_ApplyCompanyProfile", "20261022172550_RefineSiteStructure",
-            "20261022200000_CorrectCoreValuesEnglish", "C2_MIGRATION_ID"], await db.Database.GetPendingMigrationsAsync());
+            "20261022200000_CorrectCoreValuesEnglish", "20261022202359_AddMediaAndDetailPages"], await db.Database.GetPendingMigrationsAsync());
     }
 
     [Fact] // a fresh install (migration + DbSeeder) equals an upgraded old install, row by row

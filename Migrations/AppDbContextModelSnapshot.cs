@@ -157,6 +157,31 @@ namespace InnovestHolding.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AddressAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("AddressEn")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<byte>("AttendanceMode")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("CityAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("CityEn")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -166,6 +191,9 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("DescriptionEn")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("EndsAt")
+                        .HasColumnType("datetimeoffset(0)");
 
                     b.Property<int>("EventDay")
                         .HasColumnType("int");
@@ -179,6 +207,9 @@ namespace InnovestHolding.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("ImageId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -191,8 +222,60 @@ namespace InnovestHolding.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("MetaDescriptionAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("MetaDescriptionEn")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("MetaTitleAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("MetaTitleEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("OnlineUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("RegistrationOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("StartsAt")
+                        .HasColumnType("datetimeoffset(0)");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("SummaryAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("SummaryEn")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("TimeAr")
                         .IsRequired()
@@ -212,9 +295,21 @@ namespace InnovestHolding.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("ImageId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
                     b.HasIndex("IsActive", "SortOrder");
+
+                    b.HasIndex("IsActive", "StartsAt");
 
                     b.ToTable("Events");
                 });
@@ -283,6 +378,60 @@ namespace InnovestHolding.Migrations
                     b.HasIndex("IsActive", "SortOrder");
 
                     b.ToTable("InterestOptions");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.MediaFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AltAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("AltEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Bytes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("FileKey")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .IsUnicode(false)
+                        .HasColumnType("char(32)")
+                        .IsFixedLength();
+
+                    b.Property<string>("Format")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(4)");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileKey")
+                        .IsUnique();
+
+                    b.ToTable("MediaFiles");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.NavItem", b =>
@@ -372,6 +521,15 @@ namespace InnovestHolding.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("BodyAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("BodyEn")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CategoryAr")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -384,12 +542,37 @@ namespace InnovestHolding.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ImageId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("LinkUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("MetaDescriptionAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("MetaDescriptionEn")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("MetaTitleAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("MetaTitleEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("NewsDateAr")
                         .IsRequired()
@@ -399,6 +582,15 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("NewsDateEn")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateOnly?>("PublishedOn")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -419,7 +611,17 @@ namespace InnovestHolding.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ImageId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
 
                     b.HasIndex("IsActive", "SortOrder");
 
@@ -449,6 +651,9 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("EmptyTextEn")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("ImageId")
+                        .HasColumnType("int");
 
                     b.Property<string>("IntroAr")
                         .IsRequired()
@@ -514,6 +719,8 @@ namespace InnovestHolding.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ImageId");
+
                     b.HasIndex("Key")
                         .IsUnique();
 
@@ -528,8 +735,16 @@ namespace InnovestHolding.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("LogoId")
+                        .HasColumnType("int");
 
                     b.Property<string>("NameAr")
                         .IsRequired()
@@ -540,6 +755,60 @@ namespace InnovestHolding.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("PartnerGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("ShowOnHome")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LogoId");
+
+                    b.HasIndex("PartnerGroupId");
+
+                    b.HasIndex("IsActive", "SortOrder");
+
+                    b.ToTable("Partners");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.PartnerGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameEn")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
@@ -547,7 +816,7 @@ namespace InnovestHolding.Migrations
 
                     b.HasIndex("IsActive", "SortOrder");
 
-                    b.ToTable("Partners");
+                    b.ToTable("PartnerGroups");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.Platform", b =>
@@ -723,6 +992,44 @@ namespace InnovestHolding.Migrations
                     b.ToTable("SiteContents");
                 });
 
+            modelBuilder.Entity("InnovestHolding.Models.SlugRedirect", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("OldSlug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityType", "EntityId");
+
+                    b.HasIndex("EntityType", "OldSlug")
+                        .IsUnique();
+
+                    b.ToTable("SlugRedirects");
+                });
+
             modelBuilder.Entity("InnovestHolding.Models.SocialLink", b =>
                 {
                     b.Property<int>("Id")
@@ -802,6 +1109,16 @@ namespace InnovestHolding.Migrations
                     b.ToTable("Stats");
                 });
 
+            modelBuilder.Entity("InnovestHolding.Models.Event", b =>
+                {
+                    b.HasOne("InnovestHolding.Models.MediaFile", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Image");
+                });
+
             modelBuilder.Entity("InnovestHolding.Models.NavSubItem", b =>
                 {
                     b.HasOne("InnovestHolding.Models.NavItem", "NavItem")
@@ -811,6 +1128,43 @@ namespace InnovestHolding.Migrations
                         .IsRequired();
 
                     b.Navigation("NavItem");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.News", b =>
+                {
+                    b.HasOne("InnovestHolding.Models.MediaFile", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Image");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.Page", b =>
+                {
+                    b.HasOne("InnovestHolding.Models.MediaFile", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Image");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.Partner", b =>
+                {
+                    b.HasOne("InnovestHolding.Models.MediaFile", "Logo")
+                        .WithMany()
+                        .HasForeignKey("LogoId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("InnovestHolding.Models.PartnerGroup", "PartnerGroup")
+                        .WithMany()
+                        .HasForeignKey("PartnerGroupId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Logo");
+
+                    b.Navigation("PartnerGroup");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.Registration", b =>

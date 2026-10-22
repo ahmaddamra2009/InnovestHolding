@@ -12,8 +12,8 @@ namespace InnovestHolding.Tests;
 [Collection("App")]
 public class MediaMigrationTests
 {
-    private const string Before = "20261022172550_RefineSiteStructure";
-    private const string Media = "20261022190703_AddMediaAndDetailPages";
+    private const string Before = "20261022200000_CorrectCoreValuesEnglish";
+    private const string Media = "20261022202359_AddMediaAndDetailPages";
 
     private static async Task<Data.AppDbContext> AtRefineStateAsync()
     {
