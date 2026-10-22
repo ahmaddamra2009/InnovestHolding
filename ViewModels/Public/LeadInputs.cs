@@ -159,3 +159,25 @@ public sealed class OpportunityInterestInput : LeadInputBase
     [StringLength(2000, ErrorMessage = K.MaxLength)]
     public string? Message { get; set; }
 }
+
+/// <summary>
+/// The fields of each lead form in the order <c>Views/Shared/Blocks/_LeadForm.cshtml</c> renders them: a refused POST lists
+/// its errors in this order and the page focuses the first (Nader P3-2). A test pins each list to the rendered form.
+/// </summary>
+public static class LeadFieldOrder
+{
+    public static readonly string[] ForumRegistration =
+        ["FullName", "Email", "Phone", "Organization", "JobTitle", "Country", "InterestOptionId", "EventId", "Consent"];
+
+    public static readonly string[] Join =
+    [
+        "Kind", "FullName", "Email", "Phone", "Country",
+        "InvestorTypeId", "Organization", "TicketSizeId", "SectorIds", "LinkedInUrl", "Message",
+        "StartupName", "SectorId", "StageId", "FundingId", "WebsiteUrl", "Pitch", "Consent",
+    ];
+
+    public static readonly string[] Sponsorship =
+        ["CompanyName", "FullName", "Email", "Phone", "Unit", "PackageId", "Message", "Consent"];
+
+    public static readonly string[] OpportunityInterest = ["OpportunityId", "FullName", "Email", "Phone", "Message", "Consent"];
+}

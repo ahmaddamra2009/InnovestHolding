@@ -296,7 +296,7 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     }
 }
 
-public class NetworkController(AppDbContext db, ILeadReferences references, IStringLocalizer<SharedResource> l) : PublicControllerBase
+public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource> l) : PublicControllerBase
 {
     /// <summary>The Join page, with the applicant type pre-selected when <paramref name="type"/> is given (?type=).</summary>
     private static LinkVm Join(SiteViews v, string? type = null) =>
@@ -355,12 +355,14 @@ public class NetworkController(AppDbContext db, ILeadReferences references, IStr
         // ?opportunity=id pre-selects an open opportunity in the form; any other value selects nothing (never an error).
         var query = Request.Query[OpportunityQuery];
         int? selected = query.Count == 1 && int.TryParse(query[0], NumberStyles.None, CultureInfo.InvariantCulture, out var id) ? id : null;
-        var open = await references.OpenOpportunitiesAsync(HttpContext.RequestAborted);
         return await EntityListAsync(PageKeys.NetworkOpportunities,
             EcosystemQueries.OpportunitiesOrdered(db.InvestmentOpportunities.AsNoTracking().Where(o => o.IsActive)).Select(EcosystemQueries.OpportunityCard),
             OpportunityCard, false, v => Join(v),
             // The "express interest" form under the list (not content: an empty list stays noindex).
-            v => new LeadFormBlock(v.InterestForm(open, selected, new LText(l[MessageKeys.Ui.FormSubmitInterest].Value, false)), IsContent: false));
+            // Its select comes from the cached snapshot (open + published, invalidated on every admin save); the POST
+            // re-checks the chosen id against the database (ILeadReferences.OpenOpportunityAsync).
+            v => new LeadFormBlock(v.InterestForm(v.Snapshot.Ecosystem.OpenOpportunityChoices, selected,
+                new LText(l[MessageKeys.Ui.FormSubmitInterest].Value, false)), IsContent: false));
     }
 
     /// <summary>
@@ -435,7 +437,7 @@ public class NetworkController(AppDbContext db, ILeadReferences references, IStr
     }
 }
 
-public class TvController(AppDbContext db, ILeadReferences references, IStringLocalizer<SharedResource> l) : PublicControllerBase
+public class TvController(AppDbContext db, IStringLocalizer<SharedResource> l) : PublicControllerBase
 {
     private static LinkVm Sponsor(SiteViews v) => new(v.Url(PageKeys.TvSponsorship), v.Title(PageKeys.TvSponsorship));
 
@@ -502,7 +504,7 @@ public class TvController(AppDbContext db, ILeadReferences references, IStringLo
         if (e.Number is { } number) node["episodeNumber"] = number;
         if (e.Season is { } season) node["partOfSeason"] = new Dictionary<string, object> { ["@type"] = "TVSeason", ["seasonNumber"] = season };
         if (e.AiredOn is { } on) node["datePublished"] = on.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-        SeoBuilder.Set(node, "partOfSeries", SeoBuilder.TvSeriesRef(baseUrl));
+        SeoBuilder.Set(node, "partOfSeries", SeoBuilder.TvSeriesRef(v, baseUrl));
         if (guests.Count > 0) node["actor"] = PersonRefs(baseUrl, guests);
         if (video is not null)
         {
@@ -557,10 +559,12 @@ public class TvController(AppDbContext db, ILeadReferences references, IStringLo
     public async Task<IActionResult> Sponsorship()
     {
         var v = await ViewsAsync();
-        var ct = HttpContext.RequestAborted;
         var unit = Request.Query["unit"].Count == 1 ? Request.Query["unit"][0] : null;
-        var form = v.SponsorshipForm(unit, await references.PackagesAsync(Models.SponsorshipEnquiry.Forum, ct),
-            await references.PackagesAsync(Models.SponsorshipEnquiry.Tv, ct), new LText(l[MessageKeys.Ui.FormSubmitEnquiry].Value, false));
+        // The package select comes from the cached snapshot (the packages block above uses the same rows): 0 queries
+        // when warm. The POST re-checks the chosen package against the database (ILeadReferences.PackagesAsync).
+        var packages = v.Snapshot.Ecosystem;
+        var form = v.SponsorshipForm(unit, packages.PackageChoices(Models.SponsorshipEnquiry.Forum),
+            packages.PackageChoices(Models.SponsorshipEnquiry.Tv), new LText(l[MessageKeys.Ui.FormSubmitEnquiry].Value, false));
         // The TV packages (when published), then the enquiry form.
         return Page(PageKeys.TvSponsorship, v, [Packages(v, SponsorshipUnits.Tv), new LeadFormBlock(form)],
             new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact)));

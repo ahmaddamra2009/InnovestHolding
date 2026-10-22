@@ -448,7 +448,13 @@ public class EcosystemTests(TestAppFactory f)
                 Assert.Equal(5, node.GetProperty("episodeNumber").GetInt32());
                 Assert.Equal(2, node.GetProperty("partOfSeason").GetProperty("seasonNumber").GetInt32());
                 Assert.Equal("2026-09-01", node.GetProperty("datePublished").GetString());
-                Assert.Equal($"{Base}/tv#tvseries", node.GetProperty("partOfSeries").GetProperty("@id").GetString());
+                // Noor L3: the series reference uses the hub of the page language and names itself.
+                var english = path.StartsWith("/en/", StringComparison.Ordinal);
+                var series = node.GetProperty("partOfSeries");
+                Assert.Equal(english ? $"{Base}/en/tv#tvseries" : $"{Base}/tv#tvseries", series.GetProperty("@id").GetString());
+                Assert.Equal(english ? $"{Base}/en/tv" : $"{Base}/tv", series.GetProperty("url").GetString());
+                Assert.Equal("TVSeries", series.GetProperty("@type").GetString());
+                Assert.False(string.IsNullOrWhiteSpace(series.GetProperty("name").GetString()));
                 Assert.Equal(2, node.GetProperty("actor").GetArrayLength());
                 var video = node.GetProperty("video");
                 Assert.Equal("VideoObject", video.GetProperty("@type").GetString());
@@ -459,6 +465,10 @@ public class EcosystemTests(TestAppFactory f)
             // The TV hub carries the series node the episodes point at.
             var hub = Node(await f.NewClient().GetStringAsync("/tv"), "TVSeries");
             Assert.Equal($"{Base}/tv#tvseries", hub.GetProperty("@id").GetString());
+            Assert.Equal($"{Base}/en/tv#tvseries", Node(await f.NewClient().GetStringAsync("/en/tv"), "TVSeries").GetProperty("@id").GetString());
+
+            // Noor L2 polarity: a person without a photo gets no image (the site banner is not their picture).
+            Assert.False(Node(await f.NewClient().GetStringAsync("/tv/guests/" + g1), "Person").TryGetProperty("image", out _));
 
             // The guest's page lists the episode.
             Assert.Contains($"href=\"/tv/episodes/{episode.Slug}\"", await f.NewClient().GetStringAsync("/tv/guests/" + g1));

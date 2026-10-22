@@ -367,6 +367,21 @@ document.addEventListener('DOMContentLoaded', () => {
       msg.classList.toggle('is-error', !ok);
       msg.textContent = text;
     }
+    // Several field errors (the lead forms): one line each, in the form's field order (textContent only, no markup).
+    function showList(texts) {
+      show(false, '');
+      const list = document.createElement('ul');
+      texts.forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = t;
+        list.appendChild(li);
+      });
+      msg.appendChild(list);
+    }
+    function fieldNamed(name) {
+      const wanted = String(name).toLowerCase();
+      return Array.from(form.elements).find(el => el.name && el.name.toLowerCase() === wanted && !el.disabled);
+    }
     function idle() {
       btn.disabled = false;
       if (label) label.textContent = idleText;
@@ -388,23 +403,32 @@ document.addEventListener('DOMContentLoaded', () => {
           return r.json();
         })
         .then(data => {
-          show(!!data.success, data.message || form.dataset.msgError);
           form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.removeAttribute('aria-invalid'));
+          const errors = !data.success && Array.isArray(data.errors) ? data.errors : [];
+          if (errors.length > 1) {
+            showList(errors.map(e => e.message));
+          } else {
+            show(!!data.success, data.message || form.dataset.msgError);
+          }
           if (data.success) {
             form.reset();
-          } else if (data.field) {
-            // The lead forms name the field the message is about: mark it and move the focus there.
-            const wanted = String(data.field).toLowerCase();
-            const field = Array.from(form.elements).find(el => el.name && el.name.toLowerCase() === wanted && !el.disabled);
-            if (field) {
+          } else {
+            // The lead forms name the fields the messages are about (in field order): mark each, focus the first.
+            const named = errors.length ? errors.map(e => e.field) : (data.field ? [data.field] : []);
+            let first = null;
+            named.forEach(name => {
+              const field = name ? fieldNamed(name) : null;
+              if (!field) return;
               field.setAttribute('aria-invalid', 'true');
-              field.focus();
-            }
+              if (!first) first = field;
+            });
+            if (first) first.focus();
           }
           idle();
           // One timer per form: a reply that arrives later must not be hidden by the previous reply's timer.
           clearTimeout(hideTimer);
-          hideTimer = setTimeout(() => { msg.hidden = true; }, 5000);
+          // A list of field errors stays until the next submit (it is longer than a 5-second read).
+          if (errors.length <= 1) hideTimer = setTimeout(() => { msg.hidden = true; }, 5000);
         })
         .catch(() => {
           show(false, form.dataset.msgError);

@@ -47,7 +47,7 @@ public static class LeadFormViews
             (SponsorshipEnquiry.Forum, v.Title(PageKeys.Forum), v.Choices(forumPackages)),
         ]);
 
-    /// <param name="opportunities">The open, published opportunities (<see cref="ILeadReferences.OpenOpportunitiesAsync"/>).</param>
+    /// <param name="opportunities">The open, published opportunities (<see cref="EcosystemData.OpenOpportunityChoices"/>).</param>
     /// <param name="opportunityId">The one to pre-select; ignored unless it is in <paramref name="opportunities"/>.</param>
     public static InterestFormVm InterestForm(this SiteViews v, IReadOnlyList<FormChoice> opportunities, int? opportunityId, LText submit) => new(
         CultureUrls.Form(OpportunityInterest, v.English), "interest", Consent(v), submit,

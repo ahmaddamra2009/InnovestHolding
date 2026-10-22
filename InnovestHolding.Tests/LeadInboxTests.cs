@@ -18,6 +18,17 @@ namespace InnovestHolding.Tests;
 [Collection("App")]
 public class LeadInboxTests(TestAppFactory f)
 {
+    [Fact] // Nader P3-4: the dashboard names the sections as the sidebar does and no longer describes the old menu editor
+    public async Task Dashboard_uses_the_current_admin_names()
+    {
+        var html = await (await f.SignedInClientAsync()).GetStringAsync("/Admin/Dashboard");
+        Assert.Contains("<p>الخدمات</p>", html);
+        Assert.Contains("<p>روابط إضافية في القائمة</p>", html);
+        Assert.DoesNotContain("<p>المنصات</p>", html);
+        Assert.DoesNotContain("عناصر فرعية", html);
+        Assert.DoesNotContain("عناصر القائمة", html);
+    }
+
     private async Task<(int Id, string Email)> AddSponsorshipAsync()
     {
         var email = Unique("inbox") + "@example.com";

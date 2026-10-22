@@ -14,7 +14,7 @@ namespace InnovestHolding.Controllers;
 
 // The lead forms. Same rules as Register/Contact: exact attribute routes (Arabic + /en, one rate-limit bucket per action),
 // the global antiforgery filter, a 32 KB body cap, the honeypot answered like a success with nothing written, a 400 JSON
-// with the first message in the page language, option ids checked against the ACTIVE choices of their own list, option
+// with every field error in the page language and in the form's field order (LeadFieldOrder), option ids checked against the ACTIVE choices of their own list, option
 // texts stored as Arabic snapshots, and the server writing Culture, ConsentAt and CreatedAt. Nothing is logged.
 public partial class FormsController
 {
@@ -42,19 +42,37 @@ public partial class FormsController
     /// <summary>400 with one message; <paramref name="field"/> names the input to focus (the form field's name).</summary>
     private BadRequestObjectResult Fail(string message, string? field) => BadRequest(new { success = false, message, field });
 
-    /// <summary>The first model-state error and the field it belongs to.</summary>
-    private BadRequestObjectResult Invalid()
+    /// <summary>
+    /// 400 with every model-state error, one per field, in the order the form shows its fields (<paramref name="order"/>,
+    /// <see cref="LeadFieldOrder"/>): <c>errors</c> = [{ field, message }]; <c>message</c> / <c>field</c> repeat the first
+    /// (the page focuses it). A key the order does not know (none today) goes last.
+    /// </summary>
+    private BadRequestObjectResult Invalid(IReadOnlyList<string> order)
     {
-        var entry = ModelState.Where(e => e.Value is { Errors.Count: > 0 }).Select(e => (e.Key, e.Value!.Errors[0].ErrorMessage))
-            .FirstOrDefault(e => !string.IsNullOrEmpty(e.ErrorMessage));
-        return Fail(string.IsNullOrEmpty(entry.ErrorMessage) ? FirstError() : entry.ErrorMessage, entry.Key);
+        int Rank(string key)
+        {
+            var name = key.Split('[', '.')[0];
+            for (var i = 0; i < order.Count; i++)
+                if (string.Equals(order[i], name, StringComparison.OrdinalIgnoreCase)) return i;
+            return int.MaxValue;
+        }
+
+        var errors = ModelState
+            .Select(e => (Field: e.Key, Message: e.Value?.Errors.Select(x => x.ErrorMessage).FirstOrDefault(m => !string.IsNullOrEmpty(m))))
+            .Where(e => e.Message is not null)
+            .OrderBy(e => Rank(e.Field)) // stable: equal ranks keep the model-state order
+            .Select(e => new { field = e.Field, message = e.Message! })
+            .ToList();
+        if (errors.Count == 0) return Fail(FirstError(), null);
+        return BadRequest(new { success = false, message = errors[0].message, field = errors[0].field, errors });
     }
 
     private BadRequestObjectResult BadChoice(string fieldKey, string field) =>
         Fail(Loc[MessageKeys.OptionInvalid, Loc[fieldKey].Value].Value, field);
 
-    private BadRequestObjectResult Missing(string fieldKey, string field) =>
-        Fail(Loc[MessageKeys.Required, Loc[fieldKey].Value].Value, field);
+    /// <summary>Records a required-field error the attributes cannot express (it depends on another field).</summary>
+    private void Missing(string fieldKey, string field) =>
+        ModelState.AddModelError(field, Loc[MessageKeys.Required, Loc[fieldKey].Value].Value);
 
     [HttpPost("/forms/forum-registration")]
     [HttpPost("/en/forms/forum-registration")]
@@ -65,7 +83,7 @@ public partial class FormsController
         [FromServices] ISiteContentCache content)
     {
         if (!string.IsNullOrEmpty(input.Website)) return Success(MessageKeys.ForumRegistrationSuccess);
-        if (!ModelState.IsValid) return Invalid();
+        if (!ModelState.IsValid) return Invalid(LeadFieldOrder.ForumRegistration);
 
         var ct = HttpContext.RequestAborted;
         InterestRow? option = null;
@@ -112,20 +130,21 @@ public partial class FormsController
     public async Task<IActionResult> Join(JoinInput input, [FromServices] AppDbContext data)
     {
         if (!string.IsNullOrEmpty(input.Website)) return Success(MessageKeys.JoinSuccess);
-        if (!ModelState.IsValid) return Invalid();
 
         var investor = input.Kind == NetworkApplication.Investor;
         var choices = await LeadFormChoices.LoadAsync(data, HttpContext.RequestAborted);
         // The fields of the OTHER type are ignored (the page shows only one set; without JavaScript both are posted).
         // A choice list is required only while it has active choices (the page does not offer an empty list).
+        // Recorded with the attribute errors, so the reply lists them all in field order.
         if (investor && input.InvestorTypeId is null && choices.InvestorTypes.Count > 0)
-            return Missing(F.InvestorType, nameof(input.InvestorTypeId));
-        if (!investor)
+            Missing(F.InvestorType, nameof(input.InvestorTypeId));
+        if (input.Kind == NetworkApplication.Startup)
         {
-            if (string.IsNullOrWhiteSpace(input.StartupName)) return Missing(F.StartupName, nameof(input.StartupName));
-            if (input.SectorId is null && choices.Sectors.Count > 0) return Missing(F.Sector, nameof(input.SectorId));
-            if (input.StageId is null && choices.Stages.Count > 0) return Missing(F.Stage, nameof(input.StageId));
+            if (string.IsNullOrWhiteSpace(input.StartupName)) Missing(F.StartupName, nameof(input.StartupName));
+            if (input.SectorId is null && choices.Sectors.Count > 0) Missing(F.Sector, nameof(input.SectorId));
+            if (input.StageId is null && choices.Stages.Count > 0) Missing(F.Stage, nameof(input.StageId));
         }
+        if (!ModelState.IsValid) return Invalid(LeadFieldOrder.Join);
 
         var now = DateTime.UtcNow;
         var row = new NetworkApplication
@@ -190,7 +209,7 @@ public partial class FormsController
         [FromServices] ILeadReferences references)
     {
         if (!string.IsNullOrEmpty(input.Website)) return Success(MessageKeys.SponsorshipSuccess);
-        if (!ModelState.IsValid) return Invalid();
+        if (!ModelState.IsValid) return Invalid(LeadFieldOrder.Sponsorship);
 
         FormChoice? package = null;
         if (input.PackageId is not null)
@@ -228,7 +247,7 @@ public partial class FormsController
         [FromServices] ILeadReferences references)
     {
         if (!string.IsNullOrEmpty(input.Website)) return Success(MessageKeys.InterestSuccess);
-        if (!ModelState.IsValid) return Invalid();
+        if (!ModelState.IsValid) return Invalid(LeadFieldOrder.OpportunityInterest);
 
         FormChoice? opportunity = null;
         if (input.OpportunityId is { } id)

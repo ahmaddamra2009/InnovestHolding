@@ -2,7 +2,10 @@ using System.Net;
 using System.Text.RegularExpressions;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using static InnovestHolding.Tests.TestHelpers;
 
 namespace InnovestHolding.Tests;
@@ -174,6 +177,74 @@ public class LeadReferenceTests(TestAppFactory f)
             await RemoveAsync<InvestmentOpportunity>(opp);
             await RemoveAsync<InvestmentOpportunity>(draft);
             await RemoveAsync<InvestmentOpportunity>(closed);
+        }
+    }
+
+    [Fact] // Ziad R1/R2: the GET selects come from the cached snapshot — no package query on /tv/sponsorship, one opportunities
+           // query (the list) on /angel-network/opportunities — and still follow IsActive / IsOpen after every save
+    public async Task Form_selects_come_from_the_snapshot_and_follow_saves()
+    {
+        var sink = new CapturingLoggerProvider();
+        await using var app = f.WithWebHostBuilder(b => b.ConfigureLogging(l => l.AddProvider(sink)));
+        HttpClient Client()
+        {
+            var client = app.CreateClient();
+            client.DefaultRequestHeaders.Add(TestClientIpStartupFilter.Header, NewIp());
+            return client;
+        }
+        // Edits through this host's own context, so its snapshot sees the save (the interceptor of that host).
+        async Task<int> Db(Func<Data.AppDbContext, Task> change)
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<Data.AppDbContext>();
+            await change(db);
+            return await db.SaveChangesAsync();
+        }
+        var opp = new InvestmentOpportunity { Slug = Unique("snap-opp")[..40], TitleAr = Unique("فرصة-لقطة"), IsActive = true, IsOpen = true };
+        var package = new SponsorshipPackage { Unit = "tv", TitleAr = Unique("باقة-لقطة"), IsActive = true };
+        await Db(db => { db.AddRange(opp, package); return Task.CompletedTask; });
+        static string Select(string html, string id) =>
+            Regex.Match(html, $"<select id=\"{id}\"[^>]*>(.*?)</select>", RegexOptions.Singleline).Value;
+        List<string> Commands() => sink.Lines.Where(l => l.StartsWith("Microsoft.EntityFrameworkCore.Database.Command|Executed DbCommand")).ToList();
+        try
+        {
+            foreach (var prefix in new[] { "", "/en" })
+            {
+                await Client().GetStringAsync(prefix + "/angel-network/opportunities");   // warms the snapshot
+                sink.Lines.Clear();
+                var list = await Client().GetStringAsync(prefix + "/angel-network/opportunities");
+                Assert.Contains($"value=\"{opp.Id}\"", Select(list, "interest-opportunity"));
+                Assert.Single(Commands(), l => l.Contains("[InvestmentOpportunities]"));   // the paged list only
+
+                await Client().GetStringAsync(prefix + "/tv/sponsorship");
+                sink.Lines.Clear();
+                var sponsorship = await Client().GetStringAsync(prefix + "/tv/sponsorship");
+                Assert.Contains($"value=\"{package.Id}\"", Select(sponsorship, "sponsor-package"));
+                Assert.Empty(Commands());   // warm and anonymous: no query at all (C3 level)
+            }
+
+            // Closing the opportunity and deactivating the package drop them from the selects at once.
+            await Db(async db =>
+            {
+                (await db.InvestmentOpportunities.FindAsync(opp.Id))!.IsOpen = false;
+                (await db.SponsorshipPackages.FindAsync(package.Id))!.IsActive = false;
+            });
+            Assert.DoesNotContain($"value=\"{opp.Id}\"", Select(await Client().GetStringAsync("/angel-network/opportunities"), "interest-opportunity"));
+            Assert.DoesNotContain($"value=\"{package.Id}\"", Select(await Client().GetStringAsync("/tv/sponsorship"), "sponsor-package"));
+
+            // Re-opened but unpublished: still not offered.
+            await Db(async db =>
+            {
+                var o = (await db.InvestmentOpportunities.FindAsync(opp.Id))!;
+                o.IsOpen = true;
+                o.IsActive = false;
+            });
+            Assert.DoesNotContain($"value=\"{opp.Id}\"", Select(await Client().GetStringAsync("/angel-network/opportunities"), "interest-opportunity"));
+        }
+        finally
+        {
+            await RemoveAsync<InvestmentOpportunity>(opp.Id);
+            await RemoveAsync<SponsorshipPackage>(package.Id);
         }
     }
 

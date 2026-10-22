@@ -14,8 +14,9 @@ public sealed record EpisodeRow(string Slug, int? Season, int? Number, string Ti
 public sealed record OpportunityRow(string Slug, string TitleAr, string? TitleEn, string SummaryAr, string? SummaryEn,
     string? SectorAr, string? SectorEn, string StageTextAr, string? StageTextEn, string AskTextAr, string? AskTextEn, bool IsOpen, MediaRef? Image);
 
-/// <summary>A sponsorship package as its page lists it (cached in the snapshot: a short list).</summary>
-public sealed record PackageRow(string Unit, string TitleAr, string? TitleEn, string PriceTextAr, string? PriceTextEn, string BenefitsAr, string? BenefitsEn);
+/// <summary>A sponsorship package as its page lists it (cached in the snapshot: a short list). The id feeds the
+/// enquiry form's package select on GET; the POST re-validates against the database (<c>ILeadReferences</c>).</summary>
+public sealed record PackageRow(int Id, string Unit, string TitleAr, string? TitleEn, string PriceTextAr, string? PriceTextEn, string BenefitsAr, string? BenefitsEn);
 
 /// <summary>
 /// The orderings, projections and "English page complete" rules of the ecosystem entities, shared by the snapshot

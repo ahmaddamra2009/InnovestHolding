@@ -498,6 +498,108 @@ public class LeadFormTests(TestAppFactory f)
         }
     }
 
+    // ── Nader P3-2: every field error, in the order the form shows its fields ──
+
+    private static async Task<List<(string Field, string Message)>> Errors(HttpResponseMessage r)
+    {
+        Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
+        var json = await r.JsonAsync();
+        var list = json.GetProperty("errors").EnumerateArray()
+            .Select(e => (e.GetProperty("field").GetString()!, e.GetProperty("message").GetString()!)).ToList();
+        Assert.NotEmpty(list);
+        Assert.All(list, e => Assert.False(string.IsNullOrWhiteSpace(e.Item2)));
+        // The single message / field of the reply are the first error (what the page focuses).
+        Assert.Equal(list[0].Item1, json.GetProperty("field").GetString());
+        Assert.Equal(list[0].Item2, json.GetProperty("message").GetString());
+        return list;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task A_refused_lead_form_lists_every_field_error_in_field_order(bool english)
+    {
+        var (c, t) = await ClientAsync(english);
+        var p = english ? "/en" : "";
+        string Required(string field) => english ? Msg.En(MessageKeys.Required, Msg.En(field)) : Msg.Ar(MessageKeys.Required, Msg.Ar(field));
+
+        // Interest (Nader's case: e-mail, then consent, then name, one per submit): all four at once, name first.
+        var interest = await Errors(await c.PostAsync(p + "/forms/opportunity-interest", Form(t, ("Phone", "abc"))));
+        Assert.Equal(["FullName", "Email", "Phone", "Consent"], interest.Select(e => e.Field));
+        Assert.Equal(Required(MessageKeys.Fields.FullName), interest[0].Message);
+        Assert.Equal(Required(MessageKeys.Fields.Email), interest[1].Message);
+
+        // Sponsorship: the company field comes before the contact person.
+        var sponsor = await Errors(await c.PostAsync(p + "/forms/sponsorship", Form(t, ("Unit", "tv"))));
+        Assert.Equal(["CompanyName", "FullName", "Email", "Consent"], sponsor.Select(e => e.Field));
+        Assert.Equal(Required(MessageKeys.Fields.CompanyName), sponsor[0].Message);
+
+        // Join (startup): the controller's type-dependent required fields sit among the attribute errors, in field order.
+        var join = await Errors(await c.PostAsync(p + "/forms/join", Form(t, ("Kind", "startup"))));
+        Assert.Equal(["FullName", "Email", "Country", "StartupName", "SectorId", "StageId", "Consent"], join.Select(e => e.Field));
+        Assert.Equal(Required(MessageKeys.Fields.StartupName), join[3].Message);
+
+        var forum = await Errors(await c.PostAsync(p + "/forms/forum-registration", Form(t, ("Country", "Egypt"))));
+        Assert.Equal(["FullName", "Email", "Consent"], forum.Select(e => e.Field));
+
+        // main.js has no JS runner here: a static check that it reads the list (marks every field, focuses the first).
+        var js = await f.NewClient().GetStringAsync("/js/main.js");
+        Assert.Contains("Array.isArray(data.errors)", js);
+        Assert.Contains("if (first) first.focus();", js);
+    }
+
+    [Theory] // LeadFieldOrder is the order the page renders (so "field order" means the visitor's order)
+    [InlineData("/forum/registration", "forum-reg")]
+    [InlineData("/en/angel-network/join", "join")]
+    [InlineData("/tv/sponsorship", "sponsor")]
+    [InlineData("/en/angel-network/opportunities", "interest")]
+    public async Task The_error_order_is_the_order_of_the_rendered_form(string path, string prefix)
+    {
+        // An open opportunity and a package, so the optional selects render too.
+        var oppId = await f.DbAsync(async db =>
+        {
+            var o = new InvestmentOpportunity { Slug = Unique("ord")[..30], TitleAr = "فرصة ترتيب", IsActive = true, IsOpen = true };
+            db.Add(o);
+            await db.SaveChangesAsync();
+            return o.Id;
+        });
+        var packageId = await f.DbAsync(async db =>
+        {
+            var pk = new SponsorshipPackage { Unit = "tv", TitleAr = "باقة ترتيب", IsActive = true };
+            db.Add(pk);
+            await db.SaveChangesAsync();
+            return pk.Id;
+        });
+        try
+        {
+            var html = await f.NewClient().GetStringAsync(path);
+            var start = html.IndexOf($"id=\"{prefix}-form\"", StringComparison.Ordinal);
+            Assert.True(start > 0, "form not found");
+            var form = html[start..html.IndexOf("</form>", start, StringComparison.Ordinal)];
+            var rendered = System.Text.RegularExpressions.Regex.Matches(form, "<(?:input|select|textarea)\\b[^>]*?\\sname=\"([^\"]+)\"")
+                .Select(m => m.Groups[1].Value)
+                .Where(n => n is not ("__RequestVerificationToken" or "Website"))
+                .DistinctBy(n => n.ToLowerInvariant()).ToList();
+            var order = prefix switch
+            {
+                "forum-reg" => ViewModels.Public.LeadFieldOrder.ForumRegistration,
+                "join" => ViewModels.Public.LeadFieldOrder.Join,
+                "sponsor" => ViewModels.Public.LeadFieldOrder.Sponsorship,
+                _ => ViewModels.Public.LeadFieldOrder.OpportunityInterest,
+            };
+            Assert.Equal(order.Select(n => n.ToLowerInvariant()), rendered.Select(n => n.ToLowerInvariant()));
+        }
+        finally
+        {
+            await f.DbAsync(async db =>
+            {
+                db.Remove((await db.InvestmentOpportunities.FindAsync(oppId))!);
+                db.Remove((await db.SponsorshipPackages.FindAsync(packageId))!);
+                return await db.SaveChangesAsync();
+            });
+        }
+    }
+
     private Task<int> LeadCount(string email) => f.DbAsync(async db =>
         await db.Registrations.CountAsync(r => r.Email == email) + await db.NetworkApplications.CountAsync(r => r.Email == email)
         + await db.SponsorshipEnquiries.CountAsync(r => r.Email == email) + await db.OpportunityInterests.CountAsync(r => r.Email == email));

@@ -52,8 +52,8 @@ public sealed record LeadFormChoices(
 }
 
 /// <summary>
-/// The C3 records a lead can refer to: investment opportunities and sponsorship packages. The forms offer exactly these
-/// lists and the POST validates against the same queries, so an id the page could not offer (a draft or closed
+/// The C3 records a lead can refer to: investment opportunities and sponsorship packages. The forms offer these lists
+/// (from the snapshot, same filters) and the POST validates against the database, so an id the page could not offer (a draft or closed
 /// opportunity, an inactive package, a package of the other unit, an unknown id) is refused with a 400.
 /// </summary>
 public interface ILeadReferences
@@ -61,16 +61,15 @@ public interface ILeadReferences
     /// <summary>A published (IsActive) opportunity that is open for interest (IsOpen), or null.</summary>
     Task<FormChoice?> OpenOpportunityAsync(int id, CancellationToken ct);
 
-    /// <summary>Every published opportunity open for interest, in the order of the public list.</summary>
-    Task<IReadOnlyList<FormChoice>> OpenOpportunitiesAsync(CancellationToken ct);
-
     /// <summary>The active sponsorship packages of a unit (<c>forum</c> / <c>tv</c>), in display order.</summary>
     Task<IReadOnlyList<FormChoice>> PackagesAsync(string unit, CancellationToken ct);
 }
 
 /// <summary>
 /// <see cref="ILeadReferences"/> read from the database on every call (never the cached snapshot: the POST must see a
-/// package or opportunity the admin has just unpublished). Scoped, like the context it uses.
+/// package or opportunity the admin has just unpublished). The GET pages build their selects from the snapshot
+/// (<see cref="EcosystemData.PackageChoices"/>, <see cref="EcosystemData.OpenOpportunityChoices"/>; same filters,
+/// invalidated on every admin save). Scoped, like the context it uses.
 /// </summary>
 public sealed class DbLeadReferences(AppDbContext db) : ILeadReferences
 {
@@ -79,9 +78,6 @@ public sealed class DbLeadReferences(AppDbContext db) : ILeadReferences
 
     public Task<FormChoice?> OpenOpportunityAsync(int id, CancellationToken ct) =>
         Open.Where(o => o.Id == id).Select(o => new FormChoice(o.Id, o.TitleAr, o.TitleEn)).FirstOrDefaultAsync(ct);
-
-    public async Task<IReadOnlyList<FormChoice>> OpenOpportunitiesAsync(CancellationToken ct) =>
-        await EcosystemQueries.OpportunitiesOrdered(Open).Select(o => new FormChoice(o.Id, o.TitleAr, o.TitleEn)).ToListAsync(ct);
 
     public async Task<IReadOnlyList<FormChoice>> PackagesAsync(string unit, CancellationToken ct) =>
         await db.SponsorshipPackages.AsNoTracking()
