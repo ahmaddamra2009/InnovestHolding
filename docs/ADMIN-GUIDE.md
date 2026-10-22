@@ -2,8 +2,8 @@
 
 العربية أولاً، ثم English. / Arabic first, then English.
 
-يصف هذا الدليل الفرع `feature/3-new-structure-brand` (المرحلة C1) قبل دمجه في `master`.
-This guide describes branch `feature/3-new-structure-brand` (phase C1) before it is merged into `master`.
+يصف هذا الدليل الموقع حتى المرحلة C4 (الفرع `feature/6-lead-forms`) قبل دمجه في `master`.
+This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) before it is merged into `master`.
 
 ---
 
@@ -122,12 +122,11 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
 والشركاء) تعرض **نص «قريباً» الذي تكتبونه** في «تعديل صفحة»، مع زر واحد لخطوة تالية (مثل «تواصل معنا»)، ولا تكون صفحة
 فارغة. اكتبوا النص بالعربية وبالإنجليزية.
 - هذه الصفحات **خارج محركات البحث** (`noindex`) وخارج خريطة الموقع ما دام محتواها فارغاً (قائمة بلا عناصر مفعّلة، أو صفحة
-  بلا نص تمهيدي ولا رئيسي)، وتدخل الفهرس تلقائياً عند ظهور المحتوى. المتحدثون والحلقات والضيوف والفرص لا تحتوي بعد على
-  شاشة إدارة لإضافة صفوفها، فتبقى بنص «قريباً» حتى مرحلة لاحقة؛ أما إن كتبتم لها نصاً تمهيدياً أو رئيسياً فتُعامَل صفحة
-  عادية.
+  بلا نص تمهيدي ولا رئيسي)، وتدخل الفهرس تلقائياً عند ظهور المحتوى. المتحدثون والحلقات والضيوف والفرص تُضاف صفوفها من شاشاتها في القائمة الجانبية
+  (القسم 9ب)، وتبقى بنص «قريباً» ما دام لا عنصر منشور فيها؛ أما إن كتبتم لها نصاً تمهيدياً أو رئيسياً فتُعامَل صفحة عادية.
 - لإخفاء صفحة فارغة من القائمة كلياً استعملوا «في القائمة» (القسم 3).
 - قسم «كلمة المؤسس» في «من نحن» **مخفي ما دام نص الكلمة فارغاً** («النصوص العامة» ← «كلمة المؤسس»).
-- صفحتا «الانضمام» و«الرعاية» تعرضان حالياً زراً إلى «تواصل معنا» (نموذجاهما في مرحلة لاحقة).
+- صفحتا «الانضمام» و«الرعاية» تعرضان نموذجيهما (طلب الانضمام واستفسار الرعاية)، وتصل طلباتهما إلى «الطلبات (كل النماذج)» (القسم 14).
 
 ## 6. النصوص العامة (`/Admin/Content/Edit`)
 
@@ -295,12 +294,12 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
 المقروء لكل نوع.
 - **الأنواع** (مرشّح «النوع»): تسجيل في المنتدى · انضمام — مستثمر · انضمام — شركة ناشئة · استفسار رعاية · اهتمام بالفرص · تسجيل
   سريع (الرئيسية). **مرشّح «القراءة»:** الكل / غير مقروء / مقروء، و**مرشّح «الحالة»:** الكل / جديد / تم التواصل / مغلق. تُجمع المرشّحات الثلاثة معاً، وتبقى بعد تعليم الطلب أو حفظه أو حذفه.
-- **الجدول:** القراءة («جديد» أو «مقروء»)، شارة **الحالة** (جديد / تم التواصل / مغلق)، علامة ✎ إن وُجدت ملاحظة، النوع، الاسم، البريد، التفاصيل (جهة أو نوع أو فعالية…)، لغة الصفحة التي أُرسل منها النموذج،
+- **الجدول:** القراءة («غير مقروء» أو «مقروء»)، شارة **الحالة** (جديد / تم التواصل / مغلق)، علامة ✎ إن وُجدت ملاحظة، النوع، الاسم، البريد، التفاصيل (جهة أو نوع أو فعالية…)، لغة الصفحة التي أُرسل منها النموذج،
   التاريخ (بتوقيت متصفحكم؛ مرّروا المؤشر لترى UTC)، والإجراءات.
 - **التفاصيل:** تفتح كل حقول الطلب. زر **«مقروء/غير مقروء»** يبدّل الحالة (لا يُعلَّم الطلب مقروءاً تلقائياً عند فتحه)، وزر **الحذف**
   بعد تأكيد؛ **الحذف نهائي**.
 - **حالة المتابعة والملاحظة الداخلية** (في شاشة التفاصيل): اختاروا الحالة — **جديد** (كل الطلبات عند وصولها وكل الطلبات القديمة) ثم **تم التواصل** ثم **مغلق** — واكتبوا **ملاحظة داخلية** (حتى 2000 حرف، مثل «اتصلنا به يوم الاثنين») ثم «حفظ». الحالة والملاحظة **لا يراها الزائر أبداً** ولا يمكن إرسالهما من نماذج الموقع، وهما منفصلتان عن «مقروء/غير مقروء». كل تغيير يُحفظ بزر واحد.
-- **التصدير إلى Excel (CSV):** رابط «تصدير إلى Excel (CSV)» في رأس القائمة ينزّل ملف `leads-<النوع أو all>-<التاريخ>.csv` يضم **الطلبات التي يطابقها المرشّح الحالي** (النوع والقراءة والحالة) من الأحدث إلى الأقدم، دون ترقيم صفحات. الأعمدة: النوع، الرقم، التاريخ (UTC)، الاسم، البريد، الهاتف، التفاصيل، الحالة، مقروء، لغة الصفحة، الملاحظة الداخلية. يُحفظ الملف بترميز UTF-8 مع BOM فيُفتح بالعربية الصحيحة بنقرتين في Excel، وكل خلية بين علامتي اقتباس. **القيمة التي تبدأ بـ `=` أو `+` أو `-` أو `@` أو `|` (أو بصيغها العريضة ＝ ＋ － ＠، ولو سبقتها مسافات أو مسافة جدولة) تُسبَق بعلامة `'`** حتى لا تُنفَّذ كصيغة في Excel؛ ستراها في الخلية بعلامة `'` في أولها (مثل `'=SUM(1)`) وهذا مقصود. التواريخ نص بتوقيت UTC. الملف المنزَّل **بيانات شخصية**: عاملوه كقاعدة البيانات، ولا تتركوه في مجلد التنزيلات أو تُرسلوه بقناة غير آمنة.
+- **التصدير إلى Excel (CSV):** رابط «تصدير إلى Excel (CSV)» في رأس القائمة ينزّل ملف `leads-<النوع أو all>-<التاريخ>.csv` يضم **الطلبات التي يطابقها المرشّح الحالي** (النوع والقراءة والحالة) من الأحدث إلى الأقدم، دون ترقيم صفحات. الأعمدة: النوع، الرقم، التاريخ (UTC)، الاسم، البريد، الهاتف، التفاصيل، الحالة، مقروء، لغة الصفحة، الملاحظة الداخلية، المرجع (الفرصة / الباقة / الفعالية)، رقم المرجع (فارغ إن لم يُختر شيء أو حُذف المرجع بعد الإرسال). يُحفظ الملف بترميز UTF-8 مع BOM فيُفتح بالعربية الصحيحة بنقرتين في Excel، وكل خلية بين علامتي اقتباس. **القيمة التي تبدأ بـ `=` أو `+` أو `-` أو `@` أو `|` (أو بصيغها العريضة ＝ ＋ － ＠، ولو سبقتها مسافات أو مسافة جدولة) تُسبَق بعلامة `'`** حتى لا تُنفَّذ كصيغة في Excel؛ ستراها في الخلية بعلامة `'` في أولها (مثل `'=SUM(1)`) وهذا مقصود. التواريخ نص بتوقيت UTC. الملف المنزَّل **بيانات شخصية**: عاملوه كقاعدة البيانات، ولا تتركوه في مجلد التنزيلات أو تُرسلوه بقناة غير آمنة.
 - ما يجمعه كل نموذج (النماذج الأربعة الأولى تتطلب الاسم والبريد وتعليم مربع الموافقة؛ الهاتف اختياري):
   - **التسجيل في المنتدى** (`/forum/registration`): الجهة، المسمى الوظيفي، الدولة، مجال الاهتمام (من «خيارات مجال الاهتمام»)،
     والفعالية (اختيارية؛ فعالية مفعّلة فقط، وإلا «أي فعالية»).
@@ -308,7 +307,8 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
     الاستثمار، القطاعات، رابط LinkedIn (`https://`)، رسالة. الشركة الناشئة: **اسم الشركة والقطاع والمرحلة إلزامية**، والتمويل المطلوب،
     الموقع (`https://`)، نبذة.
   - **الرعاية** (`/tv/sponsorship`): اسم الشركة ومسؤول التواصل والجهة المراد رعايتها (المنتدى أو التلفزيون)، الباقة (إن وُجدت باقات)، رسالة.
-  - **اهتمام بالفرص** (`/angel-network/opportunities`): الاسم والبريد والهاتف ورسالة؛ الفرصة «عموماً» ما دامت صفحات الفرص غير متوفرة.
+  - **اهتمام بالفرص** (`/angel-network/opportunities`): الفرصة (اختيارية: قائمة الفرص المنشورة المفتوحة، أو «الفرص الاستثمارية عموماً»؛
+    زر «أبدِ اهتمامك» في صفحة الفرصة يختارها تلقائياً)، والاسم والبريد والهاتف ورسالة.
   - **التسجيل السريع** في الصفحة الرئيسية كما كان (الاسم والبريد والهاتف ومجال الاهتمام).
   يُحفظ مع كل طلب: وقت الموافقة ولغة الصفحة ووقت الإرسال. القوائم المنسدلة تُحفَظ بنصها العربي وقت الإرسال، فلا يتغير طلب قديم إن
   عدّلتم الخيارات لاحقاً.
@@ -464,12 +464,13 @@ events, news or partners) show **the «coming soon» text you write** in «edit 
 «Contact»), so they are never blank. Write it in Arabic and English.
 - These pages are **kept out of search engines** (`noindex`) and out of the sitemap while their content is empty (a list
   with no active item, or a page with neither intro nor main text), and enter the index automatically once content
-  appears. Speakers, Episodes, Guests and Opportunities have no admin screen yet for adding their rows, so they stay
-  on the «coming soon» text until a later phase; if you write an intro or main text for them they are treated as ordinary
-  pages.
+  appears. Speakers, Episodes, Guests and Opportunities get their rows from their own screens in the side menu
+  (section 9b) and stay on the «coming soon» text while none is published; if you write an intro or main text for them they are
+  treated as ordinary pages.
 - To hide an empty page from the menu altogether use «in menu» (section 3).
 - The «founder's message» block on About **stays hidden while the message text is empty** («النصوص العامة» → «كلمة المؤسس»).
-- The Join and Sponsorship pages currently show a button to «Contact» (their forms come in a later phase).
+- The Join and Sponsorship pages show their forms (network application and sponsorship enquiry); their leads arrive in
+  «الطلبات (كل النماذج)» (section 14).
 
 ## 6. General texts (`/Admin/Content/Edit`)
 
@@ -655,12 +656,12 @@ per page** with paging. A badge with the **unread** count sits beside «الطل
 - **Types** («النوع» filter): forum registration · join — investor · join — startup · sponsorship enquiry · interest in
   opportunities · quick registration (home page). **«القراءة» filter:** all / unread / read, and **«الحالة» filter:** all / new / contacted / closed. The three filters combine and are kept after you mark, save or
   delete a lead.
-- **The table:** read state («جديد» or «مقروء»), a **status** badge (new / contacted / closed), a ✎ mark when a note exists, type, name, e-mail, details (organisation, type, event...), the language of the
+- **The table:** read state («غير مقروء» (unread) or «مقروء» (read)), a **status** badge (new / contacted / closed), a ✎ mark when a note exists, type, name, e-mail, details (organisation, type, event...), the language of the
   page the form was sent from, the date (in your browser's time zone; hover for UTC), and actions.
 - **Details:** opens every field of the lead. The **read/unread** button toggles the status (a lead is not marked read just by
   opening it), and **delete** asks for confirmation; **deletion is permanent**.
 - **Follow-up status and internal note** (on the details screen): choose the status — **new** (every lead on arrival and every old lead), then **contacted**, then **closed** — and type an **internal note** (up to 2000 characters, e.g. "called him on Monday"), then save. The status and the note are **never visible to visitors** and cannot be sent from the public forms; they are separate from read/unread. One button saves both.
-- **Export to Excel (CSV):** the «تصدير إلى Excel (CSV)» link in the list header downloads `leads-<type or all>-<date>.csv` with **the leads that match the current filters** (type, read state, status), newest first, without paging. Columns: type, id, date (UTC), name, e-mail, phone, details, status, read, page language, internal note. The file is UTF-8 **with a BOM**, so Excel opens the Arabic correctly with a double-click, and every cell is quoted. **A value that starts with `=`, `+`, `-`, `@` or `|` (or their fullwidth forms ＝ ＋ － ＠, also after leading spaces or a tab) is prefixed with a `'`** so Excel never runs it as a formula; you will see the `'` at the start of such a cell (e.g. `'=SUM(1)`), which is intended. Dates are UTC text. The downloaded file is **personal data**: treat it like the database, and do not leave it in Downloads or send it over an insecure channel.
+- **Export to Excel (CSV):** the «تصدير إلى Excel (CSV)» link in the list header downloads `leads-<type or all>-<date>.csv` with **the leads that match the current filters** (type, read state, status), newest first, without paging. Columns: type, id, date (UTC), name, e-mail, phone, details, status, read, page language, internal note, reference (opportunity / package / event), reference ID (empty when nothing was chosen or the referenced record was deleted after submission). The file is UTF-8 **with a BOM**, so Excel opens the Arabic correctly with a double-click, and every cell is quoted. **A value that starts with `=`, `+`, `-`, `@` or `|` (or their fullwidth forms ＝ ＋ － ＠, also after leading spaces or a tab) is prefixed with a `'`** so Excel never runs it as a formula; you will see the `'` at the start of such a cell (e.g. `'=SUM(1)`), which is intended. Dates are UTC text. The downloaded file is **personal data**: treat it like the database, and do not leave it in Downloads or send it over an insecure channel.
 - What each form collects (the first four require name, e-mail and the consent box; the phone is optional):
   - **Forum registration** (`/forum/registration`): organisation, job title, country, area of interest (from «خيارات مجال
     الاهتمام»), and the event (optional; an active event only, otherwise «any event»).
@@ -669,8 +670,9 @@ per page** with paging. A badge with the **unread** count sits beside «الطل
     funding sought, website (`https://`), pitch.
   - **Sponsorship** (`/tv/sponsorship`): company name, contact person, what to sponsor (the forum or the TV program), package
     (when packages exist), message.
-  - **Opportunity interest** (`/angel-network/opportunities`): name, e-mail, phone, message; the opportunity reads «in
-    general» while opportunity pages do not exist yet.
+  - **Opportunity interest** (`/angel-network/opportunities`): the opportunity (optional: the published open opportunities,
+    or «investment opportunities in general»; the «express interest» button on an opportunity page pre-selects it), name,
+    e-mail, phone, message.
   - **Quick registration** on the home page is as before (name, e-mail, phone, area of interest).
   Each lead also stores the consent time, the page language and the submission time. Choice lists are stored with their Arabic
   text at submission time, so an old lead does not change if you later edit the options.
