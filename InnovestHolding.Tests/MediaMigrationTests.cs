@@ -72,8 +72,8 @@ public class MediaMigrationTests
         Assert.Equal(0, await db.MediaFiles.CountAsync());
         Assert.Equal(0, await db.SlugRedirects.CountAsync());
 
-        // A second run changes nothing.
-        await db.Database.MigrateAsync();
+        // A second run changes nothing (to this migration: later migrations have data steps of their own).
+        await db.GetService<IMigrator>().MigrateAsync(Media);
         Assert.Equal(after, await DumpAsync(db, columns));
 
         // Down restores the previous schema and values; Up again reaches the same state.

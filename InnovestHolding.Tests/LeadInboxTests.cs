@@ -348,12 +348,12 @@ public class LeadInboxTests(TestAppFactory f)
     }
 }
 
-/// <summary>The AddLeadForms migration on a database in the multi-page state (RefineSiteStructure) holding real rows.</summary>
+/// <summary>The AddLeadForms migration on a database in the state before it (AddEcosystemEntities) holding real rows.</summary>
 [Collection("App")]
 public class LeadFormsMigrationTests
 {
-    private const string Before = "20261022172550_RefineSiteStructure";
-    private const string LeadForms = "20261022213952_AddLeadForms";
+    private const string Before = "20261022213309_AddEcosystemEntities";
+    private const string LeadForms = "20261022215539_AddLeadForms";
 
     private static async Task<string> Json(AppDbContext db, string sql) =>
         (await db.Database.SqlQueryRaw<string>(sql).ToListAsync()).Single() ?? "";
@@ -377,8 +377,8 @@ public class LeadFormsMigrationTests
 
         // Real data of an existing install + three admin edits the migration must not touch.
         await db.Database.ExecuteSqlRawAsync("""
-            INSERT INTO Events (TitleAr, DescriptionAr, EventDay, EventMonthAr, LocationAr, TimeAr, IsActive, SortOrder, CreatedAt)
-              VALUES (N'فعالية حقيقية', N'وصف', 5, N'نوفمبر', N'القاهرة', N'مساءً', 1, 1, '2026-09-01T10:00:00');
+            INSERT INTO Events (Slug, TitleAr, DescriptionAr, EventDay, EventMonthAr, LocationAr, TimeAr, IsActive, SortOrder, CreatedAt)
+              VALUES ('real-event', N'فعالية حقيقية', N'وصف', 5, N'نوفمبر', N'القاهرة', N'مساءً', 1, 1, '2026-09-01T10:00:00');
             INSERT INTO Registrations (FullName, Email, Phone, Interest, InterestOptionId, Culture, IsRead, CreatedAt)
               VALUES (N'زائر', N'real-1@example.com', N'+20 1', N'الاستثمار', NULL, 'ar', 0, '2026-10-01T10:00:00'),
                      (N'Visitor', N'real-2@example.com', N'', N'', NULL, 'en', 1, '2026-10-02T10:00:00');

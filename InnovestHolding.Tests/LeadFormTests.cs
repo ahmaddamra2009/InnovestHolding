@@ -233,7 +233,7 @@ public class LeadFormTests(TestAppFactory f)
         var email = Unique("tamper") + "@example.com";
         var inactiveEvent = await f.DbAsync(async db =>
         {
-            var e = new Event { TitleAr = "فعالية متوقفة", DescriptionAr = "", EventMonthAr = "", LocationAr = "", TimeAr = "", IsActive = false, CreatedAt = DateTime.UtcNow };
+            var e = new Event { Slug = "lead-tamper-" + Guid.NewGuid().ToString("N")[..12], TitleAr = "فعالية متوقفة", DescriptionAr = "", EventMonthAr = "", LocationAr = "", TimeAr = "", IsActive = false, CreatedAt = DateTime.UtcNow };
             db.Events.Add(e);
             await db.SaveChangesAsync();
             return e.Id;
