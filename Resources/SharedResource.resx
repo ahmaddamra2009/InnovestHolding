@@ -47,7 +47,6 @@
   <data name="Field_Href" xml:space="preserve"><value>الرابط</value></data>
   <data name="Field_Value" xml:space="preserve"><value>القيمة</value></data>
   <data name="Field_Suffix" xml:space="preserve"><value>اللاحقة</value></data>
-  <data name="Field_Content" xml:space="preserve"><value>المحتوى</value></data>
   <data name="Field_LinkUrl" xml:space="preserve"><value>رابط «المزيد»</value></data>
   <data name="Field_Url" xml:space="preserve"><value>الرابط</value></data>
   <data name="Field_Title" xml:space="preserve"><value>العنوان</value></data>
@@ -116,7 +115,6 @@
   <data name="Ui_LangSwitchText" xml:space="preserve"><value>EN</value></data>
   <data name="Ui_LangSwitchAria" xml:space="preserve"><value>English</value></data>
   <data name="Ui_LangDrawerText" xml:space="preserve"><value>English</value></data>
-  <data name="Ui_ScrollHint" xml:space="preserve"><value>اكتشف المزيد</value></data>
   <data name="Ui_NavAria" xml:space="preserve"><value>القائمة الرئيسية</value></data>
   <data name="Ui_MenuAria" xml:space="preserve"><value>القائمة</value></data>
   <data name="Ui_FormFullName" xml:space="preserve"><value>الاسم الكامل</value></data>
@@ -125,7 +123,7 @@
   <data name="Ui_FormEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
   <data name="Ui_FormEmailPlaceholder" xml:space="preserve"><value>example@email.com</value></data>
   <data name="Ui_FormPhone" xml:space="preserve"><value>رقم الهاتف</value></data>
-  <data name="Ui_FormPhonePlaceholder" xml:space="preserve"><value>+962 7XX XXX XXX</value></data>
+  <data name="Ui_FormPhonePlaceholder" xml:space="preserve"><value>+20 1XX XXX XXXX</value></data>
   <data name="Ui_FormInterest" xml:space="preserve"><value>مجال الاهتمام</value></data>
   <data name="Ui_FormInterestPlaceholder" xml:space="preserve"><value>اختر مجال اهتمامك</value></data>
   <data name="Ui_FormSubject" xml:space="preserve"><value>الموضوع</value></data>
@@ -140,5 +138,36 @@
   <data name="Ui_ContactPhone" xml:space="preserve"><value>الهاتف</value></data>
   <data name="Ui_ContactEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
   <data name="Ui_ContactHours" xml:space="preserve"><value>ساعات العمل</value></data>
-  <data name="Ui_TimeUtcLabel" xml:space="preserve"><value>UTC</value></data>
+  <data name="Ui_BreadcrumbAria" xml:space="preserve"><value>مسار التنقل</value></data>
+  <data name="Ui_SubmenuToggle" xml:space="preserve"><value>عرض الصفحات الفرعية</value></data>
+  <data name="Ui_Explore" xml:space="preserve"><value>استكشف</value></data>
+  <data name="Ui_ViewAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="Ui_PagerAria" xml:space="preserve"><value>صفحات القائمة</value></data>
+  <data name="Ui_PreviousPage" xml:space="preserve"><value>السابق</value></data>
+  <data name="Ui_NextPage" xml:space="preserve"><value>التالي</value></data>
+  <data name="Ui_PageOf" xml:space="preserve"><value>صفحة {0} من {1}</value></data>
+  <data name="Ui_NotFoundTitle" xml:space="preserve"><value>الصفحة غير موجودة</value></data>
+  <data name="Ui_NotFoundText" xml:space="preserve"><value>ربما نُقلت هذه الصفحة أو لم تعد متاحة. يمكنك المتابعة من إحدى الصفحات التالية:</value></data>
+  <data name="Ui_ContactWhatsApp" xml:space="preserve"><value>واتساب</value></data>
+  <data name="Ui_ContactWebsite" xml:space="preserve"><value>الموقع الإلكتروني</value></data>
+  <data name="Ui_ContactSocial" xml:space="preserve"><value>تابعنا</value></data>
+  <data name="Ui_SkipToContent" xml:space="preserve"><value>انتقل إلى المحتوى</value></data>
+  <data name="Ui_BackToTop" xml:space="preserve"><value>العودة إلى الأعلى</value></data>
+  <data name="Field_Intro" xml:space="preserve"><value>النص التمهيدي</value></data>
+  <data name="Field_IntroEn" xml:space="preserve"><value>النص التمهيدي (الإنجليزية)</value></data>
+  <data name="Field_Body" xml:space="preserve"><value>النص الرئيسي</value></data>
+  <data name="Field_BodyEn" xml:space="preserve"><value>النص الرئيسي (الإنجليزية)</value></data>
+  <data name="Field_EmptyText" xml:space="preserve"><value>نص «قريباً»</value></data>
+  <data name="Field_EmptyTextEn" xml:space="preserve"><value>نص «قريباً» (الإنجليزية)</value></data>
+  <data name="Field_MetaTitle" xml:space="preserve"><value>عنوان محركات البحث</value></data>
+  <data name="Field_MetaTitleEn" xml:space="preserve"><value>عنوان محركات البحث (الإنجليزية)</value></data>
+  <data name="Field_MetaDescription" xml:space="preserve"><value>وصف محركات البحث</value></data>
+  <data name="Field_MetaDescriptionEn" xml:space="preserve"><value>وصف محركات البحث (الإنجليزية)</value></data>
+  <data name="Admin_PageSaved" xml:space="preserve"><value>تم حفظ الصفحة بنجاح</value></data>
+  <data name="Admin_PageMenuToggled" xml:space="preserve"><value>تم تحديث ظهور الصفحة في القائمة</value></data>
+  <data name="Admin_OrderChanged" xml:space="preserve"><value>تم تغيير الترتيب</value></data>
+  <data name="Admin_ItemAdded" xml:space="preserve"><value>تمت إضافة العنصر بنجاح</value></data>
+  <data name="Admin_ItemUpdated" xml:space="preserve"><value>تم تحديث العنصر بنجاح</value></data>
+  <data name="Admin_ItemDeleted" xml:space="preserve"><value>تم حذف العنصر</value></data>
+  <data name="Admin_StatusToggled" xml:space="preserve"><value>تم تغيير حالة الظهور</value></data>
 </root>

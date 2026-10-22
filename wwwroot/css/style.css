@@ -1,39 +1,67 @@
-/* Cairo is loaded by the layouts' <link> (weights in use only); a second @import here was a chained, render-blocking request. */
+/* Cairo and Montserrat are loaded by the layout's <link> (weights in use only); a second @import here was a chained, render-blocking request. */
 
 /* ==========================================
-   DESIGN SYSTEM & VARIABLES - Innovest Holding
-   Brand: Navy #15183F | Gold #B87332 | White
+   DESIGN TOKENS - Innovest Holding brand
+   Navy #111145 / #233082 | Orange #F78610 | Cream #F4F1EA (sampled from the logo and the company profile)
+   Contrast rules: orange buttons carry navy text; orange is never small text on a light background
+   (use --accent-ink, 24px+ bold, or navy). The older names (--navy, --navy-light…) are kept as aliases of the
+   brand values so every existing rule follows the new palette.
    ========================================== */
 :root {
-  /* Brand Colors */
-  --navy: #15183F;
-  --navy-light: #1E2456;
-  --navy-lighter: #2A2F6B;
-  --navy-dark: #0E1029;
-  --navy-rgb: 21, 24, 63;
+  /* Brand */
+  --navy-deep: #111145;
+  --navy-brand: #233082;
+  --navy-mid: #1B1F66;
+  --navy-night: #0B0B2E;
+  --orange: #F78610;
+  --orange-ink: #AD5600;
+  /* Form status colours (light surfaces, then dark surfaces). */
+  --status-ok: #15803d;
+  --status-error: #b91c1c;
+  --status-ok-on-dark: #86efac;
+  --status-error-on-dark: #fca5a5;
+  --status-ok-rgb: 34, 197, 94;
+  --status-error-rgb: 239, 68, 68;
+  --orange-glow-1: #FFB45C;
+  --orange-glow-2: #F78610;
+  --orange-glow-3: #C8501A;
+  --cream: #F4F1EA;
+  --peach: rgba(251, 217, 181, 0.55);
 
-  --gold: #B87332;
-  --gold-light: #D4A060;
-  --gold-lighter: #E8C48A;
-  --gold-dark: #9A5E28;
-  --gold-rgb: 184, 115, 50;
+  /* Aliases used across the stylesheets */
+  --navy: var(--navy-deep);
+  --navy-light: var(--navy-mid);
+  --navy-lighter: var(--navy-brand);
+  --navy-dark: var(--navy-night);
+  --navy-rgb: 17, 17, 69;
+
+  --accent: var(--orange);
+  --accent-light: var(--orange-glow-1);
+  --accent-lighter: #FFD2A1;
+  --accent-dark: var(--orange-glow-3);
+  --accent-ink: var(--orange-ink);
+  --accent-rgb: 247, 134, 16;
 
   /* Neutrals */
   --white: #FFFFFF;
-  --off-white: #F8F9FC;
-  --light-gray: #F0F1F5;
-  --border-color: #E2E4ED;
-  --text-dark: #15183F;
-  --text-body: #4A4D6B;
-  --text-muted: #7B7E98;
+  --off-white: var(--cream);
+  --light-gray: #ECE9E1;
+  --border-color: #E3E1DA;
+  --border-on-dark: rgba(255, 255, 255, 0.12);
+  --text-dark: var(--navy-deep);
+  --text-body: #4A4F7A;
+  --text-muted: #6B6F94;
   --text-light: #FFFFFF;
+  --text-on-dark: #D9DCF0;
+  --text-on-dark-muted: #A8ADD6;
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(21, 24, 63, 0.06);
-  --shadow-md: 0 8px 24px rgba(21, 24, 63, 0.08);
-  --shadow-lg: 0 16px 48px rgba(21, 24, 63, 0.12);
-  --shadow-gold: 0 8px 24px rgba(184, 115, 50, 0.2);
-  --shadow-xl: 0 24px 64px rgba(21, 24, 63, 0.16);
+  --shadow-sm: 0 2px 8px rgba(17, 17, 69, 0.06);
+  --shadow-md: 0 8px 24px rgba(17, 17, 69, 0.08);
+  --shadow-lg: 0 16px 48px rgba(17, 17, 69, 0.12);
+  --shadow-card: 0 10px 30px rgba(17, 17, 69, 0.08);
+  --shadow-accent: 0 12px 40px rgba(247, 134, 16, 0.28);
+  --shadow-xl: 0 24px 64px rgba(17, 17, 69, 0.16);
 
   /* Border Radius */
   --radius-sm: 8px;
@@ -48,13 +76,15 @@
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Font */
-  --font-family: 'Cairo', sans-serif;
+  /* Font: Cairo for Arabic; Montserrat first for English pages (html[lang=en]) */
+  --font-family: 'Cairo', system-ui, sans-serif;
 
   /* Container */
   --container-max: 1200px;
   --header-height: 80px;
 }
+
+html[lang="en"] { --font-family: 'Montserrat', 'Cairo', system-ui, sans-serif; }
 
 /* ==========================================
    RESET & BASE STYLES
@@ -147,9 +177,9 @@ ul { list-style: none; }
   gap: 8px;
   padding: 6px 20px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, rgba(184, 115, 50, 0.08), rgba(184, 115, 50, 0.15));
-  border: 1px solid rgba(184, 115, 50, 0.2);
-  color: var(--gold);
+  background: linear-gradient(135deg, rgba(247, 134, 16, 0.08), rgba(247, 134, 16, 0.15));
+  border: 1px solid rgba(247, 134, 16, 0.3);
+  color: var(--accent-ink);
   font-size: 0.85rem;
   font-weight: 700;
   margin-bottom: 16px;
@@ -168,8 +198,9 @@ ul { list-style: none; }
   margin-bottom: 16px;
 }
 
+/* The highlighted part of a title: orange-ink on light backgrounds, orange on dark ones (see pages.css). */
 .section-title .gold {
-  color: var(--gold);
+  color: var(--accent-ink);
 }
 
 .section-title .white {
@@ -188,7 +219,7 @@ ul { list-style: none; }
   inset-inline-start: 0;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
   border-radius: var(--radius-full);
 }
 
@@ -220,28 +251,42 @@ ul { list-style: none; }
   overflow: hidden;
 }
 
-.btn-gold {
-  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-  color: var(--text-light);
-  box-shadow: var(--shadow-gold);
+/* Primary: orange with NAVY text (white on orange fails contrast, 2.5:1). */
+.btn-accent {
+  background: linear-gradient(135deg, var(--accent-light), var(--accent));
+  color: var(--navy-deep);
+  box-shadow: var(--shadow-accent);
 }
 
-.btn-gold:hover {
-  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+.btn-accent:hover {
+  background: linear-gradient(135deg, var(--accent-lighter), var(--accent-light));
   transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(184, 115, 50, 0.35);
+  box-shadow: 0 12px 32px rgba(247, 134, 16, 0.35);
 }
 
-.btn-gold-outline {
+/* Secondary on dark backgrounds. */
+.btn-outline-light {
   background: transparent;
-  color: var(--gold-light);
-  border: 2px solid rgba(184, 115, 50, 0.4);
+  color: var(--text-light);
+  border: 2px solid rgba(255, 255, 255, 0.35);
 }
 
-.btn-gold-outline:hover {
-  background: rgba(184, 115, 50, 0.1);
-  border-color: var(--gold);
-  color: var(--gold-lighter);
+.btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+
+/* Secondary on light backgrounds. */
+.btn-outline {
+  background: transparent;
+  color: var(--navy-brand);
+  border: 2px solid var(--navy-brand);
+}
+
+.btn-outline:hover {
+  background: var(--navy-brand);
+  color: var(--text-light);
   transform: translateY(-3px);
 }
 
@@ -288,10 +333,10 @@ ul { list-style: none; }
   right: 0;
   width: 100%;
   z-index: 1000;
-  background: rgba(21, 24, 63, 0.95);
+  background: rgba(17, 17, 69, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(184, 115, 50, 0.15);
+  border-bottom: 1px solid rgba(247, 134, 16, 0.15);
   transition: var(--transition-normal);
   /* Clip sideways only: anything wider than the header stays hidden, but the desktop dropdown can open BELOW it.
      ("overflow: hidden" clipped the dropdown to the header's height.) "clip" on one axis keeps the other visible. */
@@ -300,7 +345,7 @@ ul { list-style: none; }
 }
 
 #main-header.scrolled {
-  background: rgba(14, 16, 41, 0.98);
+  background: rgba(11, 11, 46, 0.98);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 }
 
@@ -328,7 +373,7 @@ ul { list-style: none; }
   transform: translateY(-50%);
   width: 2px;
   height: 36px;
-  background: linear-gradient(180deg, transparent, var(--gold), transparent);
+  background: linear-gradient(180deg, transparent, var(--accent), transparent);
   border-radius: var(--radius-full);
 }
 
@@ -357,13 +402,13 @@ ul { list-style: none; }
 }
 
 .nav-link:hover {
-  color: var(--gold-light);
-  background: rgba(184, 115, 50, 0.08);
+  color: var(--accent-light);
+  background: rgba(247, 134, 16, 0.08);
 }
 
 .nav-link.active {
-  color: var(--gold);
-  background: rgba(184, 115, 50, 0.12);
+  color: var(--accent);
+  background: rgba(247, 134, 16, 0.12);
 }
 
 /* Dropdown */
@@ -394,7 +439,7 @@ ul { list-style: none; }
   inset-inline-start: 0;
   min-width: 260px;
   background: var(--navy);
-  border: 1px solid rgba(184, 115, 50, 0.15);
+  border: 1px solid rgba(247, 134, 16, 0.15);
   border-radius: var(--radius-md);
   padding: 10px;
   opacity: 0;
@@ -445,14 +490,14 @@ ul { list-style: none; }
 }
 
 .dropdown-item:hover {
-  background: rgba(184, 115, 50, 0.12);
-  color: var(--gold-light);
+  background: rgba(247, 134, 16, 0.12);
+  color: var(--accent-light);
 }
 
 .dropdown-item svg {
   width: 18px;
   height: 18px;
-  color: var(--gold);
+  color: var(--accent);
   opacity: 0.6;
   flex-shrink: 0;
 }
@@ -485,14 +530,14 @@ ul { list-style: none; }
 }
 
 .btn-lang:hover {
-  background: rgba(184, 115, 50, 0.15);
-  color: var(--gold-light);
-  border-color: rgba(184, 115, 50, 0.3);
+  background: rgba(247, 134, 16, 0.15);
+  color: var(--accent-light);
+  border-color: rgba(247, 134, 16, 0.3);
 }
 
 .nav-cta {
-  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-  color: var(--text-light);
+  background: linear-gradient(135deg, var(--accent-light), var(--accent));
+  color: var(--navy-deep);
   padding: 9px 22px;
   font-size: 0.85rem;
   font-weight: 700;
@@ -501,8 +546,8 @@ ul { list-style: none; }
 }
 
 .nav-cta:hover {
-  background: linear-gradient(135deg, var(--gold-light), var(--gold));
-  box-shadow: 0 4px 16px rgba(184, 115, 50, 0.35);
+  background: linear-gradient(135deg, var(--accent-light), var(--accent));
+  box-shadow: 0 4px 16px rgba(247, 134, 16, 0.35);
   transform: translateY(-2px);
 }
 
@@ -566,7 +611,7 @@ ul { list-style: none; }
   transition: inset-inline-end var(--transition-slow);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  border-inline-start: 2px solid rgba(184, 115, 50, 0.2);
+  border-inline-start: 2px solid rgba(247, 134, 16, 0.2);
   overscroll-behavior: contain;
 }
 
@@ -594,7 +639,7 @@ ul { list-style: none; }
 
 .mobile-nav .nav-link:hover,
 .mobile-nav .nav-link.active {
-  background: rgba(184, 115, 50, 0.1);
+  background: rgba(247, 134, 16, 0.1);
 }
 
 /* Mobile dropdown trigger arrow rotation */
@@ -644,8 +689,8 @@ ul { list-style: none; }
 
 .mobile-dropdown-items a:hover,
 .mobile-dropdown-items a:active {
-  color: var(--gold-light);
-  background: rgba(184, 115, 50, 0.08);
+  color: var(--accent-light);
+  background: rgba(247, 134, 16, 0.08);
 }
 
 .mobile-overlay {
@@ -655,7 +700,7 @@ ul { list-style: none; }
   width: 100vw;
   height: 100vh;
   height: 100dvh;
-  background: rgba(14, 16, 41, 0.6);
+  background: rgba(11, 11, 46, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 998;
@@ -687,7 +732,7 @@ footer::before {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
 }
 
 .footer-top {
@@ -743,9 +788,9 @@ footer::before {
 }
 
 .social-link:hover {
-  background: rgba(184, 115, 50, 0.15);
-  border-color: rgba(184, 115, 50, 0.3);
-  color: var(--gold-light);
+  background: rgba(247, 134, 16, 0.15);
+  border-color: rgba(247, 134, 16, 0.3);
+  color: var(--accent-light);
   transform: translateY(-3px);
 }
 
@@ -770,7 +815,7 @@ footer::before {
   inset-inline-start: 0;
   width: 30px;
   height: 2px;
-  background: var(--gold);
+  background: var(--accent);
   border-radius: var(--radius-full);
 }
 
@@ -790,7 +835,7 @@ footer::before {
 }
 
 .footer-link:hover {
-  color: var(--gold-light);
+  color: var(--accent-light);
   padding-inline-start: 6px;
 }
 
@@ -816,7 +861,7 @@ footer::before {
 .footer-contact-item svg {
   width: 18px;
   height: 18px;
-  color: var(--gold);
+  color: var(--accent);
   flex-shrink: 0;
   margin-top: 4px;
 }
@@ -832,7 +877,7 @@ footer::before {
 }
 
 .footer-bottom a {
-  color: var(--gold);
+  color: var(--accent);
   opacity: 0.7;
 }
 
@@ -964,7 +1009,7 @@ a.btn-lang { text-decoration: none; line-height: normal; }
   color: rgba(255, 255, 255, 0.85);
   font-weight: 600;
 }
-.mobile-lang-link:hover { background: rgba(184, 115, 50, 0.1); color: var(--gold-light); }
+.mobile-lang-link:hover { background: rgba(247, 134, 16, 0.1); color: var(--accent-light); }
 
 /* Keyboard focus is visible (the reset above removes the outline of form controls). */
 .btn-lang:focus-visible,
@@ -973,7 +1018,7 @@ a.btn-lang { text-decoration: none; line-height: normal; }
 .footer-link:focus-visible,
 .form-control:focus-visible,
 .hamburger:focus-visible {
-  outline: 2px solid var(--gold-light);
+  outline: 2px solid var(--accent-light);
   outline-offset: 2px;
 }
 

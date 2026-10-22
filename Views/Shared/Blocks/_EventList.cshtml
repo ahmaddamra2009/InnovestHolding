@@ -1,0 +1,43 @@
+@model EventsBlock
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+<div class="event-list">
+  @foreach (var e in Model.Events)
+  {
+    <article class="event-row reveal">
+      <div class="event-date-box">
+        <div class="event-date-day">@e.Day.ToString(inv)</div>
+        <div class="event-date-month" lang="@e.Month.Lang" dir="@e.Month.Dir">@e.Month</div>
+      </div>
+      <div class="event-info">
+        <h3 lang="@e.Title.Lang" dir="@e.Title.Dir">@e.Title</h3>
+        <p lang="@e.Description.Lang" dir="@e.Description.Dir">@e.Description</p>
+        <div class="event-meta">
+          @if (!e.Location.IsEmpty)
+          {
+            <span class="event-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span lang="@e.Location.Lang" dir="@e.Location.Dir">@e.Location</span>
+            </span>
+          }
+          @if (!e.Time.IsEmpty)
+          {
+            <span class="event-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span lang="@e.Time.Lang" dir="@e.Time.Dir">@e.Time</span>
+            </span>
+          }
+        </div>
+      </div>
+      @if (Model.Action is { } action)
+      {
+        <a href="@action.Href" class="event-register-btn" lang="@action.Title.Lang" dir="@action.Title.Dir">@action.Title</a>
+      }
+    </article>
+  }
+</div>
+@if (Model.Pager is not null)
+{
+  <partial name="Blocks/_Pager" model="Model.Pager" />
+}

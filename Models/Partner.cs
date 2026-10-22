@@ -13,4 +13,7 @@ public class Partner
     public string? NameEn { get; set; }
 
     public int SortOrder { get; set; }
+
+    /// <summary>Shown on the public site.</summary>
+    public bool IsActive { get; set; } = true;
 }

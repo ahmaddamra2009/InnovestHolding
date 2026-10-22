@@ -8,7 +8,7 @@ namespace InnovestHolding.Models;
 /// </summary>
 public class SocialLink
 {
-    public static readonly IReadOnlyList<string> Networks = ["linkedin", "twitter", "instagram", "youtube"];
+    public static readonly IReadOnlyList<string> Networks = ["linkedin", "twitter", "instagram", "youtube", "facebook", "tiktok", "linktree"];
 
     public int Id { get; set; }
 

@@ -1,7 +1,8 @@
 @model List<Platform>
-@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "إدارة المنصات"; }
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "الخدمات"; }
 <div class="admin-card">
-    <div class="admin-card-header"><span class="admin-card-title">المنصات (@Model.Count)</span></div>
+    <div class="admin-card-header"><span class="admin-card-title">الخدمات (@Model.Count)</span></div>
+    <p class="form-hint" style="margin-bottom:12px;">بطاقات «خدماتنا» في الصفحة الرئيسية وصفحة المنظومة. الوصف: كل سطر نقطة في القائمة.</p>
     @foreach (var item in Model)
     {
         var prefix = $"pl{item.Id}-";
@@ -10,13 +11,14 @@
             <div class="row-form-head">
                 <strong>@item.TitleAr</strong>
                 <partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TitleEn) && (string.IsNullOrWhiteSpace(item.DescriptionAr) || !string.IsNullOrWhiteSpace(item.DescriptionEn)))" />
+                <button type="submit" form="toggle-@item.Id" class="@(item.IsActive ? "badge-active" : "badge-inactive")" style="border:0;cursor:pointer;" title="تبديل الظهور">@(item.IsActive ? "ظاهرة" : "مخفية")</button>
             </div>
-            <lang-pair label="اسم المنصة" name-ar="TitleAr" name-en="TitleEn" value-ar="@item.TitleAr" value-en="@item.TitleEn" max="200" required="true" id-prefix="@prefix" />
-            <lang-pair label="الوصف" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@item.DescriptionAr" value-en="@item.DescriptionEn" max="4000" rows="2" id-prefix="@prefix" />
+            <lang-pair label="اسم الخدمة" name-ar="TitleAr" name-en="TitleEn" value-ar="@item.TitleAr" value-en="@item.TitleEn" max="200" required="true" id-prefix="@prefix" />
+            <lang-pair label="الوصف (كل سطر نقطة)" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@item.DescriptionAr" value-en="@item.DescriptionEn" max="4000" rows="2" id-prefix="@prefix" />
             <lang-pair label="الاسم المختصر في الفوتر (اختياري)" name-ar="ShortTitleAr" name-en="ShortTitleEn" value-ar="@item.ShortTitleAr" value-en="@item.ShortTitleEn" max="100" id-prefix="@prefix" />
             <lang-pair label="رابط «اعرف المزيد» (اختياري — لا يظهر الرابط إن تُرك فارغاً)" name-ar="LinkUrl" value-ar="@item.LinkUrl" max="500" ltr="true" placeholder="https://" id-prefix="@prefix" />
-            <div class="form-check" style="margin-bottom:12px;"><input type="checkbox" name="ShowInFooter" value="true" @(item.ShowInFooter ? "checked" : "")> <label>يظهر في عمود «منصاتنا» بالفوتر</label></div>
             <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
         </form>
+        <form method="post" asp-action="Toggle" asp-controller="Platforms" id="toggle-@item.Id"><input type="hidden" name="id" value="@item.Id"></form>
     }
 </div>

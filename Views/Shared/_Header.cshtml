@@ -1,0 +1,138 @@
+@model ShellVm
+@using InnovestHolding.Infrastructure.Site
+@using InnovestHolding.Infrastructure.Seo
+@{
+    var siteName = Model.Content.Text("site_name");
+    var other = Model.OtherLang;
+    const string chevron = "<polyline points=\"6 9 12 15 18 9\"></polyline>";
+}
+<header id="main-header" class="@(Model.OverHero ? "is-over-hero" : "is-solid")">
+  <div class="container nav-container">
+    <a href="@Model.HomeUrl" class="logo-area" aria-label="@siteName">
+      <picture>
+        <source type="image/webp" srcset="@Context.Versioned(BrandAssets.LogoOnDarkWebp) 1x, @Context.Versioned(BrandAssets.LogoOnDark2x) 2x">
+        <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" class="logo-img" width="240" height="61" fetchpriority="high">
+      </picture>
+    </a>
+
+    <nav class="nav-links" aria-label="@L[K.Ui.NavAria]">
+      @foreach (var item in Model.Menu)
+      {
+        if (item.Children.Count > 0)
+        {
+          var panelId = "mega-" + item.Key.Replace('.', '-');
+          <div class="nav-dropdown">
+            <a href="@item.Href" class="nav-link@(item.Active ? " active" : "")" aria-haspopup="true" aria-expanded="false" aria-controls="@panelId" lang="@item.Title.Lang" dir="@item.Title.Dir">
+              @item.Title
+              <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
+            </a>
+            <div class="dropdown-menu mega-menu" id="@panelId">
+              <a href="@item.Href" class="mega-all" lang="@item.Title.Lang" dir="@item.Title.Dir">
+                <span class="tri-mark" aria-hidden="true"></span>@item.Title
+              </a>
+              <div class="mega-cols">
+                @for (var u = 0; u < item.Children.Count; u++)
+                {
+                  var unit = item.Children[u];
+                  <div class="mega-col">
+                    <a href="@unit.Href" class="mega-unit@(unit.Active ? " active" : "")">
+                      <span class="mega-num">@((u + 1).ToString("00", System.Globalization.CultureInfo.InvariantCulture))</span>
+                      <strong lang="@unit.Title.Lang" dir="@unit.Title.Dir">@unit.Title</strong>
+                      @if (!unit.Summary.IsEmpty)
+                      {
+                        <span class="mega-summary" lang="@unit.Summary.Lang" dir="@unit.Summary.Dir">@unit.Summary</span>
+                      }
+                    </a>
+                    @if (unit.Children.Count > 0)
+                    {
+                      <ul class="mega-links">
+                        @foreach (var pg in unit.Children)
+                        {
+                          <li><a href="@pg.Href" class="@(pg.Active ? "active" : null)" aria-current="@(pg.Active ? "page" : null)" lang="@pg.Title.Lang" dir="@pg.Title.Dir">@pg.Title</a></li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+        else
+        {
+          <a href="@item.Href" class="nav-link@(item.Active ? " active" : "")" aria-current="@(item.Active ? "page" : null)" lang="@item.Title.Lang" dir="@item.Title.Dir">@item.Title</a>
+        }
+      }
+      @foreach (var link in Model.ExtraLinks)
+      {
+        <a href="@link.Href" class="nav-link" lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</a>
+      }
+    </nav>
+
+    <div class="nav-actions">
+      <a class="btn-lang" id="lang-switch" href="@Model.OtherLanguageUrl" hreflang="@other" lang="@other" rel="alternate" aria-label="@L[K.Ui.LangSwitchAria]">@L[K.Ui.LangSwitchText]</a>
+      <a href="@Model.Cta.Href" class="nav-cta" lang="@Model.Cta.Title.Lang" dir="@Model.Cta.Title.Dir">@Model.Cta.Title</a>
+      <button type="button" class="hamburger" id="hamburger-menu" aria-label="@L[K.Ui.MenuAria]" aria-expanded="false" aria-controls="mobile-nav-drawer">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile navigation drawer -->
+<div class="mobile-overlay" id="nav-overlay"></div>
+<div class="mobile-nav" id="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="@L[K.Ui.MenuAria]">
+  <div class="mobile-nav-head">
+    <a class="mobile-lang-link" href="@Model.OtherLanguageUrl" hreflang="@other" lang="@other" rel="alternate">@L[K.Ui.LangDrawerText]</a>
+  </div>
+  <nav class="nav-links" aria-label="@L[K.Ui.NavAria]">
+    @foreach (var item in Model.Menu)
+    {
+      if (item.Children.Count > 0)
+      {
+        var listId = "m-" + item.Key.Replace('.', '-');
+        <div class="mobile-row">
+          <a href="@item.Href" class="nav-link@(item.Active ? " active" : "")" lang="@item.Title.Lang" dir="@item.Title.Dir">@item.Title</a>
+          <button type="button" class="mobile-dropdown-trigger" aria-expanded="false" aria-controls="@listId" aria-label="@L[K.Ui.SubmenuToggle]: @item.Title">
+            <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
+          </button>
+        </div>
+        <div class="mobile-dropdown-items" id="@listId">
+          @foreach (var unit in item.Children)
+          {
+            var unitId = "m-" + unit.Key.Replace('.', '-');
+            <div class="mobile-row mobile-row-unit">
+              <a href="@unit.Href" class="@(unit.Active ? "active" : null)" lang="@unit.Title.Lang" dir="@unit.Title.Dir">@unit.Title</a>
+              @if (unit.Children.Count > 0)
+              {
+                <button type="button" class="mobile-dropdown-trigger" aria-expanded="false" aria-controls="@unitId" aria-label="@L[K.Ui.SubmenuToggle]: @unit.Title">
+                  <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
+                </button>
+              }
+            </div>
+            @if (unit.Children.Count > 0)
+            {
+              <div class="mobile-dropdown-items mobile-dropdown-sub" id="@unitId">
+                @foreach (var pg in unit.Children)
+                {
+                  <a href="@pg.Href" class="@(pg.Active ? "active" : null)" lang="@pg.Title.Lang" dir="@pg.Title.Dir">@pg.Title</a>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+      else
+      {
+        <a href="@item.Href" class="nav-link@(item.Active ? " active" : "")" lang="@item.Title.Lang" dir="@item.Title.Dir">@item.Title</a>
+      }
+    }
+    @foreach (var link in Model.ExtraLinks)
+    {
+      <a href="@link.Href" class="nav-link" lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</a>
+    }
+  </nav>
+  <a href="@Model.Cta.Href" class="btn btn-accent mobile-cta" lang="@Model.Cta.Title.Lang" dir="@Model.Cta.Title.Dir">@Model.Cta.Title</a>
+</div>

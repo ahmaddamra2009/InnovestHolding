@@ -1,0 +1,59 @@
+@model ItemsBlock
+@using InnovestHolding.Infrastructure.Content
+<section class="page-section@(Model.Dark ? " is-dark" : Model.Compact ? " is-cream" : "")" aria-labelledby="sec-@Model.Group">
+  <div class="container">
+    <div class="block-head">
+      <h2 class="block-title" id="sec-@Model.Group" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+      @if (!Model.Intro.IsEmpty)
+      {
+        <p class="block-intro" lang="@Model.Intro.Lang" dir="@Model.Intro.Dir">@Model.Intro</p>
+      }
+    </div>
+    @if (Model.Compact)
+    {
+      <ul class="chip-list">
+        @foreach (var item in Model.Items)
+        {
+          <li class="chip-item">
+            @if (item.IconSvg is not null)
+            {
+              <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(item.IconSvg)</svg>
+            }
+            else
+            {
+              <span class="tri-bullet" aria-hidden="true"></span>
+            }
+            <span lang="@item.Text.Lang" dir="@item.Text.Dir">@item.Text</span>
+          </li>
+        }
+      </ul>
+    }
+    else
+    {
+      <ul class="item-grid">
+        @for (var i = 0; i < Model.Items.Count; i++)
+        {
+          var item = Model.Items[i];
+          <li class="item-card reveal@(HomeViewModel.Delay(i % 6 + 1))">
+            <span class="card-corner" aria-hidden="true"></span>
+            <div class="item-icon">
+              @if (item.IconSvg is not null)
+              {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(item.IconSvg)</svg>
+              }
+              else
+              {
+                <span class="item-number">@((i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture))</span>
+              }
+            </div>
+            <h3 lang="@item.Text.Lang" dir="@item.Text.Dir">@item.Text</h3>
+            @if (!item.Description.IsEmpty)
+            {
+              <p lang="@item.Description.Lang" dir="@item.Description.Dir">@item.Description</p>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</section>

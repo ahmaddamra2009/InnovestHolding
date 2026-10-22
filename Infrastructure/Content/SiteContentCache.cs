@@ -4,11 +4,15 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace InnovestHolding.Infrastructure.Content;
 
-// Immutable, culture-independent rows of everything the home page shows (both languages). Never EF entities: the
-// snapshot is shared across requests and threads.
+// Immutable, culture-independent rows of everything the shell (header, footer, breadcrumbs) and the static pages show,
+// in both languages. Never EF entities: the snapshot is shared across requests and threads.
 public sealed record TextPair(string Ar, string? En);
 public sealed record NavSubRow(string TitleAr, string? TitleEn, string Href, string? IconSvg);
 public sealed record NavRow(string TitleAr, string? TitleEn, string Href, bool HasDropdown, bool ShowInFooter, IReadOnlyList<NavSubRow> SubItems);
+public sealed record PageRow(string Key, string TitleAr, string? TitleEn, string SummaryAr, string? SummaryEn, string IntroAr, string? IntroEn,
+    string BodyAr, string? BodyEn, string EmptyTextAr, string? EmptyTextEn, string MetaTitleAr, string? MetaTitleEn,
+    string MetaDescriptionAr, string? MetaDescriptionEn, bool ShowInMenu, int SortOrder, DateTime UpdatedAt);
+public sealed record ItemRow(string TextAr, string? TextEn, string? DescriptionAr, string? DescriptionEn, string? IconKey);
 public sealed record PlatformRow(string TitleAr, string? TitleEn, string DescriptionAr, string? DescriptionEn,
     string? ShortTitleAr, string? ShortTitleEn, string? LinkUrl, bool ShowInFooter, string IconSvg);
 public sealed record StatRow(string LabelAr, string? LabelEn, string? ShortLabelAr, string? ShortLabelEn, int Value, string Suffix, string IconSvg);
@@ -20,8 +24,13 @@ public sealed record FaqRow(string QuestionAr, string? QuestionEn, string Answer
 public sealed record InterestRow(int Id, string NameAr, string? NameEn);
 public sealed record SocialRow(string Network, string Url);
 
-public sealed record HomeSnapshot(
+/// <summary>How many active rows a list page has, overall and with the English text its cards need.</summary>
+public sealed record ListCount(int Total, int English);
+
+public sealed record SiteSnapshot(
     IReadOnlyDictionary<string, TextPair> Content,
+    IReadOnlyDictionary<string, PageRow> Pages,
+    IReadOnlyDictionary<string, IReadOnlyList<ItemRow>> Items,
     IReadOnlyList<NavRow> Nav,
     IReadOnlyList<PlatformRow> Platforms,
     IReadOnlyList<StatRow> Stats,
@@ -31,33 +40,42 @@ public sealed record HomeSnapshot(
     IReadOnlyList<FaqRow> Faqs,
     IReadOnlyList<InterestRow> Interests,
     IReadOnlyList<TextPair> Benefits,
-    IReadOnlyList<SocialRow> Socials);
-
-public interface IHomeContentCache
+    IReadOnlyList<SocialRow> Socials,
+    ListCount NewsCount,
+    ListCount EventsCount,
+    ListCount PartnersCount)
 {
-    Task<HomeSnapshot> GetAsync(CancellationToken cancellationToken = default);
+    public IReadOnlyList<ItemRow> ItemsOf(string group) => Items.GetValueOrDefault(group) ?? [];
+
+    public PageRow? Page(string key) => Pages.GetValueOrDefault(key);
+}
+
+public interface ISiteContentCache
+{
+    Task<SiteSnapshot> GetAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Drops the snapshot; the next request reloads it from the database.</summary>
     void Invalidate();
 }
 
 /// <summary>
-/// One cached snapshot of the home page data (singleton over IMemoryCache). A cache hit costs 0 queries; a miss
-/// runs 11 AsNoTracking projections on one context, behind a semaphore so an expiry never causes a stampede.
-/// Invalidated on every admin save by <see cref="ContentCacheInvalidationInterceptor"/>; the absolute expiry is only
-/// a safety net for edits made outside the app (e.g. SQL run on the server).
+/// One cached snapshot of the site's content (singleton over IMemoryCache). A cache hit costs 0 queries — the home page,
+/// every static page and the shell of every page are served from it; a miss runs the projections below on one context,
+/// behind a semaphore so an expiry never causes a stampede. Invalidated on every admin save by
+/// <see cref="ContentCacheInvalidationInterceptor"/>; the absolute expiry is only a safety net for edits made outside
+/// the app (e.g. SQL run on the server).
 /// </summary>
-public sealed class HomeContentCache(IMemoryCache cache, IServiceScopeFactory scopes) : IHomeContentCache
+public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory scopes) : ISiteContentCache
 {
-    private const string CacheKey = "home-snapshot";
+    private const string CacheKey = "site-snapshot";
     public static readonly TimeSpan SafetyExpiry = TimeSpan.FromMinutes(10);
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private long _generation;
 
-    public async Task<HomeSnapshot> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<SiteSnapshot> GetAsync(CancellationToken cancellationToken = default)
     {
-        if (cache.TryGetValue(CacheKey, out HomeSnapshot? hit) && hit is not null) return hit;
+        if (cache.TryGetValue(CacheKey, out SiteSnapshot? hit) && hit is not null) return hit;
 
         await _gate.WaitAsync(cancellationToken);
         try
@@ -83,7 +101,9 @@ public sealed class HomeContentCache(IMemoryCache cache, IServiceScopeFactory sc
         cache.Remove(CacheKey);
     }
 
-    private async Task<HomeSnapshot> LoadAsync(CancellationToken ct)
+    private static bool Has(string? value) => !string.IsNullOrWhiteSpace(value);
+
+    private async Task<SiteSnapshot> LoadAsync(CancellationToken ct)
     {
         using var scope = scopes.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -91,6 +111,23 @@ public sealed class HomeContentCache(IMemoryCache cache, IServiceScopeFactory sc
         var content = await db.SiteContents.AsNoTracking()
             .Select(c => new { c.SectionKey, c.ContentAr, c.ContentEn })
             .ToDictionaryAsync(c => c.SectionKey, c => new TextPair(c.ContentAr, c.ContentEn), ct);
+
+        var pages = await db.Pages.AsNoTracking()
+            .Select(p => new PageRow(p.Key, p.TitleAr, p.TitleEn, p.SummaryAr, p.SummaryEn, p.IntroAr, p.IntroEn, p.BodyAr, p.BodyEn,
+                p.EmptyTextAr, p.EmptyTextEn, p.MetaTitleAr, p.MetaTitleEn, p.MetaDescriptionAr, p.MetaDescriptionEn,
+                p.ShowInMenu, p.SortOrder, p.UpdatedAt))
+            .ToDictionaryAsync(p => p.Key, StringComparer.Ordinal, ct);
+
+        var itemRows = await db.ContentItems.AsNoTracking()
+            .Where(i => i.IsActive)
+            .OrderBy(i => i.Group).ThenBy(i => i.SortOrder).ThenBy(i => i.Id)
+            .Select(i => new { i.Group, i.TextAr, i.TextEn, i.DescriptionAr, i.DescriptionEn, i.IconKey })
+            .ToListAsync(ct);
+        var items = itemRows
+            .GroupBy(i => i.Group, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key,
+                g => (IReadOnlyList<ItemRow>)g.Select(x => new ItemRow(x.TextAr, x.TextEn, x.DescriptionAr, x.DescriptionEn, x.IconKey)).ToList(),
+                StringComparer.Ordinal);
 
         var nav = await db.NavItems.AsNoTracking()
             .Where(n => n.IsActive)
@@ -101,6 +138,7 @@ public sealed class HomeContentCache(IMemoryCache cache, IServiceScopeFactory sc
             .ToListAsync(ct);
 
         var platforms = await db.Platforms.AsNoTracking()
+            .Where(p => p.IsActive)
             .OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
             .Select(p => new PlatformRow(p.TitleAr, p.TitleEn, p.DescriptionAr, p.DescriptionEn, p.ShortTitleAr,
                 p.ShortTitleEn, p.LinkUrl, p.ShowInFooter, p.IconSvg))
@@ -111,7 +149,7 @@ public sealed class HomeContentCache(IMemoryCache cache, IServiceScopeFactory sc
             .Select(s => new StatRow(s.LabelAr, s.LabelEn, s.ShortLabelAr, s.ShortLabelEn, s.Value, s.Suffix, s.IconSvg))
             .ToListAsync(ct);
 
-        // Bounded: the admin-set number of cards (one small read of a value already loaded above).
+        // Bounded: the admin-set number of home-page cards (one small read of a value already loaded above).
         var newsLimit = ContentKeys.ParseCount(content.GetValueOrDefault(ContentKeys.HomeNewsLimit)?.Ar, ContentKeys.HomeNewsLimitFallback);
         var news = await db.News.AsNoTracking()
             .Where(n => n.IsActive)
@@ -121,6 +159,11 @@ public sealed class HomeContentCache(IMemoryCache cache, IServiceScopeFactory sc
                 n.NewsDateAr, n.NewsDateEn, n.LinkUrl))
             .ToListAsync(ct);
 
+        // News can grow: counted in the database, not loaded.
+        var newsTotal = await db.News.CountAsync(n => n.IsActive, ct);
+        var newsEnglish = await db.News.CountAsync(n => n.IsActive && n.TitleEn != null && n.TitleEn != ""
+                                                        && n.SummaryEn != null && n.SummaryEn != "", ct);
+
         var events = await db.Events.AsNoTracking()
             .Where(e => e.IsActive)
             .OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
@@ -129,6 +172,7 @@ public sealed class HomeContentCache(IMemoryCache cache, IServiceScopeFactory sc
             .ToListAsync(ct);
 
         var partners = await db.Partners.AsNoTracking()
+            .Where(p => p.IsActive)
             .OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
             .Select(p => new TextPair(p.NameAr, p.NameEn))
             .ToListAsync(ct);
@@ -157,6 +201,9 @@ public sealed class HomeContentCache(IMemoryCache cache, IServiceScopeFactory sc
             .Select(s => new SocialRow(s.Network, s.Url!))
             .ToListAsync(ct);
 
-        return new HomeSnapshot(content, nav, platforms, stats, news, events, partners, faqs, interests, benefits, socials);
+        return new SiteSnapshot(content, pages, items, nav, platforms, stats, news, events, partners, faqs, interests, benefits, socials,
+            new ListCount(newsTotal, newsEnglish),
+            new ListCount(events.Count, events.Count(e => Has(e.TitleEn) && Has(e.DescriptionEn))),
+            new ListCount(partners.Count, partners.Count(p => Has(p.En))));
     }
 }

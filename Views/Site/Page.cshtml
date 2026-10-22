@@ -1,0 +1,118 @@
+@model SitePageVm
+@using InnovestHolding.Infrastructure.Content
+@{
+    ViewData["Seo"] = Model.Seo;
+    ViewData["Shell"] = Model.Shell;
+    var crumbs = Model.Shell.Breadcrumbs;
+}
+<section class="page-hero">
+  <span class="hero-tri hero-tri-a" aria-hidden="true"></span>
+  <span class="hero-tri hero-tri-b" aria-hidden="true"></span>
+  <div class="container">
+    @if (crumbs.Count > 0)
+    {
+      <nav class="breadcrumb" aria-label="@L[K.Ui.BreadcrumbAria]">
+        <ol>
+          @for (var i = 0; i < crumbs.Count; i++)
+          {
+            var c = crumbs[i];
+            var collapse = i > 0 && i < crumbs.Count - 2;
+            <li class="@(collapse ? "crumb-mid" : null)">
+              @if (c.Href is not null)
+              {
+                <a href="@c.Href" lang="@c.Title.Lang" dir="@c.Title.Dir">@c.Title</a>
+              }
+              else
+              {
+                <span aria-current="page" lang="@c.Title.Lang" dir="@c.Title.Dir">@c.Title</span>
+              }
+            </li>
+          }
+        </ol>
+      </nav>
+    }
+    <h1 class="page-title" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@Model.Title</h1>
+    @if (!Model.Intro.IsEmpty)
+    {
+      <p class="page-intro" lang="@Model.Intro.Lang" dir="@Model.Intro.Dir">@Model.Intro</p>
+    }
+  </div>
+</section>
+
+@if (Model.UnitTabs.Count > 0)
+{
+  <nav class="unit-tabs" aria-label="@Model.UnitTitle">
+    <div class="container unit-tabs-inner">
+      <ul>
+        @foreach (var tab in Model.UnitTabs)
+        {
+          <li><a href="@tab.Href" class="@(tab.Active ? "active" : null)" aria-current="@(tab.Active ? "page" : null)" lang="@tab.Title.Lang" dir="@tab.Title.Dir">@tab.Title</a></li>
+        }
+      </ul>
+    </div>
+  </nav>
+}
+
+@if (Model.Body.Count > 0)
+{
+  <section class="page-section page-body">
+    <div class="container narrow">
+      @foreach (var p in Model.Body)
+      {
+        <p lang="@p.Lang" dir="@p.Dir">@p</p>
+      }
+    </div>
+  </section>
+}
+
+@foreach (var block in Model.Blocks)
+{
+  switch (block)
+  {
+    case ItemsBlock items:
+      <partial name="Blocks/_Items" model="items" />
+      break;
+    case CardsBlock cards:
+      <partial name="Blocks/_Cards" model="cards" />
+      break;
+    case EventsBlock events:
+      <section class="page-section">
+        <div class="container">
+          <partial name="Blocks/_EventList" model="events" />
+        </div>
+      </section>
+      break;
+    case NewsBlock news:
+      <section class="page-section is-cream">
+        <div class="container">
+          <partial name="Blocks/_NewsGrid" model="news" />
+        </div>
+      </section>
+      break;
+    case RegisterBlock register:
+      <section class="registration-section page-form">
+        <div class="container">
+          <partial name="Blocks/_RegisterForm" model="register.Form" />
+        </div>
+      </section>
+      break;
+    case ContactBlock contact:
+      <section class="contact-section page-form">
+        <div class="container">
+          <partial name="Blocks/_ContactBlock" model="contact.Form" />
+        </div>
+      </section>
+      break;
+    case FaqBlock faq:
+      <section class="faq-section">
+        <div class="container">
+          <partial name="_SectionHeader" model="faq.Header" />
+          <partial name="Blocks/_Faq" model="faq.Faqs" />
+        </div>
+      </section>
+      break;
+    default:
+      <partial name="Blocks/_Misc" model="block" />
+      break;
+  }
+}

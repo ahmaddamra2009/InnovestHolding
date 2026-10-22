@@ -1,0 +1,50 @@
+@model InnovestHolding.Controllers.Admin.PagesIndexVm
+@using InnovestHolding.Infrastructure.Site
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "صفحات الموقع"; }
+<div class="admin-card">
+    <div class="admin-card-header">
+        <span class="admin-card-title">صفحات الموقع (@SiteRoutes.All.Count)</span>
+    </div>
+    <p class="form-hint" style="margin-bottom:12px;">عنوان الصفحة ونصوصها ونص «قريباً» وبيانات محركات البحث تُعدّل من «تعديل». إخفاء صفحة من القائمة لا يحذفها: تبقى متاحة برابطها.</p>
+    <table class="admin-table page-tree">
+        <thead><tr><th>الصفحة</th><th>الرابط</th><th>في القائمة</th><th>EN</th><th>إجراءات</th></tr></thead>
+        <tbody>
+        @foreach (var (pg, depth) in Model.Tree())
+        {
+            var row = Model.Rows.GetValueOrDefault(pg.Key);
+            var url = SiteRoutes.PathFor(pg, false);
+            var enDone = row is not null && !string.IsNullOrWhiteSpace(row.TitleEn) && !string.IsNullOrWhiteSpace(row.MetaTitleEn) && !string.IsNullOrWhiteSpace(row.MetaDescriptionEn);
+            <tr>
+                <td class="depth-@depth">
+                    <strong>@(row?.TitleAr ?? pg.Key)</strong>
+                    <div class="page-key">@pg.Key</div>
+                </td>
+                <td><a href="@url" target="_blank" rel="noopener" class="page-key">@url</a></td>
+                <td>
+                    @if (pg.Key == PageKeys.Home)
+                    {
+                        <span class="badge-active">دائماً</span>
+                    }
+                    else if (row is not null)
+                    {
+                        <form method="post" asp-action="ToggleMenu" asp-controller="Pages" asp-route-id="@pg.Key">
+                            <button type="submit" class="@(row.ShowInMenu ? "badge-active" : "badge-inactive")" style="border:0;cursor:pointer;" title="تبديل الظهور في القائمة">@(row.ShowInMenu ? "ظاهرة" : "مخفية")</button>
+                        </form>
+                    }
+                </td>
+                <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="enDone" /></td>
+                <td>
+                    <div class="inline-actions">
+                        <a href="/Admin/Pages/Edit/@pg.Key" class="btn-admin btn-secondary btn-sm">@(row is null ? "إنشاء" : "تعديل")</a>
+                        @if (pg.Parent is not null && row is not null)
+                        {
+                            <form method="post" asp-action="Move" asp-controller="Pages" asp-route-id="@pg.Key"><input type="hidden" name="direction" value="-1"><button type="submit" class="btn-admin btn-secondary btn-sm" aria-label="تحريك للأعلى">▲</button></form>
+                            <form method="post" asp-action="Move" asp-controller="Pages" asp-route-id="@pg.Key"><input type="hidden" name="direction" value="1"><button type="submit" class="btn-admin btn-secondary btn-sm" aria-label="تحريك للأسفل">▼</button></form>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,64 @@
+@model InnovestHolding.Controllers.Admin.PageEditVm
+@using InnovestHolding.Infrastructure.Site
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var i = Model.Input;
+    ViewData["Title"] = "تعديل صفحة: " + (string.IsNullOrWhiteSpace(i.TitleAr) ? Model.Page.Key : i.TitleAr);
+    var isList = Model.Page.Kind == PageKind.List;
+}
+<form method="post" action="/Admin/Pages/Edit/@Model.Page.Key" asp-antiforgery="true" class="content-editor">
+    @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
+
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <span class="admin-card-title">النصوص</span>
+            <span class="page-key">@Model.Page.Key — @SiteRoutes.PathFor(Model.Page, false) · @SiteRoutes.PathFor(Model.Page, true)</span>
+        </div>
+        <lang-pair label="عنوان الصفحة (القائمة والعنوان الرئيسي ومسار التنقل)" name-ar="TitleAr" name-en="TitleEn" value-ar="@i.TitleAr" value-en="@i.TitleEn" max="150" required="true" />
+        <lang-pair label="الملخص (بطاقات الصفحة في المنظومة والقائمة)" name-ar="SummaryAr" name-en="SummaryEn" value-ar="@i.SummaryAr" value-en="@i.SummaryEn" max="500" rows="2" />
+        <lang-pair label="النص التمهيدي (تحت العنوان)" name-ar="IntroAr" name-en="IntroEn" value-ar="@i.IntroAr" value-en="@i.IntroEn" max="2000" rows="3" />
+        <lang-pair label="النص الرئيسي (سطر فارغ = فقرة جديدة)" name-ar="BodyAr" name-en="BodyEn" value-ar="@i.BodyAr" value-en="@i.BodyEn" max="20000" rows="6" />
+        <lang-pair label="@(isList ? "نص «قريباً» (يظهر ما دامت القائمة فارغة)" : "نص «قريباً» (يظهر ما دامت الصفحة بلا محتوى)")" name-ar="EmptyTextAr" name-en="EmptyTextEn" value-ar="@i.EmptyTextAr" value-en="@i.EmptyTextEn" max="500" rows="2" />
+        @if (Model.Page.Key != PageKeys.Home)
+        {
+            <div class="form-check" style="margin-bottom:12px;">
+                <input type="checkbox" id="ShowInMenu" name="ShowInMenu" value="true" @(i.ShowInMenu ? "checked" : "")>
+                <label for="ShowInMenu">تظهر في القائمة الرئيسية والفوتر</label>
+            </div>
+        }
+    </div>
+
+    <div class="admin-card">
+        <div class="admin-card-header"><span class="admin-card-title">محركات البحث</span></div>
+        <p class="form-hint" style="margin-bottom:10px;">العنوان المقترح بين 30 و60 حرفاً، والوصف بين 70 و160 حرفاً (تنبيه فقط). تظهر الصفحة الإنجليزية في محركات البحث فقط حين يُملأ العنوان والوصف الإنجليزيان.</p>
+        <lang-pair label="عنوان محركات البحث" name-ar="MetaTitleAr" name-en="MetaTitleEn" value-ar="@i.MetaTitleAr" value-en="@i.MetaTitleEn" max="200" />
+        <lang-pair label="وصف محركات البحث" name-ar="MetaDescriptionAr" name-en="MetaDescriptionEn" value-ar="@i.MetaDescriptionAr" value-en="@i.MetaDescriptionEn" max="300" rows="2" />
+    </div>
+
+    <div class="sticky-actions">
+        <button type="submit" class="btn-admin btn-primary">@(Model.IsNew ? "إنشاء الصفحة" : "حفظ التعديلات")</button>
+        <a href="/Admin/Pages" class="btn-admin btn-secondary">رجوع</a>
+        <a href="@SiteRoutes.PathFor(Model.Page, false)" target="_blank" rel="noopener" class="btn-admin btn-secondary">معاينة العربية</a>
+        <a href="@SiteRoutes.PathFor(Model.Page, true)" target="_blank" rel="noopener" class="btn-admin btn-secondary">معاينة الإنجليزية</a>
+    </div>
+</form>
+<script>
+    // Live length hints for the SEO fields (a warning, never a block).
+    (function () {
+        const ranges = { MetaTitleAr: [30, 60], MetaTitleEn: [30, 60], MetaDescriptionAr: [70, 160], MetaDescriptionEn: [70, 160] };
+        Object.keys(ranges).forEach(function (name) {
+            const field = document.querySelector('[name="' + name + '"]');
+            if (!field) return;
+            const hint = document.createElement('div');
+            hint.className = 'length-hint';
+            field.insertAdjacentElement('afterend', hint);
+            function update() {
+                const n = field.value.trim().length, r = ranges[name];
+                hint.textContent = n + ' / ' + r[0] + '–' + r[1];
+                hint.classList.toggle('is-warn', n > 0 && (n < r[0] || n > r[1]));
+            }
+            field.addEventListener('input', update);
+            update();
+        });
+    })();
+</script>

@@ -127,12 +127,12 @@ public class LocalizedFormTests(TestAppFactory f)
 
         var arInvalid = await ar.PostAsync("/Home/Contact", Form(tAr, Contact(email, name: "")));
         Assert.Equal(Msg.Ar(MessageKeys.Required, Msg.Ar(F.FullName)), await MessageOf(arInvalid));
-        var enInvalid = await en.PostAsync("/en/Contact", Form(tEn, Contact(email, name: "")));
+        var enInvalid = await en.PostAsync("/en/forms/contact", Form(tEn, Contact(email, name: "")));
         Assert.Equal(Msg.En(MessageKeys.Required, Msg.En(F.FullName)), await MessageOf(enInvalid));
         Assert.Equal("The Full name field is required", await MessageOf(enInvalid)); // literal: the resx really says it
 
         Assert.Equal(Msg.Ar(MessageKeys.ContactSuccess), await MessageOf(await ar.PostAsync("/Home/Contact", Form(tAr, Contact(email)))));
-        Assert.Equal(Msg.En(MessageKeys.ContactSuccess), await MessageOf(await en.PostAsync("/en/Contact", Form(tEn, Contact(email)))));
+        Assert.Equal(Msg.En(MessageKeys.ContactSuccess), await MessageOf(await en.PostAsync("/en/forms/contact", Form(tEn, Contact(email)))));
 
         var cultures = await f.DbAsync(db => db.ContactMessages.Where(m => m.Email == email).OrderBy(m => m.Id).Select(m => m.Culture).ToListAsync());
         Assert.Equal(["ar", "en"], cultures);
@@ -142,7 +142,7 @@ public class LocalizedFormTests(TestAppFactory f)
     public async Task Framework_binding_errors_are_localized()
     {
         var (en, t) = await ClientAsync("/en");
-        var r = await en.PostAsync("/en/Register", Form(t, ("FullName", "QA"), ("Email", Unique("b") + "@example.com"), ("InterestOptionId", "abc")));
+        var r = await en.PostAsync("/en/forms/register", Form(t, ("FullName", "QA"), ("Email", Unique("b") + "@example.com"), ("InterestOptionId", "abc")));
         Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
         Assert.Equal(Msg.En(MessageKeys.InvalidValue, Msg.En(F.Interest)), await MessageOf(r));
     }
@@ -152,8 +152,8 @@ public class LocalizedFormTests(TestAppFactory f)
     {
         var (en, t) = await ClientAsync("/en");
         var email = Unique("rl-en") + "@example.com";
-        for (var i = 0; i < 5; i++) await en.PostAsync("/en/Contact", Form(t, Contact(email)));
-        var sixth = await en.PostAsync("/en/Contact", Form(t, Contact(email)));
+        for (var i = 0; i < 5; i++) await en.PostAsync("/en/forms/contact", Form(t, Contact(email)));
+        var sixth = await en.PostAsync("/en/forms/contact", Form(t, Contact(email)));
         Assert.Equal(HttpStatusCode.TooManyRequests, sixth.StatusCode);
         Assert.Equal(Msg.En(MessageKeys.TooManyRequests), await MessageOf(sixth));
     }
@@ -166,8 +166,8 @@ public class LocalizedFormTests(TestAppFactory f)
         var (en, tEn) = await ClientAsync("/en", ip);
         var email = Unique("rl-shared") + "@example.com";
         for (var i = 0; i < 3; i++) Assert.Equal(HttpStatusCode.OK, (await ar.PostAsync("/Home/Contact", Form(tAr, Contact(email)))).StatusCode);
-        for (var i = 0; i < 2; i++) Assert.Equal(HttpStatusCode.OK, (await en.PostAsync("/en/Contact", Form(tEn, Contact(email)))).StatusCode);
-        Assert.Equal(HttpStatusCode.TooManyRequests, (await en.PostAsync("/en/Contact", Form(tEn, Contact(email)))).StatusCode);
+        for (var i = 0; i < 2; i++) Assert.Equal(HttpStatusCode.OK, (await en.PostAsync("/en/forms/contact", Form(tEn, Contact(email)))).StatusCode);
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await en.PostAsync("/en/forms/contact", Form(tEn, Contact(email)))).StatusCode);
     }
 
     [Fact]
@@ -184,14 +184,14 @@ public class LocalizedFormTests(TestAppFactory f)
         {
             var (en, t) = await ClientAsync("/en");
             async Task<HttpResponseMessage> Post(string id, string email) =>
-                await en.PostAsync("/en/Register", Form(t, ("FullName", "QA"), ("Email", email), ("InterestOptionId", id)));
+                await en.PostAsync("/en/forms/register", Form(t, ("FullName", "QA"), ("Email", email), ("InterestOptionId", id)));
 
             var unknown = await Post("999999", Unique("i1") + "@example.com");
             Assert.Equal(HttpStatusCode.BadRequest, unknown.StatusCode);
             Assert.Equal(Msg.En(MessageKeys.InterestInvalid), await MessageOf(unknown));
             Assert.Equal(HttpStatusCode.BadRequest, (await Post(inactiveId.ToString(), Unique("i2") + "@example.com")).StatusCode);
             var (missingClient, mt) = await ClientAsync("/en");
-            Assert.Equal(HttpStatusCode.BadRequest, (await missingClient.PostAsync("/en/Register",
+            Assert.Equal(HttpStatusCode.BadRequest, (await missingClient.PostAsync("/en/forms/register",
                 Form(mt, ("FullName", "QA"), ("Email", Unique("i3") + "@example.com")))).StatusCode);
 
             var email = Unique("i4") + "@example.com";
@@ -217,12 +217,12 @@ public class LocalizedFormTests(TestAppFactory f)
     public async Task English_page_renders_options_and_forms_in_english_posting_to_en_endpoints()
     {
         var html = await (await f.NewClient().GetAsync("/en")).Content.ReadAsStringAsync();
-        Assert.Contains("action=\"/en/Register\"", html);
-        Assert.Contains("action=\"/en/Contact\"", html);
+        Assert.Contains("action=\"/en/forms/register\"", html);
+        Assert.Contains("action=\"/en/forms/contact\"", html);
         Assert.Contains(">Training &amp; Education</option>", html);
         Assert.Contains("data-msg-busy=\"Registering...\"", html);
         var ar = await (await f.NewClient().GetAsync("/")).Content.ReadAsStringAsync();
-        Assert.Contains("action=\"/Home/Register\"", ar);
+        Assert.Contains("action=\"/forms/register\"", ar);
         Assert.Contains("data-msg-busy=\"" + Msg.Ar(MessageKeys.Ui.FormRegistering) + "\"", ar); // Arabic is not entity-encoded
     }
 }
@@ -319,7 +319,7 @@ public class HomeContentTests(TestAppFactory f)
     }
 
     [Fact]
-    public async Task Section_with_no_active_items_and_its_nav_link_are_not_rendered()
+    public async Task Section_with_no_active_items_is_not_rendered_but_keeps_its_anchor()
     {
         var active = await f.DbAsync(db => db.Faqs.Where(q => q.IsActive).Select(q => q.Id).ToListAsync());
         try
@@ -328,16 +328,19 @@ public class HomeContentTests(TestAppFactory f)
             foreach (var path in new[] { "/", "/en" })
             {
                 var html = await PageAsync(path);
-                Assert.DoesNotContain("id=\"faq\"", html);
+                Assert.DoesNotContain("class=\"faq-section\"", html);
+                Assert.Contains("<span id=\"faq\" class=\"section-anchor\"></span>", html); // links to #faq still land
                 Assert.DoesNotContain("href=\"#faq\"", html);
-                Assert.Contains("id=\"news\"", html); // positive control
+                Assert.Contains("class=\"news-section\" id=\"news\"", html); // positive control
             }
         }
         finally
         {
             await f.DbAsync(async db => { foreach (var q in db.Faqs.Where(q => active.Contains(q.Id))) q.IsActive = true; return await db.SaveChangesAsync(); });
         }
-        Assert.Contains("id=\"faq\"", await PageAsync("/"));
+        var restored = await PageAsync("/");
+        Assert.Contains("class=\"faq-section\" id=\"faq\"", restored);
+        Assert.DoesNotContain("section-anchor", restored);
     }
 
     [Fact]
@@ -347,7 +350,7 @@ public class HomeContentTests(TestAppFactory f)
         Assert.Empty(ContentKeys.All.Select(k => k.Key).Except(keys));
         Assert.Equal(keys.Count, keys.Distinct().Count());
         var en = await PageAsync("/en");
-        Assert.Contains("Welcome to Innovest Holding", en);
+        Assert.Contains("The Arab Platform for Entrepreneurship, Innovation &amp; Investment", en); // hero_badge, profile English
         Assert.Contains("Frequently <span class=\"gold gold-underline\">Asked</span> Questions", en);
         Assert.DoesNotContain("hero-title-en", en); // hero_kicker has no English: hidden on /en
         Assert.Contains("hero-title-en", await PageAsync("/"));
@@ -386,7 +389,7 @@ public class SeoTests(TestAppFactory f)
             Assert.Single(Regex.Matches(html, "<h1[ >]"));
         }
         Assert.Contains("<meta property=\"og:locale\" content=\"en_US\">", en);
-        Assert.Contains("<title>Investment &amp; Innovation Bridges | Innovest Holding</title>", en);
+        Assert.Contains("<title>Arab Platform for Innovation &amp; Investment | Innovest Holding</title>", en);
     }
 
     [Fact]
@@ -395,6 +398,8 @@ public class SeoTests(TestAppFactory f)
         var robots = await PageAsync("/robots.txt");
         Assert.Contains("Disallow: /Admin\n", robots);
         Assert.Contains("Disallow: /admin\n", robots);
+        Assert.Contains("Disallow: /forms\n", robots);
+        Assert.Contains("Disallow: /en/forms\n", robots);
         Assert.DoesNotContain("/Account", robots); // Login stays crawlable so its noindex can be read
         Assert.Contains($"Sitemap: {Base}/sitemap.xml", robots);
 
@@ -404,8 +409,14 @@ public class SeoTests(TestAppFactory f)
         XNamespace sm = "http://www.sitemaps.org/schemas/sitemap/0.9";
         XNamespace xh = "http://www.w3.org/1999/xhtml";
         var urls = xml.Root!.Elements(sm + "url").ToList();
-        Assert.Equal([$"{Base}/", $"{Base}/en"], urls.Select(u => u.Element(sm + "loc")!.Value));
-        Assert.All(urls, u => Assert.Equal(3, u.Elements(xh + "link").Count()));
+        var locs = urls.Select(u => u.Element(sm + "loc")!.Value).ToList();
+        Assert.Contains($"{Base}/", locs);
+        Assert.Contains($"{Base}/en", locs);
+        Assert.Contains($"{Base}/about", locs);
+        Assert.Contains($"{Base}/en/about", locs);
+        Assert.DoesNotContain($"{Base}/forum/speakers", locs); // empty list page: noindex, not listed
+        Assert.Equal(locs.Count, locs.Distinct().Count());
+        Assert.All(urls, u => Assert.Contains(u.Elements(xh + "link").Count(), new[] { 0, 3 }));
     }
 
     [Fact]
@@ -457,21 +468,25 @@ public class SeoTests(TestAppFactory f)
         Assert.False(css.Headers.Contains("X-Robots-Tag"));
     }
 
+    /// <summary>The Organization node of the page's JSON-LD @graph.</summary>
     private static JsonElement JsonLd(string html)
     {
         var m = Regex.Match(html, "<script type=\"application/ld\\+json\">(.*?)</script>", RegexOptions.Singleline);
         Assert.True(m.Success, "no JSON-LD");
-        return JsonDocument.Parse(m.Groups[1].Value).RootElement.Clone();
+        var root = JsonDocument.Parse(m.Groups[1].Value).RootElement.Clone();
+        Assert.Equal("https://schema.org", root.GetProperty("@context").GetString());
+        return root.GetProperty("@graph").EnumerateArray().First(n => n.GetProperty("@type").GetString() == "Organization");
     }
 
     [Fact]
-    public async Task Json_ld_parses_omits_empty_values_and_has_no_sameAs_while_social_urls_are_empty()
+    public async Task Json_ld_parses_omits_empty_values_and_lists_only_the_social_urls_that_are_set()
     {
         var ld = JsonLd(await PageAsync("/en"));
         Assert.Equal("Organization", ld.GetProperty("@type").GetString());
         Assert.Equal("Innovest Holding", ld.GetProperty("name").GetString());
         Assert.Equal($"{Base}/en", ld.GetProperty("url").GetString());
-        Assert.False(ld.TryGetProperty("sameAs", out _));
+        // Only the linktr.ee address is set by the migration (the other networks have no confirmed URL yet).
+        Assert.Equal(["https://linktr.ee/Innovest.HoldingOfficial"], ld.GetProperty("sameAs").EnumerateArray().Select(x => x.GetString()));
         void NoEmpty(JsonElement e)
         {
             foreach (var p in e.EnumerateObject())
@@ -782,8 +797,8 @@ public class ContentLineBreakTests(TestAppFactory f)
 }
 
 /// <summary>
-/// Navigation markup that the browser behaviour depends on (the behaviour itself is checked in a browser): the mobile
-/// platforms trigger is a disclosure button wired to its sub-list, and the page script's smooth-scroll handler is not
+/// Navigation markup that the browser behaviour depends on (the behaviour itself is checked in a browser): the drawer
+/// triggers are disclosure buttons wired to their sub-lists, and the page script's smooth-scroll handler is not
 /// attached to it (otherwise a tap closed the drawer instead of opening the sub-list).
 /// </summary>
 [Collection("App")]
@@ -792,23 +807,28 @@ public class NavigationMarkupTests(TestAppFactory f)
     [Theory]
     [InlineData("/")]
     [InlineData("/en")]
-    public async Task Mobile_platforms_trigger_is_a_disclosure_button_for_its_sub_list(string path)
+    [InlineData("/forum/events")]
+    [InlineData("/en/angel-network")]
+    public async Task Drawer_triggers_are_disclosure_buttons_for_their_sub_lists(string path)
     {
         var html = await f.NewClient().GetStringAsync(path);
-        var trigger = Regex.Match(html, "<a [^>]*class=\"nav-link mobile-dropdown-trigger\"[^>]*>");
-        Assert.True(trigger.Success, "no mobile dropdown trigger");
-        Assert.Contains("role=\"button\"", trigger.Value);
-        Assert.Contains("aria-expanded=\"false\"", trigger.Value);
-        var controls = Regex.Match(trigger.Value, "aria-controls=\"([^\"]+)\"").Groups[1].Value;
-        Assert.NotEmpty(controls);
-        Assert.Contains($"<div class=\"mobile-dropdown-items\" id=\"{controls}\">", html);
+        // Drawer: «Our Ecosystem» and each of the three units have a <button> that controls their sub-list.
+        var triggers = Regex.Matches(html, "<button type=\"button\" class=\"mobile-dropdown-trigger\"[^>]*>").Select(m => m.Value).ToList();
+        Assert.Equal(4, triggers.Count);
+        foreach (var trigger in triggers)
+        {
+            Assert.Contains("aria-expanded=\"false\"", trigger);
+            var controls = Regex.Match(trigger, "aria-controls=\"([^\"]+)\"").Groups[1].Value;
+            Assert.NotEmpty(controls);
+            Assert.Matches($"<div class=\"mobile-dropdown-items[^\"]*\" id=\"{controls}\">", html);
+        }
 
-        // Desktop trigger: a popup button whose state the page script keeps in aria-expanded.
+        // Desktop trigger: a popup link whose state the page script keeps in aria-expanded; its panel is the mega-menu.
         var desktop = Regex.Match(html, "<div class=\"nav-dropdown\">\\s*<a [^>]*>").Value;
         Assert.Contains("aria-haspopup=\"true\"", desktop);
         Assert.Contains("aria-expanded=\"false\"", desktop);
         var menu = Regex.Match(desktop, "aria-controls=\"([^\"]+)\"").Groups[1].Value;
-        Assert.Contains($"<div class=\"dropdown-menu\" id=\"{menu}\">", html);
+        Assert.Contains($"<div class=\"dropdown-menu mega-menu\" id=\"{menu}\">", html);
     }
 
     [Fact]
@@ -817,6 +837,7 @@ public class NavigationMarkupTests(TestAppFactory f)
         var js = await f.NewClient().GetStringAsync("/js/main.js");
         Assert.Contains("querySelectorAll('a[href^=\"#\"]:not(.mobile-dropdown-trigger)')", js);
         Assert.Contains("trigger.setAttribute('aria-expanded', open ? 'true' : 'false')", js);
+        Assert.Contains("document.getElementById(trigger.getAttribute('aria-controls')", js); // the button finds its list
     }
 
     [Fact]

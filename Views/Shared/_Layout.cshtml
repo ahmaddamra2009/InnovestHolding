@@ -2,6 +2,7 @@
     var culture = System.Globalization.CultureInfo.CurrentUICulture;
     var lang = Cultures.IsEnglish(culture) ? Cultures.EnglishName : Cultures.ArabicName;
     var dir = culture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
+    var shell = ViewData["Shell"] as ShellVm;
 }
 <!DOCTYPE html>
 <html lang="@lang" dir="@dir">
@@ -14,18 +15,34 @@
     }
     else
     {
-        @* Every page rendered without the home page's SEO model (error, privacy) is kept out of search indexes. *@
+        @* Every page rendered without an SEO model (error) is kept out of search indexes. *@
         <meta name="robots" content="noindex, nofollow">
         <title>@ViewData["Title"]</title>
     }
+    <meta name="theme-color" content="#111145">
+    <link rel="icon" href="~/favicon.ico" sizes="any">
+    <link rel="icon" href="~/assets/brand/favicon.svg" asp-append-version="true" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="~/assets/brand/apple-touch-icon.png" asp-append-version="true">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/style.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/sections.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/pages.css" asp-append-version="true">
 </head>
-<body>
-    @RenderBody()
+<body class="@(shell?.OverHero == true ? "has-hero" : "has-solid-header")">
+    @if (shell is not null)
+    {
+        <a class="skip-link" href="#main">@L[K.Ui.SkipToContent]</a>
+        <partial name="_Header" model="shell" />
+    }
+    <main id="main">
+        @RenderBody()
+    </main>
+    @if (shell is not null)
+    {
+        <partial name="_Footer" model="shell" />
+    }
     <script src="~/js/main.js" asp-append-version="true"></script>
 </body>
 </html>

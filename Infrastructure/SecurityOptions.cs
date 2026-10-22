@@ -58,6 +58,9 @@ public static class InputLimits
     public const int AdminBodyBytes = 8 * 1024 * 1024;
     public const int MessageMax = 4000;
     public const int LongTextMax = 4000;
+
+    /// <summary>The main text of a page (Pages.Body…, nvarchar(max)): long enough for a full page of plain text.</summary>
+    public const int BodyTextMax = 20000;
     public const int NewPasswordMin = 10;
     public const int NewPasswordMax = 64;
     public const int PasswordMax = 128;

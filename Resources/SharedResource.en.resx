@@ -47,7 +47,6 @@
   <data name="Field_Href" xml:space="preserve"><value>Link</value></data>
   <data name="Field_Value" xml:space="preserve"><value>Value</value></data>
   <data name="Field_Suffix" xml:space="preserve"><value>Suffix</value></data>
-  <data name="Field_Content" xml:space="preserve"><value>Content</value></data>
   <data name="Field_LinkUrl" xml:space="preserve"><value>More link</value></data>
   <data name="Field_Url" xml:space="preserve"><value>URL</value></data>
   <data name="Field_Title" xml:space="preserve"><value>Title</value></data>
@@ -116,7 +115,6 @@
   <data name="Ui_LangSwitchText" xml:space="preserve"><value>ع</value></data>
   <data name="Ui_LangSwitchAria" xml:space="preserve"><value>العربية</value></data>
   <data name="Ui_LangDrawerText" xml:space="preserve"><value>العربية</value></data>
-  <data name="Ui_ScrollHint" xml:space="preserve"><value>Discover more</value></data>
   <data name="Ui_NavAria" xml:space="preserve"><value>Main navigation</value></data>
   <data name="Ui_MenuAria" xml:space="preserve"><value>Menu</value></data>
   <data name="Ui_FormFullName" xml:space="preserve"><value>Full name</value></data>
@@ -125,7 +123,7 @@
   <data name="Ui_FormEmail" xml:space="preserve"><value>Email</value></data>
   <data name="Ui_FormEmailPlaceholder" xml:space="preserve"><value>example@email.com</value></data>
   <data name="Ui_FormPhone" xml:space="preserve"><value>Phone number</value></data>
-  <data name="Ui_FormPhonePlaceholder" xml:space="preserve"><value>+962 7XX XXX XXX</value></data>
+  <data name="Ui_FormPhonePlaceholder" xml:space="preserve"><value>+20 1XX XXX XXXX</value></data>
   <data name="Ui_FormInterest" xml:space="preserve"><value>Area of interest</value></data>
   <data name="Ui_FormInterestPlaceholder" xml:space="preserve"><value>Select your area of interest</value></data>
   <data name="Ui_FormSubject" xml:space="preserve"><value>Subject</value></data>
@@ -140,5 +138,36 @@
   <data name="Ui_ContactPhone" xml:space="preserve"><value>Phone</value></data>
   <data name="Ui_ContactEmail" xml:space="preserve"><value>Email</value></data>
   <data name="Ui_ContactHours" xml:space="preserve"><value>Working hours</value></data>
-  <data name="Ui_TimeUtcLabel" xml:space="preserve"><value>UTC</value></data>
+  <data name="Ui_BreadcrumbAria" xml:space="preserve"><value>Breadcrumb</value></data>
+  <data name="Ui_SubmenuToggle" xml:space="preserve"><value>Show sub-pages</value></data>
+  <data name="Ui_Explore" xml:space="preserve"><value>Explore</value></data>
+  <data name="Ui_ViewAll" xml:space="preserve"><value>View all</value></data>
+  <data name="Ui_PagerAria" xml:space="preserve"><value>List pages</value></data>
+  <data name="Ui_PreviousPage" xml:space="preserve"><value>Previous</value></data>
+  <data name="Ui_NextPage" xml:space="preserve"><value>Next</value></data>
+  <data name="Ui_PageOf" xml:space="preserve"><value>Page {0} of {1}</value></data>
+  <data name="Ui_NotFoundTitle" xml:space="preserve"><value>Page not found</value></data>
+  <data name="Ui_NotFoundText" xml:space="preserve"><value>This page may have moved or is no longer available. You can continue from one of these pages:</value></data>
+  <data name="Ui_ContactWhatsApp" xml:space="preserve"><value>WhatsApp</value></data>
+  <data name="Ui_ContactWebsite" xml:space="preserve"><value>Website</value></data>
+  <data name="Ui_ContactSocial" xml:space="preserve"><value>Follow us</value></data>
+  <data name="Ui_SkipToContent" xml:space="preserve"><value>Skip to content</value></data>
+  <data name="Ui_BackToTop" xml:space="preserve"><value>Back to top</value></data>
+  <data name="Field_Intro" xml:space="preserve"><value>Intro</value></data>
+  <data name="Field_IntroEn" xml:space="preserve"><value>Intro (English)</value></data>
+  <data name="Field_Body" xml:space="preserve"><value>Main text</value></data>
+  <data name="Field_BodyEn" xml:space="preserve"><value>Main text (English)</value></data>
+  <data name="Field_EmptyText" xml:space="preserve"><value>Coming-soon text</value></data>
+  <data name="Field_EmptyTextEn" xml:space="preserve"><value>Coming-soon text (English)</value></data>
+  <data name="Field_MetaTitle" xml:space="preserve"><value>Search title</value></data>
+  <data name="Field_MetaTitleEn" xml:space="preserve"><value>Search title (English)</value></data>
+  <data name="Field_MetaDescription" xml:space="preserve"><value>Search description</value></data>
+  <data name="Field_MetaDescriptionEn" xml:space="preserve"><value>Search description (English)</value></data>
+  <data name="Admin_PageSaved" xml:space="preserve"><value>Page saved</value></data>
+  <data name="Admin_PageMenuToggled" xml:space="preserve"><value>Menu visibility updated</value></data>
+  <data name="Admin_OrderChanged" xml:space="preserve"><value>Order changed</value></data>
+  <data name="Admin_ItemAdded" xml:space="preserve"><value>Item added</value></data>
+  <data name="Admin_ItemUpdated" xml:space="preserve"><value>Item updated</value></data>
+  <data name="Admin_ItemDeleted" xml:space="preserve"><value>Item deleted</value></data>
+  <data name="Admin_StatusToggled" xml:space="preserve"><value>Visibility changed</value></data>
 </root>

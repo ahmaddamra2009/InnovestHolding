@@ -22,33 +22,9 @@ public static class DbSeeder
         // InterestOptions, RegisterBenefits and SocialLinks are written by the same migration.
         // The English below must equal the migration's literals (test FreshAndUpgradedDatabasesMatch).
 
-        // ── Navigation Items ──
-        var navItems = new List<NavItem>
-        {
-            new() { TitleAr = "الرئيسية",       TitleEn = "Home",               Href = "#hero",      SortOrder = 1, ShowInFooter = true },
-            new() { TitleAr = "من نحن",         TitleEn = "About Us",           Href = "#about",     SortOrder = 2, ShowInFooter = true },
-            new() { TitleAr = "منصاتنا",        TitleEn = "Our Platforms",      Href = "#platforms", SortOrder = 3, HasDropdown = true, ShowInFooter = true },
-            new() { TitleAr = "الأخبار",        TitleEn = "News",               Href = "#news",      SortOrder = 4, ShowInFooter = true },
-            new() { TitleAr = "الفعاليات",      TitleEn = "Events",             Href = "#events",    SortOrder = 5, ShowInFooter = true },
-            new() { TitleAr = "الشركاء والرعاة", TitleEn = "Partners & Sponsors", Href = "#partners",  SortOrder = 6 },
-            new() { TitleAr = "التسجيل السريع",  TitleEn = "Quick Registration", Href = "#register",  SortOrder = 7 },
-            new() { TitleAr = "تواصل معنا",     TitleEn = "Contact Us",         Href = "#contact",   SortOrder = 8 },
-        };
-        db.NavItems.AddRange(navItems);
-        await db.SaveChangesAsync();
-
-        // ── Nav Sub Items (under "منصاتنا") ──
-        var platformsNav = await db.NavItems.FirstAsync(n => n.TitleAr == "منصاتنا");
-        var subItems = new List<NavSubItem>
-        {
-            new() { NavItemId = platformsNav.Id, TitleAr = "التدريب والتعليم", TitleEn = "Training & Education", Href = "#platforms", SortOrder = 1, IconSvg = "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>" },
-            new() { NavItemId = platformsNav.Id, TitleAr = "منصة المستثمرين والتشبيك", TitleEn = "Investors & Networking Platform", Href = "#platforms", SortOrder = 2, IconSvg = "<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>" },
-            new() { NavItemId = platformsNav.Id, TitleAr = "الإعلام والمحتوى الرقمي", TitleEn = "Media & Digital Content", Href = "#platforms", SortOrder = 3, IconSvg = "<polygon points=\"23 7 16 12 23 17 23 7\"/><rect x=\"1\" y=\"5\" width=\"15\" height=\"14\" rx=\"2\" ry=\"2\"/>" },
-            new() { NavItemId = platformsNav.Id, TitleAr = "المسابقات", TitleEn = "Competitions", Href = "#platforms", SortOrder = 4, IconSvg = "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 9 7 12 7s5-3 7.5-3a2.5 2.5 0 0 1 0 5H18\"/><path d=\"M12 7v10\"/><path d=\"M6 21h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z\"/>" },
-            new() { NavItemId = platformsNav.Id, TitleAr = "الفعاليات والمعارض", TitleEn = "Events & Exhibitions", Href = "#platforms", SortOrder = 5, IconSvg = "<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/>" },
-            new() { NavItemId = platformsNav.Id, TitleAr = "الشراكات الاستراتيجية و B2B", TitleEn = "Strategic Partnerships & B2B", Href = "#platforms", SortOrder = 6, IconSvg = "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"/><path d=\"M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\"/>" },
-        };
-        db.NavSubItems.AddRange(subItems);
+        // ── Navigation ──
+        // Not seeded: the header and footer menus are generated from the route table (Infrastructure/Site/SiteRoutes)
+        // and the Pages rows of the migration AddSiteStructure. NavItems holds only the admin's extra links.
 
         // ── Events ──
         db.Events.AddRange(
@@ -64,14 +40,14 @@ public static class DbSeeder
             new News { TitleAr = "نجاح كبير لمعرض إنوفست الدولي للاستثمار 2026", TitleEn = "Great success for the Innovest International Investment Exhibition 2026", SummaryAr = "اختُتمت فعاليات معرض إنوفست الدولي بمشاركة أكثر من 200 شركة ومؤسسة من 30 دولة حول العالم.", SummaryEn = "The exhibition concluded with more than 200 companies and institutions from 30 countries taking part.", CategoryAr = "فعاليات", CategoryEn = "Events", NewsDateAr = "10 مايو 2026", NewsDateEn = "May 10, 2026", SortOrder = 3 }
         );
 
-        // ── Platforms ──
+        // ── Platforms = «Our services» of the company profile (the same literals as the migration ApplyCompanyProfile) ──
         db.Platforms.AddRange(
-            new Platform { TitleAr = "التدريب والتعليم", TitleEn = "Training & Education", DescriptionEn = "Specialized training programs and professional workshops designed to develop skills and build capabilities in business, technology and leadership.", DescriptionAr = "برامج تدريبية متخصصة وورش عمل احترافية مصممة لتطوير المهارات وبناء القدرات في مجالات الأعمال والتكنولوجيا والقيادة.", IconSvg = "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>", SortOrder = 1 },
-            new Platform { TitleAr = "منصة المستثمرين والتشبيك", TitleEn = "Investors & Networking Platform", DescriptionEn = "A unique platform connecting investors, entrepreneurs and companies, creating strategic networking opportunities and fruitful partnerships.", ShortTitleAr = "المستثمرين والتشبيك", ShortTitleEn = "Investors & Networking", DescriptionAr = "منصة فريدة تربط بين المستثمرين ورواد الأعمال والشركات، وتوفر فرص تشبيك استراتيجية وشراكات مثمرة.", IconSvg = "<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>", SortOrder = 2 },
-            new Platform { TitleAr = "الإعلام والمحتوى الرقمي", TitleEn = "Media & Digital Content", DescriptionEn = "Creative, high-quality digital content including video, podcasts and specialized articles on business and investment.", ShortTitleAr = "الإعلام الرقمي", ShortTitleEn = "Digital Media", DescriptionAr = "إنتاج محتوى رقمي إبداعي ومتميز، يشمل الفيديو والبودكاست والمقالات المتخصصة في عالم الأعمال والاستثمار.", IconSvg = "<polygon points=\"23 7 16 12 23 17 23 7\"/><rect x=\"1\" y=\"5\" width=\"15\" height=\"14\" rx=\"2\" ry=\"2\"/>", SortOrder = 3 },
-            new Platform { TitleAr = "المسابقات", TitleEn = "Competitions", DescriptionEn = "Innovative competitions and challenges for entrepreneurs and creators, with valuable prizes and real opportunities to turn ideas into successful projects.", DescriptionAr = "مسابقات وتحديات مبتكرة تستهدف رواد الأعمال والمبدعين، مع جوائز قيمة وفرص حقيقية لتحويل الأفكار إلى مشاريع ناجحة.", IconSvg = "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 9 7 12 7s5-3 7.5-3a2.5 2.5 0 0 1 0 5H18\"/><path d=\"M12 7v10\"/><path d=\"M6 21h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z\"/>", SortOrder = 4 },
-            new Platform { TitleAr = "الفعاليات والمعارض", TitleEn = "Events & Exhibitions", DescriptionEn = "Organizing and managing international and local events and exhibitions that bring decision makers, investors and entrepreneurs together in an inspiring environment.", ShowInFooter = false, DescriptionAr = "تنظيم وإدارة فعاليات ومعارض دولية ومحلية تجمع بين أصحاب القرار والمستثمرين ورواد الأعمال في بيئة محفزة.", IconSvg = "<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/>", SortOrder = 5 },
-            new Platform { TitleAr = "الشراكات الاستراتيجية و B2B", TitleEn = "Strategic Partnerships & B2B", DescriptionEn = "Building strategic partnerships with local and international institutions and companies, and providing integrated business solutions for shared growth.", ShortTitleAr = "الشراكات و B2B", ShortTitleEn = "Partnerships & B2B", DescriptionAr = "بناء شراكات استراتيجية مع مؤسسات وشركات محلية ودولية، وتوفير حلول أعمال متكاملة لتعزيز النمو المشترك.", IconSvg = "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"/><path d=\"M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\"/>", SortOrder = 6 }
+            new Platform { TitleAr = "تطوير الشركات الناشئة", TitleEn = "Startup Development", DescriptionAr = "احتضان الأفكار الناشئة\nتطوير نماذج الأعمال\nإعداد العرض التقديمي (Pitch Deck)\nدراسة الجدوى\nالإرشاد والتوجيه (Mentorship & Business Coaching)", DescriptionEn = "Incubating early-stage ideas\nBusiness model development\nPitch deck preparation\nFeasibility studies\nMentorship and business coaching", IconSvg = SeedIcons.Rocket, SortOrder = 1 },
+            new Platform { TitleAr = "خدمات الاستثمار", TitleEn = "Investment Services", DescriptionAr = "جذب المستثمرين\nالتشبيك مع المستثمرين الملائكيين\nالتشبيك مع صناديق الاستثمار\nتجهيز الشركات للاستثمار\nتقييم الشركات الناشئة\nإدارة جولات الاستثمار", DescriptionEn = "Attracting investors\nConnecting with angel investors\nConnecting with investment funds\nPreparing companies for investment\nStartup valuation\nManaging investment rounds", IconSvg = SeedIcons.Chart, SortOrder = 2 },
+            new Platform { TitleAr = "تطوير الأعمال", TitleEn = "Business Development", DescriptionAr = "الاستشارات\nتطوير الأعمال\nالتوسع الإقليمي\nدخول الأسواق\nتطوير الاستراتيجيات", DescriptionEn = "Consulting\nBusiness development\nRegional expansion\nMarket entry\nStrategy development", IconSvg = SeedIcons.Briefcase, SortOrder = 3 },
+            new Platform { TitleAr = "الابتكار المؤسسي", TitleEn = "Corporate Innovation", DescriptionAr = "دعم الشركات الكبرى في الابتكار المؤسسي\nالتحول الرقمي\nالابتكار المفتوح\nالتعاون مع الشركات الناشئة", DescriptionEn = "Supporting large companies in corporate innovation\nDigital transformation\nOpen innovation\nCollaboration with startups", IconSvg = SeedIcons.Layers, SortOrder = 4 },
+            new Platform { TitleAr = "منصة إنوفست", TitleEn = "Innovest Platform", DescriptionAr = "بوابة رواد الأعمال\nبوابة المستثمرين\nقاعدة بيانات الشركات الناشئة\nفرص التمويل\nإدارة الفعاليات\nنظام التوفيق (Matchmaking)\nالاستشارات والتوجيه\nأكاديمية التعلم\nمجتمع إنوفست لرواد الأعمال\nسوق الخدمات الإلكتروني", DescriptionEn = "Entrepreneur Portal\nInvestor Portal\nStartup Database\nFunding Opportunities\nEvent Management\nMatchmaking System\nMentorship Platform\nLearning Academy\nInnovest Community\nServices Marketplace", IconSvg = SeedIcons.Cpu, SortOrder = 5 },
+            new Platform { TitleAr = "منتدى إنوفست العربي", TitleEn = "Innovest Arab Forum", DescriptionAr = "معرض إنوفست للشركات الناشئة\nمنتدى الابتكار والاستثمار العربي\nملتقى الذكاء الاصطناعي\nمسابقة العروض التقديمية\nاجتماعات المستثمرين\nالتشبيك بين الشركات\nجلسات حكومية\nجوائز الابتكار", DescriptionEn = "Innovest Startup Expo\nInvestment Forum Event\nAI Summit\nPitch Competition\nInvestment Meetings\nBusiness Matching\nGovernment Sessions\nInnovation Awards", IconSvg = SeedIcons.Mic, SortOrder = 6 }
         );
 
         // ── Partners ──
@@ -85,12 +61,14 @@ public static class DbSeeder
         for (int i = 0; i < partnerNames.Length; i++)
             db.Partners.Add(new Partner { NameAr = partnerNames[i].Ar, NameEn = partnerNames[i].En, SortOrder = i + 1 });
 
-        // ── Stats ──
+        // ── Stats = «Expected impact» of the company profile ──
         db.Stats.AddRange(
-            new Stat { LabelAr = "شريك استراتيجي", LabelEn = "Strategic partners", Value = 150, Suffix = "+", SortOrder = 1, IconSvg = "<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>" },
-            new Stat { LabelAr = "مستثمر نشط", LabelEn = "Active investors", ShortLabelAr = "مستثمر", ShortLabelEn = "Investors", Value = 2500, Suffix = "+", SortOrder = 2, IconSvg = "<line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"23\"/><path d=\"M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6\"/>" },
-            new Stat { LabelAr = "فعالية سنوياً", LabelEn = "Events per year", Value = 80, Suffix = "+", SortOrder = 3, IconSvg = "<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/>" },
-            new Stat { LabelAr = "متدرب ومستفيد", LabelEn = "Trainees and beneficiaries", Value = 5000, Suffix = "+", SortOrder = 4, IconSvg = "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>" }
+            new Stat { LabelAr = "رائد أعمال", LabelEn = "Entrepreneurs", Value = 100000, Suffix = "+", SortOrder = 1, IconSvg = SeedIcons.Rocket },
+            new Stat { LabelAr = "شركة ناشئة", LabelEn = "Startups", Value = 10000, Suffix = "+", SortOrder = 2, IconSvg = SeedIcons.Chart },
+            new Stat { LabelAr = "مستثمر", LabelEn = "Investors", Value = 5000, Suffix = "+", SortOrder = 3, IconSvg = SeedIcons.Users },
+            new Stat { LabelAr = "صندوق استثمار", LabelEn = "Investment funds", Value = 500, Suffix = "+", SortOrder = 4, IconSvg = SeedIcons.Dollar },
+            new Stat { LabelAr = "دولة عربية", LabelEn = "Arab countries", Value = 22, Suffix = "", SortOrder = 5, IconSvg = SeedIcons.Globe },
+            new Stat { LabelAr = "شريك استراتيجي", LabelEn = "Strategic partners", Value = 100, Suffix = "+", SortOrder = 6, IconSvg = SeedIcons.Handshake }
         );
 
         // ── FAQ ──
@@ -105,4 +83,19 @@ public static class DbSeeder
 
         await db.SaveChangesAsync();
     }
+}
+
+/// <summary>Icon markup of the seeded Platforms and Stats rows (seeder-owned IconSvg columns; same as the migration).</summary>
+internal static class SeedIcons
+{
+    public const string Users = "<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>";
+    public const string Rocket = "<path d=\"M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.2 2.2 0 0 0-2.9-.1z\"/><path d=\"m12 15-3-3a22 22 0 0 1 2-4A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.5-6 11a22.4 22.4 0 0 1-4 2z\"/><path d=\"M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0\"/><path d=\"M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5\"/>";
+    public const string Dollar = "<line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"23\"/><path d=\"M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6\"/>";
+    public const string Chart = "<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/>";
+    public const string Globe = "<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"/><path d=\"M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\"/>";
+    public const string Handshake = "<path d=\"M11 17l2 2a1 1 0 0 0 1.4 0l4-4a1 1 0 0 0 0-1.4L13 8\"/><path d=\"M14 7 9.5 2.5 2 10l5 5\"/><path d=\"m22 10-5-5-3 3\"/><path d=\"m8 14 2 2\"/>";
+    public const string Layers = "<polygon points=\"12 2 2 7 12 12 22 7 12 2\"/><polyline points=\"2 17 12 22 22 17\"/><polyline points=\"2 12 12 17 22 12\"/>";
+    public const string Briefcase = "<rect x=\"2\" y=\"7\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"/>";
+    public const string Cpu = "<rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2\"/><rect x=\"9\" y=\"9\" width=\"6\" height=\"6\"/><path d=\"M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3\"/>";
+    public const string Mic = "<rect x=\"9\" y=\"2\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M19 10v1a7 7 0 0 1-14 0v-1\"/><line x1=\"12\" y1=\"18\" x2=\"12\" y2=\"22\"/>";
 }

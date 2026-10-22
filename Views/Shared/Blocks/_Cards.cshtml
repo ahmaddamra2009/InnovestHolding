@@ -1,0 +1,47 @@
+@model CardsBlock
+@using InnovestHolding.Infrastructure.Content
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+<section class="page-section@(Model.Dark ? " is-dark" : "")">
+  <div class="container">
+    @if (!Model.Title.IsEmpty)
+    {
+      <div class="block-head">
+        <h2 class="block-title" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+        @if (!Model.Intro.IsEmpty)
+        {
+          <p class="block-intro" lang="@Model.Intro.Lang" dir="@Model.Intro.Dir">@Model.Intro</p>
+        }
+      </div>
+    }
+    <div class="unit-grid">
+      @for (var i = 0; i < Model.Cards.Count; i++)
+      {
+        var card = Model.Cards[i];
+        <article class="unit-card reveal@(HomeViewModel.Delay(i + 1))">
+          <span class="card-corner" aria-hidden="true"></span>
+          <span class="unit-num">@card.Number.ToString("00", inv)</span>
+          <h3><a href="@card.Href" lang="@card.Title.Lang" dir="@card.Title.Dir">@card.Title</a></h3>
+          @if (!card.Summary.IsEmpty)
+          {
+            <p lang="@card.Summary.Lang" dir="@card.Summary.Dir">@card.Summary</p>
+          }
+          @if (card.Chips.Count > 0)
+          {
+            <ul class="unit-chips">
+              @foreach (var chip in card.Chips)
+              {
+                <li><a href="@chip.Href" lang="@chip.Title.Lang" dir="@chip.Title.Dir">@chip.Title</a></li>
+              }
+            </ul>
+          }
+          <a href="@card.Href" class="unit-link" aria-hidden="true" tabindex="-1">
+            @L[K.Ui.Explore]
+            <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          </a>
+        </article>
+      }
+    </div>
+  </div>
+</section>

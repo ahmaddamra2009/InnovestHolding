@@ -1,18 +1,29 @@
+using InnovestHolding.Infrastructure.Site;
+
 namespace InnovestHolding.Infrastructure.Localization;
 
-/// <summary>The only place that builds culture URLs: the two home pages, the form endpoints, the indexable list.</summary>
+/// <summary>
+/// The only place that builds public URLs: pages (from the route table <see cref="SiteRoutes"/>) and form endpoints.
+/// Views, menus, breadcrumbs, the sitemap, JSON-LD and the language switch all call it.
+/// </summary>
 public static class CultureUrls
 {
     public const string ArabicHome = "/";
-    public const string EnglishHome = "/en";
+    public const string EnglishHome = SiteRoutes.EnglishPrefix;
 
-    /// <summary>Paths that may be indexed (head tags, sitemap, and the X-Robots-Tag rule all read this list).</summary>
-    public static readonly IReadOnlyList<string> Indexable = [ArabicHome, EnglishHome];
+    /// <summary>The form endpoints (POST only): /forms/{name} and /en/forms/{name}.</summary>
+    public static readonly IReadOnlyList<string> FormNames = ["register", "contact"];
 
     public static string Home(bool english) => english ? EnglishHome : ArabicHome;
 
-    /// <summary>Register / Contact endpoint for the page language: /Home/{action} or /en/{action}.</summary>
-    public static string FormAction(string action, bool english) => english ? $"/en/{action}" : $"/Home/{action}";
+    /// <summary>The URL of a page of the route table in the requested language.</summary>
+    public static string Page(string key, bool english) => SiteRoutes.PathFor(SiteRoutes.Get(key), english);
+
+    /// <summary>The same page in the other language.</summary>
+    public static string Alternate(string key, bool english) => Page(key, !english);
+
+    /// <summary>A form endpoint for the page language: /forms/{name} or /en/forms/{name}.</summary>
+    public static string Form(string name, bool english) => (english ? EnglishHome : "") + "/forms/" + name;
 
     public static bool IsEnglishPath(PathString path)
     {
@@ -20,7 +31,4 @@ public static class CultureUrls
         return value.Equals(EnglishHome, StringComparison.OrdinalIgnoreCase)
                || value.StartsWith(EnglishHome + "/", StringComparison.OrdinalIgnoreCase);
     }
-
-    public static bool IsIndexable(PathString path) =>
-        Indexable.Any(p => string.Equals(path.Value ?? "", p, StringComparison.Ordinal));
 }

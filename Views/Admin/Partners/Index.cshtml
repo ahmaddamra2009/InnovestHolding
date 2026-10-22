@@ -1,5 +1,5 @@
 @model List<Partner>
-@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "إدارة الشركاء"; }
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "الشركاء والرعاة"; }
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">إضافة شريك جديد</span></div>
     <form method="post" asp-action="Create" asp-controller="Partners">
@@ -10,7 +10,7 @@
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">الشركاء الحاليون (@Model.Count)</span></div>
     <table class="admin-table">
-        <thead><tr><th>#</th><th>الاسم</th><th>EN</th><th>إجراءات</th></tr></thead>
+        <thead><tr><th>#</th><th>الاسم</th><th>EN</th><th>الظهور</th><th>إجراءات</th></tr></thead>
         <tbody>
         @foreach (var item in Model)
         {
@@ -28,6 +28,7 @@
                     </details>
                 </td>
                 <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.NameEn))" /></td>
+                <td><form method="post" asp-action="Toggle" asp-controller="Partners" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="@(item.IsActive ? "badge-active" : "badge-inactive")" style="border:0;cursor:pointer;" title="تبديل الظهور">@(item.IsActive ? "ظاهر" : "مخفي")</button></form></td>
                 <td><form method="post" asp-action="Delete" asp-controller="Partners" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا الشريك؟')">حذف</button></form></td>
             </tr>
         }

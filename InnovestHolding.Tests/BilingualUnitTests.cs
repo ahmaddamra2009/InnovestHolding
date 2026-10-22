@@ -210,10 +210,12 @@ public class BilingualUnitTests
     {
         var root = RepoRoot();
         var files = Directory.GetFiles(Path.Combine(root, "Views", "Home"), "*.cshtml")
-            .Concat([Path.Combine(root, "Views", "Shared", "_Layout.cshtml"), Path.Combine(root, "Views", "Shared", "_SeoHead.cshtml"),
-                     Path.Combine(root, "Views", "Shared", "Error.cshtml")])
+            .Concat(Directory.GetFiles(Path.Combine(root, "Views", "Site"), "*.cshtml"))
+            .Concat(Directory.GetFiles(Path.Combine(root, "Views", "Shared", "Blocks"), "*.cshtml"))
+            .Concat(new[] { "_Layout", "_SeoHead", "Error", "_Header", "_Footer", "_SectionHeader" }
+                .Select(n => Path.Combine(root, "Views", "Shared", n + ".cshtml")))
             .ToList();
-        Assert.True(files.Count >= 6, $"scanned {files.Count} files");
+        Assert.True(files.Count >= 20, $"scanned {files.Count} files");
         var hits = files.SelectMany(f => File.ReadAllLines(f).Select((line, i) => (f, i, line)))
             .Where(x => Regex.IsMatch(x.line, "[؀-ۿ]"))
             .Select(x => $"{Path.GetFileName(x.f)}:{x.i + 1}")

@@ -106,7 +106,8 @@ public class AdminAuthTests(TestAppFactory f)
         "/Admin/Dashboard", "/Admin/Content/Edit", "/Admin/Events", "/Admin/Events/Create", "/Admin/Faq",
         "/Admin/Faq/Create", "/Admin/Messages", "/Admin/Nav", "/Admin/News", "/Admin/News/Create",
         "/Admin/Partners", "/Admin/Platforms", "/Admin/Registrations", "/Admin/Settings", "/Admin/Stats",
-        "/Admin/InterestOptions", "/Admin/RegisterBenefits", "/Admin/SocialLinks"
+        "/Admin/InterestOptions", "/Admin/RegisterBenefits", "/Admin/SocialLinks",
+        "/Admin/Pages", "/Admin/Pages/Edit/about", "/Admin/ContentItems", "/Admin/ContentItems?group=values"
     ];
 
     [Theory]
@@ -126,7 +127,7 @@ public class AdminAuthTests(TestAppFactory f)
                         && typeof(Controller).IsAssignableFrom(t))
             .ToList();
 
-        Assert.Equal(15, controllers.Count); // an empty scan cannot pass
+        Assert.Equal(17, controllers.Count); // an empty scan cannot pass (15 + Pages, ContentItems)
         Assert.All(controllers, t => Assert.True(typeof(AdminControllerBase).IsAssignableFrom(t), t.Name));
 
         var authorize = typeof(AdminControllerBase).GetCustomAttribute<AuthorizeAttribute>();

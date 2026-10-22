@@ -5,6 +5,7 @@ using InnovestHolding.Infrastructure;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Infrastructure.Seo;
+using InnovestHolding.Infrastructure.Site;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -59,7 +60,7 @@ builder.Services.AddAntiforgery(options =>
 builder.Services.AddInnovestRateLimiting();
 builder.Services.AddStaticAssetCompression();
 
-// AppDbContext + the home-page cache and its invalidation interceptor (one helper, shared with the tests).
+// AppDbContext + the site content cache and its invalidation interceptor (one helper, shared with the tests).
 builder.Services.AddAppDbContext(connectionString);
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -162,15 +163,26 @@ app.MapControllerRoute(
     defaults: new { area = "" },
     constraints: new { controller = new AdminControllerConstraint() });
 
-// /en → the English home page. /en/Register and /en/Contact are attribute routes on HomeController.
-app.MapControllerRoute(
-    name: "home-en",
-    pattern: "en",
-    defaults: new { controller = "Home", action = "Index" });
+// The public pages: every entry of the route table, in Arabic and under /en (Infrastructure/Site/SiteRoutes).
+foreach (var page in SiteRoutes.All)
+{
+    var path = page.Path.TrimStart('/');
+    var defaults = new { controller = page.Controller, action = page.Action };
+    app.MapControllerRoute(page.Key + ".ar", path, defaults);
+    app.MapControllerRoute(page.Key + ".en", path.Length == 0 ? "en" : "en/" + path, defaults);
+}
 
+// Conventional routes reach ONLY Home (Error, and /Home → 301 by the normaliser) and Account (login/logout). Admin
+// controllers are reachable under /Admin/… only: /Dashboard, /Events, /News… now answer the 404 page instead of the
+// admin controller (or a redirect to the login page). No defaults: "/" is the home route above.
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller}/{action}/{id?}",
+    defaults: null,
+    constraints: new { controller = "^(?i:home|account)$" });
+
+// Everything else: the branded 404 in the URL's language. ":nonfile" keeps a missing static file a plain 404.
+app.MapFallbackToController("{*path:nonfile}", nameof(InnovestHolding.Controllers.HomeController.NotFoundPage), "Home");
 
 app.Run();
 
