@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Msg_Required" xml:space="preserve"><value>حقل {0} مطلوب</value></data>
+  <data name="Msg_MaxLength" xml:space="preserve"><value>حقل {0} يجب ألا يتجاوز {1} حرفاً</value></data>
+  <data name="Msg_LengthRange" xml:space="preserve"><value>حقل {0} يجب أن يكون بين {2} و{1} حرفاً</value></data>
+  <data name="Msg_Range" xml:space="preserve"><value>حقل {0} يجب أن يكون بين {1} و{2}</value></data>
+  <data name="Msg_Email" xml:space="preserve"><value>البريد الإلكتروني غير صالح</value></data>
+  <data name="Msg_Phone" xml:space="preserve"><value>رقم الهاتف غير صالح</value></data>
+  <data name="Msg_UnsafeHref" xml:space="preserve"><value>الرابط غير صالح (المسموح: # أو مسار داخل الموقع أو http/https أو mailto/tel)</value></data>
+  <data name="Msg_HttpsUrl" xml:space="preserve"><value>حقل {0} يجب أن يكون رابطاً كاملاً يبدأ بـ https://</value></data>
+  <data name="Msg_BaseUrl" xml:space="preserve"><value>رابط الموقع الأساسي يجب أن يكون https://النطاق فقط (بدون مسار أو استعلام)</value></data>
+  <data name="Msg_SitePath" xml:space="preserve"><value>حقل {0} يجب أن يكون مساراً داخل الموقع يبدأ بـ / أو فارغاً</value></data>
+  <data name="Msg_Highlight" xml:space="preserve"><value>حقل {0}: يُسمح بجزء مميز واحد فقط محاط بقوسين معقوفين، وبالقوسين فقط حوله</value></data>
+  <data name="Msg_InvalidValue" xml:space="preserve"><value>القيمة المدخلة في حقل {0} غير صالحة</value></data>
+  <data name="Msg_ValueRequired" xml:space="preserve"><value>حقل {0} مطلوب</value></data>
+  <data name="Msg_InvalidValueNoField" xml:space="preserve"><value>القيمة المدخلة غير صالحة</value></data>
+  <data name="Msg_ValueRequiredNoField" xml:space="preserve"><value>هذا الحقل مطلوب</value></data>
+  <data name="Msg_PasswordsDoNotMatch" xml:space="preserve"><value>كلمة المرور الجديدة غير متطابقة</value></data>
+  <data name="Msg_CurrentPasswordWrong" xml:space="preserve"><value>كلمة المرور الحالية غير صحيحة</value></data>
+  <data name="Msg_InterestInvalid" xml:space="preserve"><value>يرجى اختيار مجال اهتمام من القائمة</value></data>
+  <data name="Msg_RegistrationSuccess" xml:space="preserve"><value>تم التسجيل بنجاح! سنتواصل معك قريباً</value></data>
+  <data name="Msg_ContactSuccess" xml:space="preserve"><value>تم إرسال رسالتك بنجاح! سنرد عليك في أقرب وقت</value></data>
+  <data name="Msg_TooManyRequests" xml:space="preserve"><value>عدد كبير من الطلبات، يرجى المحاولة لاحقاً</value></data>
+  <data name="Msg_LoginInvalid" xml:space="preserve"><value>اسم المستخدم أو كلمة المرور غير صحيحة</value></data>
+  <data name="Msg_LoginLocked" xml:space="preserve"><value>محاولات كثيرة، حاول لاحقاً</value></data>
+  <data name="Msg_ErrorTitle" xml:space="preserve"><value>حدث خطأ</value></data>
+  <data name="Msg_ErrorGeneric" xml:space="preserve"><value>تعذّر إكمال طلبك بسبب خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.</value></data>
+  <data name="Msg_ErrorReference" xml:space="preserve"><value>رقم المرجع</value></data>
+  <data name="Msg_BackToHome" xml:space="preserve"><value>العودة إلى الصفحة الرئيسية</value></data>
+  <data name="Field_FullName" xml:space="preserve"><value>الاسم الكامل</value></data>
+  <data name="Field_Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Field_Phone" xml:space="preserve"><value>رقم الهاتف</value></data>
+  <data name="Field_Interest" xml:space="preserve"><value>مجال الاهتمام</value></data>
+  <data name="Field_Subject" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="Field_Message" xml:space="preserve"><value>الرسالة</value></data>
+  <data name="Field_Username" xml:space="preserve"><value>اسم المستخدم</value></data>
+  <data name="Field_Password" xml:space="preserve"><value>كلمة المرور</value></data>
+  <data name="Field_CurrentPassword" xml:space="preserve"><value>كلمة المرور الحالية</value></data>
+  <data name="Field_NewPassword" xml:space="preserve"><value>كلمة المرور الجديدة</value></data>
+  <data name="Field_ConfirmPassword" xml:space="preserve"><value>تأكيد كلمة المرور</value></data>
+  <data name="Field_EventDay" xml:space="preserve"><value>اليوم</value></data>
+  <data name="Field_SortOrder" xml:space="preserve"><value>الترتيب</value></data>
+  <data name="Field_Href" xml:space="preserve"><value>الرابط</value></data>
+  <data name="Field_Value" xml:space="preserve"><value>القيمة</value></data>
+  <data name="Field_Suffix" xml:space="preserve"><value>اللاحقة</value></data>
+  <data name="Field_Content" xml:space="preserve"><value>المحتوى</value></data>
+  <data name="Field_LinkUrl" xml:space="preserve"><value>رابط «المزيد»</value></data>
+  <data name="Field_Url" xml:space="preserve"><value>الرابط</value></data>
+  <data name="Field_Title" xml:space="preserve"><value>العنوان</value></data>
+  <data name="Field_TitleEn" xml:space="preserve"><value>العنوان (الإنجليزية)</value></data>
+  <data name="Field_Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="Field_DescriptionEn" xml:space="preserve"><value>الوصف (الإنجليزية)</value></data>
+  <data name="Field_EventMonth" xml:space="preserve"><value>الشهر</value></data>
+  <data name="Field_EventMonthEn" xml:space="preserve"><value>الشهر (الإنجليزية)</value></data>
+  <data name="Field_Location" xml:space="preserve"><value>المكان</value></data>
+  <data name="Field_LocationEn" xml:space="preserve"><value>المكان (الإنجليزية)</value></data>
+  <data name="Field_Time" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Field_TimeEn" xml:space="preserve"><value>الوقت (الإنجليزية)</value></data>
+  <data name="Field_Question" xml:space="preserve"><value>السؤال</value></data>
+  <data name="Field_QuestionEn" xml:space="preserve"><value>السؤال (الإنجليزية)</value></data>
+  <data name="Field_Answer" xml:space="preserve"><value>الجواب</value></data>
+  <data name="Field_AnswerEn" xml:space="preserve"><value>الجواب (الإنجليزية)</value></data>
+  <data name="Field_Summary" xml:space="preserve"><value>الملخص</value></data>
+  <data name="Field_SummaryEn" xml:space="preserve"><value>الملخص (الإنجليزية)</value></data>
+  <data name="Field_Category" xml:space="preserve"><value>الفئة</value></data>
+  <data name="Field_CategoryEn" xml:space="preserve"><value>الفئة (الإنجليزية)</value></data>
+  <data name="Field_NewsDate" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Field_NewsDateEn" xml:space="preserve"><value>التاريخ (الإنجليزية)</value></data>
+  <data name="Field_Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Field_NameEn" xml:space="preserve"><value>الاسم (الإنجليزية)</value></data>
+  <data name="Field_Label" xml:space="preserve"><value>التسمية</value></data>
+  <data name="Field_LabelEn" xml:space="preserve"><value>التسمية (الإنجليزية)</value></data>
+  <data name="Field_ShortTitle" xml:space="preserve"><value>الاسم المختصر</value></data>
+  <data name="Field_ShortTitleEn" xml:space="preserve"><value>الاسم المختصر (الإنجليزية)</value></data>
+  <data name="Field_ShortLabel" xml:space="preserve"><value>التسمية المختصرة</value></data>
+  <data name="Field_ShortLabelEn" xml:space="preserve"><value>التسمية المختصرة (الإنجليزية)</value></data>
+  <data name="Field_Text" xml:space="preserve"><value>النص</value></data>
+  <data name="Field_TextEn" xml:space="preserve"><value>النص (الإنجليزية)</value></data>
+  <data name="Admin_ContentSaved" xml:space="preserve"><value>تم حفظ التعديلات بنجاح</value></data>
+  <data name="Admin_EventAdded" xml:space="preserve"><value>تمت إضافة الفعالية بنجاح</value></data>
+  <data name="Admin_EventUpdated" xml:space="preserve"><value>تم تحديث الفعالية بنجاح</value></data>
+  <data name="Admin_EventDeleted" xml:space="preserve"><value>تم حذف الفعالية بنجاح</value></data>
+  <data name="Admin_FaqAdded" xml:space="preserve"><value>تمت إضافة السؤال بنجاح</value></data>
+  <data name="Admin_FaqUpdated" xml:space="preserve"><value>تم تحديث السؤال بنجاح</value></data>
+  <data name="Admin_FaqDeleted" xml:space="preserve"><value>تم حذف السؤال بنجاح</value></data>
+  <data name="Admin_NewsAdded" xml:space="preserve"><value>تمت إضافة الخبر بنجاح</value></data>
+  <data name="Admin_NewsUpdated" xml:space="preserve"><value>تم تحديث الخبر بنجاح</value></data>
+  <data name="Admin_NewsDeleted" xml:space="preserve"><value>تم حذف الخبر بنجاح</value></data>
+  <data name="Admin_NavAdded" xml:space="preserve"><value>تمت إضافة العنصر بنجاح</value></data>
+  <data name="Admin_NavUpdated" xml:space="preserve"><value>تم تحديث العنصر بنجاح</value></data>
+  <data name="Admin_NavDeleted" xml:space="preserve"><value>تم حذف العنصر بنجاح</value></data>
+  <data name="Admin_SubItemAdded" xml:space="preserve"><value>تمت إضافة العنصر الفرعي بنجاح</value></data>
+  <data name="Admin_SubItemUpdated" xml:space="preserve"><value>تم تحديث العنصر الفرعي بنجاح</value></data>
+  <data name="Admin_SubItemDeleted" xml:space="preserve"><value>تم حذف العنصر الفرعي بنجاح</value></data>
+  <data name="Admin_PartnerAdded" xml:space="preserve"><value>تمت إضافة الشريك بنجاح</value></data>
+  <data name="Admin_PartnerUpdated" xml:space="preserve"><value>تم تحديث الشريك بنجاح</value></data>
+  <data name="Admin_PartnerDeleted" xml:space="preserve"><value>تم حذف الشريك بنجاح</value></data>
+  <data name="Admin_PlatformUpdated" xml:space="preserve"><value>تم تحديث المنصة بنجاح</value></data>
+  <data name="Admin_StatUpdated" xml:space="preserve"><value>تم تحديث الإحصائية بنجاح</value></data>
+  <data name="Admin_PasswordChanged" xml:space="preserve"><value>تم تغيير كلمة المرور بنجاح</value></data>
+  <data name="Admin_MessageDeleted" xml:space="preserve"><value>تم حذف الرسالة بنجاح</value></data>
+  <data name="Admin_RegistrationDeleted" xml:space="preserve"><value>تم حذف التسجيل بنجاح</value></data>
+  <data name="Admin_OptionAdded" xml:space="preserve"><value>تمت إضافة الخيار بنجاح</value></data>
+  <data name="Admin_OptionUpdated" xml:space="preserve"><value>تم تحديث الخيار بنجاح</value></data>
+  <data name="Admin_OptionDeleted" xml:space="preserve"><value>تم حذف الخيار بنجاح</value></data>
+  <data name="Admin_BenefitAdded" xml:space="preserve"><value>تمت إضافة الميزة بنجاح</value></data>
+  <data name="Admin_BenefitUpdated" xml:space="preserve"><value>تم تحديث الميزة بنجاح</value></data>
+  <data name="Admin_BenefitDeleted" xml:space="preserve"><value>تم حذف الميزة بنجاح</value></data>
+  <data name="Admin_SocialUpdated" xml:space="preserve"><value>تم تحديث الرابط بنجاح</value></data>
+  <data name="Admin_EnHint" xml:space="preserve"><value>اختياري — إن تُرك فارغاً يظهر النص العربي في الصفحة الإنجليزية</value></data>
+  <data name="Admin_NeutralHint" xml:space="preserve"><value>يُستخدم في كل اللغات</value></data>
+  <data name="Ui_LangSwitchText" xml:space="preserve"><value>EN</value></data>
+  <data name="Ui_LangSwitchAria" xml:space="preserve"><value>English</value></data>
+  <data name="Ui_LangDrawerText" xml:space="preserve"><value>English</value></data>
+  <data name="Ui_ScrollHint" xml:space="preserve"><value>اكتشف المزيد</value></data>
+  <data name="Ui_NavAria" xml:space="preserve"><value>القائمة الرئيسية</value></data>
+  <data name="Ui_MenuAria" xml:space="preserve"><value>القائمة</value></data>
+  <data name="Ui_FormFullName" xml:space="preserve"><value>الاسم الكامل</value></data>
+  <data name="Ui_FormFullNamePlaceholderRegister" xml:space="preserve"><value>أدخل اسمك الكامل</value></data>
+  <data name="Ui_FormFullNamePlaceholderContact" xml:space="preserve"><value>أدخل اسمك</value></data>
+  <data name="Ui_FormEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Ui_FormEmailPlaceholder" xml:space="preserve"><value>example@email.com</value></data>
+  <data name="Ui_FormPhone" xml:space="preserve"><value>رقم الهاتف</value></data>
+  <data name="Ui_FormPhonePlaceholder" xml:space="preserve"><value>+962 7XX XXX XXX</value></data>
+  <data name="Ui_FormInterest" xml:space="preserve"><value>مجال الاهتمام</value></data>
+  <data name="Ui_FormInterestPlaceholder" xml:space="preserve"><value>اختر مجال اهتمامك</value></data>
+  <data name="Ui_FormSubject" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="Ui_FormSubjectPlaceholder" xml:space="preserve"><value>موضوع الرسالة</value></data>
+  <data name="Ui_FormMessage" xml:space="preserve"><value>الرسالة</value></data>
+  <data name="Ui_FormMessagePlaceholder" xml:space="preserve"><value>اكتب رسالتك هنا...</value></data>
+  <data name="Ui_FormRegistering" xml:space="preserve"><value>جاري التسجيل...</value></data>
+  <data name="Ui_FormSending" xml:space="preserve"><value>جاري الإرسال...</value></data>
+  <data name="Ui_FormGenericError" xml:space="preserve"><value>حدث خطأ، حاول مرة أخرى</value></data>
+  <data name="Ui_ContactSubmit" xml:space="preserve"><value>إرسال الرسالة</value></data>
+  <data name="Ui_ContactAddress" xml:space="preserve"><value>العنوان</value></data>
+  <data name="Ui_ContactPhone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="Ui_ContactEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Ui_ContactHours" xml:space="preserve"><value>ساعات العمل</value></data>
+  <data name="Ui_TimeUtcLabel" xml:space="preserve"><value>UTC</value></data>
+</root>

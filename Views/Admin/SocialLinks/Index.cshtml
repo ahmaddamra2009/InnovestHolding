@@ -1,0 +1,19 @@
+@model List<SocialLink>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "روابط التواصل الاجتماعي"; }
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">الروابط في الفوتر — الرابط الفارغ لا يظهر</span></div>
+    @foreach (var item in Model)
+    {
+        var name = SocialIcons.All.TryGetValue(item.Network, out var icon) ? icon.Name : item.Network;
+        <form method="post" asp-action="Update" asp-controller="SocialLinks" class="row-form">
+            <input type="hidden" name="id" value="@item.Id">
+            <div class="row-form-head"><strong>@name</strong></div>
+            <lang-pair label="الرابط (https://)" name-ar="Url" value-ar="@item.Url" max="500" ltr="true" placeholder="https://" id-prefix="s@(item.Id)-" />
+            <div class="inline-form">
+                <div class="form-group"><label>الترتيب</label><input type="number" name="SortOrder" value="@item.SortOrder" class="form-control" min="0" max="100000"></div>
+                <div class="form-check"><input type="checkbox" name="IsActive" value="true" @(item.IsActive ? "checked" : "")> <label>مفعّل</label></div>
+                <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
+            </div>
+        </form>
+    }
+</div>

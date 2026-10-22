@@ -1,12 +1,17 @@
 using System.Net;
+using InnovestHolding;
 using InnovestHolding.Data;
 using InnovestHolding.Infrastructure;
+using InnovestHolding.Infrastructure.Content;
+using InnovestHolding.Infrastructure.Localization;
+using InnovestHolding.Infrastructure.Seo;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 var isDevelopment = builder.Environment.IsDevelopment();
@@ -24,24 +29,25 @@ builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(Sec
 builder.Services.TryAddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<ILoginThrottle, InMemoryLoginThrottle>();
 
-builder.Services.AddControllersWithViews(options =>
-{
-    // Every POST/PUT/PATCH/DELETE in the app validates an antiforgery token (fail-closed for new actions).
-    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+// ── Localization (ANTIGRAVITY §9): ar (default) + en, the URL is the only input (Cultures.Configure) ──
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+builder.Services.Configure<RequestLocalizationOptions>(Cultures.Configure);
+// Framework model-binding messages from the resx, in the request's language.
+builder.Services.AddSingleton<IConfigureOptions<MvcOptions>, ModelBindingMessagesSetup>();
 
-    var m = options.ModelBindingMessageProvider;
-    m.SetAttemptedValueIsInvalidAccessor((_, field) => string.Format(UserMessages.InvalidValue, field));
-    m.SetNonPropertyAttemptedValueIsInvalidAccessor(_ => UserMessages.InvalidValueNoField);
-    m.SetUnknownValueIsInvalidAccessor(field => string.Format(UserMessages.InvalidValue, field));
-    m.SetNonPropertyUnknownValueIsInvalidAccessor(() => UserMessages.InvalidValueNoField);
-    m.SetValueIsInvalidAccessor(_ => UserMessages.InvalidValueNoField);
-    m.SetValueMustBeANumberAccessor(field => string.Format(UserMessages.InvalidValue, field));
-    m.SetNonPropertyValueMustBeANumberAccessor(() => UserMessages.InvalidValueNoField);
-    m.SetValueMustNotBeNullAccessor(_ => UserMessages.ValueRequiredNoField);
-    m.SetMissingBindRequiredValueAccessor(field => string.Format(UserMessages.ValueRequired, field));
-    m.SetMissingKeyOrValueAccessor(() => UserMessages.ValueRequiredNoField);
-    m.SetMissingRequestBodyRequiredValueAccessor(() => UserMessages.ValueRequiredNoField);
-});
+// Razor writes Arabic (and every other non-ASCII letter) as is instead of &#x…; entities. HTML-sensitive characters
+// (< > & " ') are still encoded — the allowed ranges never include them.
+builder.Services.Configure<Microsoft.Extensions.WebEncoders.WebEncoderOptions>(o =>
+    o.TextEncoderSettings = new System.Text.Encodings.Web.TextEncoderSettings(System.Text.Unicode.UnicodeRanges.All));
+
+builder.Services.AddControllersWithViews(options =>
+    {
+        // Every POST/PUT/PATCH/DELETE in the app validates an antiforgery token (fail-closed for new actions).
+        options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+    })
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization(o =>
+        o.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource)));
 
 builder.Services.AddAntiforgery(options =>
 {
@@ -51,8 +57,10 @@ builder.Services.AddAntiforgery(options =>
 });
 
 builder.Services.AddInnovestRateLimiting();
+builder.Services.AddStaticAssetCompression();
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+// AppDbContext + the home-page cache and its invalidation interceptor (one helper, shared with the tests).
+builder.Services.AddAppDbContext(connectionString);
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -66,13 +74,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SecurePolicy = isDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
-        // A password change ends every other session: the cookie's password fingerprint must match (L3).
+        // A password change ends every other session: the cookie's password fingerprint must match.
         options.Events.OnValidatePrincipal = AdminSession.ValidateAsync;
     });
 
 // Antiforgery tokens and the auth cookie are encrypted with these keys. Persisted outside Testing so
 // that an app-pool recycle on the host does not invalidate every open form and admin session.
-// On Windows the key files are encrypted at rest with DPAPI, machine scope (Stage 4 M1): a copied key
+// On Windows the key files are encrypted at rest with DPAPI, machine scope: a copied key
 // file is useless off that machine. Elsewhere they stay unencrypted — protect the folder by ACL.
 var dataProtection = builder.Services.AddDataProtection().SetApplicationName("InnovestHolding");
 if (!isTesting)
@@ -112,6 +120,17 @@ using (var scope = app.Services.CreateScope())
     }
     await db.Database.MigrateAsync();
     await DbSeeder.SeedAsync(db);
+
+    // One-time: timestamps written by the old code in the server's local time become UTC (marker-guarded).
+    await TimestampUtcConversion.RunAsync(db, TimeZoneInfo.Local, app.Logger);
+
+    if (!app.Environment.IsDevelopment()
+        && !SiteUrl.TryNormalize(await db.SiteContents.Where(c => c.SectionKey == SiteUrl.ContentKey)
+               .Select(c => c.ContentAr).FirstOrDefaultAsync(), out _))
+    {
+        app.Logger.LogWarning("The site base URL is not set (admin → تعديل المحتوى → SEO): pages are served without " +
+                              "canonical/hreflang/og:url and /sitemap.xml answers 404.");
+    }
 }
 
 // ── Middleware ──
@@ -126,19 +145,28 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseSecurityHeaders();
-app.UseStaticFiles();
+app.UseRobotsHeader();
+app.UseStaticAssets();   // compression for static paths only; immutable caching for versioned URLs
+app.UseCultureUrlNormalizer();
 app.UseRouting();
+app.UseRequestLocalization();   // after routing (route values exist), before the limiter (its messages are localized)
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
 // ── Routes ──
-// Admin controllers only (L5): /Admin/Home/* and /Admin/Account/* do not resolve.
+// Admin controllers only: /Admin/Home/* and /Admin/Account/* do not resolve.
 app.MapControllerRoute(
     name: "admin",
     pattern: "Admin/{controller=Dashboard}/{action=Index}/{id?}",
     defaults: new { area = "" },
     constraints: new { controller = new AdminControllerConstraint() });
+
+// /en → the English home page. /en/Register and /en/Contact are attribute routes on HomeController.
+app.MapControllerRoute(
+    name: "home-en",
+    pattern: "en",
+    defaults: new { controller = "Home", action = "Index" });
 
 app.MapControllerRoute(
     name: "default",

@@ -1,10 +1,14 @@
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.RateLimiting;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
 namespace InnovestHolding.Infrastructure;
@@ -14,15 +18,30 @@ public static class RateLimitPolicies
     /// <summary>
     /// Public Register / Contact: per IP and per ACTION. The partition is the action the request was routed
     /// to (from endpoint metadata), never the raw path, so <c>/Home/Contact/1</c>, a trailing slash, another
-    /// casing or another route template all share one bucket (Stage 4 H1).
+    /// casing or another route template all share one bucket.
     /// </summary>
     public const string PublicForm = "public-form";
 
     /// <summary>POST /Account/Login: per IP.</summary>
     public const string Login = "login";
 
-    public static string ClientIp(HttpContext context) =>
-        context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    /// <summary>
+    /// The key of every per-IP control (public-form and login rate limits, login IP lockout). IPv4 (and IPv4-mapped
+    /// IPv6) is the full address. IPv6 is its /64 prefix: one subscriber normally holds a whole /64 and can rotate the
+    /// low 64 bits at will, so keying on the full address would hand out a fresh budget per address.
+    /// </summary>
+    public static string ClientIp(HttpContext context) => ClientKey(context.Connection.RemoteIpAddress);
+
+    public static string ClientKey(IPAddress? address)
+    {
+        if (address is null) return "unknown";
+        if (address.IsIPv4MappedToIPv6) address = address.MapToIPv4();
+        if (address.AddressFamily != AddressFamily.InterNetworkV6) return address.ToString();
+
+        var bytes = address.GetAddressBytes();
+        Array.Clear(bytes, 8, 8);
+        return new IPAddress(bytes).ToString() + "/64";
+    }
 
     private static ControllerActionDescriptor? Action(HttpContext context) =>
         context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
@@ -69,13 +88,15 @@ public static class RateLimitPolicies
                     response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
 
                 // The public forms are called by fetch() and expect JSON; the login form is a full page, so it
-                // gets the login page back with the locked message (status stays 429 — Stage 8 N5); anything
+                // gets the login page back with the locked message (status stays 429, so clients and logs still see the limit); anything
                 // else gets plain text.
                 var action = Action(ctx.HttpContext);
-                if (action?.ControllerName == "Home")
+                var l = ctx.HttpContext.RequestServices.GetRequiredService<IStringLocalizer<SharedResource>>();
+                if (action is { ControllerName: "Home", ActionName: "Register" or "Contact" })
                 {
+                    // Request localization runs before the limiter, so the message is in the page's language.
                     await response.WriteAsJsonAsync(
-                        new { success = false, message = UserMessages.TooManyRequests }, cancellationToken);
+                        new { success = false, message = l[MessageKeys.TooManyRequests].Value }, cancellationToken);
                 }
                 else if (action is { ControllerName: "Account", ActionName: "Login" })
                 {
@@ -84,7 +105,7 @@ public static class RateLimitPolicies
                 else
                 {
                     response.ContentType = "text/plain; charset=utf-8";
-                    await response.WriteAsync(UserMessages.TooManyRequests, cancellationToken);
+                    await response.WriteAsync(l[MessageKeys.TooManyRequests].Value, cancellationToken);
                 }
             };
         });
@@ -101,7 +122,10 @@ public static class RateLimitPolicies
             StatusCode = StatusCodes.Status429TooManyRequests,
             ViewData = new ViewDataDictionary<LoginViewModel>(metadata, new ModelStateDictionary())
             {
-                Model = new LoginViewModel { ErrorMessage = UserMessages.LoginLocked }
+                Model = new LoginViewModel
+                {
+                    ErrorMessage = http.RequestServices.GetRequiredService<IStringLocalizer<SharedResource>>()[MessageKeys.LoginLocked].Value
+                }
             }
         };
         return result.ExecuteResultAsync(new ActionContext(http, http.GetRouteData(), action));

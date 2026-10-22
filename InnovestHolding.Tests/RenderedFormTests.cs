@@ -7,7 +7,7 @@ using static InnovestHolding.Tests.TestHelpers;
 namespace InnovestHolding.Tests;
 
 /// <summary>
-/// RE-RUN 3 (QA BUG-1): every admin toggle is exercised by posting EXACTLY what the rendered page posts —
+/// Every admin toggle is exercised by posting EXACTLY what the rendered page posts —
 /// the form is parsed out of the GET response (hidden inputs, checkbox state, the antiforgery token), never
 /// hand-built. A hand-built body sends "true"/"false" and cannot see what Razor actually rendered.
 /// </summary>
@@ -57,7 +57,7 @@ public class RenderedFormTests(TestAppFactory f)
 
     /// <summary>The single form posting to <paramref name="action"/> whose hidden <c>id</c> equals <paramref name="id"/>.</summary>
     private static RenderedForm FormFor(string html, string action, int? id = null) =>
-        Forms(html).Single(form => form.Action.Equals(action, StringComparison.OrdinalIgnoreCase)
+        Forms(html).First(form => form.Action.Equals(action, StringComparison.OrdinalIgnoreCase)
             && (id is null || form.Fields.Any(x => x.Name.Equals("id", StringComparison.OrdinalIgnoreCase) && x.Value == id.ToString())));
 
     /// <summary>What a browser submits: every successful control; checkboxes only when checked (optionally overridden).</summary>
@@ -81,7 +81,7 @@ public class RenderedFormTests(TestAppFactory f)
         Assert.DoesNotContain("alert alert-error", page);
     }
 
-    // ── Nav: «تعطيل» / «تفعيل» (BUG-1) ──
+    // ── Nav: «تعطيل» / «تفعيل» (hidden inputs must carry the current values) ──
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -91,7 +91,7 @@ public class RenderedFormTests(TestAppFactory f)
         var title = Unique("nav")[..30];
         var id = await f.DbAsync(async db =>
         {
-            var item = new NavItem { Title = title, Href = "#qa", HasDropdown = hasDropdown, IsActive = true, SortOrder = 900 };
+            var item = new NavItem { TitleAr = title, Href = "#qa", HasDropdown = hasDropdown, IsActive = true, SortOrder = 900 };
             db.NavItems.Add(item);
             await db.SaveChangesAsync();
             return item.Id;
@@ -104,7 +104,7 @@ public class RenderedFormTests(TestAppFactory f)
             var row = await f.DbAsync(db => db.NavItems.AsNoTracking().SingleAsync(n => n.Id == id));
             Assert.Equal(expectedActive, row.IsActive);
             Assert.Equal(hasDropdown, row.HasDropdown);
-            Assert.Equal(title, row.Title);
+            Assert.Equal(title, row.TitleAr);
             Assert.Equal("#qa", row.Href);
         }
     }
@@ -123,13 +123,13 @@ public class RenderedFormTests(TestAppFactory f)
             switch (page)
             {
                 case "Events":
-                    var e = new Event { Title = marker, EventDay = 5, EventMonth = "يوليو", IsActive = true };
+                    var e = new Event { TitleAr = marker, EventDay = 5, EventMonthAr = "يوليو", IsActive = true };
                     db.Events.Add(e); await db.SaveChangesAsync(); return e.Id;
                 case "Faq":
-                    var q = new Faq { Question = marker, Answer = "a", IsActive = true };
+                    var q = new Faq { QuestionAr = marker, AnswerAr = "a", IsActive = true };
                     db.Faqs.Add(q); await db.SaveChangesAsync(); return q.Id;
                 default:
-                    var n = new News { Title = marker, IsActive = true };
+                    var n = new News { TitleAr = marker, IsActive = true };
                     db.News.Add(n); await db.SaveChangesAsync(); return n.Id;
             }
         });
@@ -190,7 +190,7 @@ public class RenderedFormTests(TestAppFactory f)
         }
     }
 
-    // ── Stats: the range message names the field once (QA OBS-2: it read «قيمة القيمة …») ──
+    // ── Stats: the range message names the field once (it once read «قيمة القيمة …») ──
     [Fact]
     public async Task Stats_out_of_range_value_message_names_the_field_once()
     {

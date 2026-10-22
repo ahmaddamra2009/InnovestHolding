@@ -1,0 +1,10 @@
+@model SectionHeaderVm
+@using InnovestHolding.Infrastructure.Content
+<div class="section-header reveal">
+  <span class="section-badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(Model.BadgeIconSvg)</svg>
+    <span lang="@Model.Badge.Lang" dir="@Model.Badge.Dir">@Model.Badge</span>
+  </span>
+  <h2 class="section-title" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+  <p class="section-subtitle" lang="@Model.Subtitle.Lang" dir="@Model.Subtitle.Dir">@Model.Subtitle</p>
+</div>

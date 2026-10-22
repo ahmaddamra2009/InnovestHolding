@@ -1,15 +1,14 @@
 ﻿@model ErrorViewModel
-@using InnovestHolding.Infrastructure
 @{
-    ViewData["Title"] = UserMessages.ErrorTitle;
+    ViewData["Title"] = L[K.ErrorTitle].Value;
 }
 
-<h1 class="text-danger">@UserMessages.ErrorTitle</h1>
-<p>@UserMessages.ErrorGeneric</p>
+<h1 class="text-danger">@L[K.ErrorTitle]</h1>
+<p>@L[K.ErrorGeneric]</p>
 
 @if (Model.ShowRequestId)
 {
-    <p>@UserMessages.ErrorReference: <code>@Model.RequestId</code></p>
+    <p>@L[K.ErrorReference]: <code>@Model.RequestId</code></p>
 }
 
-<p><a href="/">@UserMessages.BackToHome</a></p>
+<p><a href="/">@L[K.BackToHome]</a></p>

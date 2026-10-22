@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using InnovestHolding.Data;
 using InnovestHolding.Infrastructure;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,19 +33,19 @@ public class SettingsController : AdminControllerBase
         if (user == null)
             return Challenge();
 
-        // The current-password check is a password guess like a login: same throttle, same account key (L4).
+        // The current-password check is a password guess like a login: same throttle, same account key.
         var key = LoginKey.ForAccount(user.Id);
         var ip = RateLimitPolicies.ClientIp(HttpContext);
         if (_throttle.IsLocked(key, ip))
         {
-            ModelState.AddModelError(nameof(ChangePasswordInput.CurrentPassword), UserMessages.LoginLocked);
+            ModelState.AddModelError(nameof(ChangePasswordInput.CurrentPassword), L(MessageKeys.LoginLocked));
             return View(ViewPath, new ChangePasswordInput());
         }
 
         if (!BCrypt.Net.BCrypt.Verify(input.CurrentPassword, user.PasswordHash))
         {
             _throttle.RecordFailure(key, ip);
-            ModelState.AddModelError(nameof(ChangePasswordInput.CurrentPassword), UserMessages.CurrentPasswordWrong);
+            ModelState.AddModelError(nameof(ChangePasswordInput.CurrentPassword), L(MessageKeys.CurrentPasswordWrong));
             return View(ViewPath, new ChangePasswordInput());
         }
         _throttle.ResetUser(key);
@@ -52,11 +53,11 @@ public class SettingsController : AdminControllerBase
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(input.NewPassword);
         await _db.SaveChangesAsync();
 
-        // Every other session carries the old password fingerprint and is rejected on its next request (L3);
+        // Every other session carries the old password fingerprint and is rejected on its next request;
         // this one is re-issued with the new fingerprint so the admin stays signed in here.
         await AdminSession.SignInAsync(HttpContext, user);
 
-        TempData["Success"] = "تم تغيير كلمة المرور بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.PasswordChanged);
         return RedirectToAction(nameof(Index));
     }
 }

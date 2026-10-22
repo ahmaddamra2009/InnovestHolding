@@ -7,7 +7,7 @@ namespace InnovestHolding.Infrastructure;
 /// <summary>
 /// The identity a login attempt is counted against. An existing account is keyed on its database id, so
 /// every spelling the database resolves to that account (case, full-width/half-width, …) shares ONE
-/// counter (Stage 4 H2). A name that matches no account is keyed on its NFKC-normalised, upper-cased form.
+/// counter. A name that matches no account is keyed on its NFKC-normalised, upper-cased form.
 /// </summary>
 public readonly record struct LoginKey(string Value, bool IsAccount)
 {
@@ -31,7 +31,7 @@ public interface ILoginThrottle
     bool IsLocked(LoginKey user, string ip);
     void RecordFailure(LoginKey user, string ip);
 
-    /// <summary>After a successful check: clears the account's counter only. The IP counter is NOT reset (L2).</summary>
+    /// <summary>After a successful check: clears the account's counter only. The IP counter is NOT reset.</summary>
     void ResetUser(LoginKey user);
 }
 
@@ -42,7 +42,7 @@ public interface ILoginThrottle
 /// Unknown-name keys and IP keys are each bounded (<see cref="LoginLockoutOptions.MaxTrackedKeys"/>,
 /// <see cref="LoginLockoutOptions.MaxTrackedIpKeys"/>); expired entries are purged. When a bounded store is
 /// full and purging frees nothing, a key it does not already hold is treated as LOCKED — the check fails
-/// closed instead of switching that dimension off (Stage 4 M2).</para>
+/// closed instead of switching that dimension off.</para>
 /// </summary>
 public sealed class InMemoryLoginThrottle : ILoginThrottle
 {

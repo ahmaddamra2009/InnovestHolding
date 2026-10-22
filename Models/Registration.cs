@@ -15,10 +15,20 @@ public class Registration
     [MaxLength(50)]
     public string Phone { get; set; } = "";
 
+    /// <summary>Arabic name of the chosen option when the visitor registered (snapshot: survives option edits/deletes).</summary>
     [MaxLength(100)]
     public string Interest { get; set; } = "";
 
+    public int? InterestOptionId { get; set; }
+
+    public InterestOption? InterestOption { get; set; }
+
+    /// <summary>Page language the visitor submitted from ("ar" / "en"); written by the server, never bound.</summary>
+    [MaxLength(5)]
+    public string Culture { get; set; } = "ar";
+
     public bool IsRead { get; set; } = false;
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    /// <summary>UTC.</summary>
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

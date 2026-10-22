@@ -1,4 +1,5 @@
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,12 +24,15 @@ public class StatsController : AdminControllerBase
         var item = await _db.Stats.FindAsync(input.Id);
         if (item == null) return NotFound();
 
-        item.Label = input.Label!.Trim();
+        item.LabelAr = input.LabelAr!.Trim();
+        item.LabelEn = Optional(input.LabelEn);
+        item.ShortLabelAr = Optional(input.ShortLabelAr);
+        item.ShortLabelEn = Optional(input.ShortLabelEn);
         item.Value = input.Value!.Value;
         item.Suffix = input.Suffix?.Trim() ?? "";
 
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تم تحديث الإحصائية بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.StatUpdated);
         return RedirectToAction(nameof(Index));
     }
 }

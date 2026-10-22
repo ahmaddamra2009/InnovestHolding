@@ -1,5 +1,6 @@
 using System.Net;
 using InnovestHolding.Infrastructure;
+using InnovestHolding.Infrastructure.Localization;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -17,10 +18,10 @@ using static InnovestHolding.Tests.TestHelpers;
 namespace InnovestHolding.Tests;
 
 /// <summary>
-/// Stage 8 F2: the 32 KB cap on the public forms. On .NET 9 the framework's EndpointRoutingMiddleware applies an
+/// The 32 KB cap on the public forms. On .NET 9 the framework's EndpointRoutingMiddleware applies an
 /// endpoint's [RequestSizeLimit] to the server's body-size feature at endpoint selection — before the antiforgery
 /// filter reads the form. TestServer exposes no IHttpMaxRequestBodySizeFeature, so a fake one is installed.
-/// (PR-A's own UseEndpointRequestSizeLimit was measured redundant — NC-F2a — and removed by CTO decision.)
+/// (A custom UseEndpointRequestSizeLimit middleware was measured redundant and is not used.)
 /// </summary>
 [Collection("App")]
 public class RequestSizeLimitTests(TestAppFactory f)
@@ -31,27 +32,33 @@ public class RequestSizeLimitTests(TestAppFactory f)
         public long? MaxRequestBodySize { get; set; } = 30_000_000; // Kestrel's default
     }
 
-    private Endpoint EndpointOf(string controller, string action) =>
-        f.Services.GetRequiredService<EndpointDataSource>().Endpoints.Single(e =>
+    /// <summary>Every POST endpoint of the action (Register/Contact have two: /Home/… and /en/…).</summary>
+    private List<Endpoint> EndpointsOf(string controller, string action) =>
+        f.Services.GetRequiredService<EndpointDataSource>().Endpoints.Where(e =>
             e.Metadata.GetMetadata<ControllerActionDescriptor>() is { } a
             && a.ControllerName == controller && a.ActionName == action
-            && e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods.Contains("POST") == true);
+            && e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods.Contains("POST") == true).ToList();
 
     [Theory]
     [InlineData("Contact")]
     [InlineData("Register")]
     public void Public_form_endpoint_carries_a_32768_size_limit(string action)
     {
-        var limit = EndpointOf("Home", action).Metadata.GetMetadata<IRequestSizeLimitMetadata>();
-        Assert.NotNull(limit);
-        Assert.Equal(32_768, limit.MaxRequestBodySize);
-        Assert.Equal(InputLimits.PublicBodyBytes, limit.MaxRequestBodySize);
+        var endpoints = EndpointsOf("Home", action);
+        Assert.Equal(2, endpoints.Count); // /Home/{action} and /en/{action}
+        foreach (var endpoint in endpoints)
+        {
+            var limit = endpoint.Metadata.GetMetadata<IRequestSizeLimitMetadata>();
+            Assert.NotNull(limit);
+            Assert.Equal(32_768, limit.MaxRequestBodySize);
+            Assert.Equal(InputLimits.PublicBodyBytes, limit.MaxRequestBodySize);
+        }
     }
 
     /// <summary>
     /// End to end through Program's real pipeline: a test-only startup filter installs a fake server feature and
     /// records the limit it holds at the FIRST read of the body (the antiforgery filter's form read). Red when the
-    /// action's [RequestSizeLimit] is removed (NC-F2c).
+    /// action's [RequestSizeLimit] is removed.
     /// </summary>
     [Fact]
     public async Task Program_pipeline_applies_the_32768_limit_before_the_form_is_read()
@@ -75,7 +82,7 @@ public class RequestSizeLimitTests(TestAppFactory f)
         var email = Unique("cap") + "@example.com";
         Assert.Equal(32_768, await LimitSeenBy("/Home/Contact", Form(token,
             ("FullName", "QA"), ("Email", email), ("Subject", "s"), ("Message", "m"))));
-        Assert.Equal(30_000_000, await LimitSeenBy("/Account/Login", Form(token, ("Username", "x"), ("Password", "x"))));
+        Assert.Equal(InputLimits.LoginBodyBytes, await LimitSeenBy("/Account/Login", Form(token, ("Username", "x"), ("Password", "x"))));
     }
 
     private sealed class ProbeStartupFilter(
@@ -132,8 +139,8 @@ public class RequestSizeLimitTests(TestAppFactory f)
 }
 
 /// <summary>
-/// Stage 8 F3: the cookie policy as CONFIGURED (Testing = non-Development, i.e. the production branch).
-/// T36 sees the emitted flags over an https client, where SameAsRequest would also emit "secure" and Lax/Strict
+/// The cookie policy as CONFIGURED (Testing = non-Development, i.e. the production branch).
+/// The cookie-flags test sees the emitted flags over an https client, where SameAsRequest would also emit "secure" and Lax/Strict
 /// are the framework defaults — so it cannot prove these lines. This reads the options the app really uses.
 /// </summary>
 [Collection("App")]
@@ -160,13 +167,15 @@ public class CookiePolicyTests(TestAppFactory f)
     }
 }
 
-/// <summary>Stage 8 N3: model-binding messages with no field name read cleanly (no "حقل  غير").</summary>
+/// <summary>Model-binding messages with no field name read cleanly (no "حقل  غير").</summary>
 [Collection("App")]
 public class ModelBindingMessageTests(TestAppFactory f)
 {
     [Fact]
     public void Messages_without_a_field_name_have_no_double_space()
     {
+        // The accessors resolve the resx per call in the CURRENT UI culture (an Arabic request here).
+        System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("ar");
         var m = f.Services.GetRequiredService<IOptions<MvcOptions>>().Value.ModelBindingMessageProvider;
         var noField = new[]
         {
@@ -181,7 +190,7 @@ public class ModelBindingMessageTests(TestAppFactory f)
         foreach (var message in noField)
         {
             Assert.DoesNotContain("  ", message);
-            Assert.Contains(message, new[] { UserMessages.InvalidValueNoField, UserMessages.ValueRequiredNoField });
+            Assert.Contains(message, new[] { Msg.Ar(MessageKeys.InvalidValueNoField), Msg.Ar(MessageKeys.ValueRequiredNoField) });
         }
 
         // The accessors that DO receive a field name still show it.
@@ -190,7 +199,7 @@ public class ModelBindingMessageTests(TestAppFactory f)
     }
 }
 
-/// <summary>Stage 8 N2 over HTTP: the nav editor now accepts mailto:, tel: and relative links.</summary>
+/// <summary>Over HTTP: the nav editor now accepts mailto:, tel: and relative links.</summary>
 [Collection("App")]
 public class NavHrefTests(TestAppFactory f)
 {
@@ -203,8 +212,8 @@ public class NavHrefTests(TestAppFactory f)
         var client = await f.SignedInClientAsync();
         var token = await client.GetTokenAsync("/Admin/Nav");
         var title = Unique("nav")[..30];
-        var response = await client.PostAsync("/Admin/Nav/Create", Form(token, ("title", title), ("href", href)));
+        var response = await client.PostAsync("/Admin/Nav/Create", Form(token, ("TitleAr", title), ("Href", href)));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Equal(href, await f.DbAsync(db => db.NavItems.Where(n => n.Title == title).Select(n => n.Href).SingleAsync()));
+        Assert.Equal(href, await f.DbAsync(db => db.NavItems.Where(n => n.TitleAr == title).Select(n => n.Href).SingleAsync()));
     }
 }

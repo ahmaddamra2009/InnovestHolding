@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Msg_Required" xml:space="preserve"><value>The {0} field is required</value></data>
+  <data name="Msg_MaxLength" xml:space="preserve"><value>{0} must not exceed {1} characters</value></data>
+  <data name="Msg_LengthRange" xml:space="preserve"><value>{0} must be between {2} and {1} characters</value></data>
+  <data name="Msg_Range" xml:space="preserve"><value>{0} must be between {1} and {2}</value></data>
+  <data name="Msg_Email" xml:space="preserve"><value>The email address is not valid</value></data>
+  <data name="Msg_Phone" xml:space="preserve"><value>The phone number is not valid</value></data>
+  <data name="Msg_UnsafeHref" xml:space="preserve"><value>The link is not valid (allowed: #, a site path, http/https, mailto/tel)</value></data>
+  <data name="Msg_HttpsUrl" xml:space="preserve"><value>{0} must be a full link starting with https://</value></data>
+  <data name="Msg_BaseUrl" xml:space="preserve"><value>The site base URL must be https://domain only (no path or query)</value></data>
+  <data name="Msg_SitePath" xml:space="preserve"><value>{0} must be a site path starting with / or empty</value></data>
+  <data name="Msg_Highlight" xml:space="preserve"><value>{0}: only one highlighted part, in curly brackets, is allowed</value></data>
+  <data name="Msg_InvalidValue" xml:space="preserve"><value>The value entered in {0} is not valid</value></data>
+  <data name="Msg_ValueRequired" xml:space="preserve"><value>The {0} field is required</value></data>
+  <data name="Msg_InvalidValueNoField" xml:space="preserve"><value>The value entered is not valid</value></data>
+  <data name="Msg_ValueRequiredNoField" xml:space="preserve"><value>This field is required</value></data>
+  <data name="Msg_PasswordsDoNotMatch" xml:space="preserve"><value>The new passwords do not match</value></data>
+  <data name="Msg_CurrentPasswordWrong" xml:space="preserve"><value>The current password is incorrect</value></data>
+  <data name="Msg_InterestInvalid" xml:space="preserve"><value>Please choose an area of interest from the list</value></data>
+  <data name="Msg_RegistrationSuccess" xml:space="preserve"><value>Registration successful! We will contact you soon</value></data>
+  <data name="Msg_ContactSuccess" xml:space="preserve"><value>Your message was sent successfully! We will reply as soon as possible</value></data>
+  <data name="Msg_TooManyRequests" xml:space="preserve"><value>Too many requests, please try again later</value></data>
+  <data name="Msg_LoginInvalid" xml:space="preserve"><value>Incorrect username or password</value></data>
+  <data name="Msg_LoginLocked" xml:space="preserve"><value>Too many attempts, try again later</value></data>
+  <data name="Msg_ErrorTitle" xml:space="preserve"><value>An error occurred</value></data>
+  <data name="Msg_ErrorGeneric" xml:space="preserve"><value>Your request could not be completed because of an unexpected error. Please try again later.</value></data>
+  <data name="Msg_ErrorReference" xml:space="preserve"><value>Reference</value></data>
+  <data name="Msg_BackToHome" xml:space="preserve"><value>Back to the home page</value></data>
+  <data name="Field_FullName" xml:space="preserve"><value>Full name</value></data>
+  <data name="Field_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Field_Phone" xml:space="preserve"><value>Phone number</value></data>
+  <data name="Field_Interest" xml:space="preserve"><value>Area of interest</value></data>
+  <data name="Field_Subject" xml:space="preserve"><value>Subject</value></data>
+  <data name="Field_Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Field_Username" xml:space="preserve"><value>Username</value></data>
+  <data name="Field_Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Field_CurrentPassword" xml:space="preserve"><value>Current password</value></data>
+  <data name="Field_NewPassword" xml:space="preserve"><value>New password</value></data>
+  <data name="Field_ConfirmPassword" xml:space="preserve"><value>Confirm password</value></data>
+  <data name="Field_EventDay" xml:space="preserve"><value>Day</value></data>
+  <data name="Field_SortOrder" xml:space="preserve"><value>Order</value></data>
+  <data name="Field_Href" xml:space="preserve"><value>Link</value></data>
+  <data name="Field_Value" xml:space="preserve"><value>Value</value></data>
+  <data name="Field_Suffix" xml:space="preserve"><value>Suffix</value></data>
+  <data name="Field_Content" xml:space="preserve"><value>Content</value></data>
+  <data name="Field_LinkUrl" xml:space="preserve"><value>More link</value></data>
+  <data name="Field_Url" xml:space="preserve"><value>URL</value></data>
+  <data name="Field_Title" xml:space="preserve"><value>Title</value></data>
+  <data name="Field_TitleEn" xml:space="preserve"><value>Title (English)</value></data>
+  <data name="Field_Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Field_DescriptionEn" xml:space="preserve"><value>Description (English)</value></data>
+  <data name="Field_EventMonth" xml:space="preserve"><value>Month</value></data>
+  <data name="Field_EventMonthEn" xml:space="preserve"><value>Month (English)</value></data>
+  <data name="Field_Location" xml:space="preserve"><value>Location</value></data>
+  <data name="Field_LocationEn" xml:space="preserve"><value>Location (English)</value></data>
+  <data name="Field_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Field_TimeEn" xml:space="preserve"><value>Time (English)</value></data>
+  <data name="Field_Question" xml:space="preserve"><value>Question</value></data>
+  <data name="Field_QuestionEn" xml:space="preserve"><value>Question (English)</value></data>
+  <data name="Field_Answer" xml:space="preserve"><value>Answer</value></data>
+  <data name="Field_AnswerEn" xml:space="preserve"><value>Answer (English)</value></data>
+  <data name="Field_Summary" xml:space="preserve"><value>Summary</value></data>
+  <data name="Field_SummaryEn" xml:space="preserve"><value>Summary (English)</value></data>
+  <data name="Field_Category" xml:space="preserve"><value>Category</value></data>
+  <data name="Field_CategoryEn" xml:space="preserve"><value>Category (English)</value></data>
+  <data name="Field_NewsDate" xml:space="preserve"><value>Date</value></data>
+  <data name="Field_NewsDateEn" xml:space="preserve"><value>Date (English)</value></data>
+  <data name="Field_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Field_NameEn" xml:space="preserve"><value>Name (English)</value></data>
+  <data name="Field_Label" xml:space="preserve"><value>Label</value></data>
+  <data name="Field_LabelEn" xml:space="preserve"><value>Label (English)</value></data>
+  <data name="Field_ShortTitle" xml:space="preserve"><value>Short name</value></data>
+  <data name="Field_ShortTitleEn" xml:space="preserve"><value>Short name (English)</value></data>
+  <data name="Field_ShortLabel" xml:space="preserve"><value>Short label</value></data>
+  <data name="Field_ShortLabelEn" xml:space="preserve"><value>Short label (English)</value></data>
+  <data name="Field_Text" xml:space="preserve"><value>Text</value></data>
+  <data name="Field_TextEn" xml:space="preserve"><value>Text (English)</value></data>
+  <data name="Admin_ContentSaved" xml:space="preserve"><value>Changes saved</value></data>
+  <data name="Admin_EventAdded" xml:space="preserve"><value>Event added</value></data>
+  <data name="Admin_EventUpdated" xml:space="preserve"><value>Event updated</value></data>
+  <data name="Admin_EventDeleted" xml:space="preserve"><value>Event deleted</value></data>
+  <data name="Admin_FaqAdded" xml:space="preserve"><value>Question added</value></data>
+  <data name="Admin_FaqUpdated" xml:space="preserve"><value>Question updated</value></data>
+  <data name="Admin_FaqDeleted" xml:space="preserve"><value>Question deleted</value></data>
+  <data name="Admin_NewsAdded" xml:space="preserve"><value>News item added</value></data>
+  <data name="Admin_NewsUpdated" xml:space="preserve"><value>News item updated</value></data>
+  <data name="Admin_NewsDeleted" xml:space="preserve"><value>News item deleted</value></data>
+  <data name="Admin_NavAdded" xml:space="preserve"><value>Item added</value></data>
+  <data name="Admin_NavUpdated" xml:space="preserve"><value>Item updated</value></data>
+  <data name="Admin_NavDeleted" xml:space="preserve"><value>Item deleted</value></data>
+  <data name="Admin_SubItemAdded" xml:space="preserve"><value>Sub-item added</value></data>
+  <data name="Admin_SubItemUpdated" xml:space="preserve"><value>Sub-item updated</value></data>
+  <data name="Admin_SubItemDeleted" xml:space="preserve"><value>Sub-item deleted</value></data>
+  <data name="Admin_PartnerAdded" xml:space="preserve"><value>Partner added</value></data>
+  <data name="Admin_PartnerUpdated" xml:space="preserve"><value>Partner updated</value></data>
+  <data name="Admin_PartnerDeleted" xml:space="preserve"><value>Partner deleted</value></data>
+  <data name="Admin_PlatformUpdated" xml:space="preserve"><value>Platform updated</value></data>
+  <data name="Admin_StatUpdated" xml:space="preserve"><value>Statistic updated</value></data>
+  <data name="Admin_PasswordChanged" xml:space="preserve"><value>Password changed</value></data>
+  <data name="Admin_MessageDeleted" xml:space="preserve"><value>Message deleted</value></data>
+  <data name="Admin_RegistrationDeleted" xml:space="preserve"><value>Registration deleted</value></data>
+  <data name="Admin_OptionAdded" xml:space="preserve"><value>Option added</value></data>
+  <data name="Admin_OptionUpdated" xml:space="preserve"><value>Option updated</value></data>
+  <data name="Admin_OptionDeleted" xml:space="preserve"><value>Option deleted</value></data>
+  <data name="Admin_BenefitAdded" xml:space="preserve"><value>Benefit added</value></data>
+  <data name="Admin_BenefitUpdated" xml:space="preserve"><value>Benefit updated</value></data>
+  <data name="Admin_BenefitDeleted" xml:space="preserve"><value>Benefit deleted</value></data>
+  <data name="Admin_SocialUpdated" xml:space="preserve"><value>Link updated</value></data>
+  <data name="Admin_EnHint" xml:space="preserve"><value>Optional - when empty the English page shows the Arabic text</value></data>
+  <data name="Admin_NeutralHint" xml:space="preserve"><value>Used in every language</value></data>
+  <data name="Ui_LangSwitchText" xml:space="preserve"><value>ع</value></data>
+  <data name="Ui_LangSwitchAria" xml:space="preserve"><value>العربية</value></data>
+  <data name="Ui_LangDrawerText" xml:space="preserve"><value>العربية</value></data>
+  <data name="Ui_ScrollHint" xml:space="preserve"><value>Discover more</value></data>
+  <data name="Ui_NavAria" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Ui_MenuAria" xml:space="preserve"><value>Menu</value></data>
+  <data name="Ui_FormFullName" xml:space="preserve"><value>Full name</value></data>
+  <data name="Ui_FormFullNamePlaceholderRegister" xml:space="preserve"><value>Enter your full name</value></data>
+  <data name="Ui_FormFullNamePlaceholderContact" xml:space="preserve"><value>Enter your name</value></data>
+  <data name="Ui_FormEmail" xml:space="preserve"><value>Email</value></data>
+  <data name="Ui_FormEmailPlaceholder" xml:space="preserve"><value>example@email.com</value></data>
+  <data name="Ui_FormPhone" xml:space="preserve"><value>Phone number</value></data>
+  <data name="Ui_FormPhonePlaceholder" xml:space="preserve"><value>+962 7XX XXX XXX</value></data>
+  <data name="Ui_FormInterest" xml:space="preserve"><value>Area of interest</value></data>
+  <data name="Ui_FormInterestPlaceholder" xml:space="preserve"><value>Select your area of interest</value></data>
+  <data name="Ui_FormSubject" xml:space="preserve"><value>Subject</value></data>
+  <data name="Ui_FormSubjectPlaceholder" xml:space="preserve"><value>Subject of your message</value></data>
+  <data name="Ui_FormMessage" xml:space="preserve"><value>Message</value></data>
+  <data name="Ui_FormMessagePlaceholder" xml:space="preserve"><value>Write your message here...</value></data>
+  <data name="Ui_FormRegistering" xml:space="preserve"><value>Registering...</value></data>
+  <data name="Ui_FormSending" xml:space="preserve"><value>Sending...</value></data>
+  <data name="Ui_FormGenericError" xml:space="preserve"><value>Something went wrong, please try again</value></data>
+  <data name="Ui_ContactSubmit" xml:space="preserve"><value>Send message</value></data>
+  <data name="Ui_ContactAddress" xml:space="preserve"><value>Address</value></data>
+  <data name="Ui_ContactPhone" xml:space="preserve"><value>Phone</value></data>
+  <data name="Ui_ContactEmail" xml:space="preserve"><value>Email</value></data>
+  <data name="Ui_ContactHours" xml:space="preserve"><value>Working hours</value></data>
+  <data name="Ui_TimeUtcLabel" xml:space="preserve"><value>UTC</value></data>
+</root>

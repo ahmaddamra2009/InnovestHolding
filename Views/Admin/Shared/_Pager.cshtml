@@ -1,0 +1,15 @@
+@model (int Page, int TotalPages, string BasePath)
+@if (Model.TotalPages > 1)
+{
+    <nav class="pager" aria-label="الصفحات">
+        @if (Model.Page > 1)
+        {
+            <a class="btn-admin btn-secondary btn-sm" href="@(Model.BasePath)?page=@(Model.Page - 1)">السابق</a>
+        }
+        <span class="pager-info">صفحة @Model.Page من @Model.TotalPages</span>
+        @if (Model.Page < Model.TotalPages)
+        {
+            <a class="btn-admin btn-secondary btn-sm" href="@(Model.BasePath)?page=@(Model.Page + 1)">التالي</a>
+        }
+    </nav>
+}

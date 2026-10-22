@@ -1,60 +1,45 @@
 @model ContentEditInput
+@using InnovestHolding.Infrastructure.Content
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "تعديل المحتوى"; }
 
-<form method="post" asp-action="Edit" asp-controller="Content">
+<form method="post" asp-action="Edit" asp-controller="Content" class="content-editor">
     @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
-    <div class="admin-card">
-        <div class="admin-card-header"><span class="admin-card-title">قسم Hero - الصفحة الرئيسية</span></div>
-        <div class="form-group">
-            <label>العنوان بالعربي</label>
-            <input type="text" name="content[hero_title_ar]" class="form-control" value="@(Model.Content.GetValueOrDefault("hero_title_ar"))">
-        </div>
-        <div class="form-group">
-            <label>العنوان بالإنجليزي</label>
-            <input type="text" name="content[hero_title_en]" class="form-control" value="@(Model.Content.GetValueOrDefault("hero_title_en"))" dir="ltr">
-        </div>
-        <div class="form-group">
-            <label>العنوان الفرعي</label>
-            <textarea name="content[hero_subtitle]" class="form-control">@(Model.Content.GetValueOrDefault("hero_subtitle"))</textarea>
-        </div>
-    </div>
 
-    <div class="admin-card">
-        <div class="admin-card-header"><span class="admin-card-title">قسم من نحن</span></div>
-        <div class="form-group">
-            <label>النص الأول</label>
-            <textarea name="content[about_text_1]" class="form-control" rows="4">@(Model.Content.GetValueOrDefault("about_text_1"))</textarea>
+    @foreach (var (groupId, groupTitle) in ContentKeys.Groups)
+    {
+        var keys = ContentKeys.All.Where(k => k.Group == groupId).ToList();
+        var translatable = keys.Where(k => !k.Neutral).ToList();
+        var done = translatable.Count(k => !string.IsNullOrWhiteSpace(Model.Content.GetValueOrDefault(k.Key)?.En));
+        <div class="admin-card" id="group-@groupId">
+            <div class="admin-card-header">
+                <span class="admin-card-title">@groupTitle</span>
+                @if (translatable.Count > 0)
+                {
+                    <span class="@(done == translatable.Count ? "badge-active" : "badge-inactive") en-chip">EN @done/@translatable.Count</span>
+                }
+            </div>
+            @foreach (var key in keys)
+            {
+                var value = Model.Content.GetValueOrDefault(key.Key) ?? new BilingualValueInput();
+                var rows = key.Multiline ? 3 : 0;
+                if (key.Neutral)
+                {
+                    <lang-pair label="@key.Label" name-ar="content[@key.Key].Ar" value-ar="@value.Ar" max="@key.MaxLength" rows="@rows" ltr="true" required="@(!key.AllowEmpty)" />
+                }
+                else
+                {
+                    <lang-pair label="@key.Label" name-ar="content[@key.Key].Ar" name-en="content[@key.Key].En" value-ar="@value.Ar" value-en="@value.En" max="@key.MaxLength" rows="@rows" required="@(!key.AllowEmpty && !key.Optional)" />
+                }
+            }
         </div>
-        <div class="form-group">
-            <label>النص الثاني</label>
-            <textarea name="content[about_text_2]" class="form-control" rows="3">@(Model.Content.GetValueOrDefault("about_text_2"))</textarea>
-        </div>
-        <div class="form-group">
-            <label>سنوات الخبرة</label>
-            <input type="text" name="content[about_years]" class="form-control" value="@(Model.Content.GetValueOrDefault("about_years"))">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div class="form-group"><label>عنوان الرؤية</label><input type="text" name="content[vision_title]" class="form-control" value="@(Model.Content.GetValueOrDefault("vision_title"))"></div>
-            <div class="form-group"><label>نص الرؤية</label><input type="text" name="content[vision_text]" class="form-control" value="@(Model.Content.GetValueOrDefault("vision_text"))"></div>
-            <div class="form-group"><label>عنوان الرسالة</label><input type="text" name="content[mission_title]" class="form-control" value="@(Model.Content.GetValueOrDefault("mission_title"))"></div>
-            <div class="form-group"><label>نص الرسالة</label><input type="text" name="content[mission_text]" class="form-control" value="@(Model.Content.GetValueOrDefault("mission_text"))"></div>
-            <div class="form-group"><label>عنوان القيم</label><input type="text" name="content[values_title]" class="form-control" value="@(Model.Content.GetValueOrDefault("values_title"))"></div>
-            <div class="form-group"><label>نص القيم</label><input type="text" name="content[values_text]" class="form-control" value="@(Model.Content.GetValueOrDefault("values_text"))"></div>
-        </div>
-    </div>
+    }
 
-    <div class="admin-card">
-        <div class="admin-card-header"><span class="admin-card-title">معلومات التواصل</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div class="form-group"><label>العنوان</label><input type="text" name="content[contact_address]" class="form-control" value="@(Model.Content.GetValueOrDefault("contact_address"))"></div>
-            <div class="form-group"><label>الهاتف</label><input type="text" name="content[contact_phone]" class="form-control" value="@(Model.Content.GetValueOrDefault("contact_phone"))"></div>
-            <div class="form-group"><label>البريد الإلكتروني</label><input type="text" name="content[contact_email]" class="form-control" value="@(Model.Content.GetValueOrDefault("contact_email"))"></div>
-            <div class="form-group"><label>ساعات العمل</label><input type="text" name="content[contact_hours]" class="form-control" value="@(Model.Content.GetValueOrDefault("contact_hours"))"></div>
-        </div>
+    <div class="sticky-actions">
+        <button type="submit" class="btn-admin btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            حفظ التعديلات
+        </button>
+        <a href="/" target="_blank" rel="noopener" class="btn-admin btn-secondary">معاينة العربية</a>
+        <a href="/en" target="_blank" rel="noopener" class="btn-admin btn-secondary">معاينة الإنجليزية</a>
     </div>
-
-    <button type="submit" class="btn-admin btn-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        حفظ التعديلات
-    </button>
 </form>

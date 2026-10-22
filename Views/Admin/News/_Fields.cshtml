@@ -1,0 +1,6 @@
+@model NewsInput
+<lang-pair label="العنوان" name-ar="TitleAr" name-en="TitleEn" value-ar="@Model.TitleAr" value-en="@Model.TitleEn" max="200" required="true" />
+<lang-pair label="الملخص" name-ar="SummaryAr" name-en="SummaryEn" value-ar="@Model.SummaryAr" value-en="@Model.SummaryEn" max="4000" rows="3" />
+<lang-pair label="الفئة" name-ar="CategoryAr" name-en="CategoryEn" value-ar="@Model.CategoryAr" value-en="@Model.CategoryEn" max="50" placeholder="Partnerships" />
+<lang-pair label="التاريخ (نص)" name-ar="NewsDateAr" name-en="NewsDateEn" value-ar="@Model.NewsDateAr" value-en="@Model.NewsDateEn" max="50" placeholder="May 25, 2026" />
+<lang-pair label="رابط «اقرأ المزيد» (اختياري — لا يظهر الرابط إن تُرك فارغاً)" name-ar="LinkUrl" value-ar="@Model.LinkUrl" max="500" ltr="true" placeholder="https://" />

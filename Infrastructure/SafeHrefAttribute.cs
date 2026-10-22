@@ -10,9 +10,9 @@ namespace InnovestHolding.Infrastructure;
 /// Empty values are left to <c>[Required]</c>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
-public sealed class SafeHrefAttribute : ValidationAttribute
+public sealed class SafeHrefAttribute() : LocalizedValidationAttribute(Localization.MessageKeys.UnsafeHref)
 {
-    public SafeHrefAttribute() : base(UserMessages.UnsafeHref) { }
+    protected override bool IsValueValid(object? value) => IsSafe(value as string);
 
     public static bool IsSafe(string? value)
     {
@@ -38,5 +38,4 @@ public sealed class SafeHrefAttribute : ValidationAttribute
                && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 
-    public override bool IsValid(object? value) => IsSafe(value as string);
 }

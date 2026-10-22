@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+/* Cairo is loaded by the layouts' <link> (weights in use only); a second @import here was a chained, render-blocking request. */
 
 /* ==========================================
    DESIGN SYSTEM & VARIABLES - Innovest Holding
@@ -70,10 +70,22 @@ html {
   background-color: var(--white);
   color: var(--text-dark);
   scroll-behavior: smooth;
-  direction: rtl;
+  /* Direction comes from <html dir> (set from the URL's language); every rule below is logical so one stylesheet
+     serves RTL and LTR. --dir flips the few translateX values that cannot be logical. */
+  scroll-padding-top: var(--header-height);
   font-size: 16px;
   overflow-x: hidden;
 }
+
+html[dir="rtl"] { --dir: 1; }
+html[dir="ltr"] { --dir: -1; }
+
+/* Icons that point in the reading direction (arrows, chevrons) are drawn for RTL; mirror them in LTR. */
+html[dir="ltr"] .i-dir { scale: -1 1; }
+
+/* An LTR value (e-mail, phone) inside the page: aligned with the field's start side in both directions. */
+.ltr-input { direction: ltr; }
+html[dir="rtl"] .ltr-input { text-align: right; }
 
 body {
   min-height: 100vh;
@@ -173,7 +185,7 @@ ul { list-style: none; }
   content: '';
   position: absolute;
   bottom: -4px;
-  right: 0;
+  inset-inline-start: 0;
   width: 100%;
   height: 3px;
   background: linear-gradient(90deg, var(--gold), var(--gold-light));
@@ -263,7 +275,7 @@ ul { list-style: none; }
 }
 
 .btn:hover svg {
-  transform: translateX(-4px);
+  transform: translateX(calc(-4px * var(--dir)));
 }
 
 /* ==========================================
@@ -281,7 +293,10 @@ ul { list-style: none; }
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(184, 115, 50, 0.15);
   transition: var(--transition-normal);
-  overflow: hidden;
+  /* Clip sideways only: anything wider than the header stays hidden, but the desktop dropdown can open BELOW it.
+     ("overflow: hidden" clipped the dropdown to the header's height.) "clip" on one axis keeps the other visible. */
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 #main-header.scrolled {
@@ -308,7 +323,7 @@ ul { list-style: none; }
 .logo-area::after {
   content: '';
   position: absolute;
-  left: -16px;
+  inset-inline-end: -16px;
   top: 50%;
   transform: translateY(-50%);
   width: 2px;
@@ -368,14 +383,15 @@ ul { list-style: none; }
   transition: transform var(--transition-fast);
 }
 
-.nav-dropdown:hover .dropdown-arrow {
+.nav-dropdown:hover .dropdown-arrow,
+.nav-dropdown:focus-within .dropdown-arrow {
   transform: rotate(180deg);
 }
 
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 12px);
-  right: 0;
+  inset-inline-start: 0;
   min-width: 260px;
   background: var(--navy);
   border: 1px solid rgba(184, 115, 50, 0.15);
@@ -389,10 +405,31 @@ ul { list-style: none; }
   z-index: 100;
 }
 
-.nav-dropdown:hover .dropdown-menu {
+.nav-dropdown:hover .dropdown-menu,
+.nav-dropdown:focus-within .dropdown-menu {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+
+/* Escape closed it: stays closed while the pointer or focus is still there (main.js clears the class on leaving). */
+.nav-dropdown.is-dismissed .dropdown-menu {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+}
+
+.nav-dropdown.is-dismissed .dropdown-arrow {
+  transform: none;
+}
+
+/* Invisible bridge over the 12px gap between the trigger and the menu, so moving the pointer down does not close it. */
+.dropdown-menu::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: -14px;
+  height: 14px;
 }
 
 .dropdown-item {
@@ -503,7 +540,7 @@ ul { list-style: none; }
 
 .hamburger.active span:nth-child(2) {
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateX(calc(20px * var(--dir)));
 }
 
 .hamburger.active span:nth-child(3) {
@@ -514,7 +551,7 @@ ul { list-style: none; }
 .mobile-nav {
   position: fixed;
   top: 0;
-  right: -100%;
+  inset-inline-end: -100%;
   width: 85%;
   max-width: 380px;
   height: 100vh;
@@ -526,14 +563,14 @@ ul { list-style: none; }
   display: flex;
   flex-direction: column;
   gap: 20px;
-  transition: right var(--transition-slow);
+  transition: inset-inline-end var(--transition-slow);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  border-left: 2px solid rgba(184, 115, 50, 0.2);
+  border-inline-start: 2px solid rgba(184, 115, 50, 0.2);
   overscroll-behavior: contain;
 }
 
-.mobile-nav.open { right: 0; }
+.mobile-nav.open { inset-inline-end: 0; }
 
 .mobile-nav .nav-links {
   flex-direction: column;
@@ -565,13 +602,13 @@ ul { list-style: none; }
   transition: transform var(--transition-normal);
 }
 
-.mobile-dropdown-trigger.active .dropdown-arrow {
+.mobile-dropdown-trigger[aria-expanded="true"] .dropdown-arrow {
   transform: rotate(180deg);
 }
 
 .mobile-dropdown-items {
   display: none;
-  padding-right: 20px;
+  padding-inline-start: 20px;
   flex-direction: column;
   gap: 2px;
   animation: mobileDropdownFade 0.3s ease;
@@ -730,7 +767,7 @@ footer::before {
   content: '';
   position: absolute;
   bottom: 0;
-  right: 0;
+  inset-inline-start: 0;
   width: 30px;
   height: 2px;
   background: var(--gold);
@@ -754,7 +791,7 @@ footer::before {
 
 .footer-link:hover {
   color: var(--gold-light);
-  padding-right: 6px;
+  padding-inline-start: 6px;
 }
 
 .footer-link svg {
@@ -825,26 +862,28 @@ footer::before {
 .reveal-delay-5 { transition-delay: 0.5s; }
 .reveal-delay-6 { transition-delay: 0.6s; }
 
-.reveal-left {
+/* reveal-start: the FIRST child of a two-column grid (on the start side), entering from the inline end;
+   reveal-end: the second child. Logical, so the slide follows the side the element is on in both directions. */
+.reveal-end {
   opacity: 0;
-  transform: translateX(60px);
+  transform: translateX(calc(60px * var(--dir)));
   transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.reveal-left.active {
+.reveal-end.active {
   opacity: 1;
   transform: translateX(0);
 }
 
-.reveal-right {
+.reveal-start {
   opacity: 0;
-  transform: translateX(-60px);
+  transform: translateX(calc(-60px * var(--dir)));
   transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.reveal-right.active {
+.reveal-start.active {
   opacity: 1;
   transform: translateX(0);
 }
@@ -875,8 +914,6 @@ footer::before {
 
   .nav-container { padding: 0 12px !important; }
 
-  /* Hide lang button on small mobile to save space */
-  .nav-actions .btn-lang { display: none; }
 
   .footer-top {
     grid-template-columns: 1fr 1fr;
@@ -908,3 +945,52 @@ footer::before {
 
 /* Honeypot field of the public forms: moved off-screen (not display:none — some bots skip those). */
 .hp-field { position: absolute; inset-inline-start: -10000px; inline-size: 1px; block-size: 1px; overflow: hidden; }
+
+/* ── Bilingual (RTL/LTR) additions ── */
+
+/* The language switch is a link now (same box as the former button). */
+a.btn-lang { text-decoration: none; line-height: normal; }
+
+/* Language row at the bottom of the mobile drawer. */
+.mobile-lang-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+.mobile-lang-link:hover { background: rgba(184, 115, 50, 0.1); color: var(--gold-light); }
+
+/* Keyboard focus is visible (the reset above removes the outline of form controls). */
+.btn-lang:focus-visible,
+.nav-link:focus-visible,
+.mobile-lang-link:focus-visible,
+.footer-link:focus-visible,
+.form-control:focus-visible,
+.hamburger:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 2px;
+}
+
+/* Long English labels: never let the header clip a nav label. */
+.nav-link { white-space: nowrap; }
+
+/* English nav labels are longer: switch to the hamburger earlier so the header never clips a label. */
+@media (max-width: 1200px) {
+  html[lang="en"] header .nav-links { display: none; }
+  html[lang="en"] .nav-actions .nav-cta { display: none; }
+  html[lang="en"] .hamburger { display: flex; }
+}
+
+@media (max-width: 480px) {
+  html[lang="en"] .btn { white-space: normal; text-align: center; padding-inline: 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-start, .reveal-end { transition: none; opacity: 1; transform: none; }
+}

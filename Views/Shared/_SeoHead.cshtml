@@ -1,0 +1,34 @@
+@model SeoVm
+@* One partial renders the whole alternate set, so the two pages cannot diverge. Absolute URLs are omitted when no
+   base URL is known (Infrastructure/Seo/SiteUrl). Every value is attribute-encoded by Razor; the JSON-LD is the only
+   raw output and it is serialised by System.Text.Json with HTML-sensitive characters escaped. *@
+<title>@Model.Title</title>
+<meta name="description" content="@Model.Description">
+@if (Model.Canonical is not null)
+{
+    <link rel="canonical" href="@Model.Canonical">
+    <link rel="alternate" hreflang="ar" href="@Model.AlternateAr">
+    <link rel="alternate" hreflang="en" href="@Model.AlternateEn">
+    <link rel="alternate" hreflang="x-default" href="@Model.AlternateAr">
+}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="@Model.SiteName">
+<meta property="og:title" content="@Model.Title">
+<meta property="og:description" content="@Model.Description">
+@if (Model.Canonical is not null)
+{
+    <meta property="og:url" content="@Model.Canonical">
+}
+<meta property="og:locale" content="@Model.OgLocale">
+<meta property="og:locale:alternate" content="@Model.OgLocaleAlternate">
+@if (Model.OgImage is not null)
+{
+    <meta property="og:image" content="@Model.OgImage">
+    <meta property="og:image:alt" content="@Model.OgImageAlt">
+}
+<meta name="twitter:card" content="summary">
+@if (!string.IsNullOrEmpty(Model.JsonLd))
+{
+    @* <!script> opts this element out of tag-helper processing (which would entity-encode the "+" of the type). *@
+    <!script type="application/ld+json">@Html.Raw(Model.JsonLd)</!script>
+}

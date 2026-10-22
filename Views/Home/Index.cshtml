@@ -1,71 +1,71 @@
 @model HomeViewModel
-@{ Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "الصفحة الرئيسية"; }
-
-
+@using InnovestHolding.Infrastructure.Content
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Seo"] = Model.Seo;
+    var c = Model.Content;
+    var siteName = c.Text("site_name");
+    var cta = c.Text("cta_register");
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    bool Show(string section) => Model.VisibleSections.Contains(section);
+    // Decorative variants of the news cards (decoration, not content): picked by position, as on the original page.
+    (string Gradient, string Icon)[] newsVisuals =
+    [
+        ("#1a1d4a, #2a2f6b", "<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>"),
+        ("#15183f, #1e2456", "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>"),
+        ("#0e1029, #1a1d4a", "<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/>"),
+    ];
+    const string arrow = "<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"/><polyline points=\"12 19 5 12 12 5\"/>";
+    const string chevron = "<polyline points=\"15 18 9 12 15 6\"/>";
+}
 
   <!-- ==========================================
        HEADER / NAVIGATION
        ========================================== -->
   <header id="main-header">
     <div class="container nav-container">
-      <!-- Logo Area (Right in RTL) -->
+      <!-- Logo area (start side) -->
       <a href="#hero" class="logo-area">
-        <img src="~/assets/logo.png" alt="Innovest Holding" class="logo-img">
+        <img src="~/assets/logo.png" alt="@siteName" class="logo-img">
       </a>
 
-      <!-- Navigation Links (Center) -->
-      <nav class="nav-links">
-        <a href="#hero" class="nav-link active">الرئيسية</a>
-        <a href="#about" class="nav-link">من نحن</a>
-        
-        <!-- Dropdown: منصاتنا -->
-        <div class="nav-dropdown">
-          <a href="#platforms" class="nav-link">
-            منصاتنا
-            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </a>
-          <div class="dropdown-menu">
-            <a href="#platforms" class="dropdown-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              التدريب والتعليم
-            </a>
-            <a href="#platforms" class="dropdown-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              منصة المستثمرين والتشبيك
-            </a>
-            <a href="#platforms" class="dropdown-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-              الإعلام والمحتوى الرقمي
-            </a>
-            <a href="#platforms" class="dropdown-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 9 7 12 7s5-3 7.5-3a2.5 2.5 0 0 1 0 5H18"/><path d="M12 7v10"/><path d="M6 21h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z"/></svg>
-              المسابقات
-            </a>
-            <a href="#platforms" class="dropdown-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              الفعاليات والمعارض
-            </a>
-            <a href="#platforms" class="dropdown-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              الشراكات الاستراتيجية و B2B
-            </a>
-          </div>
-        </div>
-        
-        <a href="#news" class="nav-link">الأخبار</a>
-        <a href="#events" class="nav-link">الفعاليات</a>
-        <a href="#partners" class="nav-link">الشركاء والرعاة</a>
-        <a href="#register" class="nav-link">التسجيل السريع</a>
-        <a href="#contact" class="nav-link">تواصل معنا</a>
+      <!-- Navigation links -->
+      <nav class="nav-links" aria-label="@L[K.Ui.NavAria]">
+        @for (var i = 0; i < Model.NavLinks.Count; i++)
+        {
+          var item = Model.NavLinks[i];
+          if (item.SubItems.Count > 0)
+          {
+            <div class="nav-dropdown">
+              <a href="@item.Href" class="nav-link" aria-haspopup="true" aria-expanded="false" aria-controls="desktop-sub-@i" lang="@item.Title.Lang" dir="@item.Title.Dir">
+                @item.Title
+                <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </a>
+              <div class="dropdown-menu" id="desktop-sub-@i">
+                @foreach (var sub in item.SubItems)
+                {
+                  <a href="@sub.Href" class="dropdown-item" lang="@sub.Title.Lang" dir="@sub.Title.Dir">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(sub.IconSvg ?? "")</svg>
+                    @sub.Title
+                  </a>
+                }
+              </div>
+            </div>
+          }
+          else
+          {
+            <a href="@item.Href" class="nav-link@(i == 0 ? " active" : "")" lang="@item.Title.Lang" dir="@item.Title.Dir">@item.Title</a>
+          }
+        }
       </nav>
 
-      <!-- Actions (Left in RTL) -->
+      <!-- Actions (end side) -->
       <div class="nav-actions">
-        <button class="btn-lang" aria-label="تغيير اللغة">EN</button>
-        <a href="#register" class="nav-cta">سجّل الآن</a>
-        
+        <a class="btn-lang" id="lang-switch" href="@Model.OtherLanguageUrl" hreflang="@(Model.IsEnglish ? "ar" : "en")" lang="@(Model.IsEnglish ? "ar" : "en")" rel="alternate" aria-label="@L[K.Ui.LangSwitchAria]">@L[K.Ui.LangSwitchText]</a>
+        <a href="#register" class="nav-cta" lang="@cta.Lang" dir="@cta.Dir">@cta</a>
+
         <!-- Hamburger -->
-        <div class="hamburger" id="hamburger-menu">
+        <div class="hamburger" id="hamburger-menu" role="button" tabindex="0" aria-label="@L[K.Ui.MenuAria]">
           <span></span>
           <span></span>
           <span></span>
@@ -77,89 +77,99 @@
   <!-- Mobile Navigation Drawer -->
   <div class="mobile-overlay" id="nav-overlay"></div>
   <div class="mobile-nav" id="mobile-nav-drawer">
-    <nav class="nav-links">
-      <a href="#hero" class="nav-link active">الرئيسية</a>
-      <a href="#about" class="nav-link">من نحن</a>
-      <a href="#platforms" class="nav-link mobile-dropdown-trigger">
-        منصاتنا
-        <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    <nav class="nav-links" aria-label="@L[K.Ui.NavAria]">
+      @for (var i = 0; i < Model.NavLinks.Count; i++)
+      {
+        var item = Model.NavLinks[i];
+        if (item.SubItems.Count > 0)
+        {
+          <a href="@item.Href" class="nav-link mobile-dropdown-trigger" role="button" aria-expanded="false" aria-controls="mobile-sub-@i" lang="@item.Title.Lang" dir="@item.Title.Dir">
+            @item.Title
+            <svg class="dropdown-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </a>
+          <div class="mobile-dropdown-items" id="mobile-sub-@i">
+            @foreach (var sub in item.SubItems)
+            {
+              <a href="@sub.Href" lang="@sub.Title.Lang" dir="@sub.Title.Dir">@sub.Title</a>
+            }
+          </div>
+        }
+        else
+        {
+          <a href="@item.Href" class="nav-link@(i == 0 ? " active" : "")" lang="@item.Title.Lang" dir="@item.Title.Dir">@item.Title</a>
+        }
+      }
+      <a class="mobile-lang-link" href="@Model.OtherLanguageUrl" hreflang="@(Model.IsEnglish ? "ar" : "en")" lang="@(Model.IsEnglish ? "ar" : "en")" rel="alternate">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        @L[K.Ui.LangDrawerText]
       </a>
-      <div class="mobile-dropdown-items">
-        <a href="#platforms">التدريب والتعليم</a>
-        <a href="#platforms">منصة المستثمرين والتشبيك</a>
-        <a href="#platforms">الإعلام والمحتوى الرقمي</a>
-        <a href="#platforms">المسابقات</a>
-        <a href="#platforms">الفعاليات والمعارض</a>
-        <a href="#platforms">الشراكات الاستراتيجية</a>
-      </div>
-      <a href="#news" class="nav-link">الأخبار</a>
-      <a href="#events" class="nav-link">الفعاليات</a>
-      <a href="#partners" class="nav-link">الشركاء والرعاة</a>
-      <a href="#register" class="nav-link">التسجيل السريع</a>
-      <a href="#contact" class="nav-link">تواصل معنا</a>
     </nav>
-    <a href="#register" class="btn btn-gold" style="width:100%; text-align:center;">سجّل الآن</a>
+    <a href="#register" class="btn btn-gold" style="width:100%; text-align:center;" lang="@cta.Lang" dir="@cta.Dir">@cta</a>
   </div>
 
   <!-- ==========================================
        1. HERO SECTION
        ========================================== -->
+  @{
+    var kicker = c.Optional("hero_kicker");
+    var heroTitle = c.Text("hero_title");
+    var heroBadge = c.Text("hero_badge");
+    var heroSubtitle = c.Text("hero_subtitle");
+    var heroCta = c.Text("hero_cta_primary");
+  }
   <section class="hero-section" id="hero">
     <!-- Background elements -->
     <div class="hero-pattern"></div>
     <div class="hero-accent-line"></div>
     <div class="hero-accent-line"></div>
     <div class="hero-glow"></div>
-    
+
     <div class="hero-content">
       <div class="hero-logo-badge reveal">
-        <img src="~/assets/logo.png" alt="Innovest" style="height:48px;border-radius:8px;">
-        <span>مرحباً بكم في إنوفست هولدينغ</span>
+        <img src="~/assets/logo.png" alt="@siteName" style="height:48px;border-radius:8px;">
+        <span lang="@heroBadge.Lang" dir="@heroBadge.Dir">@heroBadge</span>
       </div>
-      
-      <h1 class="hero-title reveal reveal-delay-1">
-        <span class="hero-title-en">INNOVEST HOLDING</span>
-        إنوفست هولدينغ
+
+      <h1 class="hero-title reveal reveal-delay-1" lang="@heroTitle.Lang" dir="@heroTitle.Dir">
+        @if (!kicker.IsEmpty)
+        {
+          <span class="hero-title-en">@kicker</span>
+        }
+        @heroTitle
       </h1>
-      
-      <p class="hero-subtitle reveal reveal-delay-2">
-        نبني جسور الاستثمار والابتكار من خلال منصات متكاملة للتدريب والتعليم والاستثمار والفعاليات والشراكات الاستراتيجية
+
+      <p class="hero-subtitle reveal reveal-delay-2" lang="@heroSubtitle.Lang" dir="@heroSubtitle.Dir">
+        @heroSubtitle
       </p>
-      
+
       <div class="hero-buttons reveal reveal-delay-3">
         <a href="#platforms" class="btn btn-gold">
-          اكتشف منصاتنا
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <span lang="@heroCta.Lang" dir="@heroCta.Dir">@heroCta</span>
+          <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(arrow)</svg>
         </a>
         <a href="#register" class="btn btn-gold-outline">
-          سجّل الآن
+          <span lang="@cta.Lang" dir="@cta.Dir">@cta</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
         </a>
       </div>
-      
-      <div class="hero-stats reveal reveal-delay-4">
-        <div class="hero-stat">
-          <div class="hero-stat-number" data-counter="150" data-suffix="+">0</div>
-          <div class="hero-stat-label">شريك استراتيجي</div>
+
+      @if (Model.Stats.Count > 0)
+      {
+        <div class="hero-stats reveal reveal-delay-4">
+          @foreach (var stat in Model.Stats)
+          {
+            <div class="hero-stat">
+              <div class="hero-stat-number" data-counter="@stat.Value.ToString(inv)" data-suffix="@stat.Suffix">0</div>
+              <div class="hero-stat-label" lang="@stat.ShortLabel.Lang" dir="@stat.ShortLabel.Dir">@stat.ShortLabel</div>
+            </div>
+          }
         </div>
-        <div class="hero-stat">
-          <div class="hero-stat-number" data-counter="2500" data-suffix="+">0</div>
-          <div class="hero-stat-label">مستثمر</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-number" data-counter="80" data-suffix="+">0</div>
-          <div class="hero-stat-label">فعالية سنوياً</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-number" data-counter="5000" data-suffix="+">0</div>
-          <div class="hero-stat-label">متدرب ومستفيد</div>
-        </div>
-      </div>
+      }
     </div>
-    
+
     <!-- Scroll indicator -->
     <div class="hero-scroll-indicator">
-      <span>اكتشف المزيد</span>
+      <span>@L[K.Ui.ScrollHint]</span>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
     </div>
   </section>
@@ -167,661 +177,361 @@
   <!-- ==========================================
        2. ABOUT SECTION
        ========================================== -->
+  @{
+    var tagline = c.Text("tagline");
+    var yearsLabel = c.Text("about_years_label");
+    var aboutBadge = c.Text("about_badge");
+    var aboutTitle = c.Text("about_title");
+    var about1 = c.Text("about_text_1");
+    var about2 = c.Text("about_text_2");
+    (string Icon, string TitleKey, string TextKey, string Delay)[] values =
+    [
+      ("<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"/><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"/><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"/>", "vision_title", "vision_text", "reveal-delay-1"),
+      ("<path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z\"/>", "mission_title", "mission_text", "reveal-delay-2"),
+      ("<polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/>", "values_title", "values_text", "reveal-delay-3"),
+    ];
+  }
   <section class="about-section" id="about">
     <div class="container">
       <div class="about-grid">
         <!-- Image -->
-        <div class="about-image-wrap reveal-right">
+        <div class="about-image-wrap reveal-start">
           <div style="width:100%;aspect-ratio:4/3;border-radius:var(--radius-xl);background:linear-gradient(135deg, #1a1d4a 0%, #252963 50%, #15183f 100%);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);position:relative;overflow:hidden;">
             <!-- Decorative pattern inside -->
-            <div style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0.05;background-image:radial-gradient(circle at 30% 40%, rgba(184,115,50,0.4) 0%, transparent 50%),radial-gradient(circle at 70% 60%, rgba(184,115,50,0.3) 0%, transparent 50%);"></div>
+            <div style="position:absolute;inset:0;opacity:0.05;background-image:radial-gradient(circle at 30% 40%, rgba(184,115,50,0.4) 0%, transparent 50%),radial-gradient(circle at 70% 60%, rgba(184,115,50,0.3) 0%, transparent 50%);"></div>
             <div style="text-align:center;position:relative;z-index:2;padding:40px;">
-              <img src="~/assets/logo.png" alt="Innovest Holding" style="height:128px;width:auto;margin:0 auto 24px;border-radius:0;">
-              <div style="color:rgba(255,255,255,0.5);font-size:1rem;font-weight:600;">نبني جسور الاستثمار والابتكار</div>
+              <img src="~/assets/logo.png" alt="@siteName" style="height:128px;width:auto;margin:0 auto 24px;border-radius:0;">
+              <div style="color:rgba(255,255,255,0.5);font-size:1rem;font-weight:600;" lang="@tagline.Lang" dir="@tagline.Dir">@tagline</div>
             </div>
           </div>
           <div class="about-image-accent"></div>
           <div class="about-experience-badge">
-            <div class="badge-number">+10</div>
-            <div class="badge-text">سنوات من<br>الخبرة والإنجاز</div>
+            <div class="badge-number">@c.Neutral("about_years")</div>
+            <div class="badge-text" lang="@yearsLabel.Lang" dir="@yearsLabel.Dir">@ContentText.Lines(yearsLabel)</div>
           </div>
         </div>
-        
+
         <!-- Content -->
-        <div class="about-content reveal-left">
+        <div class="about-content reveal-end">
           <span class="section-badge">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-            من نحن
+            <span lang="@aboutBadge.Lang" dir="@aboutBadge.Dir">@aboutBadge</span>
           </span>
-          <h2 class="section-title">
-            نحن <span class="gold gold-underline">إنوفست هولدينغ</span>
+          <h2 class="section-title" lang="@aboutTitle.Lang" dir="@aboutTitle.Dir">
+            @ContentText.Highlight(aboutTitle)
           </h2>
-          <p class="about-text">
-            إنوفست هولدينغ هي شركة رائدة في مجال الاستثمار والابتكار، تأسست برؤية طموحة لبناء منظومة متكاملة تجمع بين التدريب والتعليم، والاستثمار، والتشبيك، والفعاليات. نسعى لتمكين رواد الأعمال والمستثمرين والشركات من خلال منصات متخصصة توفر بيئة محفزة للنمو والتطور.
+          <p class="about-text" lang="@about1.Lang" dir="@about1.Dir">
+            @about1
           </p>
-          <p class="about-text">
-            نعمل على تقديم حلول مبتكرة تلبي احتياجات السوق المتنامية، مع التركيز على الجودة والاحترافية في كل ما نقدمه من خدمات ومنصات.
+          <p class="about-text" lang="@about2.Lang" dir="@about2.Dir">
+            @about2
           </p>
-          
+
           <div class="about-values">
-            <div class="value-card reveal reveal-delay-1">
-              <div class="value-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            @foreach (var v in values)
+            {
+              var vt = c.Text(v.TitleKey);
+              var vx = c.Text(v.TextKey);
+              <div class="value-card reveal @v.Delay">
+                <div class="value-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(v.Icon)</svg>
+                </div>
+                <h3 lang="@vt.Lang" dir="@vt.Dir">@vt</h3>
+                <p lang="@vx.Lang" dir="@vx.Dir">@vx</p>
               </div>
-              <h4>الرؤية</h4>
-              <p>أن نكون المنصة الأولى للاستثمار والابتكار في المنطقة</p>
-            </div>
-            <div class="value-card reveal reveal-delay-2">
-              <div class="value-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              </div>
-              <h4>الرسالة</h4>
-              <p>تمكين الأفراد والشركات عبر منصات متكاملة ومبتكرة</p>
-            </div>
-            <div class="value-card reveal reveal-delay-3">
-              <div class="value-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              </div>
-              <h4>القيم</h4>
-              <p>الابتكار والجودة والشفافية والتميز المستمر</p>
-            </div>
+            }
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ==========================================
-       3. PLATFORMS / SERVICES SECTION
-       ========================================== -->
-  <section class="platforms-section" id="platforms">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          منصاتنا
-        </span>
-        <h2 class="section-title">منصاتنا <span class="gold gold-underline">المتكاملة</span></h2>
-        <p class="section-subtitle">نقدم مجموعة متنوعة من المنصات المتخصصة المصممة لتلبية احتياجاتكم في التدريب والاستثمار والتشبيك والفعاليات</p>
-      </div>
-      
-      <div class="platforms-grid">
-        <!-- Platform 1: Training & Education -->
-        <div class="platform-card reveal reveal-delay-1">
-          <div class="platform-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          </div>
-          <h3>التدريب والتعليم</h3>
-          <p>برامج تدريبية متخصصة وورش عمل احترافية مصممة لتطوير المهارات وبناء القدرات في مجالات الأعمال والتكنولوجيا والقيادة.</p>
-          <a href="#" class="platform-link">
-            اعرف المزيد
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          </a>
-        </div>
-        
-        <!-- Platform 2: Investor & Networking -->
-        <div class="platform-card reveal reveal-delay-2">
-          <div class="platform-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <h3>منصة المستثمرين والتشبيك</h3>
-          <p>منصة فريدة تربط بين المستثمرين ورواد الأعمال والشركات، وتوفر فرص تشبيك استراتيجية وشراكات مثمرة.</p>
-          <a href="#" class="platform-link">
-            اعرف المزيد
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          </a>
-        </div>
-        
-        <!-- Platform 3: Media & Digital Content -->
-        <div class="platform-card reveal reveal-delay-3">
-          <div class="platform-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-          </div>
-          <h3>الإعلام والمحتوى الرقمي</h3>
-          <p>إنتاج محتوى رقمي إبداعي ومتميز، يشمل الفيديو والبودكاست والمقالات المتخصصة في عالم الأعمال والاستثمار.</p>
-          <a href="#" class="platform-link">
-            اعرف المزيد
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          </a>
-        </div>
-        
-        <!-- Platform 4: Competitions -->
-        <div class="platform-card reveal reveal-delay-4">
-          <div class="platform-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 9 7 12 7s5-3 7.5-3a2.5 2.5 0 0 1 0 5H18"/><path d="M12 7v10"/><path d="M6 21h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z"/></svg>
-          </div>
-          <h3>المسابقات</h3>
-          <p>مسابقات وتحديات مبتكرة تستهدف رواد الأعمال والمبدعين، مع جوائز قيمة وفرص حقيقية لتحويل الأفكار إلى مشاريع ناجحة.</p>
-          <a href="#" class="platform-link">
-            اعرف المزيد
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          </a>
-        </div>
-        
-        <!-- Platform 5: Events & Expo -->
-        <div class="platform-card reveal reveal-delay-5">
-          <div class="platform-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </div>
-          <h3>الفعاليات والمعارض</h3>
-          <p>تنظيم وإدارة فعاليات ومعارض دولية ومحلية تجمع بين أصحاب القرار والمستثمرين ورواد الأعمال في بيئة محفزة.</p>
-          <a href="#" class="platform-link">
-            اعرف المزيد
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          </a>
-        </div>
-        
-        <!-- Platform 6: Strategic Partnerships & B2B -->
-        <div class="platform-card reveal reveal-delay-6">
-          <div class="platform-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          </div>
-          <h3>الشراكات الاستراتيجية و B2B</h3>
-          <p>بناء شراكات استراتيجية مع مؤسسات وشركات محلية ودولية، وتوفير حلول أعمال متكاملة لتعزيز النمو المشترك.</p>
-          <a href="#" class="platform-link">
-            اعرف المزيد
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+  @if (Show("platforms"))
+  {
+    var readMore = c.Text("platforms_read_more");
+    <!-- ==========================================
+         3. PLATFORMS / SERVICES SECTION
+         ========================================== -->
+    <section class="platforms-section" id="platforms">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("platforms_badge"), c.Text("platforms_title"), c.Text("platforms_subtitle"), "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/>"))" />
 
-  <!-- ==========================================
-       4. STATS / COUNTERS SECTION
-       ========================================== -->
-  <section class="stats-section" id="stats">
-    <div class="container">
-      <div class="stats-grid">
-        <div class="stat-card reveal reveal-delay-1">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <div class="stat-number" data-counter="150" data-suffix="+">0</div>
-          <div class="stat-label">شريك استراتيجي</div>
-        </div>
-        
-        <div class="stat-card reveal reveal-delay-2">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          </div>
-          <div class="stat-number" data-counter="2500" data-suffix="+">0</div>
-          <div class="stat-label">مستثمر نشط</div>
-        </div>
-        
-        <div class="stat-card reveal reveal-delay-3">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </div>
-          <div class="stat-number" data-counter="80" data-suffix="+">0</div>
-          <div class="stat-label">فعالية سنوياً</div>
-        </div>
-        
-        <div class="stat-card reveal reveal-delay-4">
-          <div class="stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          </div>
-          <div class="stat-number" data-counter="5000" data-suffix="+">0</div>
-          <div class="stat-label">متدرب ومستفيد</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==========================================
-       5. NEWS SECTION
-       ========================================== -->
-  <section class="news-section" id="news">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          الأخبار والتحديثات
-        </span>
-        <h2 class="section-title">آخر <span class="gold gold-underline">الأخبار</span> والتحديثات</h2>
-        <p class="section-subtitle">تابع أحدث الأخبار والمستجدات من عالم إنوفست هولدينغ ومنصاتها المتعددة</p>
-      </div>
-      
-      <div class="news-grid">
-        <!-- News 1 -->
-        <div class="news-card reveal reveal-delay-1">
-          <div class="news-card-img-wrap">
-            <div style="width:100%;aspect-ratio:16/10;background:linear-gradient(135deg, #1a1d4a, #2a2f6b);display:flex;align-items:center;justify-content:center;">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(184,115,50,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <span class="news-category-badge">شراكات</span>
-          </div>
-          <div class="news-card-body">
-            <div class="news-date">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              25 مايو 2026
-            </div>
-            <h3>إنوفست هولدينغ توقع شراكة استراتيجية مع كبرى شركات التكنولوجيا</h3>
-            <p>أعلنت إنوفست هولدينغ عن توقيع اتفاقية شراكة استراتيجية جديدة تهدف إلى تعزيز التحول الرقمي وتوسيع نطاق خدماتها.</p>
-            <a href="#" class="news-read-more">
-              اقرأ المزيد
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            </a>
-          </div>
-        </div>
-        
-        <!-- News 2 -->
-        <div class="news-card reveal reveal-delay-2">
-          <div class="news-card-img-wrap">
-            <div style="width:100%;aspect-ratio:16/10;background:linear-gradient(135deg, #15183f, #1e2456);display:flex;align-items:center;justify-content:center;">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(184,115,50,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            </div>
-            <span class="news-category-badge">تدريب</span>
-          </div>
-          <div class="news-card-body">
-            <div class="news-date">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              18 مايو 2026
-            </div>
-            <h3>إطلاق برنامج تدريبي جديد في ريادة الأعمال والابتكار</h3>
-            <p>تعلن منصة التدريب والتعليم عن إطلاق برنامج تدريبي شامل يستهدف رواد الأعمال الطموحين مع خبراء دوليين.</p>
-            <a href="#" class="news-read-more">
-              اقرأ المزيد
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            </a>
-          </div>
-        </div>
-        
-        <!-- News 3 -->
-        <div class="news-card reveal reveal-delay-3">
-          <div class="news-card-img-wrap">
-            <div style="width:100%;aspect-ratio:16/10;background:linear-gradient(135deg, #0e1029, #1a1d4a);display:flex;align-items:center;justify-content:center;">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(184,115,50,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <span class="news-category-badge">فعاليات</span>
-          </div>
-          <div class="news-card-body">
-            <div class="news-date">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              10 مايو 2026
-            </div>
-            <h3>نجاح كبير لمعرض إنوفست الدولي للاستثمار 2026</h3>
-            <p>اختُتمت فعاليات معرض إنوفست الدولي بمشاركة أكثر من 200 شركة ومؤسسة من 30 دولة حول العالم.</p>
-            <a href="#" class="news-read-more">
-              اقرأ المزيد
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==========================================
-       6. EVENTS TIMELINE SECTION
-       ========================================== -->
-  <section class="events-section" id="events">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          الفعاليات القادمة
-        </span>
-        <h2 class="section-title">الفعاليات <span class="gold gold-underline">القادمة</span></h2>
-        <p class="section-subtitle">انضم إلى فعالياتنا القادمة وتعرف على أحدث الفرص في عالم الاستثمار والأعمال</p>
-      </div>
-      
-      <div class="events-timeline">
-        <!-- Event 1 -->
-        <div class="event-item reveal">
-          <div class="event-dot"></div>
-          <div class="event-card">
-            <div class="event-date-box">
-              <div class="event-date-day">15</div>
-              <div class="event-date-month">يوليو</div>
-            </div>
-            <div class="event-info">
-              <h3>مؤتمر إنوفست للاستثمار والابتكار 2026</h3>
-              <p>مؤتمر دولي يجمع كبار المستثمرين ورواد الأعمال لمناقشة أحدث اتجاهات الاستثمار وفرص الابتكار.</p>
-              <div class="event-meta">
-                <span class="event-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  فندق الريتز كارلتون - الرياض
-                </span>
-                <span class="event-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  9:00 ص - 5:00 م
-                </span>
+        <div class="platforms-grid">
+          @for (var i = 0; i < Model.Platforms.Count; i++)
+          {
+            var p = Model.Platforms[i];
+            <div class="platform-card reveal@(HomeViewModel.Delay(i + 1))">
+              <div class="platform-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(p.IconSvg)</svg>
               </div>
-              <a href="#register" class="event-register-btn">
-                سجّل الآن
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-              </a>
+              <h3 lang="@p.Title.Lang" dir="@p.Title.Dir">@p.Title</h3>
+              <p lang="@p.Description.Lang" dir="@p.Description.Dir">@p.Description</p>
+              @if (p.LinkUrl is not null)
+              {
+                <a href="@p.LinkUrl" class="platform-link">
+                  <span lang="@readMore.Lang" dir="@readMore.Dir">@readMore</span>
+                  <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(arrow)</svg>
+                </a>
+              }
             </div>
-          </div>
-        </div>
-        
-        <!-- Event 2 -->
-        <div class="event-item reveal reveal-delay-2">
-          <div class="event-dot"></div>
-          <div class="event-card">
-            <div class="event-date-box">
-              <div class="event-date-day">28</div>
-              <div class="event-date-month">أغسطس</div>
-            </div>
-            <div class="event-info">
-              <h3>ورشة عمل: بناء المشاريع الناشئة من الصفر</h3>
-              <p>ورشة عمل تفاعلية مكثفة تغطي جميع مراحل بناء المشروع الناشئ بدءاً من الفكرة وحتى التمويل.</p>
-              <div class="event-meta">
-                <span class="event-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  مركز إنوفست للتدريب - عمّان
-                </span>
-                <span class="event-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  10:00 ص - 4:00 م
-                </span>
-              </div>
-              <a href="#register" class="event-register-btn">
-                سجّل الآن
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Event 3 -->
-        <div class="event-item reveal reveal-delay-3">
-          <div class="event-dot"></div>
-          <div class="event-card">
-            <div class="event-date-box">
-              <div class="event-date-day">10</div>
-              <div class="event-date-month">سبتمبر</div>
-            </div>
-            <div class="event-info">
-              <h3>معرض إنوفست الدولي للشراكات والتقنية</h3>
-              <p>معرض دولي يجمع الشركات والمؤسسات من مختلف القطاعات لاستعراض أحدث التقنيات وبناء شراكات جديدة.</p>
-              <div class="event-meta">
-                <span class="event-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  مركز دبي الدولي للمعارض
-                </span>
-                <span class="event-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  3 أيام
-                </span>
-              </div>
-              <a href="#register" class="event-register-btn">
-                سجّل الآن
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-              </a>
-            </div>
-          </div>
+          }
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  }
 
-  <!-- ==========================================
-       7. PARTNERS SECTION
-       ========================================== -->
-  <section class="partners-section" id="partners">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
-          شركاؤنا ورعاتنا
-        </span>
-        <h2 class="section-title">شركاؤنا <span class="gold gold-underline">ورعاتنا</span></h2>
-        <p class="section-subtitle">نفتخر بشراكاتنا مع كبرى المؤسسات والشركات الرائدة في مختلف القطاعات</p>
+  @if (Show("stats"))
+  {
+    <!-- ==========================================
+         4. STATS / COUNTERS SECTION
+         ========================================== -->
+    <section class="stats-section" id="stats">
+      <div class="container">
+        <div class="stats-grid">
+          @for (var i = 0; i < Model.Stats.Count; i++)
+          {
+            var s = Model.Stats[i];
+            <div class="stat-card reveal@(HomeViewModel.Delay(i + 1))">
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(s.IconSvg)</svg>
+              </div>
+              <div class="stat-number" data-counter="@s.Value.ToString(inv)" data-suffix="@s.Suffix">0</div>
+              <div class="stat-label" lang="@s.Label.Lang" dir="@s.Label.Dir">@s.Label</div>
+            </div>
+          }
+        </div>
       </div>
-    </div>
-    
-    <div class="partners-marquee">
-      <div class="marquee-track">
-        <div class="partner-logo"><span>شركة الاتصالات</span></div>
-        <div class="partner-logo"><span>بنك الاستثمار</span></div>
-        <div class="partner-logo"><span>مجموعة التقنية</span></div>
-        <div class="partner-logo"><span>شركة الطاقة</span></div>
-        <div class="partner-logo"><span>مجموعة العقار</span></div>
-        <div class="partner-logo"><span>شركة الصناعات</span></div>
-        <div class="partner-logo"><span>بنك التنمية</span></div>
-        <div class="partner-logo"><span>مجموعة الأعمال</span></div>
-        <div class="partner-logo"><span>شركة التأمين</span></div>
-        <div class="partner-logo"><span>مؤسسة التعليم</span></div>
-        <!-- Duplicated for seamless loop -->
-        <div class="partner-logo"><span>شركة الاتصالات</span></div>
-        <div class="partner-logo"><span>بنك الاستثمار</span></div>
-        <div class="partner-logo"><span>مجموعة التقنية</span></div>
-        <div class="partner-logo"><span>شركة الطاقة</span></div>
-        <div class="partner-logo"><span>مجموعة العقار</span></div>
-        <div class="partner-logo"><span>شركة الصناعات</span></div>
-        <div class="partner-logo"><span>بنك التنمية</span></div>
-        <div class="partner-logo"><span>مجموعة الأعمال</span></div>
-        <div class="partner-logo"><span>شركة التأمين</span></div>
-        <div class="partner-logo"><span>مؤسسة التعليم</span></div>
-      </div>
-    </div>
-  </section>
+    </section>
+  }
 
-  <!-- ==========================================
-       8. FAQ SECTION
-       ========================================== -->
-  <section class="faq-section" id="faq">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          الأسئلة الشائعة
-        </span>
-        <h2 class="section-title">الأسئلة <span class="gold gold-underline">الشائعة</span></h2>
-        <p class="section-subtitle">إجابات على أكثر الأسئلة شيوعاً حول إنوفست هولدينغ وخدماتها</p>
-      </div>
-      
-      <div class="faq-list">
-        <!-- FAQ 1 -->
-        <div class="faq-item reveal">
-          <button type="button" class="faq-question">
-            <h3>ما هي إنوفست هولدينغ؟</h3>
-            <div class="faq-toggle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  @if (Show("news"))
+  {
+    var readMore = c.Text("news_read_more");
+    <!-- ==========================================
+         5. NEWS SECTION
+         ========================================== -->
+    <section class="news-section" id="news">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("news_badge"), c.Text("news_title"), c.Text("news_subtitle"), "<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/><polyline points=\"14 2 14 8 20 8\"/><line x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/><line x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/><polyline points=\"10 9 9 9 8 9\"/>"))" />
+
+        <div class="news-grid">
+          @for (var i = 0; i < Model.News.Count; i++)
+          {
+            var n = Model.News[i];
+            var visual = newsVisuals[i % newsVisuals.Length];
+            <div class="news-card reveal@(HomeViewModel.Delay(i + 1))">
+              <div class="news-card-img-wrap">
+                <div style="width:100%;aspect-ratio:16/10;background:linear-gradient(135deg, @visual.Gradient);display:flex;align-items:center;justify-content:center;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(184,115,50,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(visual.Icon)</svg>
+                </div>
+                @if (!n.Category.IsEmpty)
+                {
+                  <span class="news-category-badge" lang="@n.Category.Lang" dir="@n.Category.Dir">@n.Category</span>
+                }
+              </div>
+              <div class="news-card-body">
+                <div class="news-date">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span lang="@n.Date.Lang" dir="@n.Date.Dir">@n.Date</span>
+                </div>
+                <h3 lang="@n.Title.Lang" dir="@n.Title.Dir">@n.Title</h3>
+                <p lang="@n.Summary.Lang" dir="@n.Summary.Dir">@n.Summary</p>
+                @if (n.LinkUrl is not null)
+                {
+                  <a href="@n.LinkUrl" class="news-read-more">
+                    <span lang="@readMore.Lang" dir="@readMore.Dir">@readMore</span>
+                    <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(arrow)</svg>
+                  </a>
+                }
+              </div>
             </div>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-answer-inner">
-              إنوفست هولدينغ هي شركة رائدة في مجال الاستثمار والابتكار، تقدم منظومة متكاملة من المنصات والخدمات تشمل التدريب والتعليم، والاستثمار والتشبيك، والفعاليات والمعارض، والشراكات الاستراتيجية. تأسست الشركة بهدف بناء جسور حقيقية بين المستثمرين ورواد الأعمال والشركات.
-            </div>
-          </div>
-        </div>
-        
-        <!-- FAQ 2 -->
-        <div class="faq-item reveal reveal-delay-1">
-          <button type="button" class="faq-question">
-            <h3>كيف يمكنني التسجيل في فعاليات إنوفست؟</h3>
-            <div class="faq-toggle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </div>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-answer-inner">
-              يمكنك التسجيل بسهولة عبر نموذج التسجيل السريع في موقعنا، أو من خلال صفحة الفعاليات حيث يتوفر زر تسجيل لكل فعالية. كما يمكنك التواصل مع فريقنا مباشرة عبر البريد الإلكتروني أو الهاتف.
-            </div>
-          </div>
-        </div>
-        
-        <!-- FAQ 3 -->
-        <div class="faq-item reveal reveal-delay-2">
-          <button type="button" class="faq-question">
-            <h3>ما هي البرامج التدريبية المتاحة؟</h3>
-            <div class="faq-toggle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </div>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-answer-inner">
-              نقدم مجموعة متنوعة من البرامج التدريبية في مجالات ريادة الأعمال، الاستثمار، التسويق الرقمي، القيادة والإدارة، التكنولوجيا والابتكار. تُقدم البرامج من قبل خبراء ومتخصصين دوليين ومحليين بأحدث الأساليب التعليمية.
-            </div>
-          </div>
-        </div>
-        
-        <!-- FAQ 4 -->
-        <div class="faq-item reveal reveal-delay-3">
-          <button type="button" class="faq-question">
-            <h3>كيف يمكنني أن أصبح شريكاً أو راعياً لإنوفست؟</h3>
-            <div class="faq-toggle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </div>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-answer-inner">
-              نرحب بالشراكات مع المؤسسات والشركات الراغبة في التعاون. يمكنك التواصل معنا عبر نموذج الاتصال في الموقع أو إرسال بريد إلكتروني إلى فريق الشراكات. سنقوم بدراسة اقتراحكم والرد في أقرب وقت ممكن.
-            </div>
-          </div>
-        </div>
-        
-        <!-- FAQ 5 -->
-        <div class="faq-item reveal reveal-delay-4">
-          <button type="button" class="faq-question">
-            <h3>هل توفر إنوفست فرص استثمارية مباشرة؟</h3>
-            <div class="faq-toggle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </div>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-answer-inner">
-              نعم، من خلال منصة المستثمرين والتشبيك، نوفر فرصاً استثمارية متنوعة في قطاعات مختلفة. نعمل على ربط المستثمرين بالمشاريع الواعدة ونقدم الدعم اللازم لضمان نجاح الاستثمارات.
-            </div>
-          </div>
-        </div>
-        
-        <!-- FAQ 6 -->
-        <div class="faq-item reveal reveal-delay-5">
-          <button type="button" class="faq-question">
-            <h3>أين تقام فعاليات ومعارض إنوفست؟</h3>
-            <div class="faq-toggle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </div>
-          </button>
-          <div class="faq-answer">
-            <div class="faq-answer-inner">
-              تُقام فعالياتنا في مختلف المدن الرئيسية في المنطقة العربية، بما في ذلك الرياض، دبي، عمّان، والقاهرة. كما نقدم فعاليات افتراضية عبر الإنترنت تتيح المشاركة من أي مكان في العالم.
-            </div>
-          </div>
+          }
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  }
+
+  @if (Show("events"))
+  {
+    <!-- ==========================================
+         6. EVENTS TIMELINE SECTION
+         ========================================== -->
+    <section class="events-section" id="events">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("events_badge"), c.Text("events_title"), c.Text("events_subtitle"), "<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/>"))" />
+
+        <div class="events-timeline">
+          @for (var i = 0; i < Model.Events.Count; i++)
+          {
+            var e = Model.Events[i];
+            <div class="event-item reveal@(i == 0 ? "" : HomeViewModel.Delay(i + 1))">
+              <div class="event-dot"></div>
+              <div class="event-card">
+                <div class="event-date-box">
+                  <div class="event-date-day">@e.Day.ToString(inv)</div>
+                  <div class="event-date-month" lang="@e.Month.Lang" dir="@e.Month.Dir">@e.Month</div>
+                </div>
+                <div class="event-info">
+                  <h3 lang="@e.Title.Lang" dir="@e.Title.Dir">@e.Title</h3>
+                  <p lang="@e.Description.Lang" dir="@e.Description.Dir">@e.Description</p>
+                  <div class="event-meta">
+                    @if (!e.Location.IsEmpty)
+                    {
+                      <span class="event-meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <span lang="@e.Location.Lang" dir="@e.Location.Dir">@e.Location</span>
+                      </span>
+                    }
+                    @if (!e.Time.IsEmpty)
+                    {
+                      <span class="event-meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span lang="@e.Time.Lang" dir="@e.Time.Dir">@e.Time</span>
+                      </span>
+                    }
+                  </div>
+                  <a href="#register" class="event-register-btn">
+                    <span lang="@cta.Lang" dir="@cta.Dir">@cta</span>
+                    <svg class="i-dir" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(arrow)</svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  @if (Show("partners"))
+  {
+    <!-- ==========================================
+         7. PARTNERS SECTION
+         ========================================== -->
+    <section class="partners-section" id="partners">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("partners_badge"), c.Text("partners_title"), c.Text("partners_subtitle"), "<path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"8.5\" cy=\"7\" r=\"4\"/><path d=\"M20 8v6\"/><path d=\"M23 11h-6\"/>"))" />
+      </div>
+
+      <div class="partners-marquee">
+        <div class="marquee-track">
+          @foreach (var partner in Model.Partners)
+          {
+            <div class="partner-logo"><span lang="@partner.Lang" dir="@partner.Dir">@partner</span></div>
+          }
+          @* Second copy for the seamless loop — hidden from assistive technology. *@
+          @foreach (var partner in Model.Partners)
+          {
+            <div class="partner-logo" aria-hidden="true"><span lang="@partner.Lang" dir="@partner.Dir">@partner</span></div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  @if (Show("faq"))
+  {
+    <!-- ==========================================
+         8. FAQ SECTION
+         ========================================== -->
+    <section class="faq-section" id="faq">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("faq_badge"), c.Text("faq_title"), c.Text("faq_subtitle"), "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"/><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"/>"))" />
+
+        <div class="faq-list">
+          @for (var i = 0; i < Model.Faqs.Count; i++)
+          {
+            var f = Model.Faqs[i];
+            <div class="faq-item reveal@(HomeViewModel.Delay(i))">
+              <button type="button" class="faq-question">
+                <h3 lang="@f.Question.Lang" dir="@f.Question.Dir">@f.Question</h3>
+                <div class="faq-toggle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </div>
+              </button>
+              <div class="faq-answer">
+                <div class="faq-answer-inner" lang="@f.Answer.Lang" dir="@f.Answer.Dir">
+                  @f.Answer
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
 
   <!-- ==========================================
        9. REGISTRATION SECTION
        ========================================== -->
+  @{
+    var regBadge = c.Text("register_badge");
+    var regTitle = c.Text("register_title");
+    var regText = c.Text("register_text");
+  }
   <section class="registration-section" id="register">
     <div class="container">
       <div class="registration-grid">
         <!-- Content -->
-        <div class="registration-content reveal-right">
+        <div class="registration-content reveal-start">
           <span class="section-badge" style="border-color:rgba(184,115,50,0.3);background:rgba(184,115,50,0.1);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-            التسجيل السريع
+            <span lang="@regBadge.Lang" dir="@regBadge.Dir">@regBadge</span>
           </span>
-          <h2 class="section-title" style="color:var(--text-light);">
-            سجّل الآن وانضم إلى <span class="gold gold-underline">مجتمع إنوفست</span>
+          <h2 class="section-title" style="color:var(--text-light);" lang="@regTitle.Lang" dir="@regTitle.Dir">
+            @ContentText.Highlight(regTitle)
           </h2>
-          <p>انضم إلى آلاف المستثمرين ورواد الأعمال والمتدربين الذين يثقون في إنوفست هولدينغ. سجّل الآن واحصل على أحدث العروض والفعاليات.</p>
-          
-          <div class="registration-features">
-            <div class="registration-feature">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>وصول حصري للفعاليات والمعارض</span>
+          <p lang="@regText.Lang" dir="@regText.Dir">@regText</p>
+
+          @if (Model.Benefits.Count > 0)
+          {
+            <div class="registration-features">
+              @foreach (var benefit in Model.Benefits)
+              {
+                <div class="registration-feature">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span lang="@benefit.Lang" dir="@benefit.Dir">@benefit</span>
+                </div>
+              }
             </div>
-            <div class="registration-feature">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>عروض خاصة على البرامج التدريبية</span>
-            </div>
-            <div class="registration-feature">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>تحديثات مستمرة عن فرص الاستثمار</span>
-            </div>
-            <div class="registration-feature">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>تشبيك مع شبكة واسعة من المستثمرين</span>
-            </div>
-          </div>
+          }
         </div>
-        
+
         <!-- Form -->
-        <form class="registration-form reveal-left" id="registration-form" method="post" asp-antiforgery="true">
+        <form class="registration-form reveal-end js-ajax-form" id="registration-form" method="post" action="@Model.RegisterAction" asp-antiforgery="true"
+              data-msg-busy="@L[K.Ui.FormRegistering]" data-msg-error="@L[K.Ui.FormGenericError]" data-message-box="reg-message">
           <div class="form-group">
-            <label for="reg-name">الاسم الكامل</label>
-            <input type="text" id="reg-name" name="fullName" class="form-control" placeholder="أدخل اسمك الكامل" maxlength="200" required>
+            <label for="reg-name">@L[K.Ui.FormFullName]</label>
+            <input type="text" id="reg-name" name="fullName" class="form-control" placeholder="@L[K.Ui.FormFullNamePlaceholderRegister]" maxlength="200" required>
           </div>
           <div class="form-group">
-            <label for="reg-email">البريد الإلكتروني</label>
-            <input type="email" id="reg-email" name="email" class="form-control" placeholder="example@email.com" maxlength="200" required dir="ltr" style="text-align:right;">
+            <label for="reg-email">@L[K.Ui.FormEmail]</label>
+            <input type="email" id="reg-email" name="email" class="form-control ltr-input" placeholder="@L[K.Ui.FormEmailPlaceholder]" maxlength="200" required dir="ltr">
           </div>
           <div class="form-group">
-            <label for="reg-phone">رقم الهاتف</label>
-            <input type="tel" id="reg-phone" name="phone" class="form-control" placeholder="+962 7XX XXX XXX" maxlength="50" dir="ltr" style="text-align:right;">
+            <label for="reg-phone">@L[K.Ui.FormPhone]</label>
+            <input type="tel" id="reg-phone" name="phone" class="form-control ltr-input" placeholder="@L[K.Ui.FormPhonePlaceholder]" maxlength="50" dir="ltr">
           </div>
-          <div class="form-group">
-            <label for="reg-interest">مجال الاهتمام</label>
-            <select id="reg-interest" name="interest" class="form-control" required>
-              <option value="" disabled selected>اختر مجال اهتمامك</option>
-              <option value="التدريب والتعليم">التدريب والتعليم</option>
-              <option value="الاستثمار والتمويل">الاستثمار والتمويل</option>
-              <option value="التشبيك والشراكات">التشبيك والشراكات</option>
-              <option value="الفعاليات والمعارض">الفعاليات والمعارض</option>
-              <option value="الإعلام والمحتوى الرقمي">الإعلام والمحتوى الرقمي</option>
-              <option value="المسابقات">المسابقات</option>
-            </select>
-          </div>
+          @if (Model.Interests.Count > 0)
+          {
+            <div class="form-group">
+              <label for="reg-interest">@L[K.Ui.FormInterest]</label>
+              <select id="reg-interest" name="interestOptionId" class="form-control" required>
+                <option value="" disabled selected>@L[K.Ui.FormInterestPlaceholder]</option>
+                @foreach (var option in Model.Interests)
+                {
+                  <option value="@option.Id.ToString(inv)" lang="@option.Name.Lang" dir="@option.Name.Dir">@option.Name</option>
+                }
+              </select>
+            </div>
+          }
           <input type="text" name="Website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <div id="reg-message" style="display:none;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-weight:700;font-size:0.9rem;"></div>
+          <div id="reg-message" role="alert" style="display:none;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-weight:700;font-size:0.9rem;"></div>
           <button type="submit" class="form-submit-btn">
-            <span>سجّل الآن</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span lang="@cta.Lang" dir="@cta.Dir">@cta</span>
+            <svg class="i-dir" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(arrow)</svg>
           </button>
         </form>
-        <script>
-        document.getElementById('registration-form').addEventListener('submit', function(e) {
-          e.preventDefault();
-          var form = this;
-          var msg = document.getElementById('reg-message');
-          var btn = form.querySelector('button[type="submit"]');
-          btn.disabled = true;
-          btn.querySelector('span').textContent = 'جاري التسجيل...';
-
-          fetch('/Home/Register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams(new FormData(form))
-          })
-          .then(function (r) {
-            var type = r.headers.get('content-type') || '';
-            if (type.indexOf('application/json') === -1) throw new Error('non-json');
-            return r.json();
-          })
-          .then(data => {
-            msg.style.display = 'block';
-            if (data.success) {
-              msg.style.background = 'rgba(34,197,94,0.15)';
-              msg.style.color = '#16a34a';
-              msg.textContent = data.message;
-              form.reset();
-            } else {
-              msg.style.background = 'rgba(239,68,68,0.15)';
-              msg.style.color = '#ef4444';
-              msg.textContent = data.message;
-            }
-            btn.disabled = false;
-            btn.querySelector('span').textContent = 'سجّل الآن';
-            setTimeout(() => msg.style.display = 'none', 5000);
-          })
-          .catch(() => {
-            msg.style.display = 'block';
-            msg.style.background = 'rgba(239,68,68,0.15)';
-            msg.style.color = '#ef4444';
-            msg.textContent = 'حدث خطأ، حاول مرة أخرى';
-            btn.disabled = false;
-            btn.querySelector('span').textContent = 'سجّل الآن';
-          });
-        });
-        </script>
       </div>
     </div>
   </section>
@@ -829,138 +539,94 @@
   <!-- ==========================================
        10. CONTACT SECTION
        ========================================== -->
+  @{
+    var intro = c.Text("contact_intro");
+    var address = c.Text("contact_address");
+    var hours = c.Text("contact_hours");
+    var phone = c.Neutral("contact_phone");
+    var email = c.Neutral("contact_email");
+  }
   <section class="contact-section" id="contact">
     <div class="container">
-      <div class="section-header reveal">
-        <span class="section-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          تواصل معنا
-        </span>
-        <h2 class="section-title">تواصل <span class="gold gold-underline">معنا</span></h2>
-        <p class="section-subtitle">نحن هنا لمساعدتك. لا تتردد في التواصل معنا لأي استفسار أو اقتراح</p>
-      </div>
-      
+      <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("contact_badge"), c.Text("contact_title"), c.Text("contact_subtitle"), "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\"/>"))" />
+
       <div class="contact-grid">
         <!-- Contact Info -->
-        <div class="contact-info reveal-right">
-          <p class="contact-info-text">
-            فريق إنوفست هولدينغ مستعد دائماً للإجابة على استفساراتكم وتقديم المساعدة. يمكنكم التواصل معنا عبر أي من القنوات التالية:
+        <div class="contact-info reveal-start">
+          <p class="contact-info-text" lang="@intro.Lang" dir="@intro.Dir">
+            @intro
           </p>
-          
+
           <div class="contact-details">
             <div class="contact-detail-item">
               <div class="contact-detail-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               </div>
               <div class="contact-detail-text">
-                <h4>العنوان</h4>
-                <p>Salah Salem St, Heliopolis, Cairo</p>
+                <h3>@L[K.Ui.ContactAddress]</h3>
+                <p lang="@address.Lang" dir="@address.Dir">@address</p>
               </div>
             </div>
-            
+
             <div class="contact-detail-item">
               <div class="contact-detail-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               </div>
               <div class="contact-detail-text">
-                <h4>الهاتف</h4>
-                <p dir="ltr" style="text-align:right;">+20 114 141 0808</p>
+                <h3>@L[K.Ui.ContactPhone]</h3>
+                <p><bdi dir="ltr">@phone</bdi></p>
               </div>
             </div>
-            
+
             <div class="contact-detail-item">
               <div class="contact-detail-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               </div>
               <div class="contact-detail-text">
-                <h4>البريد الإلكتروني</h4>
-                <p>info@innovestholding.com</p>
+                <h3>@L[K.Ui.ContactEmail]</h3>
+                <p><bdi dir="ltr">@email</bdi></p>
               </div>
             </div>
-            
+
             <div class="contact-detail-item">
               <div class="contact-detail-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               </div>
               <div class="contact-detail-text">
-                <h4>ساعات العمل</h4>
-                <p>الأحد - الخميس: 9:00 ص - 5:00 م</p>
+                <h3>@L[K.Ui.ContactHours]</h3>
+                <p lang="@hours.Lang" dir="@hours.Dir">@hours</p>
               </div>
             </div>
           </div>
         </div>
-        
+
         <!-- Contact Form -->
-        <div class="contact-form-wrap reveal-left">
-          <form class="contact-form" id="contact-form" method="post" asp-antiforgery="true">
+        <div class="contact-form-wrap reveal-end">
+          <form class="contact-form js-ajax-form" id="contact-form" method="post" action="@Model.ContactAction" asp-antiforgery="true"
+                data-msg-busy="@L[K.Ui.FormSending]" data-msg-error="@L[K.Ui.FormGenericError]" data-message-box="contact-msg">
             <div class="form-group">
-              <label for="contact-name">الاسم الكامل</label>
-              <input type="text" id="contact-name" name="fullName" class="form-control" placeholder="أدخل اسمك" maxlength="200" required>
+              <label for="contact-name">@L[K.Ui.FormFullName]</label>
+              <input type="text" id="contact-name" name="fullName" class="form-control" placeholder="@L[K.Ui.FormFullNamePlaceholderContact]" maxlength="200" required>
             </div>
             <div class="form-group">
-              <label for="contact-email">البريد الإلكتروني</label>
-              <input type="email" id="contact-email" name="email" class="form-control" placeholder="example@email.com" maxlength="200" required dir="ltr" style="text-align:right;">
+              <label for="contact-email">@L[K.Ui.FormEmail]</label>
+              <input type="email" id="contact-email" name="email" class="form-control ltr-input" placeholder="@L[K.Ui.FormEmailPlaceholder]" maxlength="200" required dir="ltr">
             </div>
             <div class="form-group">
-              <label for="contact-subject">الموضوع</label>
-              <input type="text" id="contact-subject" name="subject" class="form-control" placeholder="موضوع الرسالة" maxlength="300" required>
+              <label for="contact-subject">@L[K.Ui.FormSubject]</label>
+              <input type="text" id="contact-subject" name="subject" class="form-control" placeholder="@L[K.Ui.FormSubjectPlaceholder]" maxlength="300" required>
             </div>
             <div class="form-group">
-              <label for="contact-message">الرسالة</label>
-              <textarea id="contact-message" name="message" class="form-control" placeholder="اكتب رسالتك هنا..." maxlength="4000" required rows="4"></textarea>
+              <label for="contact-message">@L[K.Ui.FormMessage]</label>
+              <textarea id="contact-message" name="message" class="form-control" placeholder="@L[K.Ui.FormMessagePlaceholder]" maxlength="4000" required rows="4"></textarea>
             </div>
             <input type="text" name="Website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
-            <div id="contact-msg" style="display:none;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-weight:700;font-size:0.9rem;"></div>
+            <div id="contact-msg" role="alert" style="display:none;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-weight:700;font-size:0.9rem;"></div>
             <button type="submit" class="form-submit-btn">
-              <span>إرسال الرسالة</span>
+              <span>@L[K.Ui.ContactSubmit]</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </form>
-          <script>
-          document.getElementById('contact-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var form = this;
-            var msg = document.getElementById('contact-msg');
-            var btn = form.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.querySelector('span').textContent = 'جاري الإرسال...';
-
-            fetch('/Home/Contact', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              body: new URLSearchParams(new FormData(form))
-            })
-            .then(function (r) {
-              var type = r.headers.get('content-type') || '';
-              if (type.indexOf('application/json') === -1) throw new Error('non-json');
-              return r.json();
-            })
-            .then(data => {
-              msg.style.display = 'block';
-              if (data.success) {
-                msg.style.background = 'rgba(34,197,94,0.15)';
-                msg.style.color = '#16a34a';
-                msg.textContent = data.message;
-                form.reset();
-              } else {
-                msg.style.background = 'rgba(239,68,68,0.15)';
-                msg.style.color = '#ef4444';
-                msg.textContent = data.message;
-              }
-              btn.disabled = false;
-              btn.querySelector('span').textContent = 'إرسال الرسالة';
-              setTimeout(() => msg.style.display = 'none', 5000);
-            })
-            .catch(() => {
-              msg.style.display = 'block';
-              msg.style.background = 'rgba(239,68,68,0.15)';
-              msg.style.color = '#ef4444';
-              msg.textContent = 'حدث خطأ، حاول مرة أخرى';
-              btn.disabled = false;
-              btn.querySelector('span').textContent = 'إرسال الرسالة';
-            });
-          });
-          </script>
         </div>
       </div>
     </div>
@@ -969,112 +635,109 @@
   <!-- ==========================================
        FOOTER
        ========================================== -->
+  @{
+    var footerDesc = c.Text("footer_description");
+    var quickTitle = c.Text("footer_quicklinks_title");
+    var platformsTitle = c.Text("footer_platforms_title");
+    var contactTitle = c.Text("footer_contact_title");
+    var copyright = c.Text("footer_copyright");
+    var creditText = c.Text("footer_credit_text");
+    var creditName = c.Text("footer_credit_name");
+    var creditUrl = c.Neutral("footer_credit_url");
+    var creditHost = Uri.TryCreate(creditUrl, UriKind.Absolute, out var creditUri) && creditUri.Scheme == Uri.UriSchemeHttps ? creditUri.Host : null;
+  }
   <footer>
     <div class="container">
       <div class="footer-top">
         <!-- Brand -->
         <div class="footer-brand">
           <div class="footer-logo">
-            <img src="~/assets/logo.png" alt="Innovest Holding">
+            <img src="~/assets/logo.png" alt="@siteName">
           </div>
-          <p class="footer-desc">
-            إنوفست هولدينغ - نبني جسور الاستثمار والابتكار من خلال منصات متكاملة للتدريب والتعليم والاستثمار والفعاليات والشراكات الاستراتيجية.
+          <p class="footer-desc" lang="@footerDesc.Lang" dir="@footerDesc.Dir">
+            @footerDesc
           </p>
-          <div class="social-links">
-            <a href="#" class="social-link" aria-label="LinkedIn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
-            </a>
-            <a href="#" class="social-link" aria-label="Twitter">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
-            </a>
-            <a href="#" class="social-link" aria-label="Instagram">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-            </a>
-            <a href="#" class="social-link" aria-label="YouTube">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
-            </a>
-          </div>
+          @if (Model.Socials.Count > 0)
+          {
+            <div class="social-links">
+              @foreach (var social in Model.Socials)
+              {
+                var icon = SocialIcons.All[social.Network];
+                <a href="@social.Url" class="social-link" aria-label="@icon.Name" target="_blank" rel="noopener">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(icon.Svg)</svg>
+                </a>
+              }
+            </div>
+          }
         </div>
-        
+
         <!-- Quick Links -->
-        <div class="footer-col">
-          <h3 class="footer-col-title">روابط سريعة</h3>
-          <div class="footer-links">
-            <a href="#hero" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              الرئيسية
-            </a>
-            <a href="#about" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              من نحن
-            </a>
-            <a href="#platforms" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              منصاتنا
-            </a>
-            <a href="#news" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              الأخبار
-            </a>
-            <a href="#events" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              الفعاليات
-            </a>
+        @if (Model.FooterLinks.Count > 0)
+        {
+          <div class="footer-col">
+            <h3 class="footer-col-title" lang="@quickTitle.Lang" dir="@quickTitle.Dir">@quickTitle</h3>
+            <div class="footer-links">
+              @foreach (var link in Model.FooterLinks)
+              {
+                <a href="@link.Href" class="footer-link">
+                  <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
+                  <span lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</span>
+                </a>
+              }
+            </div>
           </div>
-        </div>
-        
+        }
+
         <!-- Platforms Links -->
-        <div class="footer-col">
-          <h3 class="footer-col-title">منصاتنا</h3>
-          <div class="footer-links">
-            <a href="#platforms" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              التدريب والتعليم
-            </a>
-            <a href="#platforms" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              المستثمرين والتشبيك
-            </a>
-            <a href="#platforms" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              الإعلام الرقمي
-            </a>
-            <a href="#platforms" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              المسابقات
-            </a>
-            <a href="#platforms" class="footer-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-              الشراكات و B2B
-            </a>
+        @if (Model.FooterPlatforms.Count > 0)
+        {
+          <div class="footer-col">
+            <h3 class="footer-col-title" lang="@platformsTitle.Lang" dir="@platformsTitle.Dir">@platformsTitle</h3>
+            <div class="footer-links">
+              @foreach (var fp in Model.FooterPlatforms)
+              {
+                <a href="#platforms" class="footer-link">
+                  <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
+                  <span lang="@fp.Title.Lang" dir="@fp.Title.Dir">@fp.Title</span>
+                </a>
+              }
+            </div>
           </div>
-        </div>
-        
+        }
+
         <!-- Contact Info -->
         <div class="footer-col">
-          <h3 class="footer-col-title">تواصل معنا</h3>
+          <h3 class="footer-col-title" lang="@contactTitle.Lang" dir="@contactTitle.Dir">@contactTitle</h3>
           <div class="footer-links" style="gap:16px;">
             <div class="footer-contact-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span>Salah Salem St, Heliopolis, Cairo</span>
+              <span lang="@address.Lang" dir="@address.Dir">@address</span>
             </div>
             <div class="footer-contact-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              <span style="direction:ltr;">+20 114 141 0808</span>
+              <bdi dir="ltr">@phone</bdi>
             </div>
             <div class="footer-contact-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              <span style="direction:ltr;">info@innovestholding.com</span>
+              <bdi dir="ltr">@email</bdi>
             </div>
           </div>
         </div>
       </div>
-      
+
       <div class="footer-bottom">
-        <span>© 2026 إنوفست هولدينغ. جميع الحقوق محفوظة.</span>
-        <span>تصميم وتطوير بواسطة <a href="https://www.coderz-tech.com" target="_blank">كودرز للبرمجيات</a> | <a href="https://www.coderz-tech.com" target="_blank">www.coderz-tech.com</a></span>
+        <span lang="@copyright.Lang" dir="@copyright.Dir">@ContentText.WithYear(copyright.Value, DateTime.UtcNow)</span>
+        <span>
+          <span lang="@creditText.Lang" dir="@creditText.Dir">@creditText</span>
+          @if (creditHost is not null)
+          {
+            <a href="@creditUrl" target="_blank" rel="noopener" lang="@creditName.Lang" dir="@creditName.Dir">@creditName</a><text> | </text><a href="@creditUrl" target="_blank" rel="noopener"><bdi dir="ltr">@creditHost</bdi></a>
+          }
+          else
+          {
+            <span lang="@creditName.Lang" dir="@creditName.Dir">@creditName</span>
+          }
+        </span>
       </div>
     </div>
   </footer>
-
-

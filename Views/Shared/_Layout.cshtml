@@ -1,18 +1,31 @@
+@{
+    var culture = System.Globalization.CultureInfo.CurrentUICulture;
+    var lang = Cultures.IsEnglish(culture) ? Cultures.EnglishName : Cultures.ArabicName;
+    var dir = culture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
+}
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="@lang" dir="@dir">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="إنوفست هولدينغ - نبني جسور الاستثمار والابتكار">
-    <title>@ViewData["Title"] - Innovest Holding</title>
+    @if (ViewData["Seo"] is SeoVm seo)
+    {
+        <partial name="_SeoHead" model="seo" />
+    }
+    else
+    {
+        @* Every page rendered without the home page's SEO model (error, privacy) is kept out of search indexes. *@
+        <meta name="robots" content="noindex, nofollow">
+        <title>@ViewData["Title"]</title>
+    }
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="~/css/style.css">
-    <link rel="stylesheet" href="~/css/sections.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/sections.css" asp-append-version="true">
 </head>
 <body>
     @RenderBody()
-    <script src="~/js/main.js"></script>
+    <script src="~/js/main.js" asp-append-version="true"></script>
 </body>
 </html>

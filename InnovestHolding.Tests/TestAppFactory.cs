@@ -28,6 +28,9 @@ public sealed class TestAppFactory : WebApplicationFactory<Program>
     public FakeTimeProvider Time { get; } = new(DateTimeOffset.UtcNow);
 
     public string EffectiveDatabase { get; }
+
+    /// <summary>Id of an active interest option (written by the migration) — the registration form requires one.</summary>
+    public string InterestId { get; }
     public string EffectiveDataSource { get; }
 
     public TestAppFactory()
@@ -53,6 +56,9 @@ public sealed class TestAppFactory : WebApplicationFactory<Program>
         EffectiveDataSource = new SqlConnectionStringBuilder(db.Database.GetConnectionString()).DataSource;
         if (EffectiveDatabase != TestDatabase || !EffectiveDataSource.StartsWith(@"(localdb)\", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The app under test is not using the LocalDB test database.");
+
+        InterestId = db.InterestOptions.Where(o => o.IsActive).OrderBy(o => o.SortOrder).Select(o => o.Id).First()
+            .ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private static void AssertIsTestDatabase(string connectionString)
@@ -74,7 +80,8 @@ public sealed class TestAppFactory : WebApplicationFactory<Program>
             // Whatever the app registered (or an env var a developer set), the DbContext uses the test DB.
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<AppDbContext>>();
-            services.AddDbContext<AppDbContext>(o => o.UseSqlServer(TestConnectionString));
+            // The app's own registration helper, so the home-cache invalidation interceptor is kept.
+            services.AddAppDbContext(TestConnectionString);
 
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(Time);

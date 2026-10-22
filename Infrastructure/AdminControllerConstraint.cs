@@ -5,7 +5,7 @@ namespace InnovestHolding.Infrastructure;
 /// <summary>
 /// Route constraint for the <c>Admin/…</c> conventional route: the controller must be one of the admin
 /// controllers (types deriving from <see cref="AdminControllerBase"/>), so <c>/Admin/Home/*</c> and
-/// <c>/Admin/Account/*</c> no longer resolve (Stage 4 L5). The list is derived from the code, not typed by hand.
+/// <c>/Admin/Account/*</c> no longer resolve. The list is derived from the code, not typed by hand.
 /// </summary>
 public sealed class AdminControllerConstraint : IRouteConstraint
 {

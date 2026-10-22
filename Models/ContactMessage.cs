@@ -18,7 +18,12 @@ public class ContactMessage
     [Required]
     public string Message { get; set; } = "";
 
+    /// <summary>Page language the visitor submitted from ("ar" / "en"); written by the server, never bound.</summary>
+    [MaxLength(5)]
+    public string Culture { get; set; } = "ar";
+
     public bool IsRead { get; set; } = false;
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    /// <summary>UTC.</summary>
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

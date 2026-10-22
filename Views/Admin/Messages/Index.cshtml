@@ -1,19 +1,14 @@
-@model List<ContactMessage>
+@model PagedListViewModel<ContactMessage>
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "رسائل التواصل"; }
-
-@{
-    var unreadCount = Model.Count(m => !m.IsRead);
-    var totalCount = Model.Count;
-}
 
 <div class="stats-cards" style="margin-bottom:24px;">
     <div class="stat-card-admin">
         <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-        <div class="stat-card-info"><h3>@totalCount</h3><p>إجمالي الرسائل</p></div>
+        <div class="stat-card-info"><h3>@Model.TotalCount</h3><p>إجمالي الرسائل</p></div>
     </div>
     <div class="stat-card-admin">
         <div class="stat-card-icon" style="background:linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));"><svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-        <div class="stat-card-info"><h3 style="color:#ef4444;">@unreadCount</h3><p>غير مقروء</p></div>
+        <div class="stat-card-info"><h3 style="color:#ef4444;">@Model.UnreadCount</h3><p>غير مقروء</p></div>
     </div>
 </div>
 
@@ -22,7 +17,7 @@
         <span class="admin-card-title">جميع رسائل التواصل</span>
     </div>
 
-    @if (!Model.Any())
+    @if (Model.TotalCount == 0)
     {
         <p style="text-align:center;color:var(--admin-text-muted);padding:40px 0;">لا توجد رسائل حتى الآن</p>
     }
@@ -36,12 +31,13 @@
                     <th>البريد</th>
                     <th>الموضوع</th>
                     <th>الرسالة</th>
+                    <th>اللغة</th>
                     <th>التاريخ</th>
                     <th>إجراءات</th>
                 </tr>
             </thead>
             <tbody>
-            @foreach (var item in Model)
+            @foreach (var item in Model.Items)
             {
                 <tr style="@(!item.IsRead ? "background:rgba(184,115,50,0.03);font-weight:700;" : "")">
                     <td>
@@ -55,19 +51,22 @@
                         }
                     </td>
                     <td><strong>@item.FullName</strong></td>
-                    <td style="direction:ltr;text-align:right;font-size:0.85rem;">@item.Email</td>
+                    <td class="cell-ltr" style="font-size:0.85rem;">@item.Email</td>
                     <td>@item.Subject</td>
                     <td style="max-width:250px;font-size:0.85rem;line-height:1.6;color:var(--admin-text-muted);">@(item.Message.Length > 80 ? item.Message[..80] + "..." : item.Message)</td>
-                    <td style="font-size:0.82rem;color:var(--admin-text-muted);white-space:nowrap;">@item.CreatedAt.ToString("yyyy/MM/dd - hh:mm tt")</td>
+                    <td>@(item.Culture == "en" ? "English" : "العربية")</td>
+                    <td style="font-size:0.82rem;color:var(--admin-text-muted);white-space:nowrap;">@TimeDisplay.Utc(item.CreatedAt)</td>
                     <td class="actions">
                         <form method="post" asp-action="MarkRead" asp-controller="Messages" style="display:inline;">
                             <input type="hidden" name="id" value="@item.Id">
+                            <input type="hidden" name="page" value="@Model.Page">
                             <button type="submit" class="btn-admin btn-sm @(item.IsRead ? "btn-secondary" : "btn-primary")">
                                 @(item.IsRead ? "غير مقروء" : "مقروء ✓")
                             </button>
                         </form>
                         <form method="post" asp-action="Delete" asp-controller="Messages" style="display:inline;">
                             <input type="hidden" name="id" value="@item.Id">
+                            <input type="hidden" name="page" value="@Model.Page">
                             <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذه الرسالة؟')">حذف</button>
                         </form>
                     </td>
@@ -75,5 +74,7 @@
             }
             </tbody>
         </table>
+        var pager = (Model.Page, Model.TotalPages, Url.Action("Index", "Messages") ?? "/Admin/Messages");
+        <partial name="~/Views/Admin/Shared/_Pager.cshtml" model="pager" />
     }
 </div>

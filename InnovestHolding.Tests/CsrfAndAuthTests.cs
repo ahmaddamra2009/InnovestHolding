@@ -11,7 +11,7 @@ namespace InnovestHolding.Tests;
 [Collection("App")]
 public class DatabaseIsolationTests(TestAppFactory f)
 {
-    [Fact] // T1
+    [Fact]
     public void App_uses_the_LocalDB_test_database()
     {
         Assert.Equal("InnovestHolding_Tests", f.EffectiveDatabase);
@@ -22,7 +22,7 @@ public class DatabaseIsolationTests(TestAppFactory f)
 [Collection("App")]
 public class CsrfTests(TestAppFactory f)
 {
-    [Fact] // T2
+    [Fact]
     public async Task Contact_without_token_is_refused_and_writes_nothing()
     {
         var client = f.NewClient();
@@ -34,19 +34,19 @@ public class CsrfTests(TestAppFactory f)
         Assert.Equal(0, await f.DbAsync(db => db.ContactMessages.CountAsync(m => m.Email == email)));
     }
 
-    [Fact] // T3
+    [Fact]
     public async Task Register_without_token_is_refused_and_writes_nothing()
     {
         var client = f.NewClient();
         await client.GetAsync("/");
         var email = Unique("csrf") + "@example.com";
         var response = await client.PostAsync("/Home/Register",
-            Form(("FullName", "QA"), ("Email", email), ("Interest", "x")));
+            Form(("FullName", "QA"), ("Email", email), ("InterestOptionId", f.InterestId)));
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(0, await f.DbAsync(db => db.Registrations.CountAsync(r => r.Email == email)));
     }
 
-    [Fact] // T4
+    [Fact]
     public async Task Login_without_token_is_refused_even_with_correct_credentials()
     {
         var (user, password) = await f.CreateAdminAsync();
@@ -57,17 +57,17 @@ public class CsrfTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync("/Admin/Dashboard")).StatusCode);
     }
 
-    [Fact] // T5
+    [Fact]
     public async Task Admin_post_without_token_is_refused_and_writes_nothing()
     {
         var client = await f.SignedInClientAsync();
         var name = Unique("partner");
-        var response = await client.PostAsync("/Admin/Partners/Create", Form(("Name", name)));
+        var response = await client.PostAsync("/Admin/Partners/Create", Form(("NameAr", name)));
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal(0, await f.DbAsync(db => db.Partners.CountAsync(p => p.Name == name)));
+        Assert.Equal(0, await f.DbAsync(db => db.Partners.CountAsync(p => p.NameAr == name)));
     }
 
-    [Fact] // T6
+    [Fact]
     public async Task Logout_without_token_is_refused_and_session_survives()
     {
         var client = await f.SignedInClientAsync();
@@ -76,7 +76,7 @@ public class CsrfTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/Admin/Dashboard")).StatusCode);
     }
 
-    [Fact] // T7 — positive control
+    [Fact] // positive control
     public async Task Contact_with_token_is_accepted_and_written()
     {
         var client = f.NewClient();
@@ -105,10 +105,11 @@ public class AdminAuthTests(TestAppFactory f)
     [
         "/Admin/Dashboard", "/Admin/Content/Edit", "/Admin/Events", "/Admin/Events/Create", "/Admin/Faq",
         "/Admin/Faq/Create", "/Admin/Messages", "/Admin/Nav", "/Admin/News", "/Admin/News/Create",
-        "/Admin/Partners", "/Admin/Platforms", "/Admin/Registrations", "/Admin/Settings", "/Admin/Stats"
+        "/Admin/Partners", "/Admin/Platforms", "/Admin/Registrations", "/Admin/Settings", "/Admin/Stats",
+        "/Admin/InterestOptions", "/Admin/RegisterBenefits", "/Admin/SocialLinks"
     ];
 
-    [Theory] // T8
+    [Theory]
     [MemberData(nameof(AdminRoutes))]
     public async Task Anonymous_is_redirected_to_login(string route)
     {
@@ -117,7 +118,7 @@ public class AdminAuthTests(TestAppFactory f)
         Assert.Contains("/Account/Login", response.Headers.Location!.OriginalString);
     }
 
-    [Fact] // T9
+    [Fact]
     public void Every_admin_controller_requires_the_Admin_role()
     {
         var controllers = typeof(AdminControllerBase).Assembly.GetTypes()
@@ -125,7 +126,7 @@ public class AdminAuthTests(TestAppFactory f)
                         && typeof(Controller).IsAssignableFrom(t))
             .ToList();
 
-        Assert.Equal(12, controllers.Count); // an empty scan cannot pass
+        Assert.Equal(15, controllers.Count); // an empty scan cannot pass
         Assert.All(controllers, t => Assert.True(typeof(AdminControllerBase).IsAssignableFrom(t), t.Name));
 
         var authorize = typeof(AdminControllerBase).GetCustomAttribute<AuthorizeAttribute>();
@@ -135,7 +136,7 @@ public class AdminAuthTests(TestAppFactory f)
             m => m.GetCustomAttribute<AllowAnonymousAttribute>() is not null);
     }
 
-    [Theory] // T10
+    [Theory]
     [MemberData(nameof(AdminRoutes))]
     public async Task Signed_in_admin_gets_the_page(string route)
     {
@@ -143,15 +144,15 @@ public class AdminAuthTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(route)).StatusCode);
     }
 
-    [Fact] // T11
+    [Fact]
     public async Task Anonymous_post_with_a_valid_token_is_still_redirected_to_login()
     {
         var client = f.NewClient();
         var token = await client.GetTokenAsync("/Account/Login");
         var name = Unique("anon-partner");
-        var response = await client.PostAsync("/Admin/Partners/Create", Form(token, ("Name", name)));
+        var response = await client.PostAsync("/Admin/Partners/Create", Form(token, ("NameAr", name)));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Contains("/Account/Login", response.Headers.Location!.OriginalString);
-        Assert.Equal(0, await f.DbAsync(db => db.Partners.CountAsync(p => p.Name == name)));
+        Assert.Equal(0, await f.DbAsync(db => db.Partners.CountAsync(p => p.NameAr == name)));
     }
 }

@@ -1,4 +1,5 @@
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,7 @@ public class FaqController : AdminControllerBase
         Map(input, item);
         _db.Faqs.Add(item);
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تمت إضافة السؤال بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.FaqAdded);
         return RedirectToAction(nameof(Index));
     }
 
@@ -41,8 +42,10 @@ public class FaqController : AdminControllerBase
         return View(EditView, new FaqEditInput
         {
             Id = item.Id,
-            Question = item.Question,
-            Answer = item.Answer,
+            QuestionAr = item.QuestionAr,
+            QuestionEn = item.QuestionEn,
+            AnswerAr = item.AnswerAr,
+            AnswerEn = item.AnswerEn,
             IsActive = item.IsActive,
             SortOrder = item.SortOrder
         });
@@ -61,7 +64,7 @@ public class FaqController : AdminControllerBase
         item.SortOrder = input.SortOrder;
 
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تم تحديث السؤال بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.FaqUpdated);
         return RedirectToAction(nameof(Index));
     }
 
@@ -73,15 +76,17 @@ public class FaqController : AdminControllerBase
         {
             _db.Faqs.Remove(item);
             await _db.SaveChangesAsync();
-            TempData["Success"] = "تم حذف السؤال بنجاح";
+            TempData["Success"] = L(MessageKeys.Admin.FaqDeleted);
         }
         return RedirectToAction(nameof(Index));
     }
 
     private static void Map(FaqInput input, Faq item)
     {
-        item.Question = input.Question!.Trim();
-        item.Answer = input.Answer!.Trim();
+        item.QuestionAr = input.QuestionAr!.Trim();
+        item.QuestionEn = Optional(input.QuestionEn);
+        item.AnswerAr = input.AnswerAr!.Trim();
+        item.AnswerEn = Optional(input.AnswerEn);
         item.IsActive = input.IsActive;
     }
 }
