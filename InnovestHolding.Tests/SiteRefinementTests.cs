@@ -218,6 +218,29 @@ public class SiteRefinementTests(TestAppFactory f)
         Assert.Matches("(?m)^\\s*hamburger\\.focus\\(\\);", branches.Groups["close"].Value);
     }
 
+    [Theory] // a FAQ item is also a .reveal element: its open state must not be the reveal class, or closing hides it
+    [InlineData("/")]
+    [InlineData("/en/contact")]
+    public async Task Faq_open_state_is_not_the_reveal_class(string path)
+    {
+        var html = await PageAsync(path);
+        var items = Regex.Matches(html, "<div class=\"(faq-item[^\"]*)\">").Select(m => m.Groups[1].Value).ToList();
+        Assert.NotEmpty(items);
+        Assert.All(items, c => Assert.Contains("reveal", c)); // the premise: the item is revealed with "active"
+
+        var js = await f.NewClient().GetStringAsync("/js/main.js");
+        Assert.Contains("entry.target.classList.add('active');", js); // the reveal state
+        var faq = Regex.Match(js, "// 6\\. FAQ ACCORDION(.*?)// 7\\.", RegexOptions.Singleline);
+        Assert.True(faq.Success, "FAQ accordion block not found");
+        Assert.DoesNotContain("'active'", faq.Groups[1].Value);
+        Assert.Contains("item.classList.add('is-open');", faq.Groups[1].Value);
+        Assert.Contains("otherItem.classList.remove('is-open');", faq.Groups[1].Value);
+
+        foreach (var sheet in new[] { "/css/sections.css", "/css/pages.css", "/css/style.css" })
+            Assert.DoesNotMatch("\\.faq-item\\.active\\b", await f.NewClient().GetStringAsync(sheet));
+        Assert.Contains(".faq-item.is-open", await f.NewClient().GetStringAsync("/css/sections.css"));
+    }
+
     private async Task SetContentAsync(string key, string value) =>
         await f.DbAsync(async db =>
         {

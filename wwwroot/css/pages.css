@@ -414,7 +414,7 @@ html[lang="en"] .page-body p { line-height: 1.8; }
 .registration-content .section-title.on-dark { color: var(--text-light); }
 .registration-feature { align-items: center; }
 .form-submit-btn { background: linear-gradient(135deg, var(--accent-light), var(--accent)); color: var(--navy-deep); }
-.faq-item.active { border-color: rgba(247, 134, 16, 0.45); }
+.faq-item.is-open { border-color: rgba(247, 134, 16, 0.45); }
 .faq-toggle { color: var(--navy-brand); }
 .partners-section { background: var(--white); }
 .partner-logo span { color: var(--navy-brand); }

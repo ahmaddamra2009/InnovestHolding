@@ -907,7 +907,7 @@
   border-color: rgba(247, 134, 16, 0.2);
 }
 
-.faq-item.active {
+.faq-item.is-open {
   border-color: rgba(247, 134, 16, 0.3);
   box-shadow: var(--shadow-md);
 }
@@ -935,7 +935,7 @@
   flex: 1;
 }
 
-.faq-item.active .faq-question h3 {
+.faq-item.is-open .faq-question h3 {
   color: var(--accent-dark);
 }
 
@@ -951,7 +951,7 @@
   transition: var(--transition-normal);
 }
 
-.faq-item.active .faq-toggle {
+.faq-item.is-open .faq-toggle {
   background: var(--accent);
   color: var(--white);
   transform: rotate(45deg);

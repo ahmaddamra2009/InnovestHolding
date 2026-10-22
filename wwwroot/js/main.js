@@ -257,6 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   // 6. FAQ ACCORDION
   // ==========================================
+  // An open item carries "is-open". It must not use "active": that class is the scroll-reveal state of the same
+  // element (.reveal.active = visible), so closing the items would also hide them.
   const faqItems = document.querySelectorAll('.faq-item');
 
   faqItems.forEach(item => {
@@ -265,11 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const answerInner = item.querySelector('.faq-answer-inner');
 
     question.addEventListener('click', () => {
-      const isActive = item.classList.contains('active');
+      const isOpen = item.classList.contains('is-open');
 
       // Close all
       faqItems.forEach(otherItem => {
-        otherItem.classList.remove('active');
+        otherItem.classList.remove('is-open');
         const otherAnswer = otherItem.querySelector('.faq-answer');
         if (otherAnswer) otherAnswer.style.maxHeight = '0';
         const otherQuestion = otherItem.querySelector('.faq-question');
@@ -277,8 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       // Toggle current
-      if (!isActive) {
-        item.classList.add('active');
+      if (!isOpen) {
+        item.classList.add('is-open');
         answer.style.maxHeight = answerInner.scrollHeight + 20 + 'px';
         question.setAttribute('aria-expanded', 'true');
       }
