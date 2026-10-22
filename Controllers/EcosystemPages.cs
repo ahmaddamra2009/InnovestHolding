@@ -70,10 +70,11 @@ public abstract partial class PublicControllerBase
 
     /// <summary>
     /// A list page of the ecosystem: the requested page of <paramref name="rows"/> (ordered, published) as cards, the
-    /// pager, and the admin's empty text with <paramref name="emptyAction"/> while there is none.
+    /// pager, and the admin's empty text with <paramref name="emptyAction"/> while there is none; then the optional
+    /// <paramref name="after"/> block (e.g. a lead form).
     /// </summary>
     protected async Task<IActionResult> EntityListAsync<T>(string key, IQueryable<T> rows, Func<SiteViews, T, EntityCardVm> card,
-        bool people, Func<SiteViews, LinkVm> emptyAction)
+        bool people, Func<SiteViews, LinkVm> emptyAction, Func<SiteViews, BlockVm?>? after = null)
     {
         var v = await ViewsAsync();
         var size = ContentKeys.PageSize(v.Snapshot.Content);
@@ -82,7 +83,7 @@ public abstract partial class PublicControllerBase
         var page = await rows.Skip((n - 1) * size).Take(size).ToListAsync(HttpContext.RequestAborted);
         var cards = page.Select(r => card(v, r)).ToList();
         return Page(key, v,
-            [cards.Count == 0 ? null : new EntityGridBlock(key, cards, ForumController.Pager(total, size, n, v.Url(key)), people)],
+            [cards.Count == 0 ? null : new EntityGridBlock(key, cards, ForumController.Pager(total, size, n, v.Url(key)), people), after?.Invoke(v)],
             emptyAction(v));
     }
 

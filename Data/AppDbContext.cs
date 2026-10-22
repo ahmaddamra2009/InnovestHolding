@@ -34,6 +34,9 @@ public class AppDbContext : DbContext
     public DbSet<TvEpisodeGuest> TvEpisodeGuests => Set<TvEpisodeGuest>();
     public DbSet<InvestmentOpportunity> InvestmentOpportunities => Set<InvestmentOpportunity>();
     public DbSet<SponsorshipPackage> SponsorshipPackages => Set<SponsorshipPackage>();
+    public DbSet<NetworkApplication> NetworkApplications => Set<NetworkApplication>();
+    public DbSet<SponsorshipEnquiry> SponsorshipEnquiries => Set<SponsorshipEnquiry>();
+    public DbSet<OpportunityInterest> OpportunityInterests => Set<OpportunityInterest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -212,6 +215,36 @@ public class AppDbContext : DbContext
             e.HasIndex(x => new { x.Unit, x.IsActive, x.SortOrder });
             e.Property(x => x.Unit).IsUnicode(false);
             Timestamps(e);
+        });
+
+        // ── Lead forms ──
+        // Existing registrations came from the quick form: the column default gives them "quick".
+        modelBuilder.Entity<Registration>(e =>
+        {
+            e.Property(r => r.Kind).IsUnicode(false).HasDefaultValue(Registration.Quick);
+            // Deleting an event keeps the registrations (EventTitle is a snapshot).
+            e.HasOne(r => r.Event).WithMany().HasForeignKey(r => r.EventId).OnDelete(DeleteBehavior.SetNull);
+            e.HasIndex(r => r.IsRead);
+        });
+        modelBuilder.Entity<ContactMessage>().HasIndex(m => m.IsRead);
+
+        modelBuilder.Entity<NetworkApplication>(e =>
+        {
+            e.Property(a => a.Kind).IsUnicode(false);
+            e.HasIndex(a => new { a.Kind, a.CreatedAt });
+            e.HasIndex(a => a.CreatedAt);
+            e.HasIndex(a => a.IsRead);
+        });
+        modelBuilder.Entity<SponsorshipEnquiry>(e =>
+        {
+            e.Property(s => s.Unit).IsUnicode(false);
+            e.HasIndex(s => s.CreatedAt);
+            e.HasIndex(s => s.IsRead);
+        });
+        modelBuilder.Entity<OpportunityInterest>(e =>
+        {
+            e.HasIndex(i => i.CreatedAt);
+            e.HasIndex(i => i.IsRead);
         });
     }
 

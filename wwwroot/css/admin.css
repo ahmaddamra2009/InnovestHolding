@@ -258,3 +258,19 @@ select.form-control { cursor: pointer; }
 .image-current { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
 .image-current img { max-width: 220px; max-height: 140px; width: auto; height: auto; border-radius: 8px; object-fit: contain; background: var(--admin-bg); }
 .admin-thumb { width: 64px; height: 40px; object-fit: cover; border-radius: 6px; vertical-align: middle; }
+/* Applications inbox (Leads) */
+.sidebar-badge { margin-inline-start: auto; min-width: 22px; padding: 1px 7px; border-radius: 11px; background: var(--admin-accent); color: var(--admin-navy); font-size: 0.72rem; font-weight: 800; text-align: center; line-height: 1.6; }
+.badge-new { display: inline-flex; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; background: rgba(239,68,68,0.1); color: var(--admin-danger); }
+.lead-type-card { text-decoration: none; color: inherit; padding: 16px 20px; }
+.lead-type-card.has-unread { border-color: rgba(247,134,16,0.45); }
+.lead-type-card.has-unread h3 { color: var(--admin-accent-ink); }
+.admin-table tr.is-unread td { font-weight: 700; background: rgba(247,134,16,0.04); }
+.lead-filter { margin-bottom: 16px; }
+.table-scroll { overflow-x: auto; max-width: 100%; }
+/* A scrolling table must not widen the page: the main column may shrink below its content. */
+.admin-main, .admin-content { min-width: 0; }
+.lead-detail { display: grid; grid-template-columns: minmax(140px, max-content) 1fr; gap: 10px 24px; margin: 0; }
+.lead-detail dt { font-weight: 700; color: var(--admin-text-muted); font-size: 0.88rem; }
+.lead-detail dd { margin: 0; color: var(--admin-text); overflow-wrap: anywhere; }
+.lead-detail .lead-value { white-space: pre-line; }
+@media (max-width: 640px) { .lead-detail { grid-template-columns: 1fr; gap: 4px; } .lead-detail dd { margin-bottom: 10px; } }

@@ -1,0 +1,242 @@
+@model LeadFormBlock
+@using InnovestHolding.Infrastructure.Content
+@* The lead forms (Forum registration, Join the Network, sponsorship enquiry, opportunity interest): labels above the
+   inputs, required fields marked, the consent box, the honeypot, a message box for the JSON reply (main.js). Posted with
+   fetch(); without JavaScript the form still posts and the server validates everything. *@
+@{
+    var form = Model.Form;
+    var p = form.IdPrefix;
+    var side = form.Side;
+    var hasSide = side is not null && (!side.Title.IsEmpty || !side.Text.IsEmpty || side.Points.Count > 0);
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    var busy = form is ForumRegistrationFormVm ? K.Ui.FormRegistering : K.Ui.FormSending;
+}
+@functions {
+    private void Label(string id, string textKey, bool required)
+    {
+        <label for="@id">@L[textKey]@if (required){<span class="req" aria-hidden="true">*</span>}</label>
+    }
+
+    private void Text(string p, string name, string labelKey, int max, bool required = false, string type = "text",
+        string? autocomplete = null, bool ltr = false, string? placeholder = null, bool kindRequired = false)
+    {
+        var id = p + "-" + name;
+        <div class="form-group">
+            @{ Label(id, labelKey, required || kindRequired); }
+            <input type="@type" id="@id" name="@name" class="form-control@(ltr ? " ltr-input" : "")" maxlength="@max"
+                   required="@required" data-required="@(kindRequired ? "true" : null)" autocomplete="@autocomplete"
+                   dir="@(ltr ? "ltr" : null)" placeholder="@placeholder">
+        </div>
+    }
+
+    private void Area(string p, string name, string labelKey, int max)
+    {
+        var id = p + "-" + name;
+        <div class="form-group">
+            @{ Label(id, labelKey, false); }
+            <textarea id="@id" name="@name" class="form-control" maxlength="@max" rows="4"></textarea>
+        </div>
+    }
+
+    // <!option>: no tag helper in these markup methods (a tag helper would need an async method).
+    private void Select(string p, string name, string labelKey, IReadOnlyList<ChoiceVm> choices, bool required = false,
+        string emptyKey = K.Ui.FormChoose, bool kindRequired = false)
+    {
+        if (choices.Count == 0) return;   // an empty list is not offered (the server requires it only while it has choices)
+        var id = p + "-" + name;
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        <div class="form-group">
+            @{ Label(id, labelKey, required || kindRequired); }
+            <select id="@id" name="@name" class="form-control" required="@required" data-required="@(kindRequired ? "true" : null)">
+                <!option value="">@L[emptyKey]</!option>
+                @foreach (var c in choices)
+                {
+                    <!option value="@c.Id.ToString(inv)" lang="@c.Text.Lang" dir="@c.Text.Dir">@c.Text</!option>
+                }
+            </select>
+        </div>
+    }
+}
+<section class="page-section is-cream lead-section" id="@(p)-section">
+  <div class="container">
+    <div class="lead-grid@(hasSide ? "" : " is-single")">
+      @if (hasSide)
+      {
+        <div class="lead-side reveal-start">
+          @if (!side!.Badge.IsEmpty)
+          {
+            <span class="section-badge" lang="@side.Badge.Lang" dir="@side.Badge.Dir">@side.Badge</span>
+          }
+          @if (!side.Title.IsEmpty)
+          {
+            <h2 class="block-title" lang="@side.Title.Lang" dir="@side.Title.Dir">@ContentText.Highlight(side.Title)</h2>
+          }
+          @if (!side.Text.IsEmpty)
+          {
+            <p class="lead-side-text" lang="@side.Text.Lang" dir="@side.Text.Dir">@side.Text</p>
+          }
+          @if (side.Points.Count > 0)
+          {
+            if (side.Numbered)
+            {
+              <ol class="lead-steps">
+                @foreach (var point in side.Points)
+                {
+                  <li lang="@point.Lang" dir="@point.Dir">@point</li>
+                }
+              </ol>
+            }
+            else
+            {
+              <ul class="lead-points">
+                @foreach (var point in side.Points)
+                {
+                  <li><span class="tri-bullet" aria-hidden="true"></span><span lang="@point.Lang" dir="@point.Dir">@point</span></li>
+                }
+              </ul>
+            }
+          }
+        </div>
+      }
+
+      <div class="contact-form-wrap lead-card reveal-end">
+        <form class="contact-form lead-form js-ajax-form@(form is JoinFormVm ? " js-kind-form" : "")" id="@(p)-form" method="post"
+              action="@form.Action" asp-antiforgery="true"
+              data-msg-busy="@L[busy]" data-msg-error="@L[K.Ui.FormGenericError]" data-message-box="@(p)-msg">
+          <p class="form-required-note">@L[K.Ui.FormRequiredNote]</p>
+
+          @switch (form)
+          {
+            case ForumRegistrationFormVm forum:
+              Text(p, "fullName", K.Ui.FormFullName, 200, required: true, autocomplete: "name");
+              <div class="form-row">
+                @{ Text(p, "email", K.Ui.FormEmail, 200, required: true, type: "email", autocomplete: "email", ltr: true, placeholder: L[K.Ui.FormEmailPlaceholder].Value); }
+                @{ Text(p, "phone", K.Ui.FormPhone, 50, type: "tel", autocomplete: "tel", ltr: true, placeholder: L[K.Ui.FormPhonePlaceholder].Value); }
+              </div>
+              <div class="form-row">
+                @{ Text(p, "organization", K.Ui.FormOrganization, 200, autocomplete: "organization"); }
+                @{ Text(p, "jobTitle", K.Ui.FormJobTitle, 150, autocomplete: "organization-title"); }
+              </div>
+              Text(p, "country", K.Ui.FormCountry, 100, autocomplete: "country-name");
+              Select(p, "interestOptionId", K.Ui.FormInterest, forum.Interests);
+              Select(p, "eventId", K.Ui.FormEvent, forum.Events, emptyKey: K.Ui.FormEventAny);
+              break;
+
+            case JoinFormVm join:
+              <fieldset class="form-group kind-choice">
+                <legend>@join.KindQuestion<span class="req" aria-hidden="true">*</span></legend>
+                <div class="kind-options">
+                  <label class="kind-option"><input type="radio" name="kind" value="investor" required checked="@(join.Kind == "investor")"><span>@L[K.Ui.FormKindInvestor]</span></label>
+                  <label class="kind-option"><input type="radio" name="kind" value="startup" required checked="@(join.Kind == "startup")"><span>@L[K.Ui.FormKindStartup]</span></label>
+                </div>
+              </fieldset>
+              Text(p, "fullName", K.Ui.FormFullName, 200, required: true, autocomplete: "name");
+              <div class="form-row">
+                @{ Text(p, "email", K.Ui.FormEmail, 200, required: true, type: "email", autocomplete: "email", ltr: true, placeholder: L[K.Ui.FormEmailPlaceholder].Value); }
+                @{ Text(p, "phone", K.Ui.FormPhone, 50, type: "tel", autocomplete: "tel", ltr: true, placeholder: L[K.Ui.FormPhonePlaceholder].Value); }
+              </div>
+              Text(p, "country", K.Ui.FormCountry, 100, required: true, autocomplete: "country-name");
+
+              <fieldset class="kind-fields" data-kind="investor">
+                <legend>@L[K.Ui.FormInvestorDetails]</legend>
+                @{ Select(p, "investorTypeId", K.Ui.FormInvestorType, join.InvestorTypes, kindRequired: true); }
+                <div class="form-row">
+                  @{ Text(p, "organization", K.Ui.FormOrganization, 200, autocomplete: "organization"); }
+                  @{ Select(p, "ticketSizeId", K.Ui.FormTicketSize, join.TicketSizes); }
+                </div>
+                @if (join.Sectors.Count > 0)
+                {
+                  <fieldset class="form-group check-list">
+                    <legend>@L[K.Ui.FormSectors]</legend>
+                    <div class="check-grid">
+                      @foreach (var s in join.Sectors)
+                      {
+                        var sid = p + "-sector-" + s.Id.ToString(inv);
+                        <label class="check-item" for="@sid"><input type="checkbox" id="@sid" name="sectorIds" value="@s.Id.ToString(inv)"><span lang="@s.Text.Lang" dir="@s.Text.Dir">@s.Text</span></label>
+                      }
+                    </div>
+                  </fieldset>
+                }
+                @{ Text(p, "linkedInUrl", K.Ui.FormLinkedIn, 500, type: "url", ltr: true, placeholder: "https://"); }
+                @{ Area(p, "message", K.Ui.FormMessage, 2000); }
+              </fieldset>
+
+              <fieldset class="kind-fields" data-kind="startup">
+                <legend>@L[K.Ui.FormStartupDetails]</legend>
+                @{ Text(p, "startupName", K.Ui.FormStartupName, 200, autocomplete: "organization", kindRequired: true); }
+                <div class="form-row">
+                  @{ Select(p, "sectorId", K.Ui.FormSector, join.Sectors, kindRequired: true); }
+                  @{ Select(p, "stageId", K.Ui.FormStage, join.Stages, kindRequired: true); }
+                </div>
+                @{ Select(p, "fundingId", K.Ui.FormFunding, join.FundingRanges); }
+                @{ Text(p, "websiteUrl", K.Ui.FormWebsite, 500, type: "url", ltr: true, placeholder: "https://"); }
+                @{ Area(p, "pitch", K.Ui.FormPitch, 1000); }
+              </fieldset>
+              break;
+
+            case SponsorshipFormVm sponsor:
+              Text(p, "companyName", K.Ui.FormCompanyName, 200, required: true, autocomplete: "organization");
+              Text(p, "fullName", K.Ui.FormContactName, 200, required: true, autocomplete: "name");
+              <div class="form-row">
+                @{ Text(p, "email", K.Ui.FormEmail, 200, required: true, type: "email", autocomplete: "email", ltr: true, placeholder: L[K.Ui.FormEmailPlaceholder].Value); }
+                @{ Text(p, "phone", K.Ui.FormPhone, 50, type: "tel", autocomplete: "tel", ltr: true, placeholder: L[K.Ui.FormPhonePlaceholder].Value); }
+              </div>
+              <div class="form-group">
+                @{ Label(p + "-unit", K.Ui.FormUnit, true); }
+                <select id="@(p)-unit" name="unit" class="form-control" required>
+                  @foreach (var u in sponsor.Units)
+                  {
+                    <option value="@u.Unit" selected="@(u.Unit == sponsor.Unit)" lang="@u.Label.Lang" dir="@u.Label.Dir">@u.Label</option>
+                  }
+                </select>
+              </div>
+              @if (sponsor.Units.Any(u => u.Packages.Count > 0))
+              {
+                <div class="form-group">
+                  @{ Label(p + "-package", K.Ui.FormPackage, false); }
+                  <select id="@(p)-package" name="packageId" class="form-control">
+                    <option value="">@L[K.Ui.FormPackageAny]</option>
+                    @foreach (var u in sponsor.Units.Where(u => u.Packages.Count > 0))
+                    {
+                      <optgroup label="@u.Label">
+                        @foreach (var pk in u.Packages)
+                        {
+                          <option value="@pk.Id.ToString(inv)" lang="@pk.Text.Lang" dir="@pk.Text.Dir">@pk.Text</option>
+                        }
+                      </optgroup>
+                    }
+                  </select>
+                </div>
+              }
+              Area(p, "message", K.Ui.FormMessage, 2000);
+              break;
+
+            case InterestFormVm interest:
+              if (interest.OpportunityId is { } oid)
+              {
+                <input type="hidden" name="opportunityId" value="@oid.ToString(inv)">
+              }
+              Text(p, "fullName", K.Ui.FormFullName, 200, required: true, autocomplete: "name");
+              <div class="form-row">
+                @{ Text(p, "email", K.Ui.FormEmail, 200, required: true, type: "email", autocomplete: "email", ltr: true, placeholder: L[K.Ui.FormEmailPlaceholder].Value); }
+                @{ Text(p, "phone", K.Ui.FormPhone, 50, type: "tel", autocomplete: "tel", ltr: true, placeholder: L[K.Ui.FormPhonePlaceholder].Value); }
+              </div>
+              Area(p, "message", K.Ui.FormMessage, 2000);
+              break;
+          }
+
+          <div class="form-consent">
+            <input type="checkbox" id="@(p)-consent" name="consent" value="true" required>
+            <label for="@(p)-consent"><span lang="@form.Consent.Lang" dir="@form.Consent.Dir">@form.Consent</span><span class="req" aria-hidden="true">*</span></label>
+          </div>
+          <input type="text" name="Website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div id="@(p)-msg" class="form-message" role="alert" hidden></div>
+          <button type="submit" class="form-submit-btn">
+            <span lang="@form.SubmitLabel.Lang" dir="@form.SubmitLabel.Dir">@form.SubmitLabel</span>
+            <svg class="i-dir" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

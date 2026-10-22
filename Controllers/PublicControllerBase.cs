@@ -42,7 +42,7 @@ public abstract partial class PublicControllerBase : Controller
 
         var intro = row is null ? LText.Empty : v.P(row.IntroAr, row.IntroEn);
         var body = row is null ? [] : SiteViews.Paragraphs(v.P(row.BodyAr, row.BodyEn));
-        var hasContent = list.Any(b => b is not (CtaBlock or CardsBlock)) || !intro.IsEmpty || body.Count > 0;
+        var hasContent = list.Any(b => b is not (CtaBlock or CardsBlock or LeadFormBlock { IsContent: false })) || !intro.IsEmpty || body.Count > 0;
         if (!hasContent && row is not null)
             list.Insert(0, new EmptyBlock(v.P(row.EmptyTextAr, row.EmptyTextEn), emptyAction));
 

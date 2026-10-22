@@ -68,6 +68,9 @@ builder.Services.Configure<MediaOptions>(builder.Configuration.GetSection(MediaO
 builder.Services.AddSingleton<MediaStore>();
 builder.Services.AddStaticAssetCompression();
 
+// What a lead may refer to that a later phase publishes (opportunities, sponsorship packages): none yet.
+builder.Services.AddSingleton<InnovestHolding.Infrastructure.Forms.ILeadReferences, InnovestHolding.Infrastructure.Forms.NoLeadReferences>();
+
 // AppDbContext + the site content cache and its invalidation interceptor (one helper, shared with the tests).
 builder.Services.AddAppDbContext(connectionString);
 

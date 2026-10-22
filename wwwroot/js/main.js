@@ -359,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = form.querySelector('button[type="submit"]');
     const label = btn ? btn.querySelector('span') : null;
     const idleText = label ? label.textContent : '';
+    let hideTimer = 0;
 
     function show(ok, text) {
       msg.hidden = false;
@@ -388,9 +389,22 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
           show(!!data.success, data.message || form.dataset.msgError);
-          if (data.success) form.reset();
+          form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.removeAttribute('aria-invalid'));
+          if (data.success) {
+            form.reset();
+          } else if (data.field) {
+            // The lead forms name the field the message is about: mark it and move the focus there.
+            const wanted = String(data.field).toLowerCase();
+            const field = Array.from(form.elements).find(el => el.name && el.name.toLowerCase() === wanted && !el.disabled);
+            if (field) {
+              field.setAttribute('aria-invalid', 'true');
+              field.focus();
+            }
+          }
           idle();
-          setTimeout(() => { msg.hidden = true; }, 5000);
+          // One timer per form: a reply that arrives later must not be hidden by the previous reply's timer.
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => { msg.hidden = true; }, 5000);
         })
         .catch(() => {
           show(false, form.dataset.msgError);
@@ -399,6 +413,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   document.querySelectorAll('form.js-ajax-form').forEach(bindAjaxForm);
+
+  // Join the Network: the chosen type (investor / startup) shows its own fields; the other set is hidden AND disabled,
+  // so it is neither validated by the browser nor posted. Without JavaScript both sets stay visible and the server
+  // ignores the other type's fields. Fields marked data-required become required only while their set is shown.
+  document.querySelectorAll('form.js-kind-form').forEach(form => {
+    const sets = form.querySelectorAll('fieldset.kind-fields');
+    function apply() {
+      const checked = form.querySelector('input[name="kind"]:checked');
+      const kind = checked ? checked.value : '';
+      sets.forEach(set => {
+        const on = set.dataset.kind === kind;
+        set.hidden = !on;
+        set.disabled = !on;
+        set.querySelectorAll('[data-required]').forEach(el => { el.required = on; });
+      });
+    }
+    form.querySelectorAll('input[name="kind"]').forEach(r => r.addEventListener('change', apply));
+    form.addEventListener('reset', () => setTimeout(apply, 0));
+    apply();
+  });
 
   // Unit tab bar: on a narrow screen the current tab may sit outside the scrollable strip — bring it into view
   // (only the strip scrolls; the page does not move).

@@ -15,9 +15,10 @@ namespace InnovestHolding.Controllers;
 /// /forms/{name} (Arabic) and /en/forms/{name} (English). /Home/Register and /Home/Contact are kept for one release so a
 /// page cached before the deploy still posts. Exact attribute routes only (no {id}, no /Admin/… variant); every URL of
 /// an action shares its rate-limit bucket (the partition is the ACTION, RateLimitPolicies.ActionKey). Antiforgery is
-/// the global filter.
+/// the global filter. The lead forms (Forum registration, Join, sponsorship, opportunity interest) are in
+/// FormsController.Leads.cs.
 /// </summary>
-public class FormsController(
+public partial class FormsController(
     AppDbContext db,
     ISiteContentCache cache,
     IStringLocalizer<SharedResource> l) : Controller

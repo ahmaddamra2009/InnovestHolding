@@ -253,4 +253,56 @@
   <data name="Msg_SlugReserved" xml:space="preserve"><value>The form "{0}-number" is reserved for automatic addresses — choose another short link.</value></data>
   <data name="Ui_WatchOnYouTube" xml:space="preserve"><value>Watch on YouTube</value></data>
   <data name="Ui_ExternalLink" xml:space="preserve"><value>(opens another site)</value></data>
+  <data name="Msg_ForumRegistrationSuccess" xml:space="preserve"><value>Your Forum registration was received! We will contact you with the event details</value></data>
+  <data name="Msg_JoinSuccess" xml:space="preserve"><value>Your application was received! Our team will review it and contact you</value></data>
+  <data name="Msg_SponsorshipSuccess" xml:space="preserve"><value>Your sponsorship enquiry was received! Our team will contact you with the details</value></data>
+  <data name="Msg_InterestSuccess" xml:space="preserve"><value>Your interest was recorded! The network team will contact you</value></data>
+  <data name="Msg_ConsentRequired" xml:space="preserve"><value>Please tick the consent box to send your request</value></data>
+  <data name="Msg_OptionInvalid" xml:space="preserve"><value>Please choose {0} from the list</value></data>
+  <data name="Field_Consent" xml:space="preserve"><value>Consent</value></data>
+  <data name="Field_Country" xml:space="preserve"><value>Country</value></data>
+  <data name="Field_Event" xml:space="preserve"><value>Event</value></data>
+  <data name="Field_ApplicantType" xml:space="preserve"><value>Application type</value></data>
+  <data name="Field_StartupName" xml:space="preserve"><value>Startup name</value></data>
+  <data name="Field_InvestorType" xml:space="preserve"><value>Investor type</value></data>
+  <data name="Field_TicketSize" xml:space="preserve"><value>Ticket size</value></data>
+  <data name="Field_Sectors" xml:space="preserve"><value>Sectors</value></data>
+  <data name="Field_Sector" xml:space="preserve"><value>Sector</value></data>
+  <data name="Field_FundingSought" xml:space="preserve"><value>Funding sought</value></data>
+  <data name="Field_WebsiteUrl" xml:space="preserve"><value>Website or pitch deck link</value></data>
+  <data name="Field_Pitch" xml:space="preserve"><value>Short pitch</value></data>
+  <data name="Field_CompanyName" xml:space="preserve"><value>Company name</value></data>
+  <data name="Field_Unit" xml:space="preserve"><value>What to sponsor</value></data>
+  <data name="Field_Package" xml:space="preserve"><value>Package</value></data>
+  <data name="Field_Opportunity" xml:space="preserve"><value>Opportunity</value></data>
+  <data name="Ui_FormRequiredNote" xml:space="preserve"><value>Fields marked * are required</value></data>
+  <data name="Ui_FormChoose" xml:space="preserve"><value>Choose…</value></data>
+  <data name="Ui_FormOrganization" xml:space="preserve"><value>Organization</value></data>
+  <data name="Ui_FormJobTitle" xml:space="preserve"><value>Job title</value></data>
+  <data name="Ui_FormCountry" xml:space="preserve"><value>Country</value></data>
+  <data name="Ui_FormEvent" xml:space="preserve"><value>Event</value></data>
+  <data name="Ui_FormEventAny" xml:space="preserve"><value>Any upcoming event</value></data>
+  <data name="Ui_FormKindInvestor" xml:space="preserve"><value>An investor</value></data>
+  <data name="Ui_FormKindStartup" xml:space="preserve"><value>A startup</value></data>
+  <data name="Ui_FormInvestorDetails" xml:space="preserve"><value>Investor details</value></data>
+  <data name="Ui_FormStartupDetails" xml:space="preserve"><value>Startup details</value></data>
+  <data name="Ui_FormInvestorType" xml:space="preserve"><value>Investor type</value></data>
+  <data name="Ui_FormTicketSize" xml:space="preserve"><value>Ticket size</value></data>
+  <data name="Ui_FormSectors" xml:space="preserve"><value>Sectors of interest</value></data>
+  <data name="Ui_FormStartupName" xml:space="preserve"><value>Startup name</value></data>
+  <data name="Ui_FormSector" xml:space="preserve"><value>Sector</value></data>
+  <data name="Ui_FormStage" xml:space="preserve"><value>Stage</value></data>
+  <data name="Ui_FormFunding" xml:space="preserve"><value>Funding sought</value></data>
+  <data name="Ui_FormWebsite" xml:space="preserve"><value>Website or pitch deck link</value></data>
+  <data name="Ui_FormLinkedIn" xml:space="preserve"><value>LinkedIn or website link</value></data>
+  <data name="Ui_FormPitch" xml:space="preserve"><value>Short pitch</value></data>
+  <data name="Ui_FormCompanyName" xml:space="preserve"><value>Company name</value></data>
+  <data name="Ui_FormContactName" xml:space="preserve"><value>Contact person</value></data>
+  <data name="Ui_FormUnit" xml:space="preserve"><value>What would you like to sponsor?</value></data>
+  <data name="Ui_FormPackage" xml:space="preserve"><value>Package</value></data>
+  <data name="Ui_FormPackageAny" xml:space="preserve"><value>Not decided yet</value></data>
+  <data name="Ui_FormSubmitApplication" xml:space="preserve"><value>Send application</value></data>
+  <data name="Ui_FormSubmitEnquiry" xml:space="preserve"><value>Send enquiry</value></data>
+  <data name="Ui_FormSubmitInterest" xml:space="preserve"><value>Register my interest</value></data>
+  <data name="Admin_LeadDeleted" xml:space="preserve"><value>The application was deleted</value></data>
 </root>

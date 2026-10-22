@@ -1,0 +1,57 @@
+@model InnovestHolding.Controllers.Admin.LeadDetailVm
+@using InnovestHolding.Infrastructure.Leads
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = LeadInbox.Label(Model.Type);
+    var back = "/Admin/Leads" + QueryString.Create(new[]
+    {
+        new KeyValuePair<string, string?>("status", Model.Status),
+        new KeyValuePair<string, string?>("page", Model.Page?.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+    }.Where(p => p.Value is not null));
+}
+
+<p style="margin-bottom:16px;"><a href="@back" class="btn-admin btn-secondary btn-sm">→ العودة إلى الطلبات</a></p>
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <span class="admin-card-title">@Model.Title</span>
+        @if (Model.IsRead)
+        {
+            <span class="badge-active">مقروء</span>
+        }
+        else
+        {
+            <span class="badge-new">جديد</span>
+        }
+    </div>
+
+    <dl class="lead-detail">
+        <dt>النوع</dt><dd>@LeadInbox.Label(Model.Type)</dd>
+        <dt>تاريخ الإرسال</dt><dd>@TimeDisplay.Utc(Model.CreatedAt)</dd>
+        <dt>لغة الصفحة</dt><dd>@(Model.Culture == "en" ? "English" : "العربية")</dd>
+        <dt>الموافقة على التواصل</dt><dd>@if (Model.ConsentAt is { } consent) { @TimeDisplay.Utc(consent) } else { <span class="form-hint">لا يوجد مربع موافقة في هذا النموذج</span> }</dd>
+        @foreach (var field in Model.Fields)
+        {
+            <dt>@field.Label</dt>
+            <dd class="@(field.Ltr ? "cell-ltr" : null)">@if (string.IsNullOrWhiteSpace(field.Value)) { <span class="form-hint">—</span> } else { <span class="lead-value">@field.Value</span> }</dd>
+        }
+    </dl>
+
+    <div class="inline-actions" style="margin-top:20px;">
+        <form method="post" asp-action="ToggleRead" asp-controller="Leads" style="display:inline;">
+            <input type="hidden" name="type" value="@Model.Type">
+            <input type="hidden" name="id" value="@Model.Id">
+            <input type="hidden" name="status" value="@Model.Status">
+            <input type="hidden" name="page" value="@Model.Page">
+            <input type="hidden" name="fromDetails" value="true">
+            <button type="submit" class="btn-admin @(Model.IsRead ? "btn-secondary" : "btn-primary")">@(Model.IsRead ? "تعليم كغير مقروء" : "تعليم كمقروء ✓")</button>
+        </form>
+        <form method="post" asp-action="Delete" asp-controller="Leads" style="display:inline;">
+            <input type="hidden" name="type" value="@Model.Type">
+            <input type="hidden" name="id" value="@Model.Id">
+            <input type="hidden" name="status" value="@Model.Status">
+            <input type="hidden" name="page" value="@Model.Page">
+            <button type="submit" class="btn-admin btn-danger" onclick="return confirm('حذف هذا الطلب نهائياً؟')">حذف</button>
+        </form>
+    </div>
+</div>

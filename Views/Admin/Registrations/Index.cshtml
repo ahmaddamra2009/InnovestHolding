@@ -23,6 +23,7 @@
     }
     else
     {
+        <div class="table-scroll">
         <table class="admin-table">
             <thead>
                 <tr>
@@ -31,6 +32,7 @@
                     <th>البريد الإلكتروني</th>
                     <th>الهاتف</th>
                     <th>مجال الاهتمام</th>
+                    <th>النموذج</th>
                     <th>اللغة</th>
                     <th>تاريخ التسجيل</th>
                     <th>إجراءات</th>
@@ -54,6 +56,16 @@
                     <td class="cell-ltr">@item.Email</td>
                     <td class="cell-ltr">@item.Phone</td>
                     <td>@item.Interest</td>
+                    <td>
+                        @if (item.Kind == Registration.Forum)
+                        {
+                            <a href="/Admin/Leads/Details/@item.Id?type=forum">تسجيل في المنتدى</a>
+                        }
+                        else
+                        {
+                            <span>تسجيل سريع</span>
+                        }
+                    </td>
                     <td>@(item.Culture == "en" ? "English" : "العربية")</td>
                     <td style="font-size:0.82rem;color:var(--admin-text-muted);">@TimeDisplay.Utc(item.CreatedAt)</td>
                     <td class="actions">
@@ -74,6 +86,7 @@
             }
             </tbody>
         </table>
+        </div>
         var pager = (Model.Page, Model.TotalPages, Url.Action("Index", "Registrations") ?? "/Admin/Registrations");
         <partial name="~/Views/Admin/Shared/_Pager.cshtml" model="pager" />
     }

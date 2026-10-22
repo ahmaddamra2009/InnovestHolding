@@ -12,4 +12,7 @@ public class DashboardViewModel
     public int UnreadRegistrations { get; set; }
     public int TotalMessages { get; set; }
     public int UnreadMessages { get; set; }
+
+    /// <summary>Unread leads per type (the applications inbox).</summary>
+    public InnovestHolding.Infrastructure.Leads.UnreadCounts? UnreadLeads { get; set; }
 }

@@ -36,6 +36,25 @@
     </div>
 </div>
 
+@if (Model.UnreadLeads is { } leads)
+{
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <span class="admin-card-title">الطلبات الجديدة (@leads.Leads)</span>
+            <a href="/Admin/Leads" class="btn-admin btn-secondary btn-sm">كل الطلبات</a>
+        </div>
+        <div class="stats-cards">
+            @foreach (var (key, label) in InnovestHolding.Infrastructure.Leads.LeadInbox.Types)
+            {
+                var count = leads.Of(key);
+                <a class="stat-card-admin lead-type-card@(count > 0 ? " has-unread" : "")" href="/Admin/Leads?type=@key&amp;status=unread">
+                    <div class="stat-card-info"><h3>@count</h3><p>@label — جديد</p></div>
+                </a>
+            }
+        </div>
+    </div>
+}
+
 <div class="admin-card">
     <div class="admin-card-header">
         <span class="admin-card-title">مرحباً بك في لوحة التحكم</span>
