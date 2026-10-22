@@ -79,8 +79,10 @@ No native code and no re-encode (shared hosting): the file is validated and rebu
 - Startup sweep (`MediaStore.SweepAsync`, called from `Program.cs`): orphans (a file older than 24 h whose key has no
   `MediaFiles` row, and `*.tmp` older than 1 h) are **moved, never deleted**, to `{uploads}-quarantine/{yyyy-MM-dd}/`
   (default `App_Data/uploads-quarantine/`, a sibling of the uploads folder, so `/media` cannot serve it). It is skipped when
-  the database has no `MediaFiles` rows, when the `uploads/.database` marker (SHA-256 of `@@SERVERNAME/DB_NAME()`, written by
-  the first sweep) names another database (logged as an error), and when there are more than 50 candidates (`MaxSweepMoves`;
+  the database has no `MediaFiles` rows, when the `uploads/.database` marker names another database (logged as an error). The marker holds the
+  database's own id: a random GUID stored once in SiteContents `sys_media_instance` and written into the marker by the first
+  sweep. It does not depend on the server name, so a LocalDB restart or a host move does not change it. A marker in the first
+  text's format (SHA-256 of `@@SERVERNAME/DB_NAME()`) is replaced by the id, and when there are more than 50 candidates (`MaxSweepMoves`;
   nothing moved, logged as an error). Every start logs the outcome. Nothing purges the quarantine.
 - `/media/{key}.{jpg|png|webp}` (`MediaEndpoint`, GET/HEAD only, otherwise 404/405): re-sniffs the stored bytes; content type
   from the signature; `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; sandbox`; `Cache-Control: public,

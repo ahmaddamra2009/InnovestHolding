@@ -184,10 +184,17 @@ public sealed partial class MediaStore
     /// <summary>Where orphans go: a sibling of the uploads folder ({root}-quarantine), outside what /media serves.</summary>
     public string QuarantineRoot => Root + "-quarantine";
 
-    /// <summary>Marker in the uploads folder: a hash of the database the files belong to (no connection details).</summary>
+    /// <summary>Marker in the uploads folder: the id of the database the files belong to (SiteContents
+    /// <c>sys_media_instance</c>, a random GUID). It survives server renames and restarts; a restored backup carries it.</summary>
     public const string DatabaseMarker = ".database";
 
     public sealed record SweepResult(int Moved, int Candidates, string Outcome);
+
+    private const string ContentInstanceLabel = "SiteContents sys_media_instance";
+
+    /// <summary>The marker format of the first C2 text: SHA-256 of server/database name (64 upper-case hex).</summary>
+    [GeneratedRegex(@"^[0-9A-F]{64}\z")]
+    private static partial Regex LegacyMarker();
 
     /// <summary>
     /// Startup janitor. It NEVER deletes: candidates are moved to {root}-quarantine/{utc-date}/ and stay there until
@@ -206,21 +213,31 @@ public sealed partial class MediaStore
         if (!await db.MediaFiles.AnyAsync(ct))
             return new(0, 0, "skipped: the database has no media rows");
 
-        var identity = await db.Database.SqlQueryRaw<string>("SELECT CONCAT(@@SERVERNAME, N'/', DB_NAME()) AS [Value]").SingleAsync(ct);
-        var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(identity)));
-        var markerPath = Path.Combine(Root, DatabaseMarker);
-        if (File.Exists(markerPath))
+        // The database's own id (not the server's name, which changes with LocalDB restarts or a host move).
+        var instance = await db.SiteContents.Where(c => c.SectionKey == Content.ContentKeys.MediaInstance)
+            .Select(c => c.ContentAr).FirstOrDefaultAsync(ct);
+        if (instance is null || !KeyPattern().IsMatch(instance))
         {
-            if (!string.Equals((await File.ReadAllTextAsync(markerPath, ct)).Trim(), hash, StringComparison.Ordinal))
-            {
-                _logger.LogError("The uploads folder belongs to another database than the one the app is connected to: " +
-                                 "orphan sweep skipped, no file moved. Check the connection string.");
-                return new(0, 0, "skipped: the uploads folder belongs to another database");
-            }
+            instance = Guid.NewGuid().ToString("N");
+            var row = await db.SiteContents.FirstOrDefaultAsync(c => c.SectionKey == Content.ContentKeys.MediaInstance, ct);
+            if (row is null) db.SiteContents.Add(new SiteContent { SectionKey = Content.ContentKeys.MediaInstance, ContentAr = instance, UpdatedAt = _time.GetUtcNow().UtcDateTime });
+            else row.ContentAr = instance;
+            await db.SaveChangesAsync(ct);
         }
-        else
+
+        var markerPath = Path.Combine(Root, DatabaseMarker);
+        var marker = File.Exists(markerPath) ? (await File.ReadAllTextAsync(markerPath, ct)).Trim() : null;
+        if (marker is null || LegacyMarker().IsMatch(marker))
         {
-            await File.WriteAllTextAsync(markerPath, hash, ct);
+            // First sweep of this folder (or the earlier server-name hash): the folder is now this database's.
+            await File.WriteAllTextAsync(markerPath, instance, ct);
+        }
+        else if (!string.Equals(marker, instance, StringComparison.Ordinal))
+        {
+            _logger.LogError("Orphan sweep skipped, no file moved: the uploads folder's marker ({Marker}) names another database " +
+                             "than the one the app is connected to ({Instance}). If the database was replaced on purpose, delete " +
+                             "the file .database in the uploads folder; otherwise check the connection string.", DatabaseMarker, ContentInstanceLabel);
+            return new(0, 0, "skipped: the uploads folder belongs to another database");
         }
 
         var known = (await db.MediaFiles.AsNoTracking().Select(m => m.FileKey).ToListAsync(ct)).ToHashSet(StringComparer.Ordinal);

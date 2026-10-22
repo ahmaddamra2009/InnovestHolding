@@ -87,6 +87,10 @@ public static class ContentKeys
     /// <summary>Internal marker of the one-time timestamp conversion — never shown in the admin.</summary>
     public const string TimestampsUtcMarker = "sys_timestamps_utc";
 
+    /// <summary>Internal: a random id of THIS database (created by the first orphan sweep), written into the uploads
+    /// folder's marker so the sweep can tell its own folder from another database's. Never shown in the admin.</summary>
+    public const string MediaInstance = "sys_media_instance";
+
     public static readonly IReadOnlyList<(string Id, string Title)> Groups =
     [
         ("header", "الهيدر والأزرار"),

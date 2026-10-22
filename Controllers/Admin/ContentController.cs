@@ -67,6 +67,12 @@ public class ContentController : AdminControllerBase
         }
         var leaving = ApplyImage(_db, current, uploaded, input, m => row.ContentAr = m?.FileKey ?? "");
         row.UpdatedAt = DateTime.UtcNow;
+        // No photo: no row (an empty founder_photo row would only be dead data).
+        if (string.IsNullOrEmpty(row.ContentAr))
+        {
+            if (_db.Entry(row).State == EntityState.Added) _db.Entry(row).State = EntityState.Detached;
+            else _db.SiteContents.Remove(row);
+        }
         await SaveWithImageAsync(_db, uploaded, leaving);
         TempData["Success"] = L(MessageKeys.Admin.PhotoSaved);
         return RedirectToAction(nameof(Edit));

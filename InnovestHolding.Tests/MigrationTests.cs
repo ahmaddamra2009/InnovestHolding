@@ -55,7 +55,7 @@ public class MigrationTests(TestAppFactory f)
         all.AddRange((await db.Events.AsNoTracking().Where(n => n.Id <= 3).OrderBy(n => n.Id).ToListAsync()).Select(e => $"Ev|{e.TitleAr}|{e.TitleEn}|{e.DescriptionAr}|{e.DescriptionEn}|{e.EventMonthAr}|{e.EventMonthEn}|{e.LocationAr}|{e.LocationEn}|{e.TimeAr}|{e.TimeEn}"));
         all.AddRange((await db.Partners.AsNoTracking().Where(n => n.Id <= 10).OrderBy(n => n.Id).ToListAsync()).Select(p => $"Pa|{p.NameAr}|{p.NameEn}|{p.IsActive}"));
         all.AddRange((await db.Faqs.AsNoTracking().Where(n => n.Id <= 6).OrderBy(n => n.Id).ToListAsync()).Select(q => $"Fq|{q.QuestionAr}|{q.QuestionEn}|{q.AnswerAr}|{q.AnswerEn}"));
-        all.AddRange((await db.SiteContents.AsNoTracking().Where(c => c.SectionKey != ContentKeys.TimestampsUtcMarker).OrderBy(c => c.SectionKey).ToListAsync())
+        all.AddRange((await db.SiteContents.AsNoTracking().Where(c => c.SectionKey != ContentKeys.TimestampsUtcMarker && c.SectionKey != ContentKeys.MediaInstance).OrderBy(c => c.SectionKey).ToListAsync())
             .Select(c => $"Sc|{c.SectionKey}|{c.ContentAr}|{c.ContentEn}"));
         all.AddRange((await db.InterestOptions.AsNoTracking().Where(o => o.Id <= 6).OrderBy(o => o.Id).ToListAsync()).Select(o => $"Io|{o.NameAr}|{o.NameEn}|{o.SortOrder}"));
         all.AddRange((await db.RegisterBenefits.AsNoTracking().OrderBy(o => o.Id).ToListAsync()).Select(o => $"Rb|{o.TextAr}|{o.TextEn}"));

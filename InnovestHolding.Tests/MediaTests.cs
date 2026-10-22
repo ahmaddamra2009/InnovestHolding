@@ -551,6 +551,7 @@ public class MediaUploadTests(TestAppFactory f) : IDisposable
             Assert.Equal(HttpStatusCode.Redirect, r.StatusCode);
             Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync($"/media/{key}.webp")).StatusCode);
             Assert.DoesNotContain("founder-photo", await f.NewClient().GetStringAsync("/about"));
+            Assert.False(await f.DbAsync(db => db.SiteContents.AnyAsync(s => s.SectionKey == "founder_photo")), "an empty founder_photo row was left");
         }
         finally
         {
@@ -680,7 +681,47 @@ public class MediaUploadTests(TestAppFactory f) : IDisposable
             File.Delete(Path.Combine(store.Root, MediaStore.DatabaseMarker));
             Assert.Equal(1, (await f.DbAsync(db => store.SweepAsync(db))).Moved);
             Assert.False(File.Exists(p));
-            Assert.Matches("^[0-9A-F]{64}$", File.ReadAllText(Path.Combine(store.Root, MediaStore.DatabaseMarker)));
+            Assert.Equal(await InstanceAsync(), File.ReadAllText(Path.Combine(store.Root, MediaStore.DatabaseMarker)));
+        }
+        finally
+        {
+            await RemoveRowAsync(kept);
+        }
+    }
+
+    private Task<string> InstanceAsync() => f.DbAsync(db =>
+        db.SiteContents.Where(s => s.SectionKey == InnovestHolding.Infrastructure.Content.ContentKeys.MediaInstance).Select(s => s.ContentAr).SingleAsync());
+
+    [Fact] // P2: the marker names the DATABASE (its stored id), not the server: a renamed/restarted server still sweeps
+    public async Task Sweep_runs_when_the_server_name_changed()
+    {
+        var store = StoreAt(TempRoot());
+        var kept = Guid.NewGuid().ToString("N");
+        await AddRowAsync(kept);
+        try
+        {
+            // First sweep: the database gets its id and the folder's marker is that id.
+            Directory.CreateDirectory(store.Root);
+            await f.DbAsync(db => store.SweepAsync(db));
+            var instance = await InstanceAsync();
+            Assert.Matches("^[0-9a-f]{32}$", instance);
+            var markerPath = Path.Combine(store.Root, MediaStore.DatabaseMarker);
+            Assert.Equal(instance, File.ReadAllText(markerPath));
+
+            // The marker the first text wrote: SHA-256 of a server name that no longer exists (LocalDB restarted).
+            File.WriteAllText(markerPath, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                Encoding.UTF8.GetBytes(@"OLD-HOST\LOCALDB#00000000/" + TestAppFactory.TestDatabase))));
+            var p = Put(store, Guid.NewGuid().ToString("N"), ".png", TimeSpan.FromDays(30));
+            var result = await f.DbAsync(db => store.SweepAsync(db));
+            Assert.Equal(("swept", 1), (result.Outcome, result.Moved));
+            Assert.False(File.Exists(p));
+            Assert.Equal(instance, File.ReadAllText(markerPath)); // the folder now carries the database's id
+
+            // Same database, same folder, next start: still swept (no skip, no error).
+            var q = Put(store, Guid.NewGuid().ToString("N"), ".png", TimeSpan.FromDays(30));
+            var again = await f.DbAsync(db => store.SweepAsync(db));
+            Assert.Equal(("swept", 1), (again.Outcome, again.Moved));
+            Assert.False(File.Exists(q));
         }
         finally
         {
