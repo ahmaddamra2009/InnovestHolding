@@ -198,7 +198,8 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
                 return Vm(s, s.CompanyName, s.CreatedAt, s.ConsentAt, s.Culture,
                 [
                     F("الشركة", s.CompanyName), F("مسؤول التواصل", s.ContactName), F("البريد الإلكتروني", s.Email, true),
-                    F("الهاتف", s.Phone, true), F("الرعاية المطلوبة", unitTitle), F("الباقة", s.PackageTitle), F("الرسالة", s.Message),
+                    F("الهاتف", s.Phone, true), F("الرعاية المطلوبة", unitTitle), F("الباقة", s.PackageTitle),
+                    F("رقم الباقة", ReferenceText(s.PackageId, s.PackageTitle), true), F("الرسالة", s.Message),
                 ]);
             }
             case LeadInbox.Interest:
@@ -207,13 +208,21 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
                 return i is null ? null : Vm(i, i.FullName, i.CreatedAt, i.ConsentAt, i.Culture,
                 [
                     F("الاسم", i.FullName), F("البريد الإلكتروني", i.Email, true), F("الهاتف", i.Phone, true),
-                    F("الفرصة", i.OpportunityTitle ?? "الفرص الاستثمارية عموماً"), F("الرسالة", i.Message),
+                    F("الفرصة", i.OpportunityTitle ?? "الفرص الاستثمارية عموماً"),
+                    F("رقم الفرصة", ReferenceText(i.OpportunityId, i.OpportunityTitle), true), F("الرسالة", i.Message),
                 ]);
             }
             default:
                 return null;
         }
     }
+
+    /// <summary>
+    /// The referenced record's id; «حُذفت» when a title snapshot exists but the record was deleted since (the FK set the id
+    /// to null); nothing when no record was chosen.
+    /// </summary>
+    private static string? ReferenceText(int? id, string? snapshot) =>
+        id is { } v ? "#" + v.ToString(CultureInfo.InvariantCulture) : snapshot is null ? null : "حُذفت";
 }
 
 /// <summary>POST /Admin/Leads/Update: the lead (type + id), its new status and its internal note.</summary>

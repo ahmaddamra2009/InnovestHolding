@@ -243,11 +243,15 @@ public class AppDbContext : DbContext
             e.Property(s => s.Unit).IsUnicode(false);
             e.HasIndex(s => s.CreatedAt);
             e.HasIndex(s => s.IsRead).HasFilter(UnreadOnly);
+            // Deleting a package keeps the enquiry (PackageTitle is a snapshot).
+            e.HasOne(s => s.Package).WithMany().HasForeignKey(s => s.PackageId).OnDelete(DeleteBehavior.SetNull);
         });
         modelBuilder.Entity<OpportunityInterest>(e =>
         {
             e.HasIndex(i => i.CreatedAt);
             e.HasIndex(i => i.IsRead).HasFilter(UnreadOnly);
+            // Deleting an opportunity keeps the interest (OpportunityTitle is a snapshot).
+            e.HasOne(i => i.Opportunity).WithMany().HasForeignKey(i => i.OpportunityId).OnDelete(DeleteBehavior.SetNull);
         });
     }
 

@@ -19,6 +19,15 @@ public sealed class LeadRow
     public LeadStatus Status { get; init; }
     public string? Note { get; init; }
     public DateTime CreatedAt { get; init; }
+
+    /// <summary>
+    /// The record the lead names: the opportunity of an interest, the package of a sponsorship enquiry, the event of a
+    /// Forum registration — the Arabic title SNAPSHOT taken at submission (kept after the record is deleted).
+    /// </summary>
+    public string? Reference { get; init; }
+
+    /// <summary>The referenced record's id; null when none was chosen or the record has since been deleted (FK SET NULL).</summary>
+    public int? ReferenceId { get; init; }
 }
 
 /// <summary>Unread rows per lead type (one query; the admin sidebar and dashboard read it).</summary>
@@ -84,24 +93,28 @@ public static class LeadInbox
             Type = kind, Id = r.Id, Name = r.FullName, Email = r.Email,
             Summary = r.EventTitle ?? r.Organization ?? r.Interest,
             Phone = r.Phone, Culture = r.Culture, IsRead = r.IsRead, Status = r.Status, Note = r.AdminNote, CreatedAt = r.CreatedAt,
+            Reference = r.EventTitle, ReferenceId = r.EventId,
         });
         IQueryable<LeadRow> Network(string kind) => db.NetworkApplications.Where(a => a.Kind == kind).Select(a => new LeadRow
         {
             Type = kind, Id = a.Id, Name = a.FullName, Email = a.Email,
             Summary = a.Organization ?? a.InvestorType ?? "",
             Phone = a.Phone, Culture = a.Culture, IsRead = a.IsRead, Status = a.Status, Note = a.AdminNote, CreatedAt = a.CreatedAt,
+            Reference = null, ReferenceId = null,
         });
         IQueryable<LeadRow> Sponsorships() => db.SponsorshipEnquiries.Select(s => new LeadRow
         {
             Type = Sponsorship, Id = s.Id, Name = s.ContactName, Email = s.Email,
             Summary = s.CompanyName,
             Phone = s.Phone, Culture = s.Culture, IsRead = s.IsRead, Status = s.Status, Note = s.AdminNote, CreatedAt = s.CreatedAt,
+            Reference = s.PackageTitle, ReferenceId = s.PackageId,
         });
         IQueryable<LeadRow> Interests() => db.OpportunityInterests.Select(i => new LeadRow
         {
             Type = Interest, Id = i.Id, Name = i.FullName, Email = i.Email,
             Summary = i.OpportunityTitle ?? "",
             Phone = i.Phone, Culture = i.Culture, IsRead = i.IsRead, Status = i.Status, Note = i.AdminNote, CreatedAt = i.CreatedAt,
+            Reference = i.OpportunityTitle, ReferenceId = i.OpportunityId,
         });
 
         return type switch

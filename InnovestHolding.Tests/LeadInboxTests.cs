@@ -339,11 +339,13 @@ public class LeadInboxTests(TestAppFactory f)
     [Fact] // headers and words come from the resx of the culture asked for (English here; admin requests are Arabic)
     public void Csv_header_and_words_follow_the_resx_language()
     {
-        Assert.Equal("\"Type\",\"No.\",\"Date (UTC)\",\"Name\",\"Email\",\"Phone\",\"Details\",\"Status\",\"Read\",\"Page language\",\"Internal note\"\r\n",
+        Assert.Equal("\"Type\",\"No.\",\"Date (UTC)\",\"Name\",\"Email\",\"Phone\",\"Details\",\"Status\",\"Read\",\"Page language\",\"Internal note\"," +
+            "\"Reference (opportunity / package / event)\",\"Reference ID\"\r\n",
             LeadCsv.Header(k => Msg.En(k)));
+        Assert.EndsWith("\"الملاحظة الداخلية\",\"المرجع (الفرصة / الباقة / الفعالية)\",\"رقم المرجع\"\r\n", LeadCsv.Header(k => Msg.Ar(k)));
         var row = LeadCsv.Row(new LeadRow { Type = LeadInbox.Interest, Id = 7, Name = "N", Email = "e@x", Summary = "", Culture = "en", IsRead = true,
-            Status = LeadStatus.Contacted, CreatedAt = new DateTime(2026, 10, 1, 9, 5, 0) }, k => Msg.En(k));
-        Assert.EndsWith("\"Contacted\",\"Yes\",\"English\",\"\"\r\n", row);
+            Status = LeadStatus.Contacted, CreatedAt = new DateTime(2026, 10, 1, 9, 5, 0), Reference = "فرصة", ReferenceId = 12 }, k => Msg.En(k));
+        Assert.EndsWith("\"Contacted\",\"Yes\",\"English\",\"\",\"فرصة\",\"12\"\r\n", row);
         Assert.Contains("\"7\",\"2026-10-01 09:05\"", row);
     }
 }
@@ -353,7 +355,7 @@ public class LeadInboxTests(TestAppFactory f)
 public class LeadFormsMigrationTests
 {
     private const string Before = "20261022213309_AddEcosystemEntities";
-    private const string LeadForms = "20261022215539_AddLeadForms";
+    private const string LeadForms = "20261022221815_AddLeadForms";
 
     private static async Task<string> Json(AppDbContext db, string sql) =>
         (await db.Database.SqlQueryRaw<string>(sql).ToListAsync()).Single() ?? "";

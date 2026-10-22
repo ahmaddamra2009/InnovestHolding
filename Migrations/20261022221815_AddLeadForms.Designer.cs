@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InnovestHolding.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261022215539_AddLeadForms")]
+    [Migration("20261022221815_AddLeadForms")]
     partial class AddLeadForms
     {
         /// <inheritdoc />
@@ -935,6 +935,8 @@ namespace InnovestHolding.Migrations
                     b.HasIndex("IsRead")
                         .HasFilter("[IsRead] = 0");
 
+                    b.HasIndex("OpportunityId");
+
                     b.ToTable("OpportunityInterests");
                 });
 
@@ -1597,6 +1599,8 @@ namespace InnovestHolding.Migrations
                     b.HasIndex("IsRead")
                         .HasFilter("[IsRead] = 0");
 
+                    b.HasIndex("PackageId");
+
                     b.ToTable("SponsorshipEnquiries");
                 });
 
@@ -2003,6 +2007,16 @@ namespace InnovestHolding.Migrations
                     b.Navigation("Image");
                 });
 
+            modelBuilder.Entity("InnovestHolding.Models.OpportunityInterest", b =>
+                {
+                    b.HasOne("InnovestHolding.Models.InvestmentOpportunity", "Opportunity")
+                        .WithMany()
+                        .HasForeignKey("OpportunityId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Opportunity");
+                });
+
             modelBuilder.Entity("InnovestHolding.Models.Page", b =>
                 {
                     b.HasOne("InnovestHolding.Models.MediaFile", "Image")
@@ -2055,6 +2069,16 @@ namespace InnovestHolding.Migrations
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Photo");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.SponsorshipEnquiry", b =>
+                {
+                    b.HasOne("InnovestHolding.Models.SponsorshipPackage", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Package");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.TvEpisode", b =>

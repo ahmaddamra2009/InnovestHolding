@@ -251,10 +251,11 @@ public class LeadFormTests(TestAppFactory f)
             ("LinkedInUrl", "javascript:alert(1)")])), "LinkedInUrl");
         var (c3, t3) = await ClientAsync();
         await AssertRefused(await c3.PostAsync("/forms/sponsorship", Form(t3, [.. Base(email), ("CompanyName", "Co"), ("Unit", "news")])), "Unit");
-        // packages and opportunities arrive in a later phase: until then no id is known
-        await AssertRefused(await c3.PostAsync("/forms/sponsorship", Form(t3, [.. Base(email), ("CompanyName", "Co"), ("Unit", "tv"), ("PackageId", "1")])), "PackageId");
-        await AssertRefused(await c3.PostAsync("/forms/opportunity-interest", Form(t3, [.. Base(email), ("OpportunityId", "1")])), "OpportunityId");
-        var en = await c3.PostAsync("/en/forms/opportunity-interest", Form(t3, [.. Base(email), ("OpportunityId", "1")]));
+        // ids that do not exist (the other refusals of C3 references: LeadReferenceTests)
+        const string unknown = "2147483647";
+        await AssertRefused(await c3.PostAsync("/forms/sponsorship", Form(t3, [.. Base(email), ("CompanyName", "Co"), ("Unit", "tv"), ("PackageId", unknown)])), "PackageId");
+        await AssertRefused(await c3.PostAsync("/forms/opportunity-interest", Form(t3, [.. Base(email), ("OpportunityId", unknown)])), "OpportunityId");
+        var en = await c3.PostAsync("/en/forms/opportunity-interest", Form(t3, [.. Base(email), ("OpportunityId", unknown)]));
         Assert.Equal(Msg.En(MessageKeys.OptionInvalid, Msg.En(MessageKeys.Fields.Opportunity)), await Message(en));
         Assert.Equal(0, await LeadCount(email));
     }

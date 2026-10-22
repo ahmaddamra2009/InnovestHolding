@@ -66,6 +66,7 @@ public static class LeadCsv
         MessageKeys.Admin.CsvType, MessageKeys.Admin.CsvId, MessageKeys.Admin.CsvDate, MessageKeys.Admin.CsvName,
         MessageKeys.Admin.CsvEmail, MessageKeys.Admin.CsvPhone, MessageKeys.Admin.CsvDetails, MessageKeys.Admin.CsvStatus,
         MessageKeys.Admin.CsvRead, MessageKeys.Admin.CsvCulture, MessageKeys.Admin.CsvNote,
+        MessageKeys.Admin.CsvReference, MessageKeys.Admin.CsvReferenceId,
     ];
 
     /// <summary>The header row in the language of <paramref name="text"/> (a resx lookup for the current culture).</summary>
@@ -78,6 +79,7 @@ public static class LeadCsv
         r.CreatedAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), r.Name, r.Email, r.Phone, r.Summary,
         text(LeadStatuses.LabelKey(r.Status)), text(r.IsRead ? MessageKeys.Admin.CsvYes : MessageKeys.Admin.CsvNo),
         text(r.Culture == "en" ? MessageKeys.Admin.CsvEnglish : MessageKeys.Admin.CsvArabic), r.Note,
+        r.Reference, r.ReferenceId?.ToString(CultureInfo.InvariantCulture),
     ]);
 
     /// <summary>

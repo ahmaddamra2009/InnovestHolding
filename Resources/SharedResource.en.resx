@@ -302,6 +302,7 @@
   <data name="Ui_FormUnit" xml:space="preserve"><value>What would you like to sponsor?</value></data>
   <data name="Ui_FormPackage" xml:space="preserve"><value>Package</value></data>
   <data name="Ui_FormPackageAny" xml:space="preserve"><value>Not decided yet</value></data>
+  <data name="Ui_FormOpportunityAny" xml:space="preserve"><value>Investment opportunities in general</value></data>
   <data name="Ui_FormSubmitApplication" xml:space="preserve"><value>Send application</value></data>
   <data name="Ui_FormSubmitEnquiry" xml:space="preserve"><value>Send enquiry</value></data>
   <data name="Ui_FormSubmitInterest" xml:space="preserve"><value>Register my interest</value></data>
@@ -325,5 +326,7 @@
   <data name="Admin_CsvNo" xml:space="preserve"><value>No</value></data>
   <data name="Admin_CsvArabic" xml:space="preserve"><value>Arabic</value></data>
   <data name="Admin_CsvEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="Admin_CsvReference" xml:space="preserve"><value>Reference (opportunity / package / event)</value></data>
+  <data name="Admin_CsvReferenceId" xml:space="preserve"><value>Reference ID</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>Internal note</value></data>
 </root>

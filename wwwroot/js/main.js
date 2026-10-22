@@ -434,6 +434,25 @@ document.addEventListener('DOMContentLoaded', () => {
     apply();
   });
 
+  // Sponsorship enquiry: only the packages of the chosen unit can be picked (the other unit's group is disabled and a
+  // choice from it is cleared). Without JavaScript every group stays enabled and the server refuses a package of the
+  // other unit with a 400 naming the package field.
+  document.querySelectorAll('select[name="unit"]').forEach(unit => {
+    const form = unit.form;
+    const packages = form ? form.querySelector('select[name="packageId"]') : null;
+    if (!packages) return;
+    function apply() {
+      packages.querySelectorAll('optgroup[data-unit]').forEach(group => {
+        group.disabled = group.dataset.unit !== unit.value;
+      });
+      const chosen = packages.selectedOptions[0];
+      if (chosen && chosen.parentElement.tagName === 'OPTGROUP' && chosen.parentElement.disabled) packages.value = '';
+    }
+    unit.addEventListener('change', apply);
+    form.addEventListener('reset', () => setTimeout(apply, 0));
+    apply();
+  });
+
   // Unit tab bar: on a narrow screen the current tab may sit outside the scrollable strip — bring it into view
   // (only the strip scrolls; the page does not move).
   const activeTab = document.querySelector('.unit-tabs a.active');

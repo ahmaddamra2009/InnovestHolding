@@ -10,7 +10,9 @@ namespace InnovestHolding.Migrations
     /// organisation, job title, country and ConsentAt; three lead tables (NetworkApplications, SponsorshipEnquiries,
     /// OpportunityInterests); on all four the admin's workflow Status (int, 0 = New for every existing row) and AdminNote;
     /// read-state indexes for the inbox counts, filtered to unread rows (Kind included where the counts split by kind).
-    /// Data steps in AddLeadForms.Data.cs.
+    /// SponsorshipEnquiries.PackageId → SponsorshipPackages and OpportunityInterests.OpportunityId →
+    /// InvestmentOpportunities are foreign keys ON DELETE SET NULL (the title snapshots stay). Data steps in
+    /// AddLeadForms.Data.cs.
     /// </summary>
     public partial class AddLeadForms : Migration
     {
@@ -135,6 +137,12 @@ namespace InnovestHolding.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OpportunityInterests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OpportunityInterests_InvestmentOpportunities_OpportunityId",
+                        column: x => x.OpportunityId,
+                        principalTable: "InvestmentOpportunities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -161,6 +169,12 @@ namespace InnovestHolding.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SponsorshipEnquiries", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SponsorshipEnquiries_SponsorshipPackages_PackageId",
+                        column: x => x.PackageId,
+                        principalTable: "SponsorshipPackages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateIndex(
@@ -210,6 +224,11 @@ namespace InnovestHolding.Migrations
                 filter: "[IsRead] = 0");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OpportunityInterests_OpportunityId",
+                table: "OpportunityInterests",
+                column: "OpportunityId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SponsorshipEnquiries_CreatedAt",
                 table: "SponsorshipEnquiries",
                 column: "CreatedAt");
@@ -219,6 +238,11 @@ namespace InnovestHolding.Migrations
                 table: "SponsorshipEnquiries",
                 column: "IsRead",
                 filter: "[IsRead] = 0");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SponsorshipEnquiries_PackageId",
+                table: "SponsorshipEnquiries",
+                column: "PackageId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Registrations_Events_EventId",

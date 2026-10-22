@@ -198,7 +198,7 @@
                     <option value="">@L[K.Ui.FormPackageAny]</option>
                     @foreach (var u in sponsor.Units.Where(u => u.Packages.Count > 0))
                     {
-                      <optgroup label="@u.Label">
+                      <optgroup label="@u.Label" data-unit="@u.Unit">
                         @foreach (var pk in u.Packages)
                         {
                           <option value="@pk.Id.ToString(inv)" lang="@pk.Text.Lang" dir="@pk.Text.Dir">@pk.Text</option>
@@ -212,9 +212,19 @@
               break;
 
             case InterestFormVm interest:
-              if (interest.OpportunityId is { } oid)
+              @* The open opportunities; the detail page's «express interest» link pre-selects its own (?opportunity=id). *@
+              if (interest.Opportunities.Count > 0)
               {
-                <input type="hidden" name="opportunityId" value="@oid.ToString(inv)">
+                <div class="form-group">
+                  @{ Label(p + "-opportunity", K.Fields.Opportunity, false); }
+                  <select id="@(p)-opportunity" name="opportunityId" class="form-control">
+                    <!option value="">@L[K.Ui.FormOpportunityAny]</!option>
+                    @foreach (var o in interest.Opportunities)
+                    {
+                      <!option value="@o.Id.ToString(inv)" selected="@(o.Id == interest.OpportunityId)" lang="@o.Text.Lang" dir="@o.Text.Dir">@o.Text</!option>
+                    }
+                  </select>
+                </div>
               }
               Text(p, "fullName", K.Ui.FormFullName, 200, required: true, autocomplete: "name");
               <div class="form-row">

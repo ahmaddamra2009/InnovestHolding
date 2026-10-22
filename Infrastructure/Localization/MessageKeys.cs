@@ -212,6 +212,8 @@ public static class MessageKeys
         public const string CsvNo = "Admin_CsvNo";
         public const string CsvArabic = "Admin_CsvArabic";
         public const string CsvEnglish = "Admin_CsvEnglish";
+        public const string CsvReference = "Admin_CsvReference";
+        public const string CsvReferenceId = "Admin_CsvReferenceId";
         public const string OptionAdded = "Admin_OptionAdded";
         public const string OptionUpdated = "Admin_OptionUpdated";
         public const string OptionDeleted = "Admin_OptionDeleted";
@@ -288,6 +290,7 @@ public static class MessageKeys
         public const string FormUnit = "Ui_FormUnit";
         public const string FormPackage = "Ui_FormPackage";
         public const string FormPackageAny = "Ui_FormPackageAny";
+        public const string FormOpportunityAny = "Ui_FormOpportunityAny";
         public const string FormSubmitApplication = "Ui_FormSubmitApplication";
         public const string FormSubmitEnquiry = "Ui_FormSubmitEnquiry";
         public const string FormSubmitInterest = "Ui_FormSubmitInterest";

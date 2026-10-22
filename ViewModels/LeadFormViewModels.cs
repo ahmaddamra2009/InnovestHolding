@@ -27,9 +27,12 @@ public sealed record SponsorshipFormVm(string Action, string IdPrefix, LText Con
     string Unit, IReadOnlyList<(string Unit, LText Label, IReadOnlyList<ChoiceVm> Packages)> Units)
     : LeadFormVm(Action, IdPrefix, Consent, SubmitLabel, Side);
 
-/// <summary>«Express interest»: in one opportunity (<see cref="OpportunityId"/>) or, when null, in opportunities in general.</summary>
+/// <summary>
+/// «Express interest»: in one of the open <see cref="Opportunities"/> (pre-selected: <see cref="OpportunityId"/>, from the
+/// detail page's link) or, with none chosen, in opportunities in general.
+/// </summary>
 public sealed record InterestFormVm(string Action, string IdPrefix, LText Consent, LText SubmitLabel, FormSideVm? Side,
-    int? OpportunityId)
+    IReadOnlyList<ChoiceVm> Opportunities, int? OpportunityId)
     : LeadFormVm(Action, IdPrefix, Consent, SubmitLabel, Side);
 
 /// <summary>

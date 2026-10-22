@@ -52,25 +52,43 @@ public sealed record LeadFormChoices(
 }
 
 /// <summary>
-/// The records a lead can refer to that a LATER phase publishes: investment opportunities and sponsorship packages. Until
-/// that phase replaces the registration, <see cref="NoLeadReferences"/> knows none, so a posted opportunity or package id
-/// is refused and the forms show no package choice.
+/// The C3 records a lead can refer to: investment opportunities and sponsorship packages. The forms offer exactly these
+/// lists and the POST validates against the same queries, so an id the page could not offer (a draft or closed
+/// opportunity, an inactive package, a package of the other unit, an unknown id) is refused with a 400.
 /// </summary>
 public interface ILeadReferences
 {
-    /// <summary>A published opportunity that is open for interest, or null.</summary>
+    /// <summary>A published (IsActive) opportunity that is open for interest (IsOpen), or null.</summary>
     Task<FormChoice?> OpenOpportunityAsync(int id, CancellationToken ct);
+
+    /// <summary>Every published opportunity open for interest, in the order of the public list.</summary>
+    Task<IReadOnlyList<FormChoice>> OpenOpportunitiesAsync(CancellationToken ct);
 
     /// <summary>The active sponsorship packages of a unit (<c>forum</c> / <c>tv</c>), in display order.</summary>
     Task<IReadOnlyList<FormChoice>> PackagesAsync(string unit, CancellationToken ct);
 }
 
-public sealed class NoLeadReferences : ILeadReferences
+/// <summary>
+/// <see cref="ILeadReferences"/> read from the database on every call (never the cached snapshot: the POST must see a
+/// package or opportunity the admin has just unpublished). Scoped, like the context it uses.
+/// </summary>
+public sealed class DbLeadReferences(AppDbContext db) : ILeadReferences
 {
-    public Task<FormChoice?> OpenOpportunityAsync(int id, CancellationToken ct) => Task.FromResult<FormChoice?>(null);
+    private IQueryable<InnovestHolding.Models.InvestmentOpportunity> Open =>
+        db.InvestmentOpportunities.AsNoTracking().Where(o => o.IsActive && o.IsOpen);
 
-    public Task<IReadOnlyList<FormChoice>> PackagesAsync(string unit, CancellationToken ct) =>
-        Task.FromResult<IReadOnlyList<FormChoice>>([]);
+    public Task<FormChoice?> OpenOpportunityAsync(int id, CancellationToken ct) =>
+        Open.Where(o => o.Id == id).Select(o => new FormChoice(o.Id, o.TitleAr, o.TitleEn)).FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<FormChoice>> OpenOpportunitiesAsync(CancellationToken ct) =>
+        await EcosystemQueries.OpportunitiesOrdered(Open).Select(o => new FormChoice(o.Id, o.TitleAr, o.TitleEn)).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<FormChoice>> PackagesAsync(string unit, CancellationToken ct) =>
+        await db.SponsorshipPackages.AsNoTracking()
+            .Where(p => p.IsActive && p.Unit == unit)
+            .OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
+            .Select(p => new FormChoice(p.Id, p.TitleAr, p.TitleEn))
+            .ToListAsync(ct);
 }
 
 public static class LeadText

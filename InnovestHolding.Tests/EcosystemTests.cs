@@ -574,7 +574,10 @@ public class EcosystemTests(TestAppFactory f)
             var ar = await f.NewClient().GetStringAsync("/tv/sponsorship");
             Assert.Contains(tv, ar);
             Assert.Contains("<li>ميزة 2</li>", ar);
-            Assert.DoesNotContain(forum, ar);
+            // The Forum package is not in the TV page's packages block; the enquiry form offers it only in the Forum group
+            // of its package select (C4 integration), and the inactive one nowhere.
+            Assert.DoesNotContain($">{forum}</h3>", ar);
+            Assert.Matches($"<optgroup label=\"[^\"]*\" data-unit=\"forum\">\\s*<option value=\"{ids[1]}\"[^>]*>{forum}</option>", ar);
             Assert.DoesNotContain(off, ar);
             var en = await f.NewClient().GetStringAsync("/en/tv/sponsorship");
             Assert.Contains("Gold TV", en);

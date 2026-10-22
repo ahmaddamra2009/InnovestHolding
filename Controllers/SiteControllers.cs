@@ -1,3 +1,4 @@
+using System.Globalization;
 using InnovestHolding.Data;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure;
@@ -295,22 +296,25 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     }
 }
 
-public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource> l) : PublicControllerBase
+public class NetworkController(AppDbContext db, ILeadReferences references, IStringLocalizer<SharedResource> l) : PublicControllerBase
 {
     /// <summary>The Join page, with the applicant type pre-selected when <paramref name="type"/> is given (?type=).</summary>
     private static LinkVm Join(SiteViews v, string? type = null) =>
         new(v.Url(PageKeys.NetworkJoin) + (type is null ? "" : "?type=" + type), v.Title(PageKeys.NetworkJoin));
 
     /// <summary>
-    /// The "express interest" action of an opportunity page: the general interest form under the opportunities list
-    /// (its section anchor). <paramref name="slug"/> is unused until the form can pre-select a published opportunity
-    /// (that needs a real <see cref="ILeadReferences"/>; the registered one knows none).
+    /// The "express interest" action of an opportunity page: the interest form under the opportunities list (its section
+    /// anchor) with this opportunity pre-selected (?opportunity=id; the list page offers only open, published ones).
     /// </summary>
-    private LinkVm InterestAction(SiteViews v, string slug) =>
-        new(v.Url(PageKeys.NetworkOpportunities) + "#" + InterestFormId + "-section", Ui(MessageKeys.Ui.ExpressInterest));
+    private LinkVm InterestAction(SiteViews v, int id) =>
+        new(v.Url(PageKeys.NetworkOpportunities) + "?" + OpportunityQuery + "=" + id.ToString(CultureInfo.InvariantCulture)
+            + "#" + InterestFormId + "-section", Ui(MessageKeys.Ui.ExpressInterest));
 
     /// <summary>The id prefix of the interest form (LeadFormViews.InterestForm).</summary>
     private const string InterestFormId = "interest";
+
+    /// <summary>The query parameter that pre-selects an opportunity in the interest form.</summary>
+    public const string OpportunityQuery = "opportunity";
 
     [AcceptVerbs("GET", "HEAD")]
     public async Task<IActionResult> Index()
@@ -346,12 +350,18 @@ public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource>
     }
 
     [AcceptVerbs("GET", "HEAD")]
-    public Task<IActionResult> Opportunities() =>
-        EntityListAsync(PageKeys.NetworkOpportunities,
+    public async Task<IActionResult> Opportunities()
+    {
+        // ?opportunity=id pre-selects an open opportunity in the form; any other value selects nothing (never an error).
+        var query = Request.Query[OpportunityQuery];
+        int? selected = query.Count == 1 && int.TryParse(query[0], NumberStyles.None, CultureInfo.InvariantCulture, out var id) ? id : null;
+        var open = await references.OpenOpportunitiesAsync(HttpContext.RequestAborted);
+        return await EntityListAsync(PageKeys.NetworkOpportunities,
             EcosystemQueries.OpportunitiesOrdered(db.InvestmentOpportunities.AsNoTracking().Where(o => o.IsActive)).Select(EcosystemQueries.OpportunityCard),
             OpportunityCard, false, v => Join(v),
-            // The general "express interest" form under the list (not content: an empty list stays noindex).
-            v => new LeadFormBlock(v.InterestForm(null, new LText(l[MessageKeys.Ui.FormSubmitInterest].Value, false)), IsContent: false));
+            // The "express interest" form under the list (not content: an empty list stays noindex).
+            v => new LeadFormBlock(v.InterestForm(open, selected, new LText(l[MessageKeys.Ui.FormSubmitInterest].Value, false)), IsContent: false));
+    }
 
     /// <summary>
     /// GET /angel-network/opportunities/{slug} (and /en/…): a published opportunity (a draft is 404); an old slug 301s.
@@ -364,7 +374,7 @@ public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource>
         var o = await db.InvestmentOpportunities.AsNoTracking().Where(x => x.Slug == slug && x.IsActive)
             .Select(x => new
             {
-                x.Slug, x.TitleAr, x.TitleEn, x.SummaryAr, x.SummaryEn, x.BodyAr, x.BodyEn, x.StageTextAr, x.StageTextEn,
+                x.Id, x.Slug, x.TitleAr, x.TitleEn, x.SummaryAr, x.SummaryEn, x.BodyAr, x.BodyEn, x.StageTextAr, x.StageTextEn,
                 x.AskTextAr, x.AskTextEn, x.IsOpen, x.MetaTitleAr, x.MetaTitleEn, x.MetaDescriptionAr, x.MetaDescriptionEn,
                 SectorAr = x.SectorItem == null ? null : x.SectorItem.TextAr,
                 SectorEn = x.SectorItem == null ? null : x.SectorItem.TextEn,
@@ -387,7 +397,7 @@ public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource>
         if (!ask.IsEmpty) facts.Add(new FactVm("coins", Ui(MessageKeys.Ui.Ask), ask));
 
         var actions = new List<LinkVm>();
-        if (o.IsOpen) actions.Add(InterestAction(v, o.Slug));
+        if (o.IsOpen) actions.Add(InterestAction(v, o.Id));
         actions.Add(Join(v));
 
         var route = SiteRoutes.Detail(DetailKeys.NetworkOpportunity);

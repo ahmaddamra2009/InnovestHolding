@@ -118,8 +118,12 @@ public class SponsorshipEnquiry : ILead
     [Required, MaxLength(10)]
     public string Unit { get; set; } = Tv;
 
-    /// <summary>The sponsorship package chosen, when packages exist (no foreign key yet: the packages table arrives later).</summary>
+    /// <summary>
+    /// The active package of <see cref="Unit"/> chosen on the form, if any. Foreign key to SponsorshipPackages, ON DELETE
+    /// SET NULL: deleting the package keeps the enquiry and its <see cref="PackageTitle"/> snapshot.
+    /// </summary>
     public int? PackageId { get; set; }
+    public SponsorshipPackage? Package { get; set; }
 
     [MaxLength(150)]
     public string? PackageTitle { get; set; }
@@ -159,14 +163,16 @@ public class SponsorshipEnquiry : ILead
 
 /// <summary>
 /// «Express interest» in investment opportunities. <see cref="OpportunityId"/> is null for an interest in the network's
-/// opportunities in general (the form of the opportunities page); it names one opportunity once opportunities are
-/// published (no foreign key yet: the opportunities table arrives later).
+/// opportunities in general; otherwise it names a published opportunity that was open for interest when the form was
+/// posted. Foreign key to InvestmentOpportunities, ON DELETE SET NULL: deleting the opportunity keeps the lead and its
+/// <see cref="OpportunityTitle"/> snapshot.
 /// </summary>
 public class OpportunityInterest : ILead
 {
     public int Id { get; set; }
 
     public int? OpportunityId { get; set; }
+    public InvestmentOpportunity? Opportunity { get; set; }
 
     [MaxLength(200)]
     public string? OpportunityTitle { get; set; }

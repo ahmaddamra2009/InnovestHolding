@@ -302,6 +302,7 @@
   <data name="Ui_FormUnit" xml:space="preserve"><value>ماذا تريد أن ترعى؟</value></data>
   <data name="Ui_FormPackage" xml:space="preserve"><value>الباقة</value></data>
   <data name="Ui_FormPackageAny" xml:space="preserve"><value>لم أحدد بعد</value></data>
+  <data name="Ui_FormOpportunityAny" xml:space="preserve"><value>الفرص الاستثمارية عموماً</value></data>
   <data name="Ui_FormSubmitApplication" xml:space="preserve"><value>أرسل الطلب</value></data>
   <data name="Ui_FormSubmitEnquiry" xml:space="preserve"><value>أرسل الاستفسار</value></data>
   <data name="Ui_FormSubmitInterest" xml:space="preserve"><value>سجّل اهتمامي</value></data>
@@ -325,5 +326,7 @@
   <data name="Admin_CsvNo" xml:space="preserve"><value>لا</value></data>
   <data name="Admin_CsvArabic" xml:space="preserve"><value>العربية</value></data>
   <data name="Admin_CsvEnglish" xml:space="preserve"><value>الإنجليزية</value></data>
+  <data name="Admin_CsvReference" xml:space="preserve"><value>المرجع (الفرصة / الباقة / الفعالية)</value></data>
+  <data name="Admin_CsvReferenceId" xml:space="preserve"><value>رقم المرجع</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>
 </root>
