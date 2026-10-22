@@ -257,7 +257,7 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
   المطلوب (**نصان حران**، مثل «عند الطلب»؛ لا يظهر أي رقم لم تكتبوه)، **«متاحة لاستقبال الاهتمام»**، الصورة، الرابط المختصر، محركات البحث.
   - **المسودة والنشر:** تُحفظ الفرصة الجديدة **مسودة** (شارة «مسودة») ولا تظهر في الموقع (ولا في خريطة الموقع، ورابطها 404 للزوار) حتى تُفعّل
     «منشورة». الفرصة المنشورة المغلقة (إن أُلغيت «متاحة…») تظهر بعلامة «مغلقة» بلا زر اهتمام. تُرتَّب المتاحة أولاً.
-  - زر «أبدِ اهتمامك» في صفحة الفرصة يفتح صفحة «تواصل معنا» ريثما يُضاف نموذج خاص.
+  - زر «أبدِ اهتمامك» في صفحة الفرصة (المتاحة) يقود إلى نموذج الاهتمام أسفل صفحة «الفرص» (لا يختار الفرصة تلقائياً بعد).
   - **حذف قطاع** من «القطاعات التي نخدمها» مستعمل في فرصة يُرفض برسالة («عطّله بدلاً من حذفه»).
 - **«باقات الرعاية»:** الوحدة (البرنامج التلفزيوني أو المنتدى)، اسم الباقة، **السعر** (نص حر مثل «عند الطلب»)، **المزايا** (ميزة في كل سطر)،
   الترتيب، ظاهرة/مخفية. باقات البرنامج التلفزيوني تظهر في صفحة «الرعاية» (`/tv/sponsorship`) وباقات المنتدى في «الشركاء والرعاة»
@@ -315,7 +315,8 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
 - **تعديل نصوص النماذج وخياراتها:** «النصوص العامة» ← بطاقة «نماذج الطلبات» (نص الموافقة، وعناوين ونصوص أعمدة الانضمام والرعاية
   والاهتمام)؛ و«القوائم» ← أربع قوائم: أنواع المستثمرين، حجم الاستثمار، مراحل الشركة الناشئة، التمويل المطلوب (القطاعات من قائمة
   «القطاعات التي نخدمها»). الخيار المخفي لا يظهر في النموذج.
-- صفحة «الفرص» تعرض نموذج الاهتمام **تحت نص «قريباً»** دون أن تُعدّ الصفحة ذات محتوى (تبقى `noindex`). وصفحة «الرعاية» تدخل محركات
+- صفحة «الفرص» تعرض نموذج الاهتمام **تحت قائمة الفرص** (أو تحت نص «قريباً» ما دامت لا فرصة منشورة) دون أن يُعدّ النموذج محتوى
+  (فتبقى الصفحة `noindex` ما دامت القائمة فارغة). وصفحة «الرعاية» تعرض باقات البرنامج (إن نُشرت) ثم نموذج الاستفسار، وتدخل محركات
   البحث بعد أن أصبحت لها فقرة تمهيدية.
 - لا يُرسَل أي بريد عند وصول طلب: راجعوا الصندوق (الشارة) دورياً.
 
@@ -614,7 +615,7 @@ packages). These screens fill the former «coming soon» pages `/forum/speakers`
   - **Draft and publish:** a new opportunity is saved as a **draft** («مسودة» badge) and is not shown on the site (nor in the
     sitemap, and its address is a 404 for visitors) until you set it to **published**. A published opportunity that is not open shows
     a «closed» mark with no interest button. Open ones are listed first.
-  - The «express interest» button on an opportunity opens the Contact page until a dedicated form is added.
+  - The «express interest» button on an (open) opportunity leads to the interest form at the bottom of the «Opportunities» page (it does not pre-select the opportunity yet).
   - **Deleting a sector** from «sectors we serve» that an opportunity uses is refused with a message («deactivate it instead»).
 - **Sponsorship packages:** unit (TV program or forum), package name, **price** (free text such as «on request»), **benefits** (one
   per line), order, visible/hidden. TV packages appear on the «Sponsorship» page (`/tv/sponsorship`), forum packages on «Partners and
@@ -676,8 +677,9 @@ per page** with paging. A badge with the **unread** count sits beside «الطل
 - **Editing the form texts and options:** «النصوص العامة» → card «نماذج الطلبات» (the consent text and the side headings and
   texts of the join, sponsorship and interest forms); «القوائم» → four lists: investor types, ticket sizes, startup stages,
   funding sought (sectors come from the «sectors we serve» list). A hidden option is not offered in the form.
-- The «Opportunities» page shows the interest form **under its «coming soon» text** without counting as page content (it stays
-  `noindex`). The «Sponsorship» page becomes indexable now that it has an intro paragraph.
+- The «Opportunities» page shows the interest form **under the opportunities list** (or under its «coming soon» text while none is
+  published); the form does not count as page content, so the page stays `noindex` while the list is empty. The «Sponsorship» page
+  shows the TV packages (when published) and then the enquiry form; it is indexable now that it has an intro paragraph.
 - No e-mail is sent when a lead arrives: check the inbox (the badge) regularly.
 
 ### Personal data (PII)
