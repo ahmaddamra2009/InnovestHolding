@@ -1,4 +1,5 @@
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,7 @@ public class EventsController : AdminControllerBase
         Map(input, item);
         _db.Events.Add(item);
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تمت إضافة الفعالية بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.EventAdded);
         return RedirectToAction(nameof(Index));
     }
 
@@ -41,12 +42,17 @@ public class EventsController : AdminControllerBase
         return View(EditView, new EventEditInput
         {
             Id = item.Id,
-            Title = item.Title,
-            Description = item.Description,
+            TitleAr = item.TitleAr,
+            TitleEn = item.TitleEn,
+            DescriptionAr = item.DescriptionAr,
+            DescriptionEn = item.DescriptionEn,
             EventDay = item.EventDay,
-            EventMonth = item.EventMonth,
-            Location = item.Location,
-            Time = item.Time,
+            EventMonthAr = item.EventMonthAr,
+            EventMonthEn = item.EventMonthEn,
+            LocationAr = item.LocationAr,
+            LocationEn = item.LocationEn,
+            TimeAr = item.TimeAr,
+            TimeEn = item.TimeEn,
             IsActive = item.IsActive,
             SortOrder = item.SortOrder
         });
@@ -65,7 +71,7 @@ public class EventsController : AdminControllerBase
         item.SortOrder = input.SortOrder;
 
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تم تحديث الفعالية بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.EventUpdated);
         return RedirectToAction(nameof(Index));
     }
 
@@ -77,19 +83,24 @@ public class EventsController : AdminControllerBase
         {
             _db.Events.Remove(item);
             await _db.SaveChangesAsync();
-            TempData["Success"] = "تم حذف الفعالية بنجاح";
+            TempData["Success"] = L(MessageKeys.Admin.EventDeleted);
         }
         return RedirectToAction(nameof(Index));
     }
 
     private static void Map(EventInput input, Event item)
     {
-        item.Title = input.Title!.Trim();
-        item.Description = input.Description?.Trim() ?? "";
+        item.TitleAr = input.TitleAr!.Trim();
+        item.TitleEn = Optional(input.TitleEn);
+        item.DescriptionAr = input.DescriptionAr?.Trim() ?? "";
+        item.DescriptionEn = Optional(input.DescriptionEn);
         item.EventDay = input.EventDay!.Value;
-        item.EventMonth = input.EventMonth!.Trim();
-        item.Location = input.Location?.Trim() ?? "";
-        item.Time = input.Time?.Trim() ?? "";
+        item.EventMonthAr = input.EventMonthAr!.Trim();
+        item.EventMonthEn = Optional(input.EventMonthEn);
+        item.LocationAr = input.LocationAr?.Trim() ?? "";
+        item.LocationEn = Optional(input.LocationEn);
+        item.TimeAr = input.TimeAr?.Trim() ?? "";
+        item.TimeEn = Optional(input.TimeEn);
         item.IsActive = input.IsActive;
     }
 }

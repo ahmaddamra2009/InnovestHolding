@@ -4,10 +4,12 @@
 <!-- Add New Item -->
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">إضافة عنصر جديد</span></div>
-    <form method="post" asp-action="Create" asp-controller="Nav" class="inline-form">
-        <div class="form-group"><label>الاسم</label><input type="text" name="title" class="form-control" placeholder="اسم العنصر" maxlength="100" required></div>
-        <div class="form-group"><label>الرابط</label><input type="text" name="href" class="form-control" placeholder="#section" maxlength="255" required></div>
-        <button type="submit" class="btn-admin btn-primary">إضافة</button>
+    <form method="post" asp-action="Create" asp-controller="Nav">
+        <lang-pair label="الاسم" name-ar="TitleAr" name-en="TitleEn" max="100" required="true" />
+        <div class="inline-form">
+            <div class="form-group"><label>الرابط</label><input type="text" name="Href" class="form-control ltr-input" dir="ltr" placeholder="#section" maxlength="255" required></div>
+            <button type="submit" class="btn-admin btn-primary">إضافة</button>
+        </div>
     </form>
 </div>
 
@@ -15,21 +17,25 @@
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">عناصر القائمة (@Model.Count)</span></div>
     <table class="admin-table">
-        <thead><tr><th>الاسم</th><th>الرابط</th><th>عناصر فرعية</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <thead><tr><th>الاسم</th><th>الرابط</th><th>عناصر فرعية</th><th>EN</th><th>الفوتر</th><th>الحالة</th><th>إجراءات</th></tr></thead>
         <tbody>
         @foreach (var item in Model)
         {
             <tr>
-                <td><strong>@item.Title</strong></td>
-                <td style="direction:ltr;text-align:right;"><code>@item.Href</code></td>
+                <td><strong>@item.TitleAr</strong></td>
+                <td class="cell-ltr"><code>@item.Href</code></td>
                 <td>@(item.HasDropdown ? $"{item.SubItems.Count} عناصر" : "—")</td>
-                <td>@(item.IsActive ? Html.Raw("<span class='badge-active'>مفعّل</span>") : Html.Raw("<span class='badge-inactive'>معطّل</span>"))</td>
+                <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TitleEn))" /></td>
+                <td>@(item.ShowInFooter ? "✓" : "—")</td>
+                <td>@if (item.IsActive) { <span class="badge-active">مفعّل</span> } else { <span class="badge-inactive">معطّل</span> }</td>
                 <td class="actions">
                     <form method="post" asp-action="Update" asp-controller="Nav" style="display:inline;">
                         <input type="hidden" name="id" value="@item.Id">
-                        <input type="hidden" name="title" value="@item.Title">
-                        <input type="hidden" name="href" value="@item.Href">
+                        <input type="hidden" name="TitleAr" value="@item.TitleAr">
+                        <input type="hidden" name="TitleEn" value="@item.TitleEn">
+                        <input type="hidden" name="Href" value="@item.Href">
                         <input type="hidden" name="hasDropdown" value="@(item.HasDropdown ? "true" : "false")">
+                        <input type="hidden" name="ShowInFooter" value="@(item.ShowInFooter ? "true" : "false")">
                         <input type="hidden" name="isActive" value="@(item.IsActive ? "false" : "true")">
                         <button type="submit" class="btn-admin btn-sm @(item.IsActive ? "btn-danger" : "btn-primary")">@(item.IsActive ? "تعطيل" : "تفعيل")</button>
                     </form>
@@ -39,34 +45,62 @@
                     </form>
                 </td>
             </tr>
-            @if (item.HasDropdown || item.SubItems.Any())
-            {
-                <tr>
-                    <td colspan="5" style="padding:0 16px 16px 16px;">
+            <tr>
+                <td colspan="7" style="padding:0 16px 16px 16px;">
+                    <details class="row-editor">
+                        <summary>تعديل الاسم (عربي / إنجليزي) والرابط</summary>
+                        <form method="post" asp-action="Update" asp-controller="Nav" class="edit-form">
+                            <input type="hidden" name="id" value="@item.Id">
+                            <input type="hidden" name="hasDropdown" value="@(item.HasDropdown ? "true" : "false")">
+                            <input type="hidden" name="isActive" value="@(item.IsActive ? "true" : "false")">
+                            <lang-pair label="الاسم" name-ar="TitleAr" name-en="TitleEn" value-ar="@item.TitleAr" value-en="@item.TitleEn" max="100" required="true" id-prefix="nav@(item.Id)-" />
+                            <div class="inline-form">
+                                <div class="form-group"><label>الرابط</label><input type="text" name="Href" value="@item.Href" class="form-control ltr-input" dir="ltr" maxlength="255" required></div>
+                                <div class="form-check"><input type="checkbox" name="ShowInFooter" value="true" @(item.ShowInFooter ? "checked" : "")> <label>يظهر في «روابط سريعة» بالفوتر</label></div>
+                                <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
+                            </div>
+                        </form>
+                    </details>
+                    @if (item.HasDropdown || item.SubItems.Any())
+                    {
                         <div class="sub-items-list">
                             <strong style="font-size:0.82rem;color:var(--admin-text-muted);display:block;margin-bottom:8px;">العناصر الفرعية:</strong>
                             @foreach (var sub in item.SubItems)
                             {
                                 <div class="sub-item-row">
-                                    <span class="sub-item-title">@sub.Title</span>
+                                    <span class="sub-item-title">@sub.TitleAr</span>
+                                    <partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(sub.TitleEn))" />
                                     <code style="font-size:0.75rem;color:var(--admin-text-muted);">@sub.Href</code>
                                     <form method="post" asp-action="DeleteSubItem" asp-controller="Nav" style="display:inline;">
                                         <input type="hidden" name="id" value="@sub.Id">
                                         <button type="submit" class="btn-admin btn-danger btn-sm">×</button>
                                     </form>
                                 </div>
+                                <details class="row-editor">
+                                    <summary>تعديل «@sub.TitleAr»</summary>
+                                    <form method="post" asp-action="UpdateSubItem" asp-controller="Nav" class="edit-form">
+                                        <input type="hidden" name="id" value="@sub.Id">
+                                        <lang-pair label="اسم العنصر الفرعي" name-ar="TitleAr" name-en="TitleEn" value-ar="@sub.TitleAr" value-en="@sub.TitleEn" max="100" required="true" id-prefix="sub@(sub.Id)-" />
+                                        <div class="inline-form">
+                                            <div class="form-group"><label>الرابط</label><input type="text" name="Href" value="@sub.Href" class="form-control ltr-input" dir="ltr" maxlength="255" required></div>
+                                            <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
+                                        </div>
+                                    </form>
+                                </details>
                             }
                             <!-- Add Sub Item -->
-                            <form method="post" asp-action="AddSubItem" asp-controller="Nav" class="inline-form" style="margin-top:8px;padding:12px;">
+                            <form method="post" asp-action="AddSubItem" asp-controller="Nav" style="margin-top:8px;padding:12px;">
                                 <input type="hidden" name="navItemId" value="@item.Id">
-                                <div class="form-group"><label>اسم العنصر الفرعي</label><input type="text" name="title" class="form-control" placeholder="اسم العنصر" maxlength="100" required></div>
-                                <div class="form-group"><label>الرابط</label><input type="text" name="href" class="form-control" placeholder="#section" maxlength="255" required></div>
-                                <button type="submit" class="btn-admin btn-primary btn-sm">+ إضافة فرعي</button>
+                                <lang-pair label="اسم العنصر الفرعي" name-ar="TitleAr" name-en="TitleEn" max="100" required="true" id-prefix="add@(item.Id)-" />
+                                <div class="inline-form">
+                                    <div class="form-group"><label>الرابط</label><input type="text" name="Href" class="form-control ltr-input" dir="ltr" placeholder="#section" maxlength="255" required></div>
+                                    <button type="submit" class="btn-admin btn-primary btn-sm">+ إضافة فرعي</button>
+                                </div>
                             </form>
                         </div>
-                    </td>
-                </tr>
-            }
+                    }
+                </td>
+            </tr>
         }
         </tbody>
     </table>

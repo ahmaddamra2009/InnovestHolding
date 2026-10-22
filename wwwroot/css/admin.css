@@ -2,7 +2,7 @@
    INNOVEST HOLDING - ADMIN DASHBOARD CSS
    Premium Dark RTL Design
    ========================================== */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+/* Cairo is loaded by the layouts' <link> (weights in use only); a second @import here was a chained, render-blocking request. */
 
 :root {
   --admin-navy: #15183F;
@@ -29,7 +29,7 @@ body.admin-body { background: var(--admin-bg); min-height: 100vh; display: flex;
 
 /* ── LOGIN PAGE ── */
 .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--admin-navy-dark), var(--admin-navy), var(--admin-navy-light)); position: relative; overflow: hidden; }
-.login-page::before { content: ''; position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(184,115,50,0.1), transparent 70%); top: -100px; left: -100px; }
+.login-page::before { content: ''; position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(184,115,50,0.1), transparent 70%); top: -100px; inset-inline-start: -100px; }
 .login-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(184,115,50,0.15); backdrop-filter: blur(20px); border-radius: 24px; padding: 48px 40px; width: 100%; max-width: 420px; position: relative; z-index: 2; }
 .login-logo { text-align: center; margin-bottom: 32px; }
 .login-logo img { height: 64px; margin: 0 auto 12px; border-radius: 10px; }
@@ -45,8 +45,8 @@ body.admin-body { background: var(--admin-bg); min-height: 100vh; display: flex;
 .login-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 20px; text-align: center; }
 
 /* ── SIDEBAR ── */
-.admin-sidebar { width: var(--admin-sidebar-w); height: 100vh; position: fixed; top: 0; right: 0; background: linear-gradient(180deg, var(--admin-navy-dark), var(--admin-navy)); border-left: 1px solid rgba(184,115,50,0.1); display: flex; flex-direction: column; z-index: 100; transition: var(--admin-transition); overflow-y: auto; }
-.admin-sidebar.collapsed { right: calc(-1 * var(--admin-sidebar-w)); }
+.admin-sidebar { width: var(--admin-sidebar-w); height: 100vh; position: fixed; top: 0; inset-inline-start: 0; background: linear-gradient(180deg, var(--admin-navy-dark), var(--admin-navy)); border-inline-end: 1px solid rgba(184,115,50,0.1); display: flex; flex-direction: column; z-index: 100; transition: var(--admin-transition); overflow-y: auto; }
+.admin-sidebar.collapsed { inset-inline-start: calc(-1 * var(--admin-sidebar-w)); }
 .sidebar-brand { padding: 20px 20px 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
 .sidebar-logo { height: 38px; width: auto; border-radius: 0; }
 .sidebar-title { color: var(--admin-gold); font-weight: 700; font-size: 0.95rem; }
@@ -58,8 +58,8 @@ body.admin-body { background: var(--admin-bg); min-height: 100vh; display: flex;
 .sidebar-footer { padding: 12px 10px; border-top: 1px solid rgba(255,255,255,0.06); }
 
 /* ── MAIN AREA ── */
-.admin-main { flex: 1; margin-right: var(--admin-sidebar-w); display: flex; flex-direction: column; min-height: 100vh; transition: var(--admin-transition); }
-.admin-main.expanded { margin-right: 0; }
+.admin-main { flex: 1; margin-inline-start: var(--admin-sidebar-w); display: flex; flex-direction: column; min-height: 100vh; transition: var(--admin-transition); }
+.admin-main.expanded { margin-inline-start: 0; }
 
 /* ── HEADER ── */
 .admin-header { height: var(--admin-header-h); background: var(--admin-card); border-bottom: 1px solid var(--admin-border); display: flex; align-items: center; padding: 0 28px; gap: 16px; position: sticky; top: 0; z-index: 50; }
@@ -119,7 +119,7 @@ select.form-control { cursor: pointer; }
 
 /* ── TABLES ── */
 .admin-table { width: 100%; border-collapse: collapse; }
-.admin-table th { background: var(--admin-bg); padding: 12px 16px; font-size: 0.82rem; font-weight: 700; color: var(--admin-text-muted); text-align: right; border-bottom: 1px solid var(--admin-border); white-space: nowrap; }
+.admin-table th { background: var(--admin-bg); padding: 12px 16px; font-size: 0.82rem; font-weight: 700; color: var(--admin-text-muted); text-align: start; border-bottom: 1px solid var(--admin-border); white-space: nowrap; }
 .admin-table td { padding: 14px 16px; font-size: 0.9rem; color: var(--admin-text); border-bottom: 1px solid var(--admin-border); vertical-align: middle; }
 .admin-table tr:hover td { background: rgba(184,115,50,0.02); }
 .admin-table .actions { display: flex; gap: 8px; align-items: center; }
@@ -131,7 +131,7 @@ select.form-control { cursor: pointer; }
 .inline-form .form-group { margin-bottom: 0; flex: 1; min-width: 200px; }
 
 /* ── SUB-ITEMS ── */
-.sub-items-list { padding-right: 40px; margin-top: 8px; }
+.sub-items-list { padding-inline-start: 40px; margin-top: 8px; }
 .sub-item-row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: rgba(184,115,50,0.03); border-radius: 8px; margin-bottom: 6px; font-size: 0.85rem; }
 .sub-item-row .sub-item-title { flex: 1; color: var(--admin-text-muted); font-weight: 600; }
 
@@ -166,14 +166,14 @@ select.form-control { cursor: pointer; }
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {
   .admin-sidebar {
-    right: calc(-1 * var(--admin-sidebar-w));
+    inset-inline-start: calc(-1 * var(--admin-sidebar-w));
     box-shadow: none;
   }
   .admin-sidebar.show {
-    right: 0;
+    inset-inline-start: 0;
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.3);
   }
-  .admin-main { margin-right: 0; }
+  .admin-main { margin-inline-start: 0; }
   .sidebar-toggle { display: flex; }
   .stats-cards { grid-template-columns: repeat(2, 1fr); }
 }
@@ -199,8 +199,31 @@ select.form-control { cursor: pointer; }
   .login-card { margin: 16px; padding: 32px 24px; }
 }
 
-/* Server-side validation (PR-A): summary above the form + message under each field. Not an .alert
+/* Server-side validation: summary above the form + message under each field. Not an .alert
    (alerts auto-hide after 4 s); logical properties so RTL and LTR both work. */
 .form-errors { padding-block: 12px; padding-inline: 20px; margin-block-end: 20px; border-radius: var(--admin-radius); background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: var(--admin-danger); font-size: 0.88rem; font-weight: 600; }
 .form-errors ul { margin: 0; padding-inline-start: 18px; }
 .field-error { display: block; margin-block-start: 4px; color: var(--admin-danger); font-size: 0.8rem; }
+
+/* ── Bilingual content fields: Arabic/English pair ── */
+.lang-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-inline-start: 12px; border-inline-start: 3px solid rgba(184,115,50,0.35); margin-bottom: 16px; }
+.lang-pair.lang-single { grid-template-columns: 1fr; }
+.lang-pair .form-group { margin-bottom: 0; }
+.lang-chip { display: inline-block; padding: 0 6px; margin-inline-start: 4px; border: 1px solid var(--admin-gold); color: var(--admin-gold); border-radius: 4px; font-size: 0.72rem; font-weight: 700; line-height: 1.5; vertical-align: middle; }
+.lang-chip.en { background: var(--admin-navy); border-color: var(--admin-navy); color: #fff; }
+.req { color: var(--admin-danger); }
+.field-hint { display: block; margin-block-start: 4px; color: var(--admin-text-muted); font-size: 0.76rem; }
+.form-control.is-invalid { border-color: var(--admin-danger); }
+.ltr-input { direction: ltr; text-align: left; }
+.cell-ltr { direction: ltr; text-align: end; }
+.en-chip { white-space: nowrap; font-size: 0.72rem; }
+.row-form { padding: 20px; background: var(--admin-bg); border-radius: 10px; margin-bottom: 16px; }
+.row-form-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.row-editor { margin: 8px 0; }
+.row-editor > summary { cursor: pointer; color: var(--admin-text-muted); font-size: 0.82rem; }
+.row-editor .edit-form { padding: 12px; background: var(--admin-bg); border-radius: 10px; margin-top: 8px; }
+.pager { display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 16px; }
+.pager-info { color: var(--admin-text-muted); font-size: 0.85rem; }
+.sticky-actions { position: sticky; bottom: 0; display: flex; gap: 12px; align-items: center; padding: 14px 0; background: var(--admin-bg); z-index: 5; }
+.utc-time { white-space: nowrap; }
+@media (max-width: 768px) { .lang-pair { grid-template-columns: 1fr; } }

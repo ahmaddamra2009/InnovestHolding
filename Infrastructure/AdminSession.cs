@@ -12,7 +12,7 @@ namespace InnovestHolding.Infrastructure;
 /// <summary>
 /// The admin cookie session. The principal carries a fingerprint of the account's CURRENT password hash;
 /// every authenticated request re-reads the hash and rejects the cookie when it no longer matches, so a
-/// password change ends every other session (Stage 4 L3) — without a schema change.
+/// password change ends every other session — without a schema change.
 /// </summary>
 public static class AdminSession
 {

@@ -1,12 +1,13 @@
 using System.Net;
 using System.Text;
 using InnovestHolding.Infrastructure;
+using InnovestHolding.Infrastructure.Localization;
 using Microsoft.EntityFrameworkCore;
 using static InnovestHolding.Tests.TestHelpers;
 
 namespace InnovestHolding.Tests;
 
-/// <summary>H1 (Stage 4, re-run 1): the public-form and login limits cannot be walked around by path variants.</summary>
+/// <summary>The public-form and login limits cannot be walked around by path variants.</summary>
 [Collection("App")]
 public class RateLimitPathBypassTests(TestAppFactory f)
 {
@@ -47,7 +48,7 @@ public class RateLimitPathBypassTests(TestAppFactory f)
         var client = f.NewClient();
         var token = await client.GetTokenAsync("/");
         var email = Unique("h1r") + "@example.com";
-        FormUrlEncodedContent Body() => Form(token, ("FullName", "QA"), ("Email", email), ("Interest", "x"));
+        FormUrlEncodedContent Body() => Form(token, ("FullName", "QA"), ("Email", email), ("InterestOptionId", f.InterestId));
 
         for (var i = 0; i < 5; i++)
             Assert.Equal(HttpStatusCode.OK, (await client.PostAsync("/Home/Register", Body())).StatusCode);
@@ -95,7 +96,7 @@ public class RateLimitPathBypassTests(TestAppFactory f)
     }
 }
 
-/// <summary>H2 (Stage 4, re-run 1): collation-equivalent usernames share the account's lockout.</summary>
+/// <summary>Collation-equivalent usernames share the account's lockout.</summary>
 [Collection("App")]
 public class LockoutVariantTests(TestAppFactory f)
 {
@@ -131,11 +132,11 @@ public class LockoutVariantTests(TestAppFactory f)
 
         var attacker = f.NewClient();
         for (var i = 0; i < 5; i++)
-            Assert.Equal(UserMessages.LoginInvalid, await PostAsync(attacker, user, "wrong-password"));
+            Assert.Equal(Msg.Ar(MessageKeys.LoginInvalid), await PostAsync(attacker, user, "wrong-password"));
 
-        Assert.Equal(UserMessages.LoginLocked, await PostAsync(f.NewClient(), variant, password));
-        Assert.Equal(UserMessages.LoginLocked, await PostAsync(f.NewClient(), FullWidth(user), password));
-        Assert.Equal(UserMessages.LoginLocked, await PostAsync(f.NewClient(), user.ToUpperInvariant(), password));
+        Assert.Equal(Msg.Ar(MessageKeys.LoginLocked), await PostAsync(f.NewClient(), variant, password));
+        Assert.Equal(Msg.Ar(MessageKeys.LoginLocked), await PostAsync(f.NewClient(), FullWidth(user), password));
+        Assert.Equal(Msg.Ar(MessageKeys.LoginLocked), await PostAsync(f.NewClient(), user.ToUpperInvariant(), password));
     }
 
     [Fact]
@@ -149,8 +150,8 @@ public class LockoutVariantTests(TestAppFactory f)
         Assert.Equal(1, await f.DbAsync(db => db.Users.CountAsync(u => u.Username == variant)));
 
         for (var i = 0; i < 5; i++)
-            Assert.Equal(UserMessages.LoginInvalid, await PostAsync(f.NewClient(), user, "wrong-password"));
-        Assert.Equal(UserMessages.LoginLocked, await PostAsync(f.NewClient(), variant, password));
+            Assert.Equal(Msg.Ar(MessageKeys.LoginInvalid), await PostAsync(f.NewClient(), user, "wrong-password"));
+        Assert.Equal(Msg.Ar(MessageKeys.LoginLocked), await PostAsync(f.NewClient(), variant, password));
     }
 
     [Fact]
@@ -158,9 +159,9 @@ public class LockoutVariantTests(TestAppFactory f)
     {
         var (user, password) = await f.CreateAdminAsync();
         for (var i = 0; i < 5; i++)
-            Assert.Equal(UserMessages.LoginInvalid, await PostAsync(f.NewClient(), FullWidth(user, i), "wrong-password"));
+            Assert.Equal(Msg.Ar(MessageKeys.LoginInvalid), await PostAsync(f.NewClient(), FullWidth(user, i), "wrong-password"));
 
-        Assert.Equal(UserMessages.LoginLocked, await PostAsync(f.NewClient(), user, password));
+        Assert.Equal(Msg.Ar(MessageKeys.LoginLocked), await PostAsync(f.NewClient(), user, password));
     }
 
     [Fact]

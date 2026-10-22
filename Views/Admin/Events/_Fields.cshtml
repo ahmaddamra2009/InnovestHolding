@@ -1,0 +1,9 @@
+@model EventInput
+<lang-pair label="عنوان الفعالية" name-ar="TitleAr" name-en="TitleEn" value-ar="@Model.TitleAr" value-en="@Model.TitleEn" max="200" required="true" />
+<lang-pair label="الوصف" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@Model.DescriptionAr" value-en="@Model.DescriptionEn" max="4000" rows="3" />
+<div style="display:grid;grid-template-columns:1fr 3fr;gap:16px;align-items:start;">
+    <div class="form-group"><label>اليوم</label><input asp-for="EventDay" type="number" class="form-control" min="1" max="31" required><span asp-validation-for="EventDay" class="field-error"></span></div>
+    <lang-pair label="الشهر" name-ar="EventMonthAr" name-en="EventMonthEn" value-ar="@Model.EventMonthAr" value-en="@Model.EventMonthEn" max="50" required="true" placeholder="July" />
+</div>
+<lang-pair label="المكان" name-ar="LocationAr" name-en="LocationEn" value-ar="@Model.LocationAr" value-en="@Model.LocationEn" max="200" />
+<lang-pair label="الوقت" name-ar="TimeAr" name-en="TimeEn" value-ar="@Model.TimeAr" value-en="@Model.TimeEn" max="100" placeholder="9:00 AM - 5:00 PM" />

@@ -1,5 +1,6 @@
 using System.Net;
 using InnovestHolding.Infrastructure;
+using InnovestHolding.Infrastructure.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
@@ -7,7 +8,7 @@ using static InnovestHolding.Tests.TestHelpers;
 
 namespace InnovestHolding.Tests;
 
-/// <summary>M2: bounded stores fail CLOSED; existing accounts are always tracked.</summary>
+/// <summary>Bounded stores fail CLOSED; existing accounts are always tracked.</summary>
 public class LoginThrottleStoreTests
 {
     private sealed class Monitor(SecurityOptions value) : IOptionsMonitor<SecurityOptions>
@@ -102,7 +103,7 @@ public class LoginThrottleStoreTests
         Assert.StartsWith("n:", LoginKey.ForUnknownName("ab\uD800").Value);
 }
 
-/// <summary>L2 / L3 / L4 / L5 / L6 over HTTP.</summary>
+/// <summary>Throttle, session invalidation, admin route scoping and the error page over HTTP.</summary>
 [Collection("App")]
 public class SessionAndRouteTests(TestAppFactory f)
 {
@@ -115,7 +116,7 @@ public class SessionAndRouteTests(TestAppFactory f)
     private static async Task<string> TextAsync(HttpResponseMessage r) =>
         WebUtility.HtmlDecode(await r.Content.ReadAsStringAsync());
 
-    [Fact] // L2
+    [Fact]
     public async Task Successful_login_does_not_reset_the_ip_counter()
     {
         var (user, password) = await f.CreateAdminAsync();
@@ -123,10 +124,10 @@ public class SessionAndRouteTests(TestAppFactory f)
         var ip = NewIp();
         var client = f.NewClient(ip);
         for (var i = 0; i < 19; i++)
-            Assert.Equal(UserMessages.LoginInvalid, await LoginResult(client, Unique("ghost"), "x"));
+            Assert.Equal(Msg.Ar(MessageKeys.LoginInvalid), await LoginResult(client, Unique("ghost"), "x"));
         Assert.Equal("SIGNED-IN", await LoginResult(f.NewClient(ip), user, password));
-        Assert.Equal(UserMessages.LoginInvalid, await LoginResult(f.NewClient(ip), Unique("ghost"), "x")); // 20th
-        Assert.Equal(UserMessages.LoginLocked, await LoginResult(f.NewClient(ip), other, otherPassword));
+        Assert.Equal(Msg.Ar(MessageKeys.LoginInvalid), await LoginResult(f.NewClient(ip), Unique("ghost"), "x")); // 20th
+        Assert.Equal(Msg.Ar(MessageKeys.LoginLocked), await LoginResult(f.NewClient(ip), other, otherPassword));
     }
 
     private static async Task<HttpResponseMessage> ChangePasswordAsync(HttpClient client, string current, string next)
@@ -136,7 +137,7 @@ public class SessionAndRouteTests(TestAppFactory f)
             ("CurrentPassword", current), ("NewPassword", next), ("ConfirmPassword", next)));
     }
 
-    [Fact] // L3
+    [Fact]
     public async Task Password_change_ends_other_sessions_and_keeps_this_one()
     {
         var (user, password) = await f.CreateAdminAsync();
@@ -155,11 +156,11 @@ public class SessionAndRouteTests(TestAppFactory f)
         Assert.Contains("/Account/Login", stale.Headers.Location!.OriginalString);
         Assert.Equal(HttpStatusCode.OK, (await a.GetAsync("/Admin/Dashboard")).StatusCode);
 
-        Assert.Equal(UserMessages.LoginInvalid, await LoginResult(f.NewClient(), user, password));
+        Assert.Equal(Msg.Ar(MessageKeys.LoginInvalid), await LoginResult(f.NewClient(), user, password));
         Assert.Equal("SIGNED-IN", await LoginResult(f.NewClient(), user, newPassword));
     }
 
-    [Fact] // L3 — a cookie for a deleted account dies on the next request
+    [Fact] // a cookie for a deleted account dies on the next request
     public async Task Session_of_a_deleted_account_is_rejected()
     {
         var (user, password) = await f.CreateAdminAsync();
@@ -169,7 +170,7 @@ public class SessionAndRouteTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync("/Admin/Dashboard")).StatusCode);
     }
 
-    [Fact] // L4
+    [Fact]
     public async Task Change_password_current_check_is_throttled()
     {
         var (user, password) = await f.CreateAdminAsync();
@@ -180,18 +181,18 @@ public class SessionAndRouteTests(TestAppFactory f)
         for (var i = 0; i < 5; i++)
         {
             var r = await ChangePasswordAsync(client, "wrong-" + i, "Abcdefghij12");
-            Assert.Contains(UserMessages.CurrentPasswordWrong, await TextAsync(r));
+            Assert.Contains(Msg.Ar(MessageKeys.CurrentPasswordWrong), await TextAsync(r));
         }
 
         var locked = await ChangePasswordAsync(client, password, "Abcdefghij12");
         Assert.Equal(HttpStatusCode.OK, locked.StatusCode);
-        Assert.Contains(UserMessages.LoginLocked, await TextAsync(locked));
+        Assert.Contains(Msg.Ar(MessageKeys.LoginLocked), await TextAsync(locked));
         Assert.Equal(hashBefore, await f.DbAsync(db => db.Users.Where(u => u.Username == user).Select(u => u.PasswordHash).SingleAsync()));
         // Same account key as the login: the login is locked too.
-        Assert.Equal(UserMessages.LoginLocked, await LoginResult(f.NewClient(), user, password));
+        Assert.Equal(Msg.Ar(MessageKeys.LoginLocked), await LoginResult(f.NewClient(), user, password));
     }
 
-    [Theory] // L5
+    [Theory]
     [InlineData("/Admin/Home")]
     [InlineData("/Admin/Home/Index")]
     [InlineData("/Admin/Account/Login")]
@@ -199,7 +200,7 @@ public class SessionAndRouteTests(TestAppFactory f)
     public async Task Admin_route_does_not_reach_public_controllers(string path) =>
         Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync(path)).StatusCode);
 
-    [Fact] // L5 — admin pages and links still work, logout lands on /Account/Login
+    [Fact] // admin pages and links still work, logout lands on /Account/Login
     public async Task Admin_route_still_serves_admin_controllers_and_logout_url_is_canonical()
     {
         var client = await f.SignedInClientAsync();
@@ -212,16 +213,16 @@ public class SessionAndRouteTests(TestAppFactory f)
         Assert.Equal("/Account/Login", logout.Headers.Location!.OriginalString);
     }
 
-    [Fact] // L6
+    [Fact]
     public async Task Error_page_shows_no_developer_text()
     {
         var html = await TextAsync(await f.NewClient().GetAsync("/Home/Error"));
         Assert.DoesNotContain("Development", html);
         Assert.DoesNotContain("ASPNETCORE_ENVIRONMENT", html);
-        Assert.Contains(UserMessages.ErrorGeneric, html);
+        Assert.Contains(Msg.Ar(MessageKeys.ErrorGeneric), html);
     }
 
-    [Fact] // H1 — the login form still posts to the pinned route
+    [Fact] // the login form still posts to the pinned route
     public async Task Login_form_posts_to_the_pinned_route()
     {
         var html = await (await f.NewClient().GetAsync("/Account/Login")).Content.ReadAsStringAsync();

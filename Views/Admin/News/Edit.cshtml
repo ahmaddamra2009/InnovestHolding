@@ -4,14 +4,10 @@
     <form method="post" asp-action="Edit" asp-controller="News">
         @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
         <input type="hidden" asp-for="Id">
-        <div class="form-group"><label>العنوان</label><input asp-for="Title" class="form-control" maxlength="200" required><span asp-validation-for="Title" class="field-error"></span></div>
-        <div class="form-group"><label>الملخص</label><textarea asp-for="Summary" class="form-control" rows="3" maxlength="4000"></textarea><span asp-validation-for="Summary" class="field-error"></span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div class="form-group"><label>الفئة</label><input asp-for="Category" class="form-control" maxlength="50"><span asp-validation-for="Category" class="field-error"></span></div>
-            <div class="form-group"><label>التاريخ</label><input asp-for="NewsDate" class="form-control" maxlength="50"><span asp-validation-for="NewsDate" class="field-error"></span></div>
-        </div>
+        <partial name="~/Views/Admin/News/_Fields.cshtml" model="Model" />
+        <div class="form-group" style="max-width:200px;"><label>الترتيب (الأصغر أولاً)</label><input asp-for="SortOrder" type="number" class="form-control" min="-100000" max="100000"><span asp-validation-for="SortOrder" class="field-error"></span></div>
         <div class="form-check" style="margin-bottom:20px;"><input asp-for="IsActive"> <label>مفعّل</label></div>
         <button type="submit" class="btn-admin btn-primary">حفظ التعديلات</button>
-        <a href="/News" class="btn-admin btn-secondary" style="margin-right:12px;">إلغاء</a>
+        <a href="/News" class="btn-admin btn-secondary" style="margin-inline-start:12px;">إلغاء</a>
     </form>
 </div>

@@ -4,12 +4,18 @@
     <div class="admin-card-header"><span class="admin-card-title">المنصات (@Model.Count)</span></div>
     @foreach (var item in Model)
     {
-        <form method="post" asp-action="Update" asp-controller="Platforms" style="padding:20px;background:var(--admin-bg);border-radius:10px;margin-bottom:16px;">
+        var prefix = $"pl{item.Id}-";
+        <form method="post" asp-action="Update" asp-controller="Platforms" class="row-form">
             <input type="hidden" name="id" value="@item.Id">
-            <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;align-items:start;">
-                <div class="form-group"><label>اسم المنصة</label><input type="text" name="title" class="form-control" value="@item.Title" maxlength="200" required></div>
-                <div class="form-group"><label>الوصف</label><textarea name="description" class="form-control" rows="2" maxlength="4000">@item.Description</textarea></div>
+            <div class="row-form-head">
+                <strong>@item.TitleAr</strong>
+                <partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TitleEn) && (string.IsNullOrWhiteSpace(item.DescriptionAr) || !string.IsNullOrWhiteSpace(item.DescriptionEn)))" />
             </div>
+            <lang-pair label="اسم المنصة" name-ar="TitleAr" name-en="TitleEn" value-ar="@item.TitleAr" value-en="@item.TitleEn" max="200" required="true" id-prefix="@prefix" />
+            <lang-pair label="الوصف" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@item.DescriptionAr" value-en="@item.DescriptionEn" max="4000" rows="2" id-prefix="@prefix" />
+            <lang-pair label="الاسم المختصر في الفوتر (اختياري)" name-ar="ShortTitleAr" name-en="ShortTitleEn" value-ar="@item.ShortTitleAr" value-en="@item.ShortTitleEn" max="100" id-prefix="@prefix" />
+            <lang-pair label="رابط «اعرف المزيد» (اختياري — لا يظهر الرابط إن تُرك فارغاً)" name-ar="LinkUrl" value-ar="@item.LinkUrl" max="500" ltr="true" placeholder="https://" id-prefix="@prefix" />
+            <div class="form-check" style="margin-bottom:12px;"><input type="checkbox" name="ShowInFooter" value="true" @(item.ShowInFooter ? "checked" : "")> <label>يظهر في عمود «منصاتنا» بالفوتر</label></div>
             <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
         </form>
     }

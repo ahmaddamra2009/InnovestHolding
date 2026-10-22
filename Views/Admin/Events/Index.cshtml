@@ -10,15 +10,18 @@
         </a>
     </div>
     <table class="admin-table">
-        <thead><tr><th>العنوان</th><th>التاريخ</th><th>المكان</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <thead><tr><th>العنوان</th><th>التاريخ</th><th>المكان</th><th>EN</th><th>الحالة</th><th>إجراءات</th></tr></thead>
         <tbody>
         @foreach (var item in Model)
         {
+            var en = !string.IsNullOrWhiteSpace(item.TitleEn) && !string.IsNullOrWhiteSpace(item.EventMonthEn)
+                     && (string.IsNullOrWhiteSpace(item.DescriptionAr) || !string.IsNullOrWhiteSpace(item.DescriptionEn));
             <tr>
-                <td><strong>@item.Title</strong></td>
-                <td>@item.EventDay @item.EventMonth</td>
-                <td>@item.Location</td>
-                <td>@(item.IsActive ? Html.Raw("<span class='badge-active'>مفعّل</span>") : Html.Raw("<span class='badge-inactive'>معطّل</span>"))</td>
+                <td><strong>@item.TitleAr</strong></td>
+                <td>@item.EventDay @item.EventMonthAr</td>
+                <td>@item.LocationAr</td>
+                <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="en" /></td>
+                <td>@if (item.IsActive) { <span class="badge-active">مفعّل</span> } else { <span class="badge-inactive">معطّل</span> }</td>
                 <td class="actions">
                     <a href="/Events/Edit/@item.Id" class="btn-admin btn-secondary btn-sm">تعديل</a>
                     <form method="post" asp-action="Delete" asp-controller="Events" style="display:inline;">

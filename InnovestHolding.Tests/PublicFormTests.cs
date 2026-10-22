@@ -1,4 +1,5 @@
 using InnovestHolding.Infrastructure;
+using InnovestHolding.Infrastructure.Localization;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using static InnovestHolding.Tests.TestHelpers;
@@ -28,27 +29,27 @@ public class PublicFormTests(TestAppFactory f)
         Assert.False(string.IsNullOrWhiteSpace(json.GetProperty("message").GetString()));
     }
 
-    [Fact] // T12
+    [Fact]
     public async Task Missing_full_name_is_a_400_json_error()
     {
         var (c, t) = await PublicClientAsync();
         var email = Unique("v") + "@example.com";
         await AssertJsonFailure(await c.PostAsync("/Home/Contact", Form(t, Contact(email, fullName: ""))));
-        await AssertJsonFailure(await c.PostAsync("/Home/Register", Form(t, ("Email", email), ("Interest", "x"))));
+        await AssertJsonFailure(await c.PostAsync("/Home/Register", Form(t, ("Email", email), ("InterestOptionId", f.InterestId))));
         Assert.Equal(0, await ContactRows(email));
         Assert.Equal(0, await RegistrationRows(email));
     }
 
-    [Fact] // T13
+    [Fact]
     public async Task Invalid_email_is_a_400()
     {
         var (c, t) = await PublicClientAsync();
         await AssertJsonFailure(await c.PostAsync("/Home/Contact", Form(t, Contact("not-an-email"))));
         await AssertJsonFailure(await c.PostAsync("/Home/Register",
-            Form(t, ("FullName", "QA"), ("Email", "not-an-email"), ("Interest", "x"))));
+            Form(t, ("FullName", "QA"), ("Email", "not-an-email"), ("InterestOptionId", f.InterestId))));
     }
 
-    [Fact] // T14
+    [Fact]
     public async Task Over_length_fields_are_400_never_500()
     {
         var (c, t) = await PublicClientAsync();
@@ -59,14 +60,14 @@ public class PublicFormTests(TestAppFactory f)
         // 4th request on this IP for Contact; Register is a separate partition.
         var (c2, t2) = await PublicClientAsync();
         await AssertJsonFailure(await c2.PostAsync("/Home/Register",
-            Form(t2, ("FullName", new string('a', 201)), ("Email", email), ("Interest", "x"))));
+            Form(t2, ("FullName", new string('a', 201)), ("Email", email), ("InterestOptionId", f.InterestId))));
         await AssertJsonFailure(await c2.PostAsync("/Home/Register",
-            Form(t2, ("FullName", "QA"), ("Email", email), ("Interest", "x"), ("Phone", "<script>"))));
+            Form(t2, ("FullName", "QA"), ("Email", email), ("InterestOptionId", f.InterestId), ("Phone", "<script>"))));
         Assert.Equal(0, await ContactRows(email));
         Assert.Equal(0, await RegistrationRows(email));
     }
 
-    [Fact] // T15
+    [Fact]
     public async Task Message_of_exactly_4000_is_accepted()
     {
         var (c, t) = await PublicClientAsync();
@@ -76,9 +77,9 @@ public class PublicFormTests(TestAppFactory f)
         Assert.Equal(1, await ContactRows(email));
     }
 
-    // T16 — proves only that oversized FIELDS are refused ([StringLength] → 400) and nothing is written.
-    // It does NOT prove the 32 KB body cap: TestServer has no IHttpMaxRequestBodySizeFeature (Stage 8 F2).
-    // The cap is proven by RequestSizeLimitMiddlewareTests.
+    // Proves only that oversized FIELDS are refused ([StringLength] → 400) and nothing is written.
+    // It does NOT prove the 32 KB body cap: TestServer has no IHttpMaxRequestBodySizeFeature.
+    // The cap is proven by RequestSizeLimitTests (RequestLimitsCookiesAndBindingTests.cs).
     [Fact]
     public async Task Oversized_fields_are_400_never_500_and_write_nothing()
     {
@@ -91,7 +92,7 @@ public class PublicFormTests(TestAppFactory f)
         Assert.Equal(0, await ContactRows(email));
     }
 
-    [Fact] // T17
+    [Fact]
     public async Task Honeypot_answers_success_and_writes_nothing()
     {
         var (c, t) = await PublicClientAsync();
@@ -100,20 +101,20 @@ public class PublicFormTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.OK, contact.StatusCode);
         Assert.True((await contact.JsonAsync()).GetProperty("success").GetBoolean());
         var register = await c.PostAsync("/Home/Register",
-            Form(t, ("FullName", "QA"), ("Email", email), ("Interest", "x"), ("Website", "x")));
+            Form(t, ("FullName", "QA"), ("Email", email), ("InterestOptionId", f.InterestId), ("Website", "x")));
         Assert.True((await register.JsonAsync()).GetProperty("success").GetBoolean());
         Assert.Equal(0, await ContactRows(email));
         Assert.Equal(0, await RegistrationRows(email));
     }
 
-    [Fact] // T18
+    [Fact]
     public async Task Register_ignores_over_posted_fields()
     {
         var (c, t) = await PublicClientAsync();
         var email = Unique("over") + "@example.com";
-        var before = DateTime.Now;
+        var before = DateTime.UtcNow;
         var response = await c.PostAsync("/Home/Register", Form(t,
-            ("FullName", "QA"), ("Email", email), ("Interest", "x"),
+            ("FullName", "QA"), ("Email", email), ("InterestOptionId", f.InterestId),
             ("IsRead", "true"), ("Id", "999999"), ("CreatedAt", "2000-01-01")));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var row = await f.DbAsync(db => db.Registrations.AsNoTracking().SingleAsync(r => r.Email == email));
@@ -129,7 +130,7 @@ public class RateLimitTests(TestAppFactory f)
     private static FormUrlEncodedContent ContactForm(string token, string email) =>
         Form(token, ("FullName", "QA"), ("Email", email), ("Subject", "s"), ("Message", "m"));
 
-    [Fact] // T19
+    [Fact]
     public async Task Sixth_contact_from_one_ip_is_429_with_a_json_message()
     {
         var client = f.NewClient();
@@ -146,7 +147,7 @@ public class RateLimitTests(TestAppFactory f)
         Assert.Equal(5, await f.DbAsync(db => db.ContactMessages.CountAsync(m => m.Email == email)));
     }
 
-    [Fact] // T20 + T21
+    [Fact]
     public async Task Limit_is_per_ip_and_per_action()
     {
         var ip = NewIp();
@@ -158,7 +159,7 @@ public class RateLimitTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.TooManyRequests, (await client.PostAsync("/Home/Contact", ContactForm(token, email))).StatusCode);
 
         // Same IP, other action → its own partition.
-        var register = await client.PostAsync("/Home/Register", Form(token, ("FullName", "QA"), ("Email", email), ("Interest", "x")));
+        var register = await client.PostAsync("/Home/Register", Form(token, ("FullName", "QA"), ("Email", email), ("InterestOptionId", f.InterestId)));
         Assert.Equal(HttpStatusCode.OK, register.StatusCode);
 
         // Other IP, same action → allowed.
@@ -167,7 +168,7 @@ public class RateLimitTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.OK, (await other.PostAsync("/Home/Contact", ContactForm(otherToken, email))).StatusCode);
     }
 
-    [Fact] // T22
+    [Fact]
     public async Task Thirty_first_login_post_from_one_ip_is_429()
     {
         var client = f.NewClient();
@@ -180,15 +181,15 @@ public class RateLimitTests(TestAppFactory f)
         var last = await client.PostAsync("/Account/Login", Form(token, ("Username", "nobody"), ("Password", "x")));
         Assert.Equal(HttpStatusCode.TooManyRequests, last.StatusCode);
 
-        // Stage 8 N5: the login page comes back (HTML, a fresh form) with the locked message — not bare text.
+        // The login page comes back (HTML, a fresh form) with the locked message — not bare text.
         Assert.Equal("text/html", last.Content.Headers.ContentType?.MediaType);
         var html = await last.Content.ReadAsStringAsync();
-        Assert.Equal(UserMessages.LoginLocked, LoginError(html));
+        Assert.Equal(Msg.Ar(MessageKeys.LoginLocked), LoginError(html));
         Assert.NotEmpty(ExtractToken(html));
         Assert.DoesNotContain("value=\"nobody\"", html);
     }
 
-    [Fact] // T23
+    [Fact]
     public async Task Spoofed_x_forwarded_for_does_not_reset_the_limit()
     {
         var client = f.NewClient();

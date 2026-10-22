@@ -1,4 +1,5 @@
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,7 @@ public class NewsController : AdminControllerBase
 
     public async Task<IActionResult> Index() =>
         View("~/Views/Admin/News/Index.cshtml",
-            await _db.News.AsNoTracking().OrderByDescending(n => n.CreatedAt).ToListAsync());
+            await _db.News.AsNoTracking().OrderBy(n => n.SortOrder).ThenBy(n => n.Id).ToListAsync());
 
     public IActionResult Create() => View(CreateView, new NewsInput());
 
@@ -26,11 +27,12 @@ public class NewsController : AdminControllerBase
         if (!ModelState.IsValid)
             return View(CreateView, input);
 
-        var item = new News();
+        // Newest first: a new item goes before every existing one.
+        var item = new News { SortOrder = (await _db.News.MinAsync(n => (int?)n.SortOrder) ?? 1) - 1 };
         Map(input, item);
         _db.News.Add(item);
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تمت إضافة الخبر بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.NewsAdded);
         return RedirectToAction(nameof(Index));
     }
 
@@ -41,11 +43,17 @@ public class NewsController : AdminControllerBase
         return View(EditView, new NewsEditInput
         {
             Id = item.Id,
-            Title = item.Title,
-            Summary = item.Summary,
-            Category = item.Category,
-            NewsDate = item.NewsDate,
-            IsActive = item.IsActive
+            TitleAr = item.TitleAr,
+            TitleEn = item.TitleEn,
+            SummaryAr = item.SummaryAr,
+            SummaryEn = item.SummaryEn,
+            CategoryAr = item.CategoryAr,
+            CategoryEn = item.CategoryEn,
+            NewsDateAr = item.NewsDateAr,
+            NewsDateEn = item.NewsDateEn,
+            LinkUrl = item.LinkUrl,
+            IsActive = item.IsActive,
+            SortOrder = item.SortOrder
         });
     }
 
@@ -59,9 +67,10 @@ public class NewsController : AdminControllerBase
         if (item == null) return NotFound();
 
         Map(input, item);
+        item.SortOrder = input.SortOrder;
 
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تم تحديث الخبر بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.NewsUpdated);
         return RedirectToAction(nameof(Index));
     }
 
@@ -73,17 +82,22 @@ public class NewsController : AdminControllerBase
         {
             _db.News.Remove(item);
             await _db.SaveChangesAsync();
-            TempData["Success"] = "تم حذف الخبر بنجاح";
+            TempData["Success"] = L(MessageKeys.Admin.NewsDeleted);
         }
         return RedirectToAction(nameof(Index));
     }
 
     private static void Map(NewsInput input, News item)
     {
-        item.Title = input.Title!.Trim();
-        item.Summary = input.Summary?.Trim() ?? "";
-        item.Category = input.Category?.Trim() ?? "";
-        item.NewsDate = input.NewsDate?.Trim() ?? "";
+        item.TitleAr = input.TitleAr!.Trim();
+        item.TitleEn = Optional(input.TitleEn);
+        item.SummaryAr = input.SummaryAr?.Trim() ?? "";
+        item.SummaryEn = Optional(input.SummaryEn);
+        item.CategoryAr = input.CategoryAr?.Trim() ?? "";
+        item.CategoryEn = Optional(input.CategoryEn);
+        item.NewsDateAr = input.NewsDateAr?.Trim() ?? "";
+        item.NewsDateEn = Optional(input.NewsDateEn);
+        item.LinkUrl = Optional(input.LinkUrl);
         item.IsActive = input.IsActive;
     }
 }

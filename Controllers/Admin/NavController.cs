@@ -1,4 +1,5 @@
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
@@ -27,12 +28,13 @@ public class NavController : AdminControllerBase
         var maxOrder = await _db.NavItems.MaxAsync(n => (int?)n.SortOrder) ?? 0;
         _db.NavItems.Add(new NavItem
         {
-            Title = input.Title!.Trim(),
+            TitleAr = input.TitleAr!.Trim(),
+            TitleEn = Optional(input.TitleEn),
             Href = input.Href!.Trim(),
             SortOrder = maxOrder + 1
         });
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تمت إضافة العنصر بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.NavAdded);
         return RedirectToAction(nameof(Index));
     }
 
@@ -44,13 +46,15 @@ public class NavController : AdminControllerBase
         var item = await _db.NavItems.FindAsync(input.Id);
         if (item == null) return NotFound();
 
-        item.Title = input.Title!.Trim();
+        item.TitleAr = input.TitleAr!.Trim();
+        item.TitleEn = Optional(input.TitleEn);
         item.Href = input.Href!.Trim();
         item.HasDropdown = input.HasDropdown;
         item.IsActive = input.IsActive;
+        item.ShowInFooter = input.ShowInFooter;
 
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تم تحديث العنصر بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.NavUpdated);
         return RedirectToAction(nameof(Index));
     }
 
@@ -62,7 +66,7 @@ public class NavController : AdminControllerBase
         {
             _db.NavItems.Remove(item);
             await _db.SaveChangesAsync();
-            TempData["Success"] = "تم حذف العنصر بنجاح";
+            TempData["Success"] = L(MessageKeys.Admin.NavDeleted);
         }
         return RedirectToAction(nameof(Index));
     }
@@ -84,13 +88,32 @@ public class NavController : AdminControllerBase
         _db.NavSubItems.Add(new NavSubItem
         {
             NavItemId = input.NavItemId,
-            Title = input.Title!.Trim(),
+            TitleAr = input.TitleAr!.Trim(),
+            TitleEn = Optional(input.TitleEn),
             Href = input.Href!.Trim(),
             SortOrder = maxOrder + 1
         });
 
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تمت إضافة العنصر الفرعي بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.SubItemAdded);
+        return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>Edits a sub-item's names and link (needed to add English to the existing sub-items).</summary>
+    [HttpPost]
+    public async Task<IActionResult> UpdateSubItem(NavSubItemUpdateInput input)
+    {
+        if (!ModelState.IsValid) return InvalidRedirect();
+
+        var item = await _db.NavSubItems.FindAsync(input.Id);
+        if (item == null) return NotFound();
+
+        item.TitleAr = input.TitleAr!.Trim();
+        item.TitleEn = Optional(input.TitleEn);
+        item.Href = input.Href!.Trim();
+
+        await _db.SaveChangesAsync();
+        TempData["Success"] = L(MessageKeys.Admin.SubItemUpdated);
         return RedirectToAction(nameof(Index));
     }
 
@@ -111,7 +134,7 @@ public class NavController : AdminControllerBase
                 await _db.SaveChangesAsync();
             }
 
-            TempData["Success"] = "تم حذف العنصر الفرعي بنجاح";
+            TempData["Success"] = L(MessageKeys.Admin.SubItemDeleted);
         }
         return RedirectToAction(nameof(Index));
     }

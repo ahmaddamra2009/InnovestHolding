@@ -7,7 +7,10 @@ public class Partner
     public int Id { get; set; }
 
     [Required, MaxLength(200)]
-    public string Name { get; set; } = string.Empty;
+    public string NameAr { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string? NameEn { get; set; }
 
     public int SortOrder { get; set; }
 }

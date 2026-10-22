@@ -4,16 +4,9 @@
 <div class="admin-card">
     <form method="post" asp-action="Create" asp-controller="Events">
         @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div class="form-group" style="grid-column:span 2;"><label>عنوان الفعالية</label><input asp-for="Title" class="form-control" maxlength="200" required><span asp-validation-for="Title" class="field-error"></span></div>
-            <div class="form-group" style="grid-column:span 2;"><label>الوصف</label><textarea asp-for="Description" class="form-control" rows="3" maxlength="4000"></textarea><span asp-validation-for="Description" class="field-error"></span></div>
-            <div class="form-group"><label>اليوم</label><input asp-for="EventDay" type="number" class="form-control" min="1" max="31" required><span asp-validation-for="EventDay" class="field-error"></span></div>
-            <div class="form-group"><label>الشهر</label><input asp-for="EventMonth" class="form-control" placeholder="مثال: يوليو" maxlength="50" required><span asp-validation-for="EventMonth" class="field-error"></span></div>
-            <div class="form-group"><label>المكان</label><input asp-for="Location" class="form-control" maxlength="200"><span asp-validation-for="Location" class="field-error"></span></div>
-            <div class="form-group"><label>الوقت</label><input asp-for="Time" class="form-control" placeholder="مثال: 9:00 ص - 5:00 م" maxlength="100"><span asp-validation-for="Time" class="field-error"></span></div>
-        </div>
+        <partial name="~/Views/Admin/Events/_Fields.cshtml" model="Model" />
         <div class="form-check" style="margin-bottom:20px;"><input asp-for="IsActive"> <label>مفعّل</label></div>
         <button type="submit" class="btn-admin btn-primary">حفظ الفعالية</button>
-        <a href="/Events" class="btn-admin btn-secondary" style="margin-right:12px;">إلغاء</a>
+        <a href="/Events" class="btn-admin btn-secondary" style="margin-inline-start:12px;">إلغاء</a>
     </form>
 </div>

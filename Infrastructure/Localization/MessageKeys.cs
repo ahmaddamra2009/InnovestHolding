@@ -1,0 +1,159 @@
+namespace InnovestHolding.Infrastructure.Localization;
+
+/// <summary>
+/// Resource key names of Resources/SharedResource(.en).resx — the ONLY place messages are named. Values live in the
+/// resx files (neutral = Arabic, which is also the fallback for a missing English key). <c>const</c> so DataAnnotation
+/// attributes can use them; the parity test reflects over every constant here.
+/// </summary>
+public static class MessageKeys
+{
+    public const string Required = "Msg_Required";
+    public const string MaxLength = "Msg_MaxLength";
+    public const string LengthRange = "Msg_LengthRange";
+    public const string Range = "Msg_Range";
+    public const string Email = "Msg_Email";
+    public const string Phone = "Msg_Phone";
+    public const string UnsafeHref = "Msg_UnsafeHref";
+    public const string HttpsUrl = "Msg_HttpsUrl";
+    public const string BaseUrl = "Msg_BaseUrl";
+    public const string SitePath = "Msg_SitePath";
+    public const string Highlight = "Msg_Highlight";
+    public const string InvalidValue = "Msg_InvalidValue";
+    public const string ValueRequired = "Msg_ValueRequired";
+    public const string InvalidValueNoField = "Msg_InvalidValueNoField";
+    public const string ValueRequiredNoField = "Msg_ValueRequiredNoField";
+    public const string PasswordsDoNotMatch = "Msg_PasswordsDoNotMatch";
+    public const string CurrentPasswordWrong = "Msg_CurrentPasswordWrong";
+    public const string InterestInvalid = "Msg_InterestInvalid";
+    public const string RegistrationSuccess = "Msg_RegistrationSuccess";
+    public const string ContactSuccess = "Msg_ContactSuccess";
+    public const string TooManyRequests = "Msg_TooManyRequests";
+    public const string LoginInvalid = "Msg_LoginInvalid";
+    public const string LoginLocked = "Msg_LoginLocked";
+    public const string ErrorTitle = "Msg_ErrorTitle";
+    public const string ErrorGeneric = "Msg_ErrorGeneric";
+    public const string ErrorReference = "Msg_ErrorReference";
+    public const string BackToHome = "Msg_BackToHome";
+
+    public static class Fields
+    {
+        public const string FullName = "Field_FullName";
+        public const string Email = "Field_Email";
+        public const string Phone = "Field_Phone";
+        public const string Interest = "Field_Interest";
+        public const string Subject = "Field_Subject";
+        public const string Message = "Field_Message";
+        public const string Username = "Field_Username";
+        public const string Password = "Field_Password";
+        public const string CurrentPassword = "Field_CurrentPassword";
+        public const string NewPassword = "Field_NewPassword";
+        public const string ConfirmPassword = "Field_ConfirmPassword";
+        public const string EventDay = "Field_EventDay";
+        public const string SortOrder = "Field_SortOrder";
+        public const string Href = "Field_Href";
+        public const string Value = "Field_Value";
+        public const string Suffix = "Field_Suffix";
+        public const string Content = "Field_Content";
+        public const string LinkUrl = "Field_LinkUrl";
+        public const string Url = "Field_Url";
+        public const string Title = "Field_Title";
+        public const string TitleEn = "Field_TitleEn";
+        public const string Description = "Field_Description";
+        public const string DescriptionEn = "Field_DescriptionEn";
+        public const string EventMonth = "Field_EventMonth";
+        public const string EventMonthEn = "Field_EventMonthEn";
+        public const string Location = "Field_Location";
+        public const string LocationEn = "Field_LocationEn";
+        public const string Time = "Field_Time";
+        public const string TimeEn = "Field_TimeEn";
+        public const string Question = "Field_Question";
+        public const string QuestionEn = "Field_QuestionEn";
+        public const string Answer = "Field_Answer";
+        public const string AnswerEn = "Field_AnswerEn";
+        public const string Summary = "Field_Summary";
+        public const string SummaryEn = "Field_SummaryEn";
+        public const string Category = "Field_Category";
+        public const string CategoryEn = "Field_CategoryEn";
+        public const string NewsDate = "Field_NewsDate";
+        public const string NewsDateEn = "Field_NewsDateEn";
+        public const string Name = "Field_Name";
+        public const string NameEn = "Field_NameEn";
+        public const string Label = "Field_Label";
+        public const string LabelEn = "Field_LabelEn";
+        public const string ShortTitle = "Field_ShortTitle";
+        public const string ShortTitleEn = "Field_ShortTitleEn";
+        public const string ShortLabel = "Field_ShortLabel";
+        public const string ShortLabelEn = "Field_ShortLabelEn";
+        public const string Text = "Field_Text";
+        public const string TextEn = "Field_TextEn";
+    }
+
+    public static class Admin
+    {
+        public const string ContentSaved = "Admin_ContentSaved";
+        public const string EventAdded = "Admin_EventAdded";
+        public const string EventUpdated = "Admin_EventUpdated";
+        public const string EventDeleted = "Admin_EventDeleted";
+        public const string FaqAdded = "Admin_FaqAdded";
+        public const string FaqUpdated = "Admin_FaqUpdated";
+        public const string FaqDeleted = "Admin_FaqDeleted";
+        public const string NewsAdded = "Admin_NewsAdded";
+        public const string NewsUpdated = "Admin_NewsUpdated";
+        public const string NewsDeleted = "Admin_NewsDeleted";
+        public const string NavAdded = "Admin_NavAdded";
+        public const string NavUpdated = "Admin_NavUpdated";
+        public const string NavDeleted = "Admin_NavDeleted";
+        public const string SubItemAdded = "Admin_SubItemAdded";
+        public const string SubItemUpdated = "Admin_SubItemUpdated";
+        public const string SubItemDeleted = "Admin_SubItemDeleted";
+        public const string PartnerAdded = "Admin_PartnerAdded";
+        public const string PartnerUpdated = "Admin_PartnerUpdated";
+        public const string PartnerDeleted = "Admin_PartnerDeleted";
+        public const string PlatformUpdated = "Admin_PlatformUpdated";
+        public const string StatUpdated = "Admin_StatUpdated";
+        public const string PasswordChanged = "Admin_PasswordChanged";
+        public const string MessageDeleted = "Admin_MessageDeleted";
+        public const string RegistrationDeleted = "Admin_RegistrationDeleted";
+        public const string OptionAdded = "Admin_OptionAdded";
+        public const string OptionUpdated = "Admin_OptionUpdated";
+        public const string OptionDeleted = "Admin_OptionDeleted";
+        public const string BenefitAdded = "Admin_BenefitAdded";
+        public const string BenefitUpdated = "Admin_BenefitUpdated";
+        public const string BenefitDeleted = "Admin_BenefitDeleted";
+        public const string SocialUpdated = "Admin_SocialUpdated";
+        public const string EnHint = "Admin_EnHint";
+        public const string NeutralHint = "Admin_NeutralHint";
+    }
+
+    public static class Ui
+    {
+        public const string LangSwitchText = "Ui_LangSwitchText";
+        public const string LangSwitchAria = "Ui_LangSwitchAria";
+        public const string LangDrawerText = "Ui_LangDrawerText";
+        public const string ScrollHint = "Ui_ScrollHint";
+        public const string NavAria = "Ui_NavAria";
+        public const string MenuAria = "Ui_MenuAria";
+        public const string FormFullName = "Ui_FormFullName";
+        public const string FormFullNamePlaceholderRegister = "Ui_FormFullNamePlaceholderRegister";
+        public const string FormFullNamePlaceholderContact = "Ui_FormFullNamePlaceholderContact";
+        public const string FormEmail = "Ui_FormEmail";
+        public const string FormEmailPlaceholder = "Ui_FormEmailPlaceholder";
+        public const string FormPhone = "Ui_FormPhone";
+        public const string FormPhonePlaceholder = "Ui_FormPhonePlaceholder";
+        public const string FormInterest = "Ui_FormInterest";
+        public const string FormInterestPlaceholder = "Ui_FormInterestPlaceholder";
+        public const string FormSubject = "Ui_FormSubject";
+        public const string FormSubjectPlaceholder = "Ui_FormSubjectPlaceholder";
+        public const string FormMessage = "Ui_FormMessage";
+        public const string FormMessagePlaceholder = "Ui_FormMessagePlaceholder";
+        public const string FormRegistering = "Ui_FormRegistering";
+        public const string FormSending = "Ui_FormSending";
+        public const string FormGenericError = "Ui_FormGenericError";
+        public const string ContactSubmit = "Ui_ContactSubmit";
+        public const string ContactAddress = "Ui_ContactAddress";
+        public const string ContactPhone = "Ui_ContactPhone";
+        public const string ContactEmail = "Ui_ContactEmail";
+        public const string ContactHours = "Ui_ContactHours";
+        public const string TimeUtcLabel = "Ui_TimeUtcLabel";
+    }
+}

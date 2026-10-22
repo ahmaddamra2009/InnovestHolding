@@ -1,4 +1,5 @@
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
@@ -22,9 +23,25 @@ public class PartnersController : AdminControllerBase
         if (!ModelState.IsValid) return InvalidRedirect();
 
         var maxOrder = await _db.Partners.MaxAsync(p => (int?)p.SortOrder) ?? 0;
-        _db.Partners.Add(new Partner { Name = input.Name!.Trim(), SortOrder = maxOrder + 1 });
+        _db.Partners.Add(new Partner { NameAr = input.NameAr!.Trim(), NameEn = Optional(input.NameEn), SortOrder = maxOrder + 1 });
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تمت إضافة الشريك بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.PartnerAdded);
+        return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>Edits an existing partner's names (the English name can be added after creation).</summary>
+    [HttpPost]
+    public async Task<IActionResult> Update(PartnerUpdateInput input)
+    {
+        if (!ModelState.IsValid) return InvalidRedirect();
+
+        var item = await _db.Partners.FindAsync(input.Id);
+        if (item == null) return NotFound();
+
+        item.NameAr = input.NameAr!.Trim();
+        item.NameEn = Optional(input.NameEn);
+        await _db.SaveChangesAsync();
+        TempData["Success"] = L(MessageKeys.Admin.PartnerUpdated);
         return RedirectToAction(nameof(Index));
     }
 
@@ -36,7 +53,7 @@ public class PartnersController : AdminControllerBase
         {
             _db.Partners.Remove(item);
             await _db.SaveChangesAsync();
-            TempData["Success"] = "تم حذف الشريك بنجاح";
+            TempData["Success"] = L(MessageKeys.Admin.PartnerDeleted);
         }
         return RedirectToAction(nameof(Index));
     }

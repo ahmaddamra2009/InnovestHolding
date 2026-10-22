@@ -1,4 +1,5 @@
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,11 +24,17 @@ public class PlatformsController : AdminControllerBase
         var item = await _db.Platforms.FindAsync(input.Id);
         if (item == null) return NotFound();
 
-        item.Title = input.Title!.Trim();
-        item.Description = input.Description?.Trim() ?? "";
+        item.TitleAr = input.TitleAr!.Trim();
+        item.TitleEn = Optional(input.TitleEn);
+        item.DescriptionAr = input.DescriptionAr?.Trim() ?? "";
+        item.DescriptionEn = Optional(input.DescriptionEn);
+        item.ShortTitleAr = Optional(input.ShortTitleAr);
+        item.ShortTitleEn = Optional(input.ShortTitleEn);
+        item.LinkUrl = Optional(input.LinkUrl);
+        item.ShowInFooter = input.ShowInFooter;
 
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تم تحديث المنصة بنجاح";
+        TempData["Success"] = L(MessageKeys.Admin.PlatformUpdated);
         return RedirectToAction(nameof(Index));
     }
 }

@@ -46,6 +46,16 @@ public sealed class RateLimitOptions
 public static class InputLimits
 {
     public const int PublicBodyBytes = 32 * 1024;
+
+    /// <summary>POST /Account/Login: two short fields + the token fit in well under 8 KB.</summary>
+    public const int LoginBodyBytes = 8 * 1024;
+
+    /// <summary>
+    /// Every admin POST. The largest admin form is the content editor: ~68 keys × 2 languages × ≤ 4000 characters;
+    /// at 9 URL-encoded bytes per Arabic character that is ≤ 4.9 MB, so 8 MB never refuses a legitimate save while
+    /// still capping the default 30 MB.
+    /// </summary>
+    public const int AdminBodyBytes = 8 * 1024 * 1024;
     public const int MessageMax = 4000;
     public const int LongTextMax = 4000;
     public const int NewPasswordMin = 10;

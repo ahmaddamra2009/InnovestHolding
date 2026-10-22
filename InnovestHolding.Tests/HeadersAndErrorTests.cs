@@ -8,7 +8,7 @@ namespace InnovestHolding.Tests;
 [Collection("App")]
 public class HeadersTests(TestAppFactory f)
 {
-    [Theory] // T35
+    [Theory]
     [InlineData("/")]
     [InlineData("/Account/Login")]
     [InlineData("/css/style.css")]
@@ -31,7 +31,7 @@ public class HeadersTests(TestAppFactory f)
         Assert.StartsWith("https://innovest.test", response.Headers.Location!.OriginalString);
     }
 
-    [Fact] // T36
+    [Fact]
     public async Task Auth_and_antiforgery_cookies_are_secure_httponly_samesite()
     {
         var (user, password) = await f.CreateAdminAsync();
@@ -74,7 +74,7 @@ public class HeadersTests(TestAppFactory f)
 [Collection("App")]
 public class ErrorHandlingTests(TestAppFactory f)
 {
-    [Fact] // T37
+    [Fact]
     public async Task Error_page_exists_for_get_and_tokenless_post()
     {
         var client = f.NewClient();
@@ -118,7 +118,7 @@ public class UnitTests
     [InlineData("/\\evil.example", false)]
     [InlineData("ftp://example.org", false)]
     [InlineData("vbscript:x", false)]
-    // Stage 8 N2: mailto:, tel: and relative paths are allowed; everything else stays refused.
+    // mailto:, tel: and relative paths are allowed; everything else stays refused.
     [InlineData("mailto:info@example.com", true)]
     [InlineData("MAILTO:info@example.com", true)]
     [InlineData("tel:+966500000000", true)]
