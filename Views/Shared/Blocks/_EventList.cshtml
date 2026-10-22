@@ -5,13 +5,25 @@
 <div class="event-list">
   @foreach (var e in Model.Events)
   {
-    <article class="event-row reveal">
+    var state = e.Status switch
+    {
+        EventStatus.Cancelled => L[K.Ui.EventCancelled].Value,
+        EventStatus.Postponed => L[K.Ui.EventPostponed].Value,
+        _ when e.Past => L[K.Ui.EventPast].Value,
+        _ => null,
+    };
+    var open = !e.Past && e.Status != EventStatus.Cancelled;
+    <article class="event-row reveal@(e.Image is null ? "" : " has-thumb")@(e.Past ? " is-past" : "")">
+      @if (e.Image is { } img)
+      {
+        <img class="event-thumb" src="@img.Src" width="@img.Width" height="@img.Height" alt="" loading="lazy" decoding="async">
+      }
       <div class="event-date-box">
         <div class="event-date-day">@e.Day.ToString(inv)</div>
         <div class="event-date-month" lang="@e.Month.Lang" dir="@e.Month.Dir">@e.Month</div>
       </div>
       <div class="event-info">
-        <h3 lang="@e.Title.Lang" dir="@e.Title.Dir">@e.Title</h3>
+        <h3><a href="@e.Href" lang="@e.Title.Lang" dir="@e.Title.Dir">@e.Title</a>@if (state is not null) {<span class="event-state">@state</span>}</h3>
         <p lang="@e.Description.Lang" dir="@e.Description.Dir">@e.Description</p>
         <div class="event-meta">
           @if (!e.Location.IsEmpty)
@@ -30,9 +42,13 @@
           }
         </div>
       </div>
-      @if (Model.Action is { } action)
+      @if (Model.Action is { } action && open)
       {
         <a href="@action.Href" class="event-register-btn" lang="@action.Title.Lang" dir="@action.Title.Dir">@action.Title</a>
+      }
+      else
+      {
+        <a href="@e.Href" class="event-register-btn">@L[K.Ui.ViewDetails]</a>
       }
     </article>
   }

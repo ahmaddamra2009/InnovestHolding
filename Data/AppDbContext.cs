@@ -24,6 +24,9 @@ public class AppDbContext : DbContext
     public DbSet<SocialLink> SocialLinks => Set<SocialLink>();
     public DbSet<Page> Pages => Set<Page>();
     public DbSet<ContentItem> ContentItems => Set<ContentItem>();
+    public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
+    public DbSet<PartnerGroup> PartnerGroups => Set<PartnerGroup>();
+    public DbSet<SlugRedirect> SlugRedirects => Set<SlugRedirect>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,6 +51,74 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<News>()
             .HasIndex(n => new { n.IsActive, n.SortOrder });
+
+        // ── Media and detail pages ──
+        modelBuilder.Entity<MediaFile>(e =>
+        {
+            e.HasIndex(m => m.FileKey).IsUnique();
+            e.Property(m => m.FileKey).IsUnicode(false).IsFixedLength();
+            e.Property(m => m.Format).IsUnicode(false);
+            e.Property(m => m.AltAr).HasDefaultValue("");
+            e.Property(m => m.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
+
+        // Several FKs from one table to MediaFiles must be NO ACTION on SQL Server; the app deletes a media row (and
+        // its file) itself when the owner replaces or loses it (Infrastructure/Media/MediaStore).
+        modelBuilder.Entity<News>(e =>
+        {
+            e.HasIndex(n => n.Slug).IsUnique();
+            e.Property(n => n.Slug).IsUnicode(false);
+            e.Property(n => n.BodyAr).HasDefaultValue("");
+            e.Property(n => n.MetaTitleAr).HasDefaultValue("");
+            e.Property(n => n.MetaDescriptionAr).HasDefaultValue("");
+            e.Property(n => n.UpdatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            e.HasOne(n => n.Image).WithMany().HasForeignKey(n => n.ImageId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<Event>(e =>
+        {
+            e.HasIndex(x => x.Slug).IsUnique();
+            e.HasIndex(x => new { x.IsActive, x.StartsAt });
+            e.Property(x => x.Slug).IsUnicode(false);
+            e.Property(x => x.StartsAt).HasColumnType("datetimeoffset(0)");
+            e.Property(x => x.EndsAt).HasColumnType("datetimeoffset(0)");
+            e.Property(x => x.Status).HasConversion<byte>();
+            e.Property(x => x.AttendanceMode).HasConversion<byte>();
+            e.Property(x => x.SummaryAr).HasDefaultValue("");
+            e.Property(x => x.CityAr).HasDefaultValue("");
+            e.Property(x => x.AddressAr).HasDefaultValue("");
+            e.Property(x => x.MetaTitleAr).HasDefaultValue("");
+            e.Property(x => x.MetaDescriptionAr).HasDefaultValue("");
+            // Bool with a model default is skipped on insert when false; RegistrationOpen=false must be written, so
+            // no model default here — the migration gives existing rows 1 through the column default.
+            e.Property(x => x.UpdatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            e.HasOne(x => x.Image).WithMany().HasForeignKey(x => x.ImageId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<Partner>(e =>
+        {
+            e.HasOne(p => p.Logo).WithMany().HasForeignKey(p => p.LogoId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(p => p.PartnerGroup).WithMany().HasForeignKey(p => p.PartnerGroupId).OnDelete(DeleteBehavior.SetNull);
+            e.Property(p => p.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            e.Property(p => p.UpdatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
+
+        modelBuilder.Entity<PartnerGroup>(e =>
+        {
+            e.HasIndex(g => new { g.IsActive, g.SortOrder });
+            e.Property(g => g.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
+
+        modelBuilder.Entity<Page>().HasOne(p => p.Image).WithMany().HasForeignKey(p => p.ImageId).OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<SlugRedirect>(e =>
+        {
+            e.HasIndex(r => new { r.EntityType, r.OldSlug }).IsUnique();
+            e.HasIndex(r => new { r.EntityType, r.EntityId });
+            e.Property(r => r.EntityType).IsUnicode(false);
+            e.Property(r => r.OldSlug).IsUnicode(false);
+            e.Property(r => r.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
 
         // Bool flags have no model default (EF would skip an explicit false on insert); the migration gives existing
         // rows 1 through the column default.

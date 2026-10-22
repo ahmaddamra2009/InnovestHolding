@@ -1,6 +1,28 @@
 @model NewsInput
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
 <lang-pair label="العنوان" name-ar="TitleAr" name-en="TitleEn" value-ar="@Model.TitleAr" value-en="@Model.TitleEn" max="200" required="true" />
-<lang-pair label="الملخص" name-ar="SummaryAr" name-en="SummaryEn" value-ar="@Model.SummaryAr" value-en="@Model.SummaryEn" max="4000" rows="3" />
+<div class="form-group">
+    <label for="Slug">الرابط المختصر <span class="lang-chip">ع · EN</span></label>
+    <input id="Slug" name="Slug" value="@Model.Slug" class="form-control ltr-input" dir="ltr" maxlength="100" placeholder="innovest-forum-2026">
+    <span class="field-hint">عنوان الصفحة: /news/الرابط-المختصر (أحرف إنجليزية صغيرة وأرقام وشرطات). فارغ عند الإضافة = من العنوان الإنجليزي. تغييره لاحقاً يُبقي الرابط القديم يحوّل إلى الجديد.</span>
+    <span asp-validation-for="Slug" class="field-error"></span>
+</div>
+<lang-pair label="الملخص (البطاقة وأول فقرة في صفحة الخبر)" name-ar="SummaryAr" name-en="SummaryEn" value-ar="@Model.SummaryAr" value-en="@Model.SummaryEn" max="4000" rows="3" />
+<lang-pair label="نص الخبر (سطر فارغ = فقرة جديدة)" name-ar="BodyAr" name-en="BodyEn" value-ar="@Model.BodyAr" value-en="@Model.BodyEn" max="20000" rows="8" />
 <lang-pair label="الفئة" name-ar="CategoryAr" name-en="CategoryEn" value-ar="@Model.CategoryAr" value-en="@Model.CategoryEn" max="50" placeholder="Partnerships" />
-<lang-pair label="التاريخ (نص)" name-ar="NewsDateAr" name-en="NewsDateEn" value-ar="@Model.NewsDateAr" value-en="@Model.NewsDateEn" max="50" placeholder="May 25, 2026" />
-<lang-pair label="رابط «اقرأ المزيد» (اختياري — لا يظهر الرابط إن تُرك فارغاً)" name-ar="LinkUrl" value-ar="@Model.LinkUrl" max="500" ltr="true" placeholder="https://" />
+<lang-pair label="التاريخ كما يظهر (نص)" name-ar="NewsDateAr" name-en="NewsDateEn" value-ar="@Model.NewsDateAr" value-en="@Model.NewsDateEn" max="50" placeholder="May 25, 2026" />
+<div class="form-group" style="max-width:260px;">
+    <label for="PublishedOn">تاريخ النشر (لمحركات البحث)</label>
+    <input id="PublishedOn" name="PublishedOn" type="date" class="form-control" value="@Model.PublishedOn?.ToString("yyyy-MM-dd", inv)">
+    <span asp-validation-for="PublishedOn" class="field-error"></span>
+</div>
+<lang-pair label="رابط المصدر (اختياري — يظهر زر «المصدر» في صفحة الخبر)" name-ar="LinkUrl" value-ar="@Model.LinkUrl" max="500" ltr="true" placeholder="https://" />
+@{ ViewData["ImageLabel"] = "صورة الخبر"; }
+<partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="Model" view-data="ViewData" />
+<details class="row-editor" style="margin-bottom:16px;">
+    <summary>محركات البحث (اختياري — فارغ = العنوان والملخص)</summary>
+    <lang-pair label="عنوان محركات البحث" name-ar="MetaTitleAr" name-en="MetaTitleEn" value-ar="@Model.MetaTitleAr" value-en="@Model.MetaTitleEn" max="200" />
+    <lang-pair label="وصف محركات البحث" name-ar="MetaDescriptionAr" name-en="MetaDescriptionEn" value-ar="@Model.MetaDescriptionAr" value-en="@Model.MetaDescriptionEn" max="300" rows="2" />
+</details>

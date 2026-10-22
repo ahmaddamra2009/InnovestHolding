@@ -43,8 +43,17 @@ public class NavSubItemUpdateInput : NavItemCreateInput
     public int Id { get; set; }
 }
 
-public class PartnerCreateInput
+public class PartnerCreateInput : ImageFieldsInput
 {
+    [Display(Name = F.Url)]
+    [StringLength(500, ErrorMessage = K.MaxLength)]
+    [HttpsUrl]
+    public string? Url { get; set; }
+
+    public int? PartnerGroupId { get; set; }
+
+    public bool ShowOnHome { get; set; } = true;
+
     [Display(Name = F.Name)]
     [Required(ErrorMessage = K.Required)]
     [StringLength(200, ErrorMessage = K.MaxLength)]

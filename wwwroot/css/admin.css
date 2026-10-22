@@ -251,3 +251,10 @@ select.form-control { cursor: pointer; }
 .inline-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; }
 .inline-actions form { display: inline; }
 .form-hint { font-size: 0.82rem; color: var(--admin-text-muted); line-height: 1.7; }
+
+/* Image field (uploads) */
+.image-field { border: 1px solid var(--admin-border); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
+.image-field legend { padding-inline: 6px; font-weight: 700; }
+.image-current { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
+.image-current img { max-width: 220px; max-height: 140px; width: auto; height: auto; border-radius: 8px; object-fit: contain; background: var(--admin-bg); }
+.admin-thumb { width: 64px; height: 40px; object-fit: cover; border-radius: 6px; vertical-align: middle; }

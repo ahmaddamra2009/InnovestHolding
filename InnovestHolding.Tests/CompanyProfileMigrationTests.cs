@@ -37,8 +37,9 @@ public class CompanyProfileMigrationTests
     /// <summary>The real-data tables as JSON (every column that existed before the multi-page site), compared byte for byte.</summary>
     private static async Task<List<string>> RealDataAsync(Data.AppDbContext db) =>
     [
-        await One(db, "SELECT (SELECT * FROM Events ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
-        await One(db, "SELECT (SELECT * FROM News ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
+        // Frozen column lists: the columns of the multi-page release (later migrations add columns of their own).
+        await One(db, "SELECT (SELECT Id, TitleAr, TitleEn, DescriptionAr, DescriptionEn, EventDay, EventMonthAr, EventMonthEn, LocationAr, LocationEn, TimeAr, TimeEn, IsActive, SortOrder, CreatedAt FROM Events ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
+        await One(db, "SELECT (SELECT Id, TitleAr, TitleEn, SummaryAr, SummaryEn, CategoryAr, CategoryEn, NewsDateAr, NewsDateEn, LinkUrl, SortOrder, IsActive, CreatedAt FROM News ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
         await One(db, "SELECT (SELECT Id, NameAr, NameEn, SortOrder FROM Partners ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
         await One(db, "SELECT (SELECT * FROM Faqs ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
         await One(db, "SELECT (SELECT * FROM Registrations ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),

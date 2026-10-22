@@ -1,7 +1,7 @@
 @model NewsInput
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "إضافة خبر جديد"; }
 <div class="admin-card">
-    <form method="post" asp-action="Create" asp-controller="News">
+    <form method="post" asp-action="Create" asp-controller="News" enctype="multipart/form-data">
         @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
         <partial name="~/Views/Admin/News/_Fields.cshtml" model="Model" />
         <div class="form-check" style="margin-bottom:20px;"><input asp-for="IsActive"> <label>مفعّل</label></div>

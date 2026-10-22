@@ -6,7 +6,7 @@
     ViewData["Title"] = "تعديل صفحة: " + (string.IsNullOrWhiteSpace(i.TitleAr) ? Model.Page.Key : i.TitleAr);
     var isList = Model.Page.Kind == PageKind.List;
 }
-<form method="post" action="/Admin/Pages/Edit/@Model.Page.Key" asp-antiforgery="true" class="content-editor">
+<form method="post" action="/Admin/Pages/Edit/@Model.Page.Key" asp-antiforgery="true" enctype="multipart/form-data" class="content-editor">
     @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
 
     <div class="admin-card">
@@ -26,6 +26,13 @@
                 <label for="ShowInMenu">تظهر في القائمة الرئيسية والفوتر</label>
             </div>
         }
+    </div>
+
+    <div class="admin-card">
+        <div class="admin-card-header"><span class="admin-card-title">صورة الصفحة</span></div>
+        <p class="form-hint" style="margin-bottom:10px;">تظهر على بطاقة الصفحة في صفحات الوحدات، وهي صورة المشاركة على الشبكات الاجتماعية (يُفضّل 1200×630).</p>
+        @{ ViewData["ImageLabel"] = "الصورة"; }
+        <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="i" view-data="ViewData" />
     </div>
 
     <div class="admin-card">

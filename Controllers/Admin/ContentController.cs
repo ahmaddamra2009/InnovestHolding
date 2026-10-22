@@ -29,6 +29,55 @@ public class ContentController : AdminControllerBase
         return View(ViewPath, input);
     }
 
+    public const string FounderPhotoKey = "FounderPhoto";
+
+    private async Task<MediaFile?> FounderPhotoRowAsync(bool tracked)
+    {
+        var key = await _db.SiteContents.AsNoTracking().Where(c => c.SectionKey == ContentKeys.FounderPhoto)
+            .Select(c => c.ContentAr).FirstOrDefaultAsync();
+        if (string.IsNullOrEmpty(key)) return null;
+        var query = tracked ? _db.MediaFiles : _db.MediaFiles.AsNoTracking();
+        return await query.FirstOrDefaultAsync(m => m.FileKey == key);
+    }
+
+    private async Task SetFounderPhotoAsync()
+    {
+        var m = await FounderPhotoRowAsync(false);
+        ViewData[FounderPhotoKey] = new FounderPhotoInput { Current = MediaRefs.Of(m), ImageAltAr = m?.AltAr, ImageAltEn = m?.AltEn };
+    }
+
+    /// <summary>
+    /// The founder block's photo (its own small form: a file cannot be part of the big text form without making every
+    /// text save a multipart upload). The key founder_photo holds the image's FileKey; a replaced or removed image is
+    /// deleted with its file.
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> FounderPhoto(FounderPhotoInput input)
+    {
+        if (!ModelState.IsValid) return InvalidRedirectToEdit();
+        var current = await FounderPhotoRowAsync(true);
+        var uploaded = await UploadImageAsync(input);
+        if (!ModelState.IsValid) return InvalidRedirectToEdit();
+
+        var row = await _db.SiteContents.FirstOrDefaultAsync(c => c.SectionKey == ContentKeys.FounderPhoto);
+        if (row is null)
+        {
+            row = new SiteContent { SectionKey = ContentKeys.FounderPhoto };
+            _db.SiteContents.Add(row);
+        }
+        var leaving = ApplyImage(_db, current, uploaded, input, m => row.ContentAr = m?.FileKey ?? "");
+        row.UpdatedAt = DateTime.UtcNow;
+        await SaveWithImageAsync(_db, uploaded, leaving);
+        TempData["Success"] = L(MessageKeys.Admin.PhotoSaved);
+        return RedirectToAction(nameof(Edit));
+    }
+
+    private IActionResult InvalidRedirectToEdit()
+    {
+        TempData["Error"] = JoinErrors();
+        return RedirectToAction(nameof(Edit));
+    }
+
     /// <summary>The pages a page-key setting can point to (route table order), labelled with their Arabic titles.</summary>
     private async Task SetPageChoicesAsync()
     {
@@ -36,6 +85,7 @@ public class ContentController : AdminControllerBase
         ViewData[PageChoicesKey] = SiteRoutes.All
             .Select(p => new KeyValuePair<string, string>(p.Key, $"{titles.GetValueOrDefault(p.Key) ?? p.Key} ({p.Path})"))
             .ToList();
+        await SetFounderPhotoAsync();
     }
 
     public const string PageChoicesKey = "PageChoices";
@@ -132,6 +182,7 @@ public class ContentController : AdminControllerBase
             ContentRule.Count => ContentKeys.ParseCount(value.Ar.Trim(), 0) > 0,
             ContentRule.PageKey => SiteRoutes.IsKey(value.Ar.Trim()),
             ContentRule.Digits => value.Ar.Trim() is { Length: >= 8 and <= 15 } d && d.All(char.IsAsciiDigit),
+            ContentRule.UtcOffset => EventDates.TryParseOffset(value.Ar.Trim(), out _),
             _ => true
         };
         if (!ok)
@@ -142,6 +193,7 @@ public class ContentController : AdminControllerBase
                 ContentRule.SitePath => L(MessageKeys.SitePath, label),
                 ContentRule.Count => L(MessageKeys.Range, label, 1, ContentKeys.MaxCount),
                 ContentRule.PageKey or ContentRule.Digits => L(MessageKeys.InvalidValue, label),
+                ContentRule.UtcOffset => L(MessageKeys.UtcOffset),
                 _ => L(MessageKeys.HttpsUrl, label)
             };
             ModelState.AddModelError(arField, message);

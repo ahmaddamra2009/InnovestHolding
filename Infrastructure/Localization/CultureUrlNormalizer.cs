@@ -10,6 +10,8 @@ namespace InnovestHolding.Infrastructure.Localization;
 /// /Home, /Home/Index, /en/Index (any case, trailing slash) → / or /en
 /// /About, /about/, /EN/About/                            → /about, /en/about
 /// /ar, /ar/…                                             → the same path without /ar
+/// /News/My-Item/, /EN/forum/events/X                     → /news/my-item, /en/forum/events/x (detail pages; the
+///                                                          action then 301s an old slug to the current one)
 /// </code>
 /// </summary>
 public static class CultureUrlNormalizer
@@ -33,7 +35,7 @@ public static class CultureUrlNormalizer
         else if (ToEnglishHome.Contains(candidate)) candidate = CultureUrls.EnglishHome;
 
         if (candidate == path) return null;
-        return SiteRoutes.MatchCanonical(candidate) is not null ? candidate : null;
+        return SiteRoutes.MatchCanonical(candidate) is not null || SiteRoutes.MatchesDetail(candidate) ? candidate : null;
     }
 
     public static IApplicationBuilder UseCultureUrlNormalizer(this IApplicationBuilder app) =>

@@ -2,7 +2,7 @@
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "تعديل الفعالية"; }
 
 <div class="admin-card">
-    <form method="post" asp-action="Edit" asp-controller="Events">
+    <form method="post" asp-action="Edit" asp-controller="Events" enctype="multipart/form-data">
         @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
         <input type="hidden" asp-for="Id">
         <partial name="~/Views/Admin/Events/_Fields.cshtml" model="Model" />

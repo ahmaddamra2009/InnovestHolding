@@ -1,0 +1,83 @@
+@model DetailPageVm
+@using InnovestHolding.Infrastructure.Content
+@* A news item or an event: title band with the breadcrumb, the facts row, the image, the text, and an action card.
+   Every value is a database text resolved for the page language (Arabic fallback marked lang/dir). *@
+@{
+    ViewData["Seo"] = Model.Seo;
+    ViewData["Shell"] = Model.Shell;
+}
+<section class="page-hero detail-hero">
+  <span class="hero-tri hero-tri-a" aria-hidden="true"></span>
+  <span class="hero-tri hero-tri-b" aria-hidden="true"></span>
+  <div class="container">
+    <partial name="~/Views/Site/_Breadcrumb.cshtml" model="Model.Shell.Breadcrumbs" />
+    @if (!Model.Badge.IsEmpty)
+    {
+      <span class="detail-badge" lang="@Model.Badge.Lang" dir="@Model.Badge.Dir">@Model.Badge</span>
+    }
+    <h1 class="page-title" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@Model.Title</h1>
+    @if (Model.Facts.Count > 0)
+    {
+      <ul class="detail-facts">
+        @foreach (var fact in Model.Facts)
+        {
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(Icons.Svg(fact.Icon))</svg>
+            <span class="visually-hidden">@fact.Label:</span>
+            @if (fact.Href is not null)
+            {
+              <a href="@fact.Href" rel="noopener" lang="@fact.Text.Lang" dir="@fact.Text.Dir">@fact.Text</a>
+            }
+            else
+            {
+              <span lang="@fact.Text.Lang" dir="@fact.Text.Dir">@fact.Text</span>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</section>
+
+<section class="page-section detail-section">
+  <div class="container detail-layout">
+    <article class="detail-main">
+      @if (Model.ArabicOnly)
+      {
+        <p class="detail-notice">@L[K.Ui.ArabicOnlyNotice]</p>
+      }
+      @if (!Model.Notice.IsEmpty)
+      {
+        <p class="detail-notice is-muted">@Model.Notice</p>
+      }
+      @if (Model.Image is { } img)
+      {
+        @* The page's main image: loaded eagerly (likely the LCP element). *@
+        <figure class="detail-figure">
+          <img src="@img.Src" width="@img.Width" height="@img.Height" alt="@img.Alt" lang="@img.Alt.Lang" fetchpriority="high" decoding="async">
+        </figure>
+      }
+      @if (!Model.Lead.IsEmpty)
+      {
+        <p class="detail-lead" lang="@Model.Lead.Lang" dir="@Model.Lead.Dir">@Model.Lead</p>
+      }
+      @foreach (var p in Model.Body)
+      {
+        <p lang="@p.Lang" dir="@p.Dir">@ContentText.Lines(p)</p>
+      }
+    </article>
+    <aside class="detail-aside">
+      <div class="detail-card">
+        @foreach (var action in Model.Actions)
+        {
+          var external = action.Href.StartsWith("http", StringComparison.OrdinalIgnoreCase);
+          <a href="@action.Href" class="btn btn-accent" rel="@(external ? "noopener" : null)" lang="@action.Title.Lang" dir="@action.Title.Dir">@action.Title</a>
+        }
+        <a href="@Model.Back.Href" class="btn btn-outline" lang="@Model.Back.Title.Lang" dir="@Model.Back.Title.Dir">
+          <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          @Model.Back.Title
+        </a>
+      </div>
+    </aside>
+  </div>
+</section>

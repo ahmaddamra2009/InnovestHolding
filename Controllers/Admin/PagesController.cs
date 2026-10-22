@@ -1,4 +1,5 @@
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Infrastructure.Site;
 using InnovestHolding.Models;
@@ -27,7 +28,7 @@ public class PagesController(AppDbContext db) : AdminControllerBase
     public async Task<IActionResult> Edit(string? id)
     {
         if (SiteRoutes.Find(id) is not { } page) return NotFound();
-        var row = await db.Pages.AsNoTracking().FirstOrDefaultAsync(p => p.Key == page.Key);
+        var row = await db.Pages.AsNoTracking().Include(p => p.Image).FirstOrDefaultAsync(p => p.Key == page.Key);
         return View(EditView, new PageEditVm(page, ToInput(row), row is null));
     }
 
@@ -35,7 +36,10 @@ public class PagesController(AppDbContext db) : AdminControllerBase
     public async Task<IActionResult> Edit(string? id, PageEditInput input)
     {
         if (SiteRoutes.Find(id) is not { } page) return NotFound();
-        var row = await db.Pages.FirstOrDefaultAsync(p => p.Key == page.Key);
+        var row = await db.Pages.Include(p => p.Image).FirstOrDefaultAsync(p => p.Key == page.Key);
+        input.Current = MediaRefs.Of(row?.Image);
+        if (!ModelState.IsValid) return View(EditView, new PageEditVm(page, input, row is null));
+        var uploaded = await UploadImageAsync(input);
         if (!ModelState.IsValid) return View(EditView, new PageEditVm(page, input, row is null));
 
         if (row is null)
@@ -60,8 +64,9 @@ public class PagesController(AppDbContext db) : AdminControllerBase
         row.MetaDescriptionEn = Optional(input.MetaDescriptionEn);
         row.ShowInMenu = page.Key == PageKeys.Home || input.ShowInMenu;
         row.UpdatedAt = DateTime.UtcNow;
+        var leaving = ApplyImage(db, row.Image, uploaded, input, m => row.Image = m);
 
-        await db.SaveChangesAsync(); // the interceptor invalidates the site cache
+        await SaveWithImageAsync(db, uploaded, leaving); // the interceptor invalidates the site cache
         TempData["Success"] = L(MessageKeys.Admin.PageSaved);
         return RedirectToAction(nameof(Edit), new { id = page.Key });
     }
@@ -105,9 +110,6 @@ public class PagesController(AppDbContext db) : AdminControllerBase
         return (await db.Pages.Where(p => keys.Contains(p.Key)).MaxAsync(p => (int?)p.SortOrder) ?? 0) + 1;
     }
 
-    private static string? Lf(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim().Replace("\r\n", "\n").Replace('\r', '\n');
-
     private static PageEditInput ToInput(Page? p) => p is null
         ? new PageEditInput { ShowInMenu = true }
         : new PageEditInput
@@ -116,6 +118,7 @@ public class PagesController(AppDbContext db) : AdminControllerBase
             IntroAr = p.IntroAr, IntroEn = p.IntroEn, BodyAr = p.BodyAr, BodyEn = p.BodyEn,
             EmptyTextAr = p.EmptyTextAr, EmptyTextEn = p.EmptyTextEn, MetaTitleAr = p.MetaTitleAr, MetaTitleEn = p.MetaTitleEn,
             MetaDescriptionAr = p.MetaDescriptionAr, MetaDescriptionEn = p.MetaDescriptionEn, ShowInMenu = p.ShowInMenu,
+            ImageAltAr = p.Image?.AltAr, ImageAltEn = p.Image?.AltEn, Current = MediaRefs.Of(p.Image),
         };
 }
 

@@ -1,4 +1,5 @@
 using InnovestHolding.Infrastructure.Content;
+using Microsoft.EntityFrameworkCore;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Infrastructure.Seo;
 using InnovestHolding.Infrastructure.Site;
@@ -53,9 +54,14 @@ public abstract class PublicControllerBase : Controller
                 .OrderBy(p => p.Key == unit.Key ? -1 : v.Snapshot.Page(p.Key)?.SortOrder ?? 0)
                 .Select(p => new LinkVm(v.Url(p.Key), v.Title(p.Key), p.Key == key)).ToList();
 
-        var listed = key == PageKeys.ForumEvents && list.OfType<EventsBlock>().FirstOrDefault() is { } paged
-            ? paged.Events.Select(e => e.Title.Value).ToList()
-            : null;
+        IReadOnlyList<(string, string?)>? listed = key switch
+        {
+            PageKeys.ForumEvents when list.OfType<EventsBlock>().FirstOrDefault() is { } paged =>
+                paged.Events.Select(e => (e.Title.Value, (string?)e.Href)).ToList(),
+            PageKeys.News when list.OfType<NewsBlock>().FirstOrDefault() is { } news =>
+                news.News.Select(n => (n.Title.Value, (string?)n.Href)).ToList(),
+            _ => null,
+        };
         var seo = SeoBuilder.Build(page, v, baseUrl, listedNames: listed);
         SetRobots(seo.Robots);
         return View("~/Views/Site/Page.cshtml", new SitePageVm
@@ -70,6 +76,39 @@ public abstract class PublicControllerBase : Controller
             UnitTitle = unit is null ? LText.Empty : v.Title(unit.Key),
             Blocks = list,
         });
+    }
+
+    /// <summary>A static UI string (resx) in the page language.</summary>
+    protected LText Ui(string key) =>
+        new(HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Localization.IStringLocalizer<SharedResource>>()[key].Value, false);
+
+    /// <summary>
+    /// Renders a detail page (Views/Site/Detail.cshtml): the shell has the list page active and the item as the last
+    /// breadcrumb step; the language switch goes to the same item in the other language.
+    /// </summary>
+    protected IActionResult Detail(SiteViews v, DetailRoute route, string slug, SeoVm seo, DetailPageVm page)
+    {
+        var baseUrl = BaseUrl(v);
+        var own = CultureUrls.Detail(route.Key, slug, English);
+        page.Shell = v.Shell(route.Parent, baseUrl, CultureUrls.Detail(route.Key, slug, !English),
+            new BreadcrumbVm(page.Title, null, baseUrl is null ? null : baseUrl + own));
+        SetRobots(seo.Robots);
+        return View("~/Views/Site/Detail.cshtml", page);
+    }
+
+    /// <summary>
+    /// An unknown slug: when it is an old slug of an item that is still published, 301 to the item's current URL in
+    /// the same language (the target is built from the route table and the stored slug only); otherwise the 404 page.
+    /// </summary>
+    protected async Task<IActionResult> OldSlugAsync(Data.AppDbContext db, string detailKey, string slug, Func<int, Task<string?>> currentSlug)
+    {
+        var route = SiteRoutes.Detail(detailKey);
+        var id = await db.SlugRedirects.AsNoTracking()
+            .Where(r => r.EntityType == route.EntityType && r.OldSlug == slug)
+            .Select(r => (int?)r.EntityId).FirstOrDefaultAsync(HttpContext.RequestAborted);
+        if (id is { } entityId && await currentSlug(entityId) is { } current && current != slug)
+            return RedirectPermanent(Request.PathBase + CultureUrls.Detail(detailKey, current, English));
+        return await NotFoundPageAsync();
     }
 
     /// <summary>

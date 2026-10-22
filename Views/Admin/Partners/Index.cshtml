@@ -1,37 +1,104 @@
 @model List<Partner>
-@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "الشركاء والرعاة"; }
+@using InnovestHolding.Infrastructure.Content
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "الشركاء والرعاة";
+    var groups = ViewData[InnovestHolding.Controllers.Admin.PartnersController.GroupsKey] as List<PartnerGroup> ?? [];
+}
+@functions {
+    // The group picker of a partner form (only existing groups; "none" lists the partner after the groups).
+    private Microsoft.AspNetCore.Html.IHtmlContent GroupSelect(List<PartnerGroup> groups, int? selected, string id)
+    {
+        var sb = new System.Text.StringBuilder();
+        var e = System.Text.Encodings.Web.HtmlEncoder.Default;
+        sb.Append("<select class=\"form-control\" name=\"PartnerGroupId\" id=\"").Append(e.Encode(id)).Append("\">");
+        sb.Append("<option value=\"\">— بلا مجموعة —</option>");
+        foreach (var g in groups)
+        {
+            sb.Append("<option value=\"").Append(g.Id).Append('"').Append(g.Id == selected ? " selected" : "").Append('>')
+              .Append(e.Encode(g.NameAr)).Append(g.IsActive ? "" : " (مخفية)").Append("</option>");
+        }
+        sb.Append("</select>");
+        return new Microsoft.AspNetCore.Html.HtmlString(sb.ToString());
+    }
+}
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">إضافة شريك جديد</span></div>
-    <form method="post" asp-action="Create" asp-controller="Partners">
+    <form method="post" asp-action="Create" asp-controller="Partners" enctype="multipart/form-data">
         <lang-pair label="اسم الشريك" name-ar="NameAr" name-en="NameEn" max="200" required="true" id-prefix="new-" />
+        <lang-pair label="موقع الشريك (https — اختياري)" name-ar="Url" max="500" ltr="true" placeholder="https://" id-prefix="new-" />
+        <div class="form-group"><label for="new-group">المجموعة (في صفحة شركاء المنتدى)</label>@GroupSelect(groups, null, "new-group")</div>
+        <div class="form-check" style="margin-bottom:12px;"><input type="checkbox" id="new-home" name="ShowOnHome" value="true" checked> <label for="new-home">يظهر في شريط الشركاء في الصفحة الرئيسية</label><input type="hidden" name="ShowOnHome" value="false"></div>
+        @{ ViewData["ImageLabel"] = "الشعار"; ViewData["ImagePrefix"] = "new-"; }
+        <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="new PartnerCreateInput()" view-data="ViewData" />
         <button type="submit" class="btn-admin btn-primary">إضافة</button>
     </form>
 </div>
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">الشركاء الحاليون (@Model.Count)</span></div>
     <table class="admin-table">
-        <thead><tr><th>#</th><th>الاسم</th><th>EN</th><th>الظهور</th><th>إجراءات</th></tr></thead>
+        <thead><tr><th>#</th><th>الشعار</th><th>الاسم</th><th>EN</th><th>الظهور</th><th>إجراءات</th></tr></thead>
         <tbody>
         @foreach (var item in Model)
         {
+            var current = MediaRefs.Of(item.Logo);
             <tr>
                 <td>@item.SortOrder</td>
+                <td>@if (current is not null) { <img class="admin-thumb" src="@current.Url" alt=""> }</td>
                 <td>
                     <strong>@item.NameAr</strong>
+                    @if (groups.FirstOrDefault(g => g.Id == item.PartnerGroupId) is { } group) { <span class="field-hint"> · @group.NameAr</span> }
                     <details class="row-editor">
                         <summary>تعديل</summary>
-                        <form method="post" asp-action="Update" asp-controller="Partners" class="edit-form">
+                        <form method="post" asp-action="Update" asp-controller="Partners" class="edit-form" enctype="multipart/form-data">
                             <input type="hidden" name="id" value="@item.Id">
                             <lang-pair label="اسم الشريك" name-ar="NameAr" name-en="NameEn" value-ar="@item.NameAr" value-en="@item.NameEn" max="200" required="true" id-prefix="p@(item.Id)-" />
+                            <lang-pair label="موقع الشريك (https — اختياري)" name-ar="Url" value-ar="@item.Url" max="500" ltr="true" placeholder="https://" id-prefix="p@(item.Id)-" />
+                            <div class="form-group"><label for="p@(item.Id)-group">المجموعة</label>@GroupSelect(groups, item.PartnerGroupId, $"p{item.Id}-group")</div>
+                            <div class="form-check" style="margin-bottom:12px;"><input type="checkbox" id="p@(item.Id)-home" name="ShowOnHome" value="true" @(item.ShowOnHome ? "checked" : "")> <label for="p@(item.Id)-home">يظهر في الصفحة الرئيسية</label><input type="hidden" name="ShowOnHome" value="false"></div>
+                            @{ ViewData["ImageLabel"] = "الشعار"; ViewData["ImagePrefix"] = $"p{item.Id}-"; }
+                            <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="@(new PartnerUpdateInput { Current = current, ImageAltAr = item.Logo?.AltAr, ImageAltEn = item.Logo?.AltEn })" view-data="ViewData" />
                             <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
                         </form>
                     </details>
                 </td>
                 <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.NameEn))" /></td>
                 <td><form method="post" asp-action="Toggle" asp-controller="Partners" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="@(item.IsActive ? "badge-active" : "badge-inactive")" style="border:0;cursor:pointer;" title="تبديل الظهور">@(item.IsActive ? "ظاهر" : "مخفي")</button></form></td>
-                <td><form method="post" asp-action="Delete" asp-controller="Partners" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا الشريك؟')">حذف</button></form></td>
+                <td><form method="post" asp-action="Delete" asp-controller="Partners" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا الشريك وشعاره؟')">حذف</button></form></td>
             </tr>
         }
         </tbody>
     </table>
+</div>
+<div class="admin-card" id="groups">
+    <div class="admin-card-header"><span class="admin-card-title">مجموعات الشركاء (عناوين صفحة شركاء المنتدى: الفئات أو مستويات الرعاية)</span></div>
+    <form method="post" asp-action="Create" asp-controller="PartnerGroups">
+        <lang-pair label="اسم المجموعة" name-ar="NameAr" name-en="NameEn" max="100" required="true" id-prefix="g-new-" />
+        <button type="submit" class="btn-admin btn-primary">إضافة مجموعة</button>
+    </form>
+    @if (groups.Count > 0)
+    {
+        <table class="admin-table" style="margin-top:20px;">
+            <thead><tr><th>المجموعة</th><th>إجراءات</th></tr></thead>
+            <tbody>
+            @foreach (var g in groups)
+            {
+                <tr>
+                    <td>
+                        <form method="post" asp-action="Update" asp-controller="PartnerGroups" class="edit-form">
+                            <input type="hidden" name="Id" value="@g.Id">
+                            <lang-pair label="الاسم" name-ar="NameAr" name-en="NameEn" value-ar="@g.NameAr" value-en="@g.NameEn" max="100" required="true" id-prefix="g@(g.Id)-" />
+                            <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                                <label>الترتيب <input type="number" name="SortOrder" value="@g.SortOrder" min="0" max="100000" class="form-control" style="max-width:110px;display:inline-block;"></label>
+                                <label class="form-check"><input type="checkbox" name="IsActive" value="true" @(g.IsActive ? "checked" : "")> ظاهرة<input type="hidden" name="IsActive" value="false"></label>
+                                <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
+                            </div>
+                        </form>
+                    </td>
+                    <td><form method="post" asp-action="Delete" asp-controller="PartnerGroups" style="display:inline;"><input type="hidden" name="id" value="@g.Id"><button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف المجموعة؟ يبقى شركاؤها بلا مجموعة.')">حذف</button></form></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
 </div>

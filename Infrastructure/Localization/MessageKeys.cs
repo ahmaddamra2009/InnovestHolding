@@ -34,6 +34,18 @@ public static class MessageKeys
     public const string ErrorGeneric = "Msg_ErrorGeneric";
     public const string ErrorReference = "Msg_ErrorReference";
     public const string BackToHome = "Msg_BackToHome";
+    public const string EndBeforeStart = "Msg_EndBeforeStart";
+    public const string DateRequired = "Msg_DateRequired";
+    public const string UtcOffset = "Msg_UtcOffset";
+    public const string SlugTaken = "Msg_SlugTaken";
+    public const string SlugInvalid = "Msg_SlugInvalid";
+    public const string ImageStorage = "Msg_ImageStorage";
+    public const string ImageSize = "Msg_ImageSize";
+    public const string ImageAnimated = "Msg_ImageAnimated";
+    public const string ImageDimensions = "Msg_ImageDimensions";
+    public const string ImageCorrupt = "Msg_ImageCorrupt";
+    public const string ImageMismatch = "Msg_ImageMismatch";
+    public const string ImageType = "Msg_ImageType";
 
     public static class Fields
     {
@@ -95,6 +107,17 @@ public static class MessageKeys
         public const string MetaTitleEn = "Field_MetaTitleEn";
         public const string MetaDescription = "Field_MetaDescription";
         public const string MetaDescriptionEn = "Field_MetaDescriptionEn";
+        public const string Slug = "Field_Slug";
+        public const string City = "Field_City";
+        public const string CityEn = "Field_CityEn";
+        public const string Address = "Field_Address";
+        public const string AddressEn = "Field_AddressEn";
+        public const string OnlineUrl = "Field_OnlineUrl";
+        public const string StartsAt = "Field_StartsAt";
+        public const string EndsAt = "Field_EndsAt";
+        public const string UtcOffset = "Field_UtcOffset";
+        public const string ImageAlt = "Field_ImageAlt";
+        public const string ImageAltEn = "Field_ImageAltEn";
     }
 
     public static class Admin
@@ -140,6 +163,10 @@ public static class MessageKeys
         public const string EnHint = "Admin_EnHint";
         public const string NeutralHint = "Admin_NeutralHint";
         public const string ListHint = "Admin_ListHint";
+        public const string GroupAdded = "Admin_GroupAdded";
+        public const string GroupUpdated = "Admin_GroupUpdated";
+        public const string GroupDeleted = "Admin_GroupDeleted";
+        public const string PhotoSaved = "Admin_PhotoSaved";
     }
 
     public static class Ui
@@ -185,5 +212,18 @@ public static class MessageKeys
         public const string ContactSocial = "Ui_ContactSocial";
         public const string SkipToContent = "Ui_SkipToContent";
         public const string BackToTop = "Ui_BackToTop";
+        public const string EventDate = "Ui_EventDate";
+        public const string EventTime = "Ui_EventTime";
+        public const string EventVenue = "Ui_EventVenue";
+        public const string EventOnline = "Ui_EventOnline";
+        public const string EventJoinOnline = "Ui_EventJoinOnline";
+        public const string EventCancelled = "Ui_EventCancelled";
+        public const string EventPostponed = "Ui_EventPostponed";
+        public const string EventPast = "Ui_EventPast";
+        public const string EventEndedNotice = "Ui_EventEndedNotice";
+        public const string PublishedOn = "Ui_PublishedOn";
+        public const string NewsSource = "Ui_NewsSource";
+        public const string ArabicOnlyNotice = "Ui_ArabicOnlyNotice";
+        public const string ViewDetails = "Ui_ViewDetails";
     }
 }

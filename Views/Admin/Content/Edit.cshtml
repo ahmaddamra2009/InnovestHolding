@@ -2,6 +2,17 @@
 @using InnovestHolding.Infrastructure.Content
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "تعديل المحتوى"; }
 
+@if (ViewData[InnovestHolding.Controllers.Admin.ContentController.FounderPhotoKey] is FounderPhotoInput founderPhoto)
+{
+    @* Its own form (multipart): the photo of the founder block on the About page. *@
+    <form method="post" asp-action="FounderPhoto" asp-controller="Content" enctype="multipart/form-data" class="admin-card">
+        <div class="admin-card-header"><span class="admin-card-title">صورة المؤسس (قسم كلمة المؤسس في صفحة «من نحن»)</span></div>
+        @{ ViewData["ImageLabel"] = "الصورة"; ViewData["ImagePrefix"] = "founder-"; }
+        <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="founderPhoto" view-data="ViewData" />
+        <button type="submit" class="btn-admin btn-primary">حفظ الصورة</button>
+    </form>
+}
+
 <form method="post" asp-action="Edit" asp-controller="Content" class="content-editor">
     @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
 

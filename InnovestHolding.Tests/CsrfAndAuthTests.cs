@@ -14,7 +14,7 @@ public class DatabaseIsolationTests(TestAppFactory f)
     [Fact]
     public void App_uses_the_LocalDB_test_database()
     {
-        Assert.Equal("InnovestHolding_Tests", f.EffectiveDatabase);
+        Assert.Equal(TestDb.Name("InnovestHolding_Tests"), f.EffectiveDatabase);
         Assert.StartsWith(@"(localdb)\InnovestLocal", f.EffectiveDataSource, StringComparison.OrdinalIgnoreCase);
     }
 }
@@ -127,7 +127,7 @@ public class AdminAuthTests(TestAppFactory f)
                         && typeof(Controller).IsAssignableFrom(t))
             .ToList();
 
-        Assert.Equal(17, controllers.Count); // an empty scan cannot pass (15 + Pages, ContentItems)
+        Assert.Equal(18, controllers.Count); // an empty scan cannot pass (15 + Pages, ContentItems, PartnerGroups)
         Assert.All(controllers, t => Assert.True(typeof(AdminControllerBase).IsAssignableFrom(t), t.Name));
 
         var authorize = typeof(AdminControllerBase).GetCustomAttribute<AuthorizeAttribute>();

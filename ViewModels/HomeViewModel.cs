@@ -17,7 +17,7 @@ public sealed class HomeViewModel
     public required IReadOnlyList<StatVm> Stats { get; init; }
     public required IReadOnlyList<NewsCardVm> News { get; init; }
     public required IReadOnlyList<EventCardVm> Events { get; init; }
-    public required IReadOnlyList<LText> Partners { get; init; }
+    public required IReadOnlyList<PartnerVm> Partners { get; init; }
     public required IReadOnlyList<FaqVm> Faqs { get; init; }
     public required RegisterFormVm Register { get; init; }
     public required ContactFormVm Contact { get; init; }
@@ -32,13 +32,13 @@ public sealed class HomeViewModel
     /// <summary>Reveal delay class: the literal page's pattern, clamped to the 6 classes the CSS defines.</summary>
     public static string Delay(int n) => n <= 0 ? "" : $" reveal-delay-{Math.Min(n, 6)}";
 
-    public static HomeViewModel Create(SiteViews v, ShellVm shell, SeoVm seo)
+    public static HomeViewModel Create(SiteViews v, ShellVm shell, SeoVm seo, DateTimeOffset now)
     {
         var services = v.Services();
         var stats = v.Stats();
         var news = v.NewsCards(v.Snapshot.News);
-        var events = v.EventCards(v.Snapshot.Events.Take(3));
-        var partners = v.Partners();
+        var events = v.EventCards(v.Snapshot.Events.Take(3), now);
+        var partners = v.Partners(homeOnly: true);
         var faqs = v.Faqs();
         var units = v.Cards(PageKeys.Ecosystem, true);
 

@@ -65,12 +65,21 @@
         <div class="block-head">
           <h2 class="block-title" lang="@partners.Title.Lang" dir="@partners.Title.Dir">@ContentText.Highlight(partners.Title)</h2>
         </div>
-        <ul class="partner-grid">
-          @foreach (var partner in partners.Partners)
-          {
-            <li class="partner-tile"><span lang="@partner.Lang" dir="@partner.Dir">@partner</span></li>
-          }
-        </ul>
+        @foreach (var group in partners.Groups)
+        {
+          <div class="partner-group">
+            @if (!group.Name.IsEmpty)
+            {
+              <h3 class="partner-group-title" lang="@group.Name.Lang" dir="@group.Name.Dir">@group.Name</h3>
+            }
+            <ul class="partner-grid">
+              @foreach (var partner in group.Partners)
+              {
+                <li class="partner-tile"><partial name="Blocks/_PartnerMark" model="partner" /></li>
+              }
+            </ul>
+          </div>
+        }
       </div>
     </section>
     break;
@@ -93,7 +102,11 @@
   case FounderBlock founder:
     <section class="page-section is-cream">
       <div class="container">
-        <div class="founder">
+        <div class="founder@(founder.Photo is null ? "" : " has-photo")">
+          @if (founder.Photo is { } photo)
+          {
+            <img class="founder-photo" src="@photo.Src" width="@photo.Width" height="@photo.Height" alt="@photo.Alt" lang="@photo.Alt.Lang" loading="lazy" decoding="async">
+          }
           <h2 class="block-title" lang="@founder.Heading.Lang" dir="@founder.Heading.Dir">@ContentText.Highlight(founder.Heading)</h2>
           <blockquote class="founder-message" lang="@founder.Message.Lang" dir="@founder.Message.Dir">@ContentText.Lines(founder.Message)</blockquote>
           <p class="founder-name"><strong lang="@founder.Name.Lang" dir="@founder.Name.Dir">@founder.Name</strong>

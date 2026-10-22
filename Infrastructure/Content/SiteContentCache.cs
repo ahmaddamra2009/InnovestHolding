@@ -9,17 +9,25 @@ namespace InnovestHolding.Infrastructure.Content;
 public sealed record TextPair(string Ar, string? En);
 public sealed record NavSubRow(string TitleAr, string? TitleEn, string Href, string? IconSvg);
 public sealed record NavRow(string TitleAr, string? TitleEn, string Href, bool HasDropdown, bool ShowInFooter, IReadOnlyList<NavSubRow> SubItems);
+/// <summary>An uploaded image as the pages need it (Infrastructure/Media).</summary>
+public sealed record MediaRef(string FileKey, string Format, int Width, int Height, string AltAr, string? AltEn)
+{
+    public string Url => Media.MediaStore.Url(FileKey, Format);
+}
 public sealed record PageRow(string Key, string TitleAr, string? TitleEn, string SummaryAr, string? SummaryEn, string IntroAr, string? IntroEn,
     string BodyAr, string? BodyEn, string EmptyTextAr, string? EmptyTextEn, string MetaTitleAr, string? MetaTitleEn,
-    string MetaDescriptionAr, string? MetaDescriptionEn, bool ShowInMenu, int SortOrder, DateTime UpdatedAt);
+    string MetaDescriptionAr, string? MetaDescriptionEn, bool ShowInMenu, int SortOrder, DateTime UpdatedAt, MediaRef? Image = null);
 public sealed record ItemRow(string TextAr, string? TextEn, string? DescriptionAr, string? DescriptionEn, string? IconKey);
 public sealed record PlatformRow(string TitleAr, string? TitleEn, string DescriptionAr, string? DescriptionEn,
     string? ShortTitleAr, string? ShortTitleEn, string? LinkUrl, bool ShowInFooter, string IconSvg);
 public sealed record StatRow(string LabelAr, string? LabelEn, string? ShortLabelAr, string? ShortLabelEn, int Value, string Suffix, string IconSvg);
 public sealed record NewsRow(string TitleAr, string? TitleEn, string SummaryAr, string? SummaryEn, string CategoryAr, string? CategoryEn,
-    string NewsDateAr, string? NewsDateEn, string? LinkUrl);
+    string NewsDateAr, string? NewsDateEn, string? LinkUrl, string Slug, MediaRef? Image);
 public sealed record EventRow(string TitleAr, string? TitleEn, string DescriptionAr, string? DescriptionEn, int EventDay,
-    string EventMonthAr, string? EventMonthEn, string LocationAr, string? LocationEn, string TimeAr, string? TimeEn);
+    string EventMonthAr, string? EventMonthEn, string LocationAr, string? LocationEn, string TimeAr, string? TimeEn,
+    string Slug, string SummaryAr, string? SummaryEn, DateTimeOffset? StartsAt, DateTimeOffset? EndsAt, Models.EventStatus Status, MediaRef? Image);
+public sealed record PartnerRow(string NameAr, string? NameEn, MediaRef? Logo, string? Url, int? GroupId, bool ShowOnHome);
+public sealed record PartnerGroupRow(int Id, string NameAr, string? NameEn);
 public sealed record FaqRow(string QuestionAr, string? QuestionEn, string AnswerAr, string? AnswerEn);
 public sealed record InterestRow(int Id, string NameAr, string? NameEn);
 public sealed record SocialRow(string Network, string Url);
@@ -36,14 +44,16 @@ public sealed record SiteSnapshot(
     IReadOnlyList<StatRow> Stats,
     IReadOnlyList<NewsRow> News,
     IReadOnlyList<EventRow> Events,
-    IReadOnlyList<TextPair> Partners,
+    IReadOnlyList<PartnerRow> Partners,
     IReadOnlyList<FaqRow> Faqs,
     IReadOnlyList<InterestRow> Interests,
     IReadOnlyList<TextPair> Benefits,
     IReadOnlyList<SocialRow> Socials,
     ListCount NewsCount,
     ListCount EventsCount,
-    ListCount PartnersCount)
+    ListCount PartnersCount,
+    IReadOnlyList<PartnerGroupRow> PartnerGroups,
+    MediaRef? FounderPhoto = null)
 {
     public IReadOnlyList<ItemRow> ItemsOf(string group) => Items.GetValueOrDefault(group) ?? [];
 
@@ -65,7 +75,7 @@ public interface ISiteContentCache
 /// <see cref="ContentCacheInvalidationInterceptor"/>; the absolute expiry is only a safety net for edits made outside
 /// the app (e.g. SQL run on the server).
 /// </summary>
-public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory scopes) : ISiteContentCache
+public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory scopes, TimeProvider time) : ISiteContentCache
 {
     private const string CacheKey = "site-snapshot";
     public static readonly TimeSpan SafetyExpiry = TimeSpan.FromMinutes(10);
@@ -115,7 +125,8 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
         var pages = await db.Pages.AsNoTracking()
             .Select(p => new PageRow(p.Key, p.TitleAr, p.TitleEn, p.SummaryAr, p.SummaryEn, p.IntroAr, p.IntroEn, p.BodyAr, p.BodyEn,
                 p.EmptyTextAr, p.EmptyTextEn, p.MetaTitleAr, p.MetaTitleEn, p.MetaDescriptionAr, p.MetaDescriptionEn,
-                p.ShowInMenu, p.SortOrder, p.UpdatedAt))
+                p.ShowInMenu, p.SortOrder, p.UpdatedAt,
+                p.Image == null ? null : new MediaRef(p.Image.FileKey, p.Image.Format, p.Image.Width, p.Image.Height, p.Image.AltAr, p.Image.AltEn)))
             .ToDictionaryAsync(p => p.Key, StringComparer.Ordinal, ct);
 
         var itemRows = await db.ContentItems.AsNoTracking()
@@ -156,7 +167,8 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
             .OrderBy(n => n.SortOrder).ThenBy(n => n.Id)
             .Take(newsLimit)
             .Select(n => new NewsRow(n.TitleAr, n.TitleEn, n.SummaryAr, n.SummaryEn, n.CategoryAr, n.CategoryEn,
-                n.NewsDateAr, n.NewsDateEn, n.LinkUrl))
+                n.NewsDateAr, n.NewsDateEn, n.LinkUrl, n.Slug,
+                n.Image == null ? null : new MediaRef(n.Image.FileKey, n.Image.Format, n.Image.Width, n.Image.Height, n.Image.AltAr, n.Image.AltEn)))
             .ToListAsync(ct);
 
         // News can grow: counted in the database, not loaded.
@@ -164,17 +176,30 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
         var newsEnglish = await db.News.CountAsync(n => n.IsActive && n.TitleEn != null && n.TitleEn != ""
                                                         && n.SummaryEn != null && n.SummaryEn != "", ct);
 
-        var events = await db.Events.AsNoTracking()
-            .Where(e => e.IsActive)
-            .OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
-            .Select(e => new EventRow(e.TitleAr, e.TitleEn, e.DescriptionAr, e.DescriptionEn, e.EventDay,
-                e.EventMonthAr, e.EventMonthEn, e.LocationAr, e.LocationEn, e.TimeAr, e.TimeEn))
+        // Upcoming first (by date, undated ones first in their admin order), then past ones (most recent first).
+        var events = await EventQueries.Ordered(db.Events.AsNoTracking().Where(e => e.IsActive), time.GetUtcNow())
+            .Select(EventQueries.Row)
             .ToListAsync(ct);
 
         var partners = await db.Partners.AsNoTracking()
             .Where(p => p.IsActive)
             .OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
-            .Select(p => new TextPair(p.NameAr, p.NameEn))
+            .Select(p => new PartnerRow(p.NameAr, p.NameEn,
+                p.Logo == null ? null : new MediaRef(p.Logo.FileKey, p.Logo.Format, p.Logo.Width, p.Logo.Height, p.Logo.AltAr, p.Logo.AltEn),
+                p.Url, p.PartnerGroupId, p.ShowOnHome))
+            .ToListAsync(ct);
+
+        // The founder's photo: the key holds the FileKey of an uploaded image (one small read when it is set).
+        var founderKey = content.GetValueOrDefault(ContentKeys.FounderPhoto)?.Ar;
+        var founderPhoto = string.IsNullOrEmpty(founderKey)
+            ? null
+            : await db.MediaFiles.AsNoTracking().Where(m => m.FileKey == founderKey)
+                .Select(m => new MediaRef(m.FileKey, m.Format, m.Width, m.Height, m.AltAr, m.AltEn)).FirstOrDefaultAsync(ct);
+
+        var partnerGroups = await db.PartnerGroups.AsNoTracking()
+            .Where(g => g.IsActive)
+            .OrderBy(g => g.SortOrder).ThenBy(g => g.Id)
+            .Select(g => new PartnerGroupRow(g.Id, g.NameAr, g.NameEn))
             .ToListAsync(ct);
 
         var faqs = await db.Faqs.AsNoTracking()
@@ -203,7 +228,9 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
 
         return new SiteSnapshot(content, pages, items, nav, platforms, stats, news, events, partners, faqs, interests, benefits, socials,
             new ListCount(newsTotal, newsEnglish),
-            new ListCount(events.Count, events.Count(e => Has(e.TitleEn) && Has(e.DescriptionEn))),
-            new ListCount(partners.Count, partners.Count(p => Has(p.En))));
+            new ListCount(events.Count, events.Count(e => EventQueries.HasEnglish(e.TitleEn, e.SummaryEn, e.DescriptionEn))),
+            new ListCount(partners.Count, partners.Count(p => Has(p.NameEn))),
+            partnerGroups,
+            founderPhoto);
     }
 }

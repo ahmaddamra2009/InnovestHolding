@@ -9,28 +9,7 @@
   <span class="hero-tri hero-tri-a" aria-hidden="true"></span>
   <span class="hero-tri hero-tri-b" aria-hidden="true"></span>
   <div class="container">
-    @if (crumbs.Count > 0)
-    {
-      <nav class="breadcrumb" aria-label="@L[K.Ui.BreadcrumbAria]">
-        <ol>
-          @for (var i = 0; i < crumbs.Count; i++)
-          {
-            var c = crumbs[i];
-            var collapse = i > 0 && i < crumbs.Count - 2;
-            <li class="@(collapse ? "crumb-mid" : null)">
-              @if (c.Href is not null)
-              {
-                <a href="@c.Href" lang="@c.Title.Lang" dir="@c.Title.Dir">@c.Title</a>
-              }
-              else
-              {
-                <span aria-current="page" lang="@c.Title.Lang" dir="@c.Title.Dir">@c.Title</span>
-              }
-            </li>
-          }
-        </ol>
-      </nav>
-    }
+    <partial name="~/Views/Site/_Breadcrumb.cshtml" model="crumbs" />
     <h1 class="page-title" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@Model.Title</h1>
     @if (!Model.Intro.IsEmpty)
     {

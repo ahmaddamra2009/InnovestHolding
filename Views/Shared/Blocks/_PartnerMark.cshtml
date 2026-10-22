@@ -1,0 +1,27 @@
+@model PartnerVm
+@* A partner: its logo (alt = its name) or its name; a link to its site when the admin set one (sponsor links are
+   marked rel="sponsored", SEO decision). *@
+@{
+    var name = Model.Name;
+}
+@if (Model.Url is not null)
+{
+  <a href="@Model.Url" rel="sponsored noopener" target="_blank">
+    @if (Model.Logo is { } logo)
+    {
+      <img src="@logo.Src" width="@logo.Width" height="@logo.Height" alt="@name" lang="@name.Lang" loading="lazy" decoding="async">
+    }
+    else
+    {
+      <span lang="@name.Lang" dir="@name.Dir">@name</span>
+    }
+  </a>
+}
+else if (Model.Logo is { } logo)
+{
+  <img src="@logo.Src" width="@logo.Width" height="@logo.Height" alt="@name" lang="@name.Lang" loading="lazy" decoding="async">
+}
+else
+{
+  <span lang="@name.Lang" dir="@name.Dir">@name</span>
+}

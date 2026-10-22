@@ -24,6 +24,7 @@
                 <td>@if (item.IsActive) { <span class="badge-active">مفعّل</span> } else { <span class="badge-inactive">معطّل</span> }</td>
                 <td class="actions">
                     <a href="/Admin/Events/Edit/@item.Id" class="btn-admin btn-secondary btn-sm">تعديل</a>
+                    @if (item.IsActive) { <a href="/forum/events/@item.Slug" target="_blank" rel="noopener" class="btn-admin btn-secondary btn-sm" title="@item.Slug">عرض</a> }
                     <form method="post" asp-action="Delete" asp-controller="Events" style="display:inline;">
                         <input type="hidden" name="id" value="@item.Id">
                         <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('هل تريد حذف هذه الفعالية؟')">حذف</button>

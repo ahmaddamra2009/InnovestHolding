@@ -32,7 +32,9 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
 
     // ── Shell ──
 
-    public ShellVm Shell(string currentKey, string? baseUrl, string? otherLanguageUrl = null)
+    /// <param name="leaf">A detail page: <paramref name="currentKey"/> is its list page (linked in the breadcrumb and
+    /// active in the menu) and the leaf is the item's own last breadcrumb step.</param>
+    public ShellVm Shell(string currentKey, string? baseUrl, string? otherLanguageUrl = null, BreadcrumbVm? leaf = null)
     {
         var chain = SiteRoutes.Chain(currentKey).Select(p => p.Key).ToHashSet(StringComparer.Ordinal);
 
@@ -49,8 +51,9 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
 
         var crumbs = currentKey == PageKeys.Home
             ? []
-            : SiteRoutes.Chain(currentKey).Select(p => new BreadcrumbVm(Title(p.Key), p.Key == currentKey ? null : Url(p.Key),
+            : SiteRoutes.Chain(currentKey).Select(p => new BreadcrumbVm(Title(p.Key), p.Key == currentKey && leaf is null ? null : Url(p.Key),
                 baseUrl is null ? null : baseUrl + Url(p.Key))).ToList();
+        if (leaf is not null) crumbs.Add(leaf);
 
         return new ShellVm
         {
@@ -85,7 +88,8 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
     /// <summary>The three units (or a hub's sub-pages) as cards; each unit lists its visible sub-pages as chips.</summary>
     public IReadOnlyList<CardVm> Cards(string parentKey, bool withChips) =>
         MenuChildren(parentKey).Select((p, i) => new CardVm(i + 1, Title(p.Key), Summary(p.Key), Url(p.Key),
-            withChips ? MenuChildren(p.Key).Select(c => new LinkVm(Url(c.Key), Title(c.Key))).ToList() : [])).ToList();
+            withChips ? MenuChildren(p.Key).Select(c => new LinkVm(Url(c.Key), Title(c.Key))).ToList() : [],
+            Image(s.Page(p.Key)?.Image, Title(p.Key)))).ToList();
 
     public IReadOnlyList<ServiceVm> Services() =>
         s.Platforms.Select(p => new ServiceVm(P(p.TitleAr, p.TitleEn), Lines(P(p.DescriptionAr, p.DescriptionEn)), p.IconSvg,
@@ -116,15 +120,58 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
         return P(shortAr, shortEn);
     }
 
+    /// <summary>An uploaded image for the page language; the alt text falls back to <paramref name="fallbackAlt"/>
+    /// (the item's title) when the admin left it empty.</summary>
+    public ImageVm? Image(MediaRef? media, LText fallbackAlt)
+    {
+        if (media is null) return null;
+        var alt = P(media.AltAr, media.AltEn);
+        return new ImageVm(media.Url, media.Width, media.Height, alt.IsEmpty ? fallbackAlt : alt);
+    }
+
     public IReadOnlyList<NewsCardVm> NewsCards(IEnumerable<NewsRow> rows) =>
-        rows.Select(n => new NewsCardVm(P(n.TitleAr, n.TitleEn), P(n.SummaryAr, n.SummaryEn), P(n.CategoryAr, n.CategoryEn),
-            P(n.NewsDateAr, n.NewsDateEn), string.IsNullOrWhiteSpace(n.LinkUrl) ? null : n.LinkUrl)).ToList();
+        rows.Select(n =>
+        {
+            var title = P(n.TitleAr, n.TitleEn);
+            return new NewsCardVm(title, P(n.SummaryAr, n.SummaryEn), P(n.CategoryAr, n.CategoryEn),
+                P(n.NewsDateAr, n.NewsDateEn), CultureUrls.Detail(DetailKeys.NewsItem, n.Slug, english), Image(n.Image, title));
+        }).ToList();
 
-    public IReadOnlyList<EventCardVm> EventCards(IEnumerable<EventRow> rows) =>
-        rows.Select(e => new EventCardVm(e.EventDay, P(e.EventMonthAr, e.EventMonthEn), P(e.TitleAr, e.TitleEn),
-            P(e.DescriptionAr, e.DescriptionEn), P(e.LocationAr, e.LocationEn), P(e.TimeAr, e.TimeEn))).ToList();
+    public IReadOnlyList<EventCardVm> EventCards(IEnumerable<EventRow> rows, DateTimeOffset now) =>
+        rows.Select(e =>
+        {
+            var title = P(e.TitleAr, e.TitleEn);
+            var summary = P(e.SummaryAr, e.SummaryEn);
+            var (day, month) = e.StartsAt is { } start
+                ? (start.Day, new LText(EventDates.Month(start, english), false))
+                : (e.EventDay, P(e.EventMonthAr, e.EventMonthEn));
+            var time = P(e.TimeAr, e.TimeEn);
+            if (time.IsEmpty && e.StartsAt is { } s0) time = new LText(EventDates.TimeRange(s0, e.EndsAt, english), false);
+            return new EventCardVm(day, month, title, summary.IsEmpty ? P(e.DescriptionAr, e.DescriptionEn) : summary,
+                P(e.LocationAr, e.LocationEn), time, CultureUrls.Detail(DetailKeys.ForumEvent, e.Slug, english), Image(e.Image, title),
+                EventQueries.IsPast(e.StartsAt, e.EndsAt, now), e.Status);
+        }).ToList();
 
-    public IReadOnlyList<LText> Partners() => s.Partners.Select(p => P(p.Ar, p.En)).ToList();
+    public IReadOnlyList<PartnerVm> Partners(bool homeOnly = false) =>
+        s.Partners.Where(p => !homeOnly || p.ShowOnHome).Select(p =>
+        {
+            var name = P(p.NameAr, p.NameEn);
+            return new PartnerVm(name, Image(p.Logo, name), SiteUrlOrNull(p.Url), p.GroupId);
+        }).ToList();
+
+    /// <summary>The Forum Partners page: one section per active group (in order), then the partners with no group.</summary>
+    public IReadOnlyList<PartnerGroupVm> PartnerGroups()
+    {
+        var all = Partners();
+        var groups = s.PartnerGroups.Select(g => new PartnerGroupVm(P(g.NameAr, g.NameEn), all.Where(p => p.GroupId == g.Id).ToList()))
+            .Where(g => g.Partners.Count > 0).ToList();
+        var known = s.PartnerGroups.Select(g => g.Id).ToHashSet();
+        var rest = all.Where(p => p.GroupId is null || !known.Contains(p.GroupId.Value)).ToList();
+        if (rest.Count > 0) groups.Add(new PartnerGroupVm(LText.Empty, rest));
+        return groups;
+    }
+
+    private static string? SiteUrlOrNull(string? url) => Seo.SiteUrl.IsHttpsUrl(url) ? url!.Trim() : null;
 
     public IReadOnlyList<FaqVm> Faqs() => s.Faqs.Select(f => new FaqVm(P(f.QuestionAr, f.QuestionEn), P(f.AnswerAr, f.AnswerEn))).ToList();
 

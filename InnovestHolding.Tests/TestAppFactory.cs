@@ -20,9 +20,12 @@ namespace InnovestHolding.Tests;
 /// </summary>
 public sealed class TestAppFactory : WebApplicationFactory<Program>
 {
-    public const string TestDatabase = "InnovestHolding_Tests";
-    public const string TestConnectionString =
-        @"Server=(localdb)\InnovestLocal;Database=InnovestHolding_Tests;Trusted_Connection=True;TrustServerCertificate=True";
+    /// <summary>InnovestHolding_Tests + the optional INNOVEST_TEST_DB_SUFFIX (see <see cref="TestDb"/>).</summary>
+    public static readonly string TestDatabase = TestDb.Name("InnovestHolding_Tests");
+    public static readonly string TestConnectionString = TestDb.ConnectionString(TestDatabase);
+
+    /// <summary>The uploads folder of the run (its own temp folder per database name, emptied at start).</summary>
+    public static readonly string UploadsRoot = Path.Combine(Path.GetTempPath(), TestDatabase + "_uploads");
 
     /// <summary>Shared clock for the login throttle (and the rest of the app). Starts at real "now".</summary>
     public FakeTimeProvider Time { get; } = new(DateTimeOffset.UtcNow);
@@ -43,6 +46,8 @@ public sealed class TestAppFactory : WebApplicationFactory<Program>
         {
             ctx.Database.EnsureDeleted();
         }
+
+        if (Directory.Exists(UploadsRoot)) Directory.Delete(UploadsRoot, recursive: true);
 
         ClientOptions.BaseAddress = new Uri("https://innovest.test");
         ClientOptions.AllowAutoRedirect = false;
@@ -74,6 +79,7 @@ public sealed class TestAppFactory : WebApplicationFactory<Program>
         // Highest-precedence configuration for the entry point, so Program's pre-Build guard sees it.
         builder.UseSetting("ConnectionStrings:DefaultConnection", TestConnectionString);
         builder.UseSetting("https_port", "443");
+        builder.UseSetting("Uploads:RootPath", UploadsRoot);
 
         builder.ConfigureTestServices(services =>
         {

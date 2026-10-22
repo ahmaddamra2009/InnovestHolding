@@ -171,4 +171,44 @@
   <data name="Admin_ItemUpdated" xml:space="preserve"><value>تم تحديث العنصر بنجاح</value></data>
   <data name="Admin_ItemDeleted" xml:space="preserve"><value>تم حذف العنصر</value></data>
   <data name="Admin_StatusToggled" xml:space="preserve"><value>تم تغيير حالة الظهور</value></data>
+  <data name="Msg_ImageType" xml:space="preserve"><value>الصورة يجب أن تكون بصيغة JPG أو PNG أو WebP (لا يُقبل SVG ولا GIF)</value></data>
+  <data name="Msg_ImageMismatch" xml:space="preserve"><value>امتداد الملف ونوعه ومحتواه غير متطابقة — ارفع صورة حقيقية بامتدادها الصحيح</value></data>
+  <data name="Msg_ImageCorrupt" xml:space="preserve"><value>ملف الصورة تالف أو غير مكتمل</value></data>
+  <data name="Msg_ImageDimensions" xml:space="preserve"><value>أبعاد الصورة يجب أن تكون بين 16 و8000 بكسل لكل ضلع (40 مليون بكسل كحد أقصى)</value></data>
+  <data name="Msg_ImageAnimated" xml:space="preserve"><value>الصور المتحركة غير مقبولة</value></data>
+  <data name="Msg_ImageSize" xml:space="preserve"><value>حجم الصورة يجب ألا يتجاوز 5 ميغابايت</value></data>
+  <data name="Msg_ImageStorage" xml:space="preserve"><value>تعذّر حفظ الصورة على الخادم — حاول مرة أخرى أو تواصل مع المسؤول التقني</value></data>
+  <data name="Msg_SlugInvalid" xml:space="preserve"><value>الرابط المختصر: أحرف إنجليزية صغيرة وأرقام وشرطات بين الكلمات فقط (مثال: forum-2026)</value></data>
+  <data name="Msg_SlugTaken" xml:space="preserve"><value>الرابط المختصر مستخدم (أو كان مستخدماً) لعنصر آخر — اختر غيره</value></data>
+  <data name="Msg_UtcOffset" xml:space="preserve"><value>فرق التوقيت يجب أن يكون بالشكل ‎+02:00 أو ‎-05:30</value></data>
+  <data name="Msg_DateRequired" xml:space="preserve"><value>أدخل تاريخ البدء، أو اليوم والشهر كنص</value></data>
+  <data name="Msg_EndBeforeStart" xml:space="preserve"><value>وقت الانتهاء يجب أن يكون بعد وقت البدء</value></data>
+  <data name="Field_Slug" xml:space="preserve"><value>الرابط المختصر</value></data>
+  <data name="Field_City" xml:space="preserve"><value>المدينة</value></data>
+  <data name="Field_CityEn" xml:space="preserve"><value>المدينة (الإنجليزية)</value></data>
+  <data name="Field_Address" xml:space="preserve"><value>العنوان</value></data>
+  <data name="Field_AddressEn" xml:space="preserve"><value>العنوان (الإنجليزية)</value></data>
+  <data name="Field_OnlineUrl" xml:space="preserve"><value>رابط الحضور عن بُعد</value></data>
+  <data name="Field_StartsAt" xml:space="preserve"><value>تاريخ ووقت البدء</value></data>
+  <data name="Field_EndsAt" xml:space="preserve"><value>تاريخ ووقت الانتهاء</value></data>
+  <data name="Field_UtcOffset" xml:space="preserve"><value>فرق التوقيت عن UTC</value></data>
+  <data name="Field_ImageAlt" xml:space="preserve"><value>النص البديل للصورة</value></data>
+  <data name="Field_ImageAltEn" xml:space="preserve"><value>النص البديل للصورة (الإنجليزية)</value></data>
+  <data name="Admin_GroupAdded" xml:space="preserve"><value>تمت إضافة المجموعة بنجاح</value></data>
+  <data name="Admin_GroupUpdated" xml:space="preserve"><value>تم تحديث المجموعة بنجاح</value></data>
+  <data name="Admin_GroupDeleted" xml:space="preserve"><value>تم حذف المجموعة (شركاؤها بلا مجموعة الآن)</value></data>
+  <data name="Admin_PhotoSaved" xml:space="preserve"><value>تم حفظ الصورة</value></data>
+  <data name="Ui_EventDate" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Ui_EventTime" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Ui_EventVenue" xml:space="preserve"><value>المكان</value></data>
+  <data name="Ui_EventOnline" xml:space="preserve"><value>الحضور عن بُعد</value></data>
+  <data name="Ui_EventJoinOnline" xml:space="preserve"><value>متاحة عبر الإنترنت</value></data>
+  <data name="Ui_EventCancelled" xml:space="preserve"><value>أُلغيت</value></data>
+  <data name="Ui_EventPostponed" xml:space="preserve"><value>أُجّلت</value></data>
+  <data name="Ui_EventPast" xml:space="preserve"><value>انتهت</value></data>
+  <data name="Ui_EventEndedNotice" xml:space="preserve"><value>انتهت هذه الفعالية.</value></data>
+  <data name="Ui_PublishedOn" xml:space="preserve"><value>تاريخ النشر</value></data>
+  <data name="Ui_NewsSource" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Ui_ArabicOnlyNotice" xml:space="preserve"><value>هذا المحتوى متوفر باللغة العربية فقط حالياً.</value></data>
+  <data name="Ui_ViewDetails" xml:space="preserve"><value>التفاصيل</value></data>
 </root>

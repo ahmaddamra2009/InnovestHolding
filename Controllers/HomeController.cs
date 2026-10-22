@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace InnovestHolding.Controllers;
 
-public class HomeController : PublicControllerBase
+public class HomeController(TimeProvider time) : PublicControllerBase
 {
     /// <summary>GET / (Arabic) and GET /en (English). Data from the cached snapshot: 0 queries on a cache hit.</summary>
     [AcceptVerbs("GET", "HEAD")]
@@ -18,7 +18,7 @@ public class HomeController : PublicControllerBase
         var baseUrl = BaseUrl(v);
         var seo = SeoBuilder.Build(SiteRoutes.Get(PageKeys.Home), v, baseUrl);
         SetRobots(seo.Robots);
-        return View(HomeViewModel.Create(v, v.Shell(PageKeys.Home, baseUrl), seo));
+        return View(HomeViewModel.Create(v, v.Shell(PageKeys.Home, baseUrl), seo, time.GetUtcNow()));
     }
 
     /// <summary>
