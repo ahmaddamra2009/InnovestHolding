@@ -1,0 +1,19 @@
+@model PersonInput
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var l = (AdminListLabels)ViewData["Labels"]!;
+    ViewData["Title"] = (Model.Id > 0 ? "تعديل — " : "إضافة — ") + l.Title;
+}
+<div class="admin-card">
+    <form method="post" asp-controller="@l.Controller" asp-action="@(Model.Id > 0 ? "Edit" : "Create")" enctype="multipart/form-data">
+        @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
+        <lang-pair label="الاسم" name-ar="NameAr" name-en="NameEn" value-ar="@Model.NameAr" value-en="@Model.NameEn" max="150" required="true" />
+        <lang-pair label="المنصب" name-ar="JobTitleAr" name-en="JobTitleEn" value-ar="@Model.JobTitleAr" value-en="@Model.JobTitleEn" max="150" />
+        <lang-pair label="الجهة" name-ar="OrganizationAr" name-en="OrganizationEn" value-ar="@Model.OrganizationAr" value-en="@Model.OrganizationEn" max="150" />
+        <lang-pair label="نبذة (سطر فارغ = فقرة جديدة)" name-ar="BioAr" name-en="BioEn" value-ar="@Model.BioAr" value-en="@Model.BioEn" max="20000" rows="6" />
+        <lang-pair label="رابط لينكدإن (اختياري، https)" name-ar="LinkedInUrl" value-ar="@Model.LinkedInUrl" max="500" ltr="true" placeholder="https://www.linkedin.com/in/…" />
+        <lang-pair label="رابط X (اختياري، https)" name-ar="XUrl" value-ar="@Model.XUrl" max="500" ltr="true" placeholder="https://x.com/…" />
+        <p class="field-hint">الصفحة الإنجليزية تُفهرس عندما يُملأ الاسم الإنجليزي، والمنصب والنبذة بالإنجليزية إن كانت موجودة بالعربية.</p>
+        <partial name="~/Views/Admin/Ecosystem/_Common.cshtml" model="Model" view-data="ViewData" />
+    </form>
+</div>

@@ -214,4 +214,40 @@
   <data name="Msg_LogoLimits" xml:space="preserve"><value>A logo must not exceed 1 MB and 1200 pixels on its longest side</value></data>
   <data name="Admin_ImageHintGeneral" xml:space="preserve"><value>JPG, PNG or WebP, up to 5 MB, 8000 pixels per side and 25 million pixels. Suggested size 1200×630 (enough for the share image), ideally under 500 KB: the picture is served as uploaded. Location and camera data are removed on upload.</value></data>
   <data name="Admin_ImageHintLogo" xml:space="preserve"><value>Logo: JPG, PNG or WebP, up to 1 MB and 1200 pixels on the longest side. It is shown about 70 pixels high, so 400 pixels wide on a transparent background (PNG or WebP) and under 100 KB is enough.</value></data>
+  <data name="Ui_PlayVideo" xml:space="preserve"><value>Play the video: {0}</value></data>
+  <data name="Ui_VideoNotice" xml:space="preserve"><value>The video loads from YouTube (privacy-enhanced mode) only when you press play.</value></data>
+  <data name="Ui_WatchVideo" xml:space="preserve"><value>Watch the episode</value></data>
+  <data name="Ui_SeasonEpisode" xml:space="preserve"><value>Season {0} · Episode {1}</value></data>
+  <data name="Ui_EpisodeNumber" xml:space="preserve"><value>Episode {0}</value></data>
+  <data name="Ui_SeasonNumber" xml:space="preserve"><value>Season {0}</value></data>
+  <data name="Ui_AiredOn" xml:space="preserve"><value>Aired</value></data>
+  <data name="Ui_JobTitle" xml:space="preserve"><value>Role</value></data>
+  <data name="Ui_Organization" xml:space="preserve"><value>Organization</value></data>
+  <data name="Ui_Sector" xml:space="preserve"><value>Sector</value></data>
+  <data name="Ui_Stage" xml:space="preserve"><value>Stage</value></data>
+  <data name="Ui_Ask" xml:space="preserve"><value>Funding sought</value></data>
+  <data name="Ui_OpportunityOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="Ui_OpportunityClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Ui_ExpressInterest" xml:space="preserve"><value>Express interest</value></data>
+  <data name="Ui_SponsorshipPackages" xml:space="preserve"><value>Sponsorship packages</value></data>
+  <data name="Ui_ProfilesAria" xml:space="preserve"><value>{0} profiles</value></data>
+  <data name="Admin_SectorInUse" xml:space="preserve"><value>This sector is used by an investment opportunity — deactivate it instead of deleting it.</value></data>
+  <data name="Field_JobTitle" xml:space="preserve"><value>Role</value></data>
+  <data name="Field_JobTitleEn" xml:space="preserve"><value>Role (English)</value></data>
+  <data name="Field_Organization" xml:space="preserve"><value>Organization</value></data>
+  <data name="Field_OrganizationEn" xml:space="preserve"><value>Organization (English)</value></data>
+  <data name="Field_LinkedInUrl" xml:space="preserve"><value>LinkedIn URL</value></data>
+  <data name="Field_XUrl" xml:space="preserve"><value>X URL</value></data>
+  <data name="Field_Season" xml:space="preserve"><value>Season</value></data>
+  <data name="Field_EpisodeNumber" xml:space="preserve"><value>Episode number</value></data>
+  <data name="Field_AiredOn" xml:space="preserve"><value>Air date</value></data>
+  <data name="Field_VideoUrl" xml:space="preserve"><value>Video URL</value></data>
+  <data name="Field_Stage" xml:space="preserve"><value>Stage</value></data>
+  <data name="Field_StageEn" xml:space="preserve"><value>Stage (English)</value></data>
+  <data name="Field_Ask" xml:space="preserve"><value>Funding sought</value></data>
+  <data name="Field_AskEn" xml:space="preserve"><value>Funding sought (English)</value></data>
+  <data name="Field_Price" xml:space="preserve"><value>Price</value></data>
+  <data name="Field_PriceEn" xml:space="preserve"><value>Price (English)</value></data>
+  <data name="Field_Benefits" xml:space="preserve"><value>Benefits</value></data>
+  <data name="Field_BenefitsEn" xml:space="preserve"><value>Benefits (English)</value></data>
 </root>

@@ -1,0 +1,31 @@
+@model List<SponsorshipPackage>
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "باقات الرعاية"; }
+<div class="admin-card">
+    <div class="admin-card-header">
+        <span class="admin-card-title">باقات الرعاية (@Model.Count)</span>
+        <a href="/Admin/SponsorshipPackages/Create" class="btn-admin btn-primary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> إضافة باقة</a>
+    </div>
+    <p class="field-hint">باقات البرنامج التلفزيوني تظهر في صفحة «الرعاية» للبرنامج، وباقات المنتدى في صفحة «الشركاء والرعاة».</p>
+    @if (Model.Count > 0)
+    {
+        <table class="admin-table">
+            <thead><tr><th>الباقة</th><th>الوحدة</th><th>السعر</th><th>EN</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><strong>@item.TitleAr</strong></td>
+                    <td>@(item.Unit == SponsorshipUnits.Forum ? "المنتدى" : "البرنامج التلفزيوني")</td>
+                    <td>@item.PriceTextAr</td>
+                    <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TitleEn))" /></td>
+                    <td>@if (item.IsActive) { <span class="badge-active">مفعّل</span> } else { <span class="badge-inactive">معطّل</span> }</td>
+                    <td class="actions">
+                        <a href="/Admin/SponsorshipPackages/Edit/@item.Id" class="btn-admin btn-secondary btn-sm">تعديل</a>
+                        <form method="post" asp-controller="SponsorshipPackages" asp-action="Delete" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذه الباقة؟')">حذف</button></form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

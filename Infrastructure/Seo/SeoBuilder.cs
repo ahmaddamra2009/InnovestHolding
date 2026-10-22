@@ -153,6 +153,10 @@ public static class SeoBuilder
     public static Dictionary<string, object>? OrganizationRef(string? baseUrl) =>
         baseUrl is null ? null : new Dictionary<string, object> { ["@id"] = baseUrl + "/#organization" };
 
+    /// <summary>A node reference to the TV programme (the TVSeries node of the TV hub page), or null without a base URL.</summary>
+    public static Dictionary<string, object>? TvSeriesRef(string? baseUrl) =>
+        baseUrl is null ? null : new Dictionary<string, object> { ["@id"] = baseUrl + CultureUrls.Page(PageKeys.Tv, false) + "#tvseries" };
+
     /// <summary>Sets <paramref name="key"/> unless the value is empty (the JSON-LD never carries empty values).</summary>
     public static void Set(Dictionary<string, object> d, string key, object? value) => Put(d, key, value);
 
@@ -311,6 +315,18 @@ public static class SeoBuilder
             Put(unit, "description", v.Summary(page.Key).Value);
             if (orgId is not null) unit["parentOrganization"] = new Dictionary<string, object> { ["@id"] = orgId };
             graph.Add(unit);
+        }
+
+        // The TV programme: its hub page describes the series that every episode is part of (one @id in both languages).
+        if (page.Key == PageKeys.Tv)
+        {
+            var series = new Dictionary<string, object> { ["@type"] = "TVSeries" };
+            Put(series, "@id", TvSeriesRef(baseUrl)?["@id"]);
+            Put(series, "name", v.Title(page.Key).Value);
+            Put(series, "url", pageUrl);
+            Put(series, "description", v.Summary(page.Key).Value);
+            if (orgId is not null) series["producer"] = new Dictionary<string, object> { ["@id"] = orgId };
+            graph.Add(series);
         }
 
         // BreadcrumbList = the visible breadcrumb (same route-table chain, same labels).

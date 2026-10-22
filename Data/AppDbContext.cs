@@ -27,6 +27,13 @@ public class AppDbContext : DbContext
     public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
     public DbSet<PartnerGroup> PartnerGroups => Set<PartnerGroup>();
     public DbSet<SlugRedirect> SlugRedirects => Set<SlugRedirect>();
+    public DbSet<Speaker> Speakers => Set<Speaker>();
+    public DbSet<EventSpeaker> EventSpeakers => Set<EventSpeaker>();
+    public DbSet<TvGuest> TvGuests => Set<TvGuest>();
+    public DbSet<TvEpisode> TvEpisodes => Set<TvEpisode>();
+    public DbSet<TvEpisodeGuest> TvEpisodeGuests => Set<TvEpisodeGuest>();
+    public DbSet<InvestmentOpportunity> InvestmentOpportunities => Set<InvestmentOpportunity>();
+    public DbSet<SponsorshipPackage> SponsorshipPackages => Set<SponsorshipPackage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -158,5 +165,71 @@ public class AppDbContext : DbContext
             e.Property(i => i.IconKey).IsUnicode(false);
             e.Property(i => i.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         });
+
+        // ── Ecosystem entities (speakers, TV, opportunities, packages) ──
+        Person<Speaker>(modelBuilder);
+        Person<TvGuest>(modelBuilder);
+
+        modelBuilder.Entity<EventSpeaker>(e =>
+        {
+            e.HasKey(x => new { x.EventId, x.SpeakerId });
+            e.HasIndex(x => x.SpeakerId);
+            e.HasOne(x => x.Event).WithMany().HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Speaker).WithMany().HasForeignKey(x => x.SpeakerId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TvEpisode>(e =>
+        {
+            e.HasIndex(x => x.Slug).IsUnique();
+            e.HasIndex(x => new { x.IsActive, x.AiredOn });
+            e.Property(x => x.Slug).IsUnicode(false);
+            e.Property(x => x.VideoUrl).IsUnicode(false);
+            Timestamps(e);
+            e.HasOne(x => x.Thumbnail).WithMany().HasForeignKey(x => x.ThumbnailId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<TvEpisodeGuest>(e =>
+        {
+            e.HasKey(x => new { x.TvEpisodeId, x.TvGuestId });
+            e.HasIndex(x => x.TvGuestId);
+            e.HasOne(x => x.TvEpisode).WithMany().HasForeignKey(x => x.TvEpisodeId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.TvGuest).WithMany().HasForeignKey(x => x.TvGuestId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<InvestmentOpportunity>(e =>
+        {
+            e.HasIndex(x => x.Slug).IsUnique();
+            e.HasIndex(x => new { x.IsActive, x.SortOrder });
+            e.Property(x => x.Slug).IsUnicode(false);
+            Timestamps(e);
+            e.HasOne(x => x.Image).WithMany().HasForeignKey(x => x.ImageId).OnDelete(DeleteBehavior.NoAction);
+            // A sector in use cannot be deleted (the admin is told to deactivate it instead).
+            e.HasOne(x => x.SectorItem).WithMany().HasForeignKey(x => x.SectorItemId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<SponsorshipPackage>(e =>
+        {
+            e.HasIndex(x => new { x.Unit, x.IsActive, x.SortOrder });
+            e.Property(x => x.Unit).IsUnicode(false);
+            Timestamps(e);
+        });
     }
+
+    private static void Timestamps<T>(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<T> e) where T : class
+    {
+        e.Property<DateTime>("CreatedAt").HasDefaultValueSql("SYSUTCDATETIME()");
+        e.Property<DateTime>("UpdatedAt").HasDefaultValueSql("SYSUTCDATETIME()");
+    }
+
+    private static void Person<T>(ModelBuilder modelBuilder) where T : PersonProfile =>
+        modelBuilder.Entity<T>(e =>
+        {
+            e.HasIndex(x => x.Slug).IsUnique();
+            e.HasIndex(x => new { x.IsActive, x.SortOrder });
+            e.Property(x => x.Slug).IsUnicode(false);
+            e.Property(x => x.LinkedInUrl).IsUnicode(false);
+            e.Property(x => x.XUrl).IsUnicode(false);
+            Timestamps(e);
+            e.HasOne(x => x.Photo).WithMany().HasForeignKey(x => x.PhotoId).OnDelete(DeleteBehavior.NoAction);
+        });
 }

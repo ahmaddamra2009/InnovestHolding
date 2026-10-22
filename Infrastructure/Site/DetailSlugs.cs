@@ -25,6 +25,10 @@ public static class DetailSlugs
     {
         SlugTypes.News => db.News.AsNoTracking().Where(n => n.IsActive && (slug == null || n.Slug == slug) && (id == null || n.Id == id)).Select(n => n.Slug),
         SlugTypes.Event => db.Events.AsNoTracking().Where(e => e.IsActive && (slug == null || e.Slug == slug) && (id == null || e.Id == id)).Select(e => e.Slug),
+        SlugTypes.Speaker => db.Speakers.AsNoTracking().Where(p => p.IsActive && (slug == null || p.Slug == slug) && (id == null || p.Id == id)).Select(p => p.Slug),
+        SlugTypes.Guest => db.TvGuests.AsNoTracking().Where(p => p.IsActive && (slug == null || p.Slug == slug) && (id == null || p.Id == id)).Select(p => p.Slug),
+        SlugTypes.Episode => db.TvEpisodes.AsNoTracking().Where(e => e.IsActive && (slug == null || e.Slug == slug) && (id == null || e.Id == id)).Select(e => e.Slug),
+        SlugTypes.Opportunity => db.InvestmentOpportunities.AsNoTracking().Where(o => o.IsActive && (slug == null || o.Slug == slug) && (id == null || o.Id == id)).Select(o => o.Slug),
         _ => throw new ArgumentOutOfRangeException(nameof(route)),
     };
 }

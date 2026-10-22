@@ -7,6 +7,12 @@ namespace InnovestHolding.ViewModels.Admin;
 
 public class EventInput : ImageFieldsInput, IValidatableObject
 {
+    /// <summary>The event's speakers, in the order of the list (checked by the controller).</summary>
+    public List<int> SpeakerIds { get; set; } = [];
+
+    [Microsoft.AspNetCore.Mvc.ModelBinding.BindNever]
+    public IReadOnlyList<PickVm> SpeakerChoices { get; set; } = [];
+
     [Display(Name = F.Slug)]
     [StringLength(Infrastructure.Site.Slugs.MaxLength, ErrorMessage = K.MaxLength)]
     public string? Slug { get; set; }

@@ -1,0 +1,27 @@
+@model DetailMetaInput
+@* The shared tail of an ecosystem form: address (slug), image, search-engine texts, order and published switch.
+   ViewData["Labels"] (AdminListLabels) names the public address and the image. *@
+@{
+    var l = (AdminListLabels)ViewData["Labels"]!;
+}
+<div class="form-group">
+    <label for="Slug">الرابط المختصر <span class="lang-chip">ع · EN</span></label>
+    <input id="Slug" name="Slug" value="@Model.Slug" class="form-control ltr-input" dir="ltr" maxlength="100">
+    <span class="field-hint">عنوان الصفحة: @(l.PublicPrefix)الرابط-المختصر (أحرف إنجليزية صغيرة وأرقام وشرطات). فارغ عند الإضافة = من الاسم/العنوان الإنجليزي. تغييره لاحقاً يُبقي الرابط القديم يحوّل إلى الجديد.</span>
+    <span asp-validation-for="Slug" class="field-error"></span>
+</div>
+@{ ViewData["ImageLabel"] = l.ImageLabel; }
+<partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="Model" view-data="ViewData" />
+<details class="row-editor" style="margin-bottom:16px;">
+    <summary>محركات البحث (اختياري — فارغ = العنوان والملخص)</summary>
+    <lang-pair label="عنوان محركات البحث" name-ar="MetaTitleAr" name-en="MetaTitleEn" value-ar="@Model.MetaTitleAr" value-en="@Model.MetaTitleEn" max="200" />
+    <lang-pair label="وصف محركات البحث" name-ar="MetaDescriptionAr" name-en="MetaDescriptionEn" value-ar="@Model.MetaDescriptionAr" value-en="@Model.MetaDescriptionEn" max="300" rows="2" />
+</details>
+@if (Model.Id > 0)
+{
+    <input type="hidden" name="Id" value="@Model.Id">
+    <div class="form-group" style="max-width:200px;"><label for="SortOrder">الترتيب (الأصغر أولاً)</label><input id="SortOrder" name="SortOrder" value="@Model.SortOrder" type="number" class="form-control" min="0" max="100000"><span asp-validation-for="SortOrder" class="field-error"></span></div>
+}
+<div class="form-check" style="margin-bottom:20px;"><input type="checkbox" id="IsActive" name="IsActive" value="true" @(Model.IsActive ? "checked" : null)><input type="hidden" name="IsActive" value="false"> <label for="IsActive">@l.ActiveLabel (يظهر في الموقع)</label></div>
+<button type="submit" class="btn-admin btn-primary">@(Model.Id > 0 ? "حفظ التعديلات" : "حفظ")</button>
+<a href="/Admin/@l.Controller" class="btn-admin btn-secondary" style="margin-inline-start:12px;">إلغاء</a>

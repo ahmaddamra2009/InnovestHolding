@@ -1,0 +1,46 @@
+@model (EntityCardVm Card, bool People, int Index)
+@* One card of the ecosystem lists: a portrait (people) or a wide image, a kicker, the title (the link), a subtitle,
+   a summary and chips. Every text is a database value for the page language (fallback marked lang/dir). *@
+@{
+    var c = Model.Card;
+}
+<article class="entity-card@(Model.People ? " is-person" : "") reveal@(HomeViewModel.Delay(Model.Index % 6 + 1))">
+  <div class="entity-media">
+    @if (c.Image is { } img)
+    {
+      <img src="@img.Src" width="@img.Width" height="@img.Height" alt="" loading="lazy" decoding="async">
+    }
+    else
+    {
+      <div class="entity-placeholder" aria-hidden="true"><span class="tri-mark tri-mark-lg"></span></div>
+    }
+    @if (!c.Badge.IsEmpty)
+    {
+      <span class="entity-badge" lang="@c.Badge.Lang" dir="@c.Badge.Dir">@c.Badge</span>
+    }
+  </div>
+  <div class="entity-body">
+    @if (!c.Kicker.IsEmpty)
+    {
+      <span class="entity-kicker" lang="@c.Kicker.Lang" dir="@c.Kicker.Dir">@c.Kicker</span>
+    }
+    <h3 class="entity-title" lang="@c.Title.Lang" dir="@c.Title.Dir"><a href="@c.Href">@c.Title</a></h3>
+    @if (!c.Subtitle.IsEmpty)
+    {
+      <p class="entity-subtitle" lang="@c.Subtitle.Lang" dir="@c.Subtitle.Dir">@c.Subtitle</p>
+    }
+    @if (!c.Summary.IsEmpty)
+    {
+      <p class="entity-summary" lang="@c.Summary.Lang" dir="@c.Summary.Dir">@c.Summary</p>
+    }
+    @if (c.Chips.Count > 0)
+    {
+      <ul class="entity-chips">
+        @foreach (var chip in c.Chips)
+        {
+          <li lang="@chip.Lang" dir="@chip.Dir">@chip</li>
+        }
+      </ul>
+    }
+  </div>
+</article>

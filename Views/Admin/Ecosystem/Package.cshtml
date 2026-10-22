@@ -1,0 +1,26 @@
+@model PackageInput
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = Model.Id > 0 ? "تعديل الباقة" : "إضافة باقة رعاية"; }
+<div class="admin-card">
+    <form method="post" asp-controller="SponsorshipPackages" asp-action="@(Model.Id > 0 ? "Edit" : "Create")">
+        @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
+        <div class="form-group" style="max-width:300px;">
+            <label for="Unit">الوحدة</label>
+            <select id="Unit" name="Unit" class="form-control">
+                <option value="@SponsorshipUnits.Tv" selected="@(Model.Unit == SponsorshipUnits.Tv)">البرنامج التلفزيوني</option>
+                <option value="@SponsorshipUnits.Forum" selected="@(Model.Unit == SponsorshipUnits.Forum)">منتدى إنوفست العربي</option>
+            </select>
+            <span asp-validation-for="Unit" class="field-error"></span>
+        </div>
+        <lang-pair label="اسم الباقة" name-ar="TitleAr" name-en="TitleEn" value-ar="@Model.TitleAr" value-en="@Model.TitleEn" max="150" required="true" />
+        <lang-pair label="السعر (نص حر، مثل: عند الطلب)" name-ar="PriceTextAr" name-en="PriceTextEn" value-ar="@Model.PriceTextAr" value-en="@Model.PriceTextEn" max="100" />
+        <lang-pair label="المزايا (ميزة في كل سطر)" name-ar="BenefitsAr" name-en="BenefitsEn" value-ar="@Model.BenefitsAr" value-en="@Model.BenefitsEn" max="2000" rows="6" />
+        @if (Model.Id > 0)
+        {
+            <input type="hidden" name="Id" value="@Model.Id">
+            <div class="form-group" style="max-width:200px;"><label for="SortOrder">الترتيب (الأصغر أولاً)</label><input id="SortOrder" name="SortOrder" value="@Model.SortOrder" type="number" class="form-control" min="0" max="100000"><span asp-validation-for="SortOrder" class="field-error"></span></div>
+        }
+        <div class="form-check" style="margin-bottom:20px;"><input type="checkbox" id="IsActive" name="IsActive" value="true" @(Model.IsActive ? "checked" : null)><input type="hidden" name="IsActive" value="false"> <label for="IsActive">مفعّل (يظهر في الموقع)</label></div>
+        <button type="submit" class="btn-admin btn-primary">@(Model.Id > 0 ? "حفظ التعديلات" : "حفظ")</button>
+        <a href="/Admin/SponsorshipPackages" class="btn-admin btn-secondary" style="margin-inline-start:12px;">إلغاء</a>
+    </form>
+</div>

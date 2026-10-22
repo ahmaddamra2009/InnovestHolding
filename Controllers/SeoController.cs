@@ -48,7 +48,21 @@ public class SeoController(ISiteContentCache cache, IWebHostEnvironment environm
         var events = (await db.Events.AsNoTracking().Where(e => e.IsActive).OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
                 .Select(e => new { e.Slug, e.UpdatedAt, e.TitleEn, e.SummaryEn, e.DescriptionEn }).ToListAsync(ct))
             .Select(e => (Key: DetailKeys.ForumEvent, e.Slug, e.UpdatedAt, En: EventQueries.HasEnglish(e.TitleEn, e.SummaryEn, e.DescriptionEn)));
-        var details = news.Concat(events).ToList();
+        var speakers = (await db.Speakers.AsNoTracking().Where(p => p.IsActive).OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
+                .Select(p => new { p.Slug, p.UpdatedAt, p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn }).ToListAsync(ct))
+            .Select(p => (Key: DetailKeys.ForumSpeaker, p.Slug, p.UpdatedAt,
+                En: EcosystemQueries.PersonHasEnglish(p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn)));
+        var guests = (await db.TvGuests.AsNoTracking().Where(p => p.IsActive).OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
+                .Select(p => new { p.Slug, p.UpdatedAt, p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn }).ToListAsync(ct))
+            .Select(p => (Key: DetailKeys.TvGuest, p.Slug, p.UpdatedAt,
+                En: EcosystemQueries.PersonHasEnglish(p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn)));
+        var episodes = (await db.TvEpisodes.AsNoTracking().Where(e => e.IsActive).OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
+                .Select(e => new { e.Slug, e.UpdatedAt, e.TitleEn, e.SummaryEn }).ToListAsync(ct))
+            .Select(e => (Key: DetailKeys.TvEpisode, e.Slug, e.UpdatedAt, En: EcosystemQueries.EpisodeHasEnglish(e.TitleEn, e.SummaryEn)));
+        var opportunities = (await db.InvestmentOpportunities.AsNoTracking().Where(o => o.IsActive).OrderBy(o => o.SortOrder).ThenBy(o => o.Id)
+                .Select(o => new { o.Slug, o.UpdatedAt, o.TitleEn, o.SummaryEn }).ToListAsync(ct))
+            .Select(o => (Key: DetailKeys.NetworkOpportunity, o.Slug, o.UpdatedAt, En: EcosystemQueries.OpportunityHasEnglish(o.TitleEn, o.SummaryEn)));
+        var details = news.Concat(events).Concat(speakers).Concat(guests).Concat(episodes).Concat(opportunities).ToList();
 
         const string ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
         const string xhtml = "http://www.w3.org/1999/xhtml";

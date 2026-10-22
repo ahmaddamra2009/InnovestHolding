@@ -576,3 +576,58 @@ html[lang="en"] .page-body p { line-height: 1.8; }
   .event-thumb { display: none; }
 }
 .founder-photo { width: 160px; height: 160px; object-fit: cover; border-radius: 50%; margin: 0 auto 18px; display: block; box-shadow: var(--shadow-card); }
+
+/* ── Ecosystem lists and pages: speakers, guests, episodes, opportunities, sponsorship packages ── */
+.entity-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.entity-grid.is-people { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.entity-card { position: relative; display: flex; flex-direction: column; background: var(--white); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); /* keeps the reveal fade (opacity) and adds the hover lift */ transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform var(--transition-normal), box-shadow var(--transition-normal); }
+.entity-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
+.entity-media { position: relative; aspect-ratio: 16 / 10; background: linear-gradient(135deg, var(--navy-deep), var(--navy-brand)); }
+.entity-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.entity-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; }
+.entity-card.is-person { text-align: center; padding-block-start: 28px; }
+.entity-card.is-person .entity-media { width: 132px; height: 132px; aspect-ratio: 1; margin-inline: auto; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 4px var(--white), 0 0 0 6px var(--accent); }
+.entity-card.is-person .entity-placeholder .tri-mark-lg { width: 44px; height: 44px; }
+.entity-badge { position: absolute; inset-block-start: 12px; inset-inline-start: 12px; padding: 4px 12px; border-radius: var(--radius-full); background: var(--accent); color: var(--navy-deep); font-size: .8rem; font-weight: 700; }
+.entity-body { display: flex; flex-direction: column; gap: 6px; padding: 20px 22px 24px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.entity-kicker { color: var(--accent-ink); font-size: .85rem; font-weight: 700; }
+.entity-title { font-size: 1.12rem; font-weight: 800; color: var(--text-dark); line-height: 1.5; }
+.entity-title a { color: inherit; }
+.entity-title a::after { content: ''; position: absolute; inset: 0; }
+.entity-title a:hover, .entity-title a:focus-visible { color: var(--accent-ink); }
+.entity-subtitle { color: var(--text-dark); font-weight: 600; font-size: .95rem; }
+.entity-summary { color: var(--text-muted); font-size: .95rem; line-height: 1.8; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.entity-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-block-start: auto; padding-block-start: 10px; }
+.entity-card.is-person .entity-chips { justify-content: center; }
+.entity-chips li { padding: 3px 12px; border-radius: var(--radius-full); background: var(--cream); color: var(--navy-brand); font-size: .82rem; font-weight: 700; }
+.package-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+.package-card { position: relative; background: var(--white); border: 1px solid var(--border-color); border-block-start: 4px solid var(--accent); border-radius: var(--radius-lg); padding: 28px 26px; box-shadow: var(--shadow-sm); overflow-wrap: anywhere; }
+.package-card h3 { font-size: 1.2rem; font-weight: 800; color: var(--text-dark); margin-block-end: 6px; }
+.package-price { color: var(--accent-ink); font-weight: 800; font-size: 1.1rem; margin-block-end: 14px; }
+.package-benefits li { position: relative; padding-inline-start: 22px; margin-block-end: 8px; color: var(--text-body); line-height: 1.7; }
+.package-benefits li::before { content: ''; position: absolute; inset-inline-start: 0; inset-block-start: .7em; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transform: rotate(45deg); }
+.detail-figure.is-portrait { width: min(240px, 60%); aspect-ratio: 1; border-radius: 50%; margin-inline: 0 auto; }
+.detail-figure.is-portrait img { height: 100%; object-fit: cover; }
+.video-facade { position: relative; aspect-ratio: 16 / 9; margin-block-end: 10px; border-radius: var(--radius-lg); overflow: hidden; background: linear-gradient(135deg, var(--navy-night), var(--navy-brand)); box-shadow: var(--shadow-card); }
+.video-poster { display: block; width: 100%; height: 100%; object-fit: cover; }
+.video-poster.is-blank { display: flex; align-items: center; justify-content: center; }
+.video-play { position: absolute; inset: 0; margin: auto; width: 84px; height: 84px; border: 0; border-radius: 50%; background: var(--accent); color: var(--navy-deep); cursor: pointer; box-shadow: var(--shadow-accent); transition: transform .2s ease; }
+.video-play svg { width: 36px; height: 36px; transform: translateX(3px); } /* a play symbol points right in both languages: optical centring */
+.video-play:hover, .video-play:focus-visible { transform: scale(1.08); }
+.video-play:focus-visible { outline: 3px solid var(--white); outline-offset: 4px; }
+.video-facade iframe { display: block; width: 100%; height: 100%; border: 0; }
+.video-note { color: var(--text-muted); font-size: .85rem; margin-block-end: 28px; }
+.detail-profiles { display: flex; justify-content: center; gap: 12px; }
+.detail-profiles a { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: var(--cream); color: var(--navy-brand); }
+.detail-profiles a:hover, .detail-profiles a:focus-visible { background: var(--accent); color: var(--navy-deep); }
+.detail-profiles svg { width: 20px; height: 20px; }
+@media (max-width: 1200px) { .entity-grid.is-people { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1024px) { .entity-grid, .entity-grid.is-people { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .entity-grid { grid-template-columns: 1fr; }
+  .entity-grid.is-people { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .entity-card.is-person .entity-media { width: 96px; height: 96px; }
+  .entity-card.is-person .entity-body { padding: 14px 12px 18px; }
+  .video-play { width: 64px; height: 64px; }
+}
+@media (max-width: 400px) { .entity-grid.is-people { grid-template-columns: 1fr; } }

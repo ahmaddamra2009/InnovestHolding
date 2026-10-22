@@ -50,10 +50,29 @@
       {
         <p class="detail-notice is-muted">@Model.Notice</p>
       }
+      @if (Model.Video is { YouTubeId: { } videoId } video)
+      {
+        @* Click-to-load player: the page holds only the id; main.js builds the privacy-enhanced player on the click,
+           so nothing is requested from YouTube before it. *@
+        <div class="video-facade" data-video-id="@videoId" data-video-title="@video.Title">
+          @if (video.Poster is { } poster)
+          {
+            <img class="video-poster" src="@poster.Src" width="@poster.Width" height="@poster.Height" alt="" fetchpriority="high" decoding="async">
+          }
+          else
+          {
+            <div class="video-poster is-blank" aria-hidden="true"><span class="tri-mark tri-mark-lg"></span></div>
+          }
+          <button type="button" class="video-play" aria-label="@L[K.Ui.PlayVideo, video.Title.Value]">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="8 5 19 12 8 19 8 5" fill="currentColor"/></svg>
+          </button>
+        </div>
+        <p class="video-note">@L[K.Ui.VideoNotice]</p>
+      }
       @if (Model.Image is { } img)
       {
-        @* The page's main image: loaded eagerly (likely the LCP element). *@
-        <figure class="detail-figure">
+        @* The page's main image: loaded eagerly (likely the LCP element). A person's photo is a round portrait. *@
+        <figure class="detail-figure@(Model.Portrait ? " is-portrait" : "")">
           <img src="@img.Src" width="@img.Width" height="@img.Height" alt="@img.Alt" lang="@img.Alt.Lang" fetchpriority="high" decoding="async">
         </figure>
       }
@@ -68,6 +87,20 @@
     </article>
     <aside class="detail-aside">
       <div class="detail-card">
+        @if (Model.Video is { YouTubeId: null, LinkUrl: { } watch })
+        {
+          <a href="@watch" class="btn btn-accent" rel="noopener">@L[K.Ui.WatchVideo]</a>
+        }
+        @if (Model.Profiles.Count > 0)
+        {
+          <ul class="detail-profiles" aria-label="@L[K.Ui.ProfilesAria, Model.Title.Value]">
+            @foreach (var s in Model.Profiles)
+            {
+              var icon = SocialIcons.All[s.Network];
+              <li><a href="@s.Url" rel="noopener me" aria-label="@icon.Name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(icon.Svg)</svg></a></li>
+            }
+          </ul>
+        }
         @foreach (var action in Model.Actions)
         {
           var external = action.Href.StartsWith("http", StringComparison.OrdinalIgnoreCase);
@@ -81,3 +114,15 @@
     </aside>
   </div>
 </section>
+
+@foreach (var related in Model.Related)
+{
+  <section class="page-section is-cream detail-related">
+    <div class="container">
+      <div class="block-head">
+        <h2 class="block-title" lang="@related.Title.Lang" dir="@related.Title.Dir">@related.Title</h2>
+      </div>
+      <partial name="Blocks/_EntityGrid" model="new EntityGridBlock(Model.Kind, related.Cards, null, related.People)" />
+    </div>
+  </section>
+}

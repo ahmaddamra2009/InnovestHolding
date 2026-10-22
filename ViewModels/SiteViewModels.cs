@@ -187,7 +187,42 @@ public sealed class DetailPageVm
     /// <summary>The English page shows the Arabic text (no English yet).</summary>
     public bool ArabicOnly { get; init; }
     public required LinkVm Back { get; init; }
+
+    /// <summary>A person's page: the image is a portrait (round crop beside the text) instead of a wide figure.</summary>
+    public bool Portrait { get; init; }
+
+    /// <summary>The episode's video (click-to-load player or a plain link).</summary>
+    public VideoVm? Video { get; init; }
+
+    /// <summary>Linked items under the text: an event's speakers, a speaker's events, an episode's guests…</summary>
+    public IReadOnlyList<RelatedVm> Related { get; init; } = [];
+
+    /// <summary>The person's profiles elsewhere (LinkedIn, X), language-neutral names.</summary>
+    public IReadOnlyList<SocialVm> Profiles { get; init; } = [];
 }
+
+/// <summary>
+/// An episode's video. With a YouTube id the page shows a poster and a play button, and only the click loads the
+/// privacy-enhanced player (no request to YouTube before it); otherwise <see cref="LinkUrl"/> is a plain https link.
+/// </summary>
+public sealed record VideoVm(string? YouTubeId, string? LinkUrl, ImageVm? Poster, LText Title);
+
+/// <summary>A titled group of linked cards on a detail page.</summary>
+public sealed record RelatedVm(LText Title, IReadOnlyList<EntityCardVm> Cards, bool People);
+
+/// <summary>
+/// A card of the ecosystem lists (speaker, guest, episode, opportunity): image, a small kicker above the title, the
+/// title (the link), a subtitle and up to a few chips.
+/// </summary>
+public sealed record EntityCardVm(LText Title, string Href, ImageVm? Image, LText Kicker, LText Subtitle, LText Summary,
+    IReadOnlyList<LText> Chips, LText Badge = default);
+
+/// <summary>A paged grid of cards; <see cref="People"/> renders round portraits instead of wide images.</summary>
+public sealed record EntityGridBlock(string Kind, IReadOnlyList<EntityCardVm> Cards, PagerVm? Pager, bool People) : BlockVm;
+
+/// <summary>The sponsorship packages of a unit.</summary>
+public sealed record PackagesBlock(LText Title, IReadOnlyList<PackageVm> Packages) : BlockVm;
+public sealed record PackageVm(LText Title, LText Price, IReadOnlyList<LText> Benefits);
 public sealed record FaqVm(LText Question, LText Answer);
 public sealed record InterestChoiceVm(int Id, LText Name);
 

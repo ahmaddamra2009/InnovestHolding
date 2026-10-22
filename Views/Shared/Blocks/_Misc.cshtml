@@ -84,6 +84,38 @@
     </section>
     break;
 
+  case PackagesBlock packages:
+    <section class="page-section is-cream">
+      <div class="container">
+        <div class="block-head">
+          <h2 class="block-title" lang="@packages.Title.Lang" dir="@packages.Title.Dir">@packages.Title</h2>
+        </div>
+        <div class="package-grid">
+          @foreach (var p in packages.Packages)
+          {
+            <article class="package-card reveal">
+              <span class="card-corner" aria-hidden="true"></span>
+              <h3 lang="@p.Title.Lang" dir="@p.Title.Dir">@p.Title</h3>
+              @if (!p.Price.IsEmpty)
+              {
+                <p class="package-price" lang="@p.Price.Lang" dir="@p.Price.Dir">@p.Price</p>
+              }
+              @if (p.Benefits.Count > 0)
+              {
+                <ul class="package-benefits">
+                  @foreach (var b in p.Benefits)
+                  {
+                    <li lang="@b.Lang" dir="@b.Dir">@b</li>
+                  }
+                </ul>
+              }
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+    break;
+
   case EmptyBlock empty:
     <section class="page-section">
       <div class="container">
