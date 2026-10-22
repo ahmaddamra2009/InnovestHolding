@@ -12,8 +12,8 @@ namespace InnovestHolding.Tests;
 [Collection("App")]
 public class EcosystemMigrationTests
 {
-    private const string Before = "20261022190703_AddMediaAndDetailPages";
-    private const string Ecosystem = "20261022194426_AddEcosystemEntities";
+    private const string Before = "20261022202359_AddMediaAndDetailPages";
+    private const string Ecosystem = "20261022213309_AddEcosystemEntities";
 
     private static readonly string[] NewTables =
         ["EventSpeakers", "InvestmentOpportunities", "Speakers", "SponsorshipPackages", "TvEpisodeGuests", "TvEpisodes", "TvGuests"];
