@@ -65,7 +65,7 @@ namespace InnovestHolding.Migrations
             ["values_title", "القيم", "Our Values", "قيمنا الأساسية", "Our Core Values"],
             ["values_text", "الابتكار والجودة والشفافية والتميز المستمر", "Innovation, quality, transparency and continuous excellence",
                 "الابتكار، الشراكة، الشفافية، الاستدامة، الاحترافية، التأثير، التمكين",
-                "Innovation, partnership, transparency, sustainability, professionalism, impact and empowerment"],
+                "Innovation, Partnership, Transparency, Sustainability, Professionalism, Impact, Empowerment"],
             ["platforms_badge", "منصاتنا", "Our Platforms", "خدماتنا", "Our Services"],
             ["platforms_title", "منصاتنا {المتكاملة}", "Our {Integrated} Platforms", "خدماتنا {المتكاملة}", "Our {Integrated} Services"],
             ["platforms_subtitle",

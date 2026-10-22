@@ -1,3 +1,5 @@
+using InnovestHolding.Infrastructure.Localization;
+
 namespace InnovestHolding.Infrastructure.Content;
 
 /// <summary>How a key's text is turned into markup on the public page.</summary>
@@ -40,7 +42,7 @@ public enum ContentRule
 public sealed record ContentKey(
     string Key, string Group, string Label, int MaxLength = ContentKeys.DefaultMax,
     ContentFormat Format = ContentFormat.Plain, ContentRule Rule = ContentRule.None,
-    bool Neutral = false, bool Optional = false, bool AllowEmpty = false, bool Multiline = false);
+    bool Neutral = false, bool Optional = false, bool AllowEmpty = false, bool Multiline = false, string? HintKey = null);
 
 /// <summary>
 /// Registry of every SiteContents key the site reads. The admin editor is generated from it (only these keys can be
@@ -115,7 +117,7 @@ public static class ContentKeys
         new("mission_title", "about", "عنوان الرسالة", 100),
         new("mission_text", "about", "نص الرسالة", 1000, Multiline: true),
         new("values_title", "about", "عنوان القيم", 100),
-        new("values_text", "about", "نص القيم", 1000, Multiline: true),
+        new("values_text", "about", "نص القيم", 1000, Multiline: true, HintKey: MessageKeys.Admin.ListHint),
 
         new("platforms_badge", "sections", "المنصات — الشارة", 100),
         new("platforms_title", "sections", "المنصات — العنوان (المميز بين { })", 200, ContentFormat.Highlight),

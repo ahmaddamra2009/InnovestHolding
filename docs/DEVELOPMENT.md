@@ -225,7 +225,7 @@ The pattern, in `Migrations/20261022153329_ApplyCompanyProfile.cs`:
   each guarded column (English, short, suffix, icon, flag, and each identity column), and assert the edited cells keep
   their values while the rest equals the unedited result; then break one guard and see the test go red.
 After generating the script (`dotnet ef migrations script`), the up script must show 0 `DROP COLUMN`, 0 `DROP TABLE`,
-0 `DELETE FROM`; PR-C1's three migrations have 3 `DROP INDEX` (the News, Events and Platforms single-column sort indexes, replaced by composite ones) and no data deleted.
+0 `DELETE FROM`; PR-C1's four migrations have 3 `DROP INDEX` (the News, Events and Platforms single-column sort indexes, replaced by composite ones) and no data deleted.
 
 Verified on 2026-10-22 for `AddBilingualContent` by running `dotnet build InnovestHolding.sln --nologo` (0 warnings, 0 errors) and
 `dotnet ef migrations script 20260601163804_InitialCreate AddBilingualContent --no-build`
@@ -247,3 +247,7 @@ are not kept in the repository; generate them to check a release, e.g.
 `dotnet ef migrations script 20261022120642_AddBilingualContent 20261022172550_RefineSiteStructure -o migration-C1.sql`
 (and the reverse range for the down script). The up script must contain 0 `DROP COLUMN`, 0 `DROP TABLE` and 0 `DELETE`.
 The app and the tests were not run for this note.
+
+### Front-end pitfalls (PR-C1)
+- A scroll-reveal element uses the class `active` for "shown" (`.reveal.active`). Never reuse `active` as the open state of a component that is also a `.reveal` element: the FAQ accordion uses `is-open` for that reason (using `active` hid every item after one click). Check such interactions with motion ON; under `prefers-reduced-motion` `.reveal` stays opaque and the bug cannot show.
+- `ContentText.ListItems` splits a content text on the Arabic comma and the Latin comma into chips (fewer than 2 items: no list); the home values card uses it, vision and mission never do.

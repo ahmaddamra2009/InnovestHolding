@@ -112,6 +112,7 @@
   <data name="Admin_SocialUpdated" xml:space="preserve"><value>Link updated</value></data>
   <data name="Admin_EnHint" xml:space="preserve"><value>Optional - when empty the English page shows the Arabic text</value></data>
   <data name="Admin_NeutralHint" xml:space="preserve"><value>Used in every language</value></data>
+  <data name="Admin_ListHint" xml:space="preserve"><value>Separate the values with «،» or «,» to show each one as its own chip.</value></data>
   <data name="Ui_LangSwitchText" xml:space="preserve"><value>ع</value></data>
   <data name="Ui_LangSwitchAria" xml:space="preserve"><value>العربية</value></data>
   <data name="Ui_LangDrawerText" xml:space="preserve"><value>العربية</value></data>

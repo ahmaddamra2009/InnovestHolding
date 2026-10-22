@@ -112,6 +112,7 @@
   <data name="Admin_SocialUpdated" xml:space="preserve"><value>تم تحديث الرابط بنجاح</value></data>
   <data name="Admin_EnHint" xml:space="preserve"><value>اختياري — إن تُرك فارغاً يظهر النص العربي في الصفحة الإنجليزية</value></data>
   <data name="Admin_NeutralHint" xml:space="preserve"><value>يُستخدم في كل اللغات</value></data>
+  <data name="Admin_ListHint" xml:space="preserve"><value>افصل بين القيم بفاصلة «،» أو «,» لتظهر كل قيمة في بطاقة مستقلة.</value></data>
   <data name="Ui_LangSwitchText" xml:space="preserve"><value>EN</value></data>
   <data name="Ui_LangSwitchAria" xml:space="preserve"><value>English</value></data>
   <data name="Ui_LangDrawerText" xml:space="preserve"><value>English</value></data>

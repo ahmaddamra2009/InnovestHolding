@@ -141,7 +141,7 @@ public class MigrationTests(TestAppFactory f)
         Assert.Equal(new DateTime(2026, 7, 1, 12, 0, 0), await db.Registrations.Select(r => r.CreatedAt).SingleAsync());
 
         // Only the later migrations (multi-page site) are still pending.
-        Assert.Equal(["20261022152940_AddSiteStructure", "20261022153329_ApplyCompanyProfile", "20261022172550_RefineSiteStructure"], await db.Database.GetPendingMigrationsAsync());
+        Assert.Equal(["20261022152940_AddSiteStructure", "20261022153329_ApplyCompanyProfile", "20261022172550_RefineSiteStructure", "20261022200000_CorrectCoreValuesEnglish"], await db.Database.GetPendingMigrationsAsync());
     }
 
     [Fact] // a fresh install (migration + DbSeeder) equals an upgraded old install, row by row

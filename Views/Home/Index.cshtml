@@ -96,11 +96,11 @@
     var about1 = c.Text("about_text_1");
     var about2 = c.Text("about_text_2");
     var tagline = c.Text("tagline");
-    (string Icon, string TitleKey, string TextKey)[] values =
+    (string Icon, string TitleKey, string TextKey, bool AsList)[] values =
     [
-      (Icons.Svg("eye")!, "vision_title", "vision_text"),
-      (Icons.Svg("target")!, "mission_title", "mission_text"),
-      (Icons.Svg("handshake")!, "values_title", "values_text"),
+      (Icons.Svg("eye")!, "vision_title", "vision_text", false),
+      (Icons.Svg("target")!, "mission_title", "mission_text", false),
+      (Icons.Svg("handshake")!, "values_title", "values_text", true),
     ];
   }
   <section class="about-section" id="about">
@@ -125,23 +125,39 @@
           <h2 class="section-title" lang="@aboutTitle.Lang" dir="@aboutTitle.Dir">@ContentText.Highlight(aboutTitle)</h2>
           <p class="about-text" lang="@about1.Lang" dir="@about1.Dir">@about1</p>
           <p class="about-text" lang="@about2.Lang" dir="@about2.Dir">@about2</p>
-          <div class="about-values">
-            @for (var i = 0; i < values.Length; i++)
-            {
-              var vt = c.Text(values[i].TitleKey);
-              var vx = c.Text(values[i].TextKey);
-              <div class="value-card reveal@(HomeViewModel.Delay(i + 1))">
-                <div class="value-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(values[i].Icon)</svg></div>
-                <h3 lang="@vt.Lang" dir="@vt.Dir">@vt</h3>
-                <p lang="@vx.Lang" dir="@vx.Dir">@vx</p>
-              </div>
-            }
-          </div>
           <a href="@Page(PageKeys.About).Href" class="btn btn-outline about-more">
             <span lang="@Page(PageKeys.About).Title.Lang" dir="@Page(PageKeys.About).Title.Dir">@Page(PageKeys.About).Title</span>
             <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(arrow)</svg>
           </a>
         </div>
+      </div>
+
+      @* Vision / mission / values: a full-width row under the about grid. A text written as a list (items separated by
+         the Arabic or the Latin comma) is shown as chips; any other text as a paragraph. *@
+      <div class="about-values">
+        @for (var i = 0; i < values.Length; i++)
+        {
+          var vt = c.Text(values[i].TitleKey);
+          var vx = c.Text(values[i].TextKey);
+          var items = values[i].AsList ? ContentText.ListItems(vx.Value) : [];
+          <div class="value-card reveal@(HomeViewModel.Delay(i + 1))">
+            <div class="value-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(values[i].Icon)</svg></div>
+            <h3 lang="@vt.Lang" dir="@vt.Dir">@vt</h3>
+            @if (items.Count > 0)
+            {
+              <ul class="value-chips" lang="@vx.Lang" dir="@vx.Dir">
+                @foreach (var item in items)
+                {
+                  <li>@item</li>
+                }
+              </ul>
+            }
+            else
+            {
+              <p lang="@vx.Lang" dir="@vx.Dir">@vx</p>
+            }
+          </div>
+        }
       </div>
     </div>
   </section>

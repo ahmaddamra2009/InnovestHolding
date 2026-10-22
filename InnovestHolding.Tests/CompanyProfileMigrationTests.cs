@@ -300,4 +300,24 @@ public class CompanyProfileMigrationTests
         Assert.Equal(165, (await Meta("forum", "MetaDescriptionEn")).Length);
         Assert.Equal(1, await PlatformSortIndex());
     }
+
+    [Fact] // a database that ran the first profile text gets the 7 English values; an admin's English is never replaced (CorrectCoreValuesEnglish)
+    public async Task English_core_values_are_corrected_only_while_still_the_first_profile_text()
+    {
+        const string first = "Innovation, partnership, transparency, sustainability, professionalism, impact and empowerment";
+        const string corrected = "Innovation, Partnership, Transparency, Sustainability, Professionalism, Impact, Empowerment";
+        await using var scope = await AtPrBStateAsync();
+        var db = scope.Db;
+        await db.GetService<IMigrator>().MigrateAsync(Profile);
+        Assert.Equal(corrected, await Content(db, "values_text", true));                      // a fresh run writes it directly
+
+        await db.Database.ExecuteSqlRawAsync("UPDATE SiteContents SET ContentEn = {0} WHERE SectionKey = N'values_text';", first);
+        await db.Database.MigrateAsync();
+        Assert.Equal(corrected, await Content(db, "values_text", true));                      // the first text is corrected
+
+        await db.Database.ExecuteSqlRawAsync("UPDATE SiteContents SET ContentEn = N'Values (admin)' WHERE SectionKey = N'values_text';");
+        foreach (var sql in new CorrectCoreValuesEnglish().UpOperations.OfType<SqlOperation>())
+            await db.Database.ExecuteSqlRawAsync(sql.Sql.Replace("{", "{{").Replace("}", "}}"));
+        Assert.Equal("Values (admin)", await Content(db, "values_text", true));               // an admin edit is kept
+    }
 }

@@ -489,3 +489,28 @@ html[lang="en"] .page-body p { line-height: 1.8; }
   .about-grid { align-items: start; }
   .about-grid .about-image-wrap { position: sticky; top: calc(var(--header-height) + 32px); }
 }
+
+/* Home About: vision / mission / values as a full-width row of three cards under the about grid (one column below
+   1024 px). Text starts at the inline start; the accent is a thin orange top border; values may render as chips. */
+.about-section .about-values { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 64px; align-items: stretch; }
+.about-section .value-card {
+  display: flex; flex-direction: column; gap: 14px; text-align: start; padding: 32px 28px;
+  background: var(--off-white); border: 1px solid var(--border-color); border-block-start: 3px solid var(--accent);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+}
+.about-section .value-card:hover { border-color: rgba(var(--accent-rgb), 0.35); border-block-start-color: var(--accent); box-shadow: var(--shadow-card); }
+.about-section .value-icon {
+  width: 52px; height: 52px; margin: 0; flex: none; border-radius: var(--radius-md);
+  background: rgba(var(--accent-rgb), 0.12); color: var(--accent-ink);
+}
+.about-section .value-card h3 { font-size: 1.2rem; font-weight: 800; color: var(--text-dark); margin: 0; line-height: 1.4; }
+.about-section .value-card p { font-size: 1rem; color: var(--text-body); line-height: 1.85; margin: 0; }
+.value-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.value-chips li {
+  padding: 6px 14px; border-radius: var(--radius-full); border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background: rgba(var(--accent-rgb), 0.08); color: var(--accent-ink); font-size: 0.9rem; font-weight: 700; line-height: 1.5;
+}
+@media (max-width: 1023.98px) {
+  .about-section .about-values { grid-template-columns: 1fr; gap: 16px; margin-top: 48px; }
+  .about-section .value-card { padding: 24px 20px; }
+}

@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using InnovestHolding.Controllers.Admin;
+using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Infrastructure.Site;
 using Microsoft.EntityFrameworkCore;
@@ -239,6 +240,55 @@ public class SiteRefinementTests(TestAppFactory f)
         foreach (var sheet in new[] { "/css/sections.css", "/css/pages.css", "/css/style.css" })
             Assert.DoesNotMatch("\\.faq-item\\.active\\b", await f.NewClient().GetStringAsync(sheet));
         Assert.Contains(".faq-item.is-open", await f.NewClient().GetStringAsync("/css/sections.css"));
+    }
+
+    [Theory] // a values text written as a list becomes its items; anything else is not a list
+    [InlineData("الابتكار، الشراكة، الشفافية", new[] { "الابتكار", "الشراكة", "الشفافية" })]
+    [InlineData("Innovation, partnership ,transparency", new[] { "Innovation", "partnership", "transparency" })]
+    [InlineData("الابتكار، Innovation, الشراكة", new[] { "الابتكار", "Innovation", "الشراكة" })] // both separators in one text
+    [InlineData(" ، a ،، b , ", new[] { "a", "b" })]                                              // empty items dropped
+    [InlineData("A single sentence without separators", new string[0])]
+    [InlineData("one, ", new string[0])]                                                              // one item is not a list
+    [InlineData("", new string[0])]
+    public void Values_text_splits_into_chips_on_arabic_and_latin_commas(string text, string[] expected) =>
+        Assert.Equal(expected, ContentText.ListItems(text));
+
+    [Fact] // the home values card shows the seeded values as chips in both languages; vision and mission stay prose
+    public async Task Home_values_render_as_chips_in_a_full_width_row()
+    {
+        foreach (var (path, count) in new[] { ("/", 7), ("/en", 7) })
+        {
+            var html = await PageAsync(path);
+            var row = Regex.Match(html, "<div class=\"about-values\">(.*?)<div class=\"value-card[^\"]*\">(.*?)</div>\\s*<div class=\"value-card[^\"]*\">(.*?)</div>\\s*<div class=\"value-card[^\"]*\">(.*?)</div>\\s*</div>", RegexOptions.Singleline);
+            Assert.True(row.Success, $"{path}: no values row");
+            Assert.DoesNotContain("about-values", Regex.Match(html, "<div class=\"about-content[^\"]*\">.*?</a>", RegexOptions.Singleline).Value); // not inside the about column
+            Assert.Contains("<p", row.Groups[2].Value);                 // vision: prose
+            Assert.Contains("<p", row.Groups[3].Value);                 // mission: prose
+            var chips = Regex.Matches(row.Groups[4].Value, "<li>(.*?)</li>").Select(m => WebUtility.HtmlDecode(m.Groups[1].Value)).ToList();
+            Assert.Equal(count, chips.Count);
+            Assert.DoesNotContain(chips, c => c.Contains(',') || c.Contains('،') || c != c.Trim());
+        }
+    }
+
+    [Fact] // the admin is told how a values list is written; the hint exists in both languages and names both commas
+    public async Task Values_field_carries_the_list_hint_in_both_languages()
+    {
+        foreach (var text in new[] { Msg.Ar(MessageKeys.Admin.ListHint), Msg.En(MessageKeys.Admin.ListHint) })
+        {
+            Assert.Contains("«،»", text);
+            Assert.Contains("«,»", text);
+        }
+        Assert.NotEqual(Msg.Ar(MessageKeys.Admin.ListHint), Msg.En(MessageKeys.Admin.ListHint));
+
+        var client = await f.SignedInClientAsync();
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync("/Admin/Content/Edit"));
+        // The hint sits after the values_text inputs and before the next field's pair.
+        var field = html.IndexOf("name=\"content[values_text].Ar\"", StringComparison.Ordinal);
+        Assert.True(field > 0, "values_text field not found");
+        var next = html.IndexOf("class=\"lang-pair", field, StringComparison.Ordinal);
+        var hint = html.IndexOf($"<p class=\"field-hint lang-pair-hint\">{Msg.Ar(MessageKeys.Admin.ListHint)}</p>", field, StringComparison.Ordinal);
+        Assert.True(hint > field && (next < 0 || hint < next), $"hint at {hint}, field at {field}, next pair at {next}");
+        Assert.Single(Regex.Matches(html, "lang-pair-hint")); // only that field
     }
 
     private async Task SetContentAsync(string key, string value) =>

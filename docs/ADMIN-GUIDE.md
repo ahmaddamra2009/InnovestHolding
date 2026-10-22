@@ -137,6 +137,11 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
 
 - **الجزء المميز في العناوين:** ضعوا الجزء الذي يظهر بلون مميز بين `{` و`}`. يجب أن يحتوي النص على زوج واحد فقط
   من الأقواس، وإلا يُرفض الحفظ.
+- **الرؤية والرسالة والقيم (الصفحة الرئيسية):** تظهر في ثلاث بطاقات متساوية في صف كامل العرض تحت قسم «من نحن». «نص القيم» يُعرض
+  **شرائح (chips)** إذا فصلتم بين القيم بفاصلة عربية «،» أو لاتينية «,» (قيمتان على الأقل)، وتظهر ملاحظة بهذا المعنى تحت الحقل؛ وإلا يظهر
+  فقرة عادية. نصا الرؤية والرسالة يظلان فقرتين دائماً ولا يُقسَّمان عند الفواصل. افصلوا القيم الإنجليزية بفاصلة أيضاً
+  (النص الإنجليزي المبذور صُحّح ليعطي 7 شرائح كالعربي، ما لم يكن قد عُدّل يدوياً). صفحة «من نحن» تعرض قيمها من قائمة
+  «القيم الأساسية» (القسم 4) لا من هذا الحقل.
 - **سنوات الخبرة، الهاتف، البريد:** قيمة واحدة للغتين.
 - **نص شارة الخبرة:** كل سطر يظهر في سطر.
 - **حقوق النشر:** اكتبوا `{year}` ليُستبدل بالسنة الحالية.
@@ -359,6 +364,12 @@ has an Arabic and an English field, then Save.
 
 - **Highlighted part of a heading:** put the part shown in the accent colour between `{` and `}`. Use exactly one pair of
   braces or the save is refused.
+- **Vision, mission and values (home page):** shown as three equal cards in a full-width row under the About section. The
+  «نص القيم» text is shown as **chips** when you separate the values with an Arabic comma «،» or a Latin comma «,» (at
+  least two values); a hint under the field says so. Otherwise it shows as a paragraph. Vision and mission always stay
+  paragraphs and are never split at commas. Separate the English values with commas too (the seeded English text was
+  corrected to give 7 chips like the Arabic, unless it had been edited by hand). The About page takes its values from the «core values» list (section 4),
+  not from this field.
 - **Years of experience, phone, e-mail:** one value for both languages.
 - **Experience badge text:** each line is shown on its own line.
 - **Copyright:** type `{year}` to insert the current year.

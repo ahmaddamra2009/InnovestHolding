@@ -32,6 +32,8 @@ public sealed class LangPairTagHelper(IStringLocalizer<SharedResource> l) : TagH
     public string? Placeholder { get; set; }
     /// <summary>Makes the element ids unique when one page repeats the same field names (inline list forms).</summary>
     public string? IdPrefix { get; set; }
+    /// <summary>Resource key of a hint shown under the pair (how the admin should write the value).</summary>
+    public string? HintKey { get; set; }
 
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
@@ -43,6 +45,14 @@ public sealed class LangPairTagHelper(IStringLocalizer<SharedResource> l) : TagH
         output.Content.AppendHtml(Field(NameAr, ValueAr, neutral ? null : "ar", Required, neutral ? Ltr : false, neutral));
         if (!neutral)
             output.Content.AppendHtml(Field(NameEn!, ValueEn, "en", false, true, false));
+        if (!string.IsNullOrEmpty(HintKey))
+        {
+            var hint = new TagBuilder("p");
+            hint.AddCssClass("field-hint");
+            hint.AddCssClass("lang-pair-hint");
+            hint.InnerHtml.Append(l[HintKey].Value);
+            output.Content.AppendHtml(hint);
+        }
     }
 
     private string Id(string name) => TagBuilder.CreateSanitizedId((IdPrefix ?? "") + name, "_") ?? name;

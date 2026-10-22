@@ -139,6 +139,7 @@ public static class MessageKeys
         public const string StatusToggled = "Admin_StatusToggled";
         public const string EnHint = "Admin_EnHint";
         public const string NeutralHint = "Admin_NeutralHint";
+        public const string ListHint = "Admin_ListHint";
     }
 
     public static class Ui
