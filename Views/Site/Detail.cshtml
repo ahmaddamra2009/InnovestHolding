@@ -57,7 +57,7 @@
         <div class="video-facade" data-video-id="@videoId" data-video-title="@video.Title">
           @if (video.Poster is { } poster)
           {
-            <img class="video-poster" src="@poster.Src" width="@poster.Width" height="@poster.Height" alt="" fetchpriority="high" decoding="async">
+            <img class="video-poster" src="@poster.Src" width="@poster.Width" height="@poster.Height" alt="@poster.Alt" lang="@poster.Alt.Lang" fetchpriority="high" decoding="async">
           }
           else
           {
@@ -67,7 +67,13 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="8 5 19 12 8 19 8 5" fill="currentColor"/></svg>
           </button>
         </div>
-        <p class="video-note">@L[K.Ui.VideoNotice]</p>
+        <p class="video-note">@L[K.Ui.VideoNotice]
+          @if (video.LinkUrl is { } youTubeLink)
+          {
+            @* A plain link (no request until followed): the video is reachable without the script. *@
+            <a href="@youTubeLink" rel="noopener noreferrer" class="video-link">@L[K.Ui.WatchOnYouTube]<span class="visually-hidden"> @L[K.Ui.ExternalLink]</span></a>
+          }
+        </p>
       }
       @if (Model.Image is { } img)
       {
@@ -89,7 +95,9 @@
       <div class="detail-card">
         @if (Model.Video is { YouTubeId: null, LinkUrl: { } watch })
         {
-          <a href="@watch" class="btn btn-accent" rel="noopener">@L[K.Ui.WatchVideo]</a>
+          @* An address on another site, entered by the admin: no referrer, marked as external. *@
+          <a href="@watch" class="btn btn-accent" rel="noopener noreferrer">@L[K.Ui.WatchVideo]
+            <svg class="external-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span class="visually-hidden"> @L[K.Ui.ExternalLink]</span></a>
         }
         @if (Model.Profiles.Count > 0)
         {

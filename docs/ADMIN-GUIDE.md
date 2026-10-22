@@ -221,6 +221,41 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
 - الصورة الأعرض من 1200 بكسل تُستعمل بحجم كبير في المشاركة على وسائل التواصل؛ وإلا تُستعمل صورة الصفحة ثم الصورة الافتراضية.
 - لا ترفعوا صوراً تحتوي بيانات خاصة؛ كل ما يُرفع يظهر للعامة.
 
+## 9ب. المتحدثون وضيوف البرنامج والحلقات والفرص وباقات الرعاية
+
+في القائمة الجانبية: مجموعة «منتدى إنوفست العربي» ← **المتحدثون**؛ مجموعة «شبكة المستثمرين الملائكيين» ← **الفرص الاستثمارية**؛ مجموعة
+«البرنامج التلفزيوني» ← **الحلقات** و**الضيوف** و**باقات الرعاية**. تحل هذه الشاشات محل نص «قريباً» في صفحات `/forum/speakers`
+و`/tv/episodes` و`/tv/guests` و`/angel-network/opportunities` (وتحت `/en`)، ولكل عنصر صفحة خاصة بالرابط المختصر.
+
+- **قاعدة مشتركة:** عند إضافة عنصر لأول مرة لا تعود الصفحة «فارغة»: تُفهرس تلقائياً (القسم 5). ما دامت القائمة بلا عناصر منشورة تعرض الصفحة
+  نص «قريباً» (يُعدَّل من «صفحات الموقع») وتبقى `noindex`. العناصر المخفية لا تظهر في أي مكان. **الرابط المختصر** والاستبدال/الحذف
+  للصور كما في الأخبار (القسم 9): أحرف إنجليزية صغيرة وأرقام وشرطات؛ تغييره يُبقي القديم يحوّل (301). صفحة العنصر الإنجليزية تدخل محركات
+  البحث فقط حين تتوفر نصوصه الإنجليزية، وإلا تعرض العربية مع تنبيه وتكون `noindex`. أزرار «ظاهر/مخفي» تخفي العنصر دون حذفه، وحقل «الترتيب»
+  (الأصغر أولاً) يحدد الترتيب.
+- **«المتحدثون» و«الضيوف»** (الحقول نفسها): الاسم، المنصب، الجهة، نبذة، رابط لينكدإن، رابط X (`https://` اختياريان)، **الصورة الشخصية**،
+  الرابط المختصر، محركات البحث، الترتيب، ظاهر/مخفي. تظهر الصفحة الإنجليزية في الفهرس حين يُملأ الاسم الإنجليزي (والمنصب والنبذة بالإنجليزية إن
+  وُجدت بالعربية). حذف متحدث يُزيله من فعالياته؛ حذف ضيف يُزيله من حلقاته.
+- **ربط المتحدثين بالفعاليات:** في شاشة تعديل «الفعاليات» مجموعة «متحدثو الفعالية (يظهرون في صفحتها بهذا الترتيب)» بمربعات اختيار؛ تظهر
+  في صفحة الفعالية المتحدثون المنشورون فقط، وفي صفحة المتحدث فعالياته. المتحدث المعطَّل يبقى في القائمة بعلامة ولا يظهر للزوار.
+- **«الحلقات»:** عنوان الحلقة، الملخص، الوصف، **الموسم** و**رقم الحلقة** و**تاريخ العرض** (اختيارية)، **رابط الفيديو**، **الصورة المصغّرة**
+  (ملصق الفيديو وصورة المشاركة)، **ضيوف الحلقة** (مربعات اختيار من «الضيوف»؛ يظهرون بالترتيب)، الرابط المختصر، محركات البحث، الترتيب. ترتَّب
+  القائمة: الحلقات ذات تاريخ العرض الأحدث أولاً ثم غير المؤرَّخة.
+  - **رابط الفيديو** `https://` فقط. رابط **يوتيوب** (`youtube.com/watch?v=…` أو `youtu.be/…` أو `/embed/` أو `/shorts/` أو `/live/` من المواقع
+    youtube.com وyoutube-nocookie.com وyoutu.be) يظهر بمشغّل **لا يتصل بيوتيوب إلا عندما يضغط الزائر عليه** (يُستعمل نطاق youtube-nocookie)؛
+    أي رابط آخر `https://` يظهر زر «شاهد الحلقة». لا يظهر مشغّل إن تُرك الحقل فارغاً.
+- **«الفرص الاستثمارية»:** عنوان الفرصة، الملخص، التفاصيل، **القطاع** (يُختار من قائمة «القطاعات التي نخدمها»، أو «بدون»)، المرحلة والتمويل
+  المطلوب (**نصان حران**، مثل «عند الطلب»؛ لا يظهر أي رقم لم تكتبوه)، **«متاحة لاستقبال الاهتمام»**، الصورة، الرابط المختصر، محركات البحث.
+  - **المسودة والنشر:** تُحفظ الفرصة الجديدة **مسودة** (شارة «مسودة») ولا تظهر في الموقع (ولا في خريطة الموقع، ورابطها 404 للزوار) حتى تُفعّل
+    «منشورة». الفرصة المنشورة المغلقة (إن أُلغيت «متاحة…») تظهر بعلامة «مغلقة» بلا زر اهتمام. تُرتَّب المتاحة أولاً.
+  - زر «أبدِ اهتمامك» في صفحة الفرصة يفتح صفحة «تواصل معنا» ريثما يُضاف نموذج خاص.
+  - **حذف قطاع** من «القطاعات التي نخدمها» مستعمل في فرصة يُرفض برسالة («عطّله بدلاً من حذفه»).
+- **«باقات الرعاية»:** الوحدة (البرنامج التلفزيوني أو المنتدى)، اسم الباقة، **السعر** (نص حر مثل «عند الطلب»)، **المزايا** (ميزة في كل سطر)،
+  الترتيب، ظاهرة/مخفية. باقات البرنامج التلفزيوني تظهر في صفحة «الرعاية» (`/tv/sponsorship`) وباقات المنتدى في «الشركاء والرعاة»
+  (`/forum/partners`).
+- **صفحة المركز وإخفاؤها:** إخفاء صفحة (مثل «الحلقات») من القائمة يتم من «صفحات الموقع» ← «في القائمة» (القسم 3)؛ وتبقى الصفحة متاحة برابطها.
+  صفحتا `/tv` و`/tv/sponsorship` تبقيان `noindex` ما دام نصهما التمهيدي والرئيسي فارغين.
+- **الصور:** كل ما سبق يستعمل أداة الرفع نفسها وقيودها (JPG وPNG وWebP حتى 5 ميغابايت، القسم «رفع الصور»)؛ الصورة تُحذف مع العنصر.
+
 ## 10. الأسئلة الشائعة
 
 «الأسئلة الشائعة»: السؤال والجواب بالعربية والإنجليزية، «الترتيب»، «مفعّل». تظهر في الرئيسية وفي «تواصل معنا». إذا لم يبقَ
@@ -488,6 +523,49 @@ founder's photo (General texts).
 - An image at least 1200 pixels wide is used at full size when the page is shared on social media; otherwise the page image,
   then the default image, is used.
 - Do not upload images that contain private data: everything uploaded is public.
+
+## 9b. Speakers, TV guests, episodes, opportunities and sponsorship packages
+
+In the sidebar: group «منتدى إنوفست العربي» → **المتحدثون** (speakers); group «شبكة المستثمرين الملائكيين» → **الفرص الاستثمارية**
+(opportunities); group «البرنامج التلفزيوني» → **الحلقات** (episodes), **الضيوف** (guests) and **باقات الرعاية** (sponsorship
+packages). These screens fill the former «coming soon» pages `/forum/speakers`, `/tv/episodes`, `/tv/guests` and
+`/angel-network/opportunities` (and the `/en` twins); every item also has its own page at its slug.
+
+- **Common rules:** once a list has a published item the page stops being «empty» and is indexed automatically (section 5). While the
+  list has no published item the page shows the «coming soon» text (edited in «صفحات الموقع») and stays `noindex`. Hidden items appear
+  nowhere. The **slug** and image replace/remove work as for news (section 9): lower-case English letters, digits and hyphens; changing
+  a slug keeps the old address redirecting (301). An item's English page is indexed only when its English texts exist; otherwise it
+  shows the Arabic with a notice and is `noindex`. The «ظاهر/مخفي» badges hide an item without deleting it, and «Order»
+  (lower first) sets the order.
+- **Speakers and guests** (the same fields): name, job title, organisation, bio, LinkedIn and X links (optional, `https://`), the
+  **portrait**, slug, search engines, order, visible/hidden. The English page is indexed when the English name is filled (and the
+  English job title and bio when the Arabic ones exist). Deleting a speaker removes them from their events; deleting a guest
+  removes them from their episodes.
+- **Linking speakers to events:** the «الفعاليات» edit screen has a checkbox group «متحدثو الفعالية (يظهرون في صفحتها بهذا الترتيب)».
+  The event page shows only the published speakers; a speaker's page lists their events. A deactivated speaker stays in the list
+  with a mark and is not shown to visitors.
+- **Episodes:** title, summary, description, **season**, **episode number** and **air date** (all optional), **video link**,
+  **thumbnail** (the video poster and the share image), **episode guests** (checkboxes from «الضيوف»; shown in that order), slug,
+  search engines, order. The list is ordered with the most recent air date first, undated episodes last.
+  - **Video link:** `https://` only. A **YouTube** link (`youtube.com/watch?v=...`, `youtu.be/...`, `/embed/`, `/shorts/` or `/live/` on
+    youtube.com, youtube-nocookie.com or youtu.be) is shown with a player that **contacts YouTube only when the visitor clicks it**
+    (the youtube-nocookie domain is used); any other `https://` link shows a «watch the episode» button. With the field empty no player
+    is shown.
+- **Opportunities:** title, summary, details, **sector** (chosen from the «sectors we serve» list, or none), stage and funding sought
+  (**two free texts**, e.g. «on request»; no figure appears that you did not type), **«open to interest»**, image, slug, search
+  engines.
+  - **Draft and publish:** a new opportunity is saved as a **draft** («مسودة» badge) and is not shown on the site (nor in the
+    sitemap, and its address is a 404 for visitors) until you set it to **published**. A published opportunity that is not open shows
+    a «closed» mark with no interest button. Open ones are listed first.
+  - The «express interest» button on an opportunity opens the Contact page until a dedicated form is added.
+  - **Deleting a sector** from «sectors we serve» that an opportunity uses is refused with a message («deactivate it instead»).
+- **Sponsorship packages:** unit (TV program or forum), package name, **price** (free text such as «on request»), **benefits** (one
+  per line), order, visible/hidden. TV packages appear on the «Sponsorship» page (`/tv/sponsorship`), forum packages on «Partners and
+  sponsors» (`/forum/partners`).
+- **Hubs and hiding:** hiding a page (e.g. «Episodes») from the menu is done in «صفحات الموقع» → «in menu» (section 3); it stays
+  reachable by its URL. `/tv` and `/tv/sponsorship` stay `noindex` while their intro and main text are empty.
+- **Images:** all of the above use the same upload tool and limits (JPG, PNG or WebP up to 5 MB, see «Uploading images»); an image is
+  deleted with its item.
 
 ## 10. FAQ
 

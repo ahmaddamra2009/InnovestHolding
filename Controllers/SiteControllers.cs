@@ -212,10 +212,10 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
             SeoBuilder.Set(node, "organizer", SeoBuilder.OrganizationRef(baseUrl));
         }
 
-        // The event's published speakers, in the event's own order.
+        // The event's published speakers, in the order of the speakers list (the admin's picker shows that order).
         var speakers = (await db.EventSpeakers.AsNoTracking()
                 .Where(es => es.EventId == e.Id && es.Speaker!.IsActive)
-                .OrderBy(es => es.SortOrder).ThenBy(es => es.Speaker!.SortOrder).ThenBy(es => es.SpeakerId)
+                .OrderBy(es => es.Speaker!.SortOrder).ThenBy(es => es.SpeakerId)
                 .Select(es => es.Speaker!)
                 .Select(EcosystemQueries.PersonCard<Speaker>())
                 .ToListAsync(HttpContext.RequestAborted))
@@ -298,7 +298,8 @@ public class NetworkController(AppDbContext db) : PublicControllerBase
 
     /// <summary>
     /// The "express interest" action of an opportunity page. There is no interest form yet, so it goes to the contact
-    /// page; this method is the one place to point it at that form.
+    /// page; this method is the one place to point it at that form (<paramref name="slug"/> is unused until then: the
+    /// form will pre-select the opportunity from it).
     /// </summary>
     private LinkVm InterestAction(SiteViews v, string slug) => new(v.Url(PageKeys.Contact), Ui(MessageKeys.Ui.ExpressInterest));
 
@@ -460,12 +461,12 @@ public class TvController(AppDbContext db) : PublicControllerBase
         var thumbnail = v.Image(e.Thumbnail, title);
         var youTubeId = YouTube.VideoId(e.VideoUrl);
         var video = youTubeId is not null
-            ? new VideoVm(youTubeId, null, thumbnail, title)
+            ? new VideoVm(youTubeId, e.VideoUrl!.Trim(), thumbnail, title)
             : SiteUrl.IsHttpsUrl(e.VideoUrl) ? new VideoVm(null, e.VideoUrl!.Trim(), null, title) : null;
 
         var guests = (await db.TvEpisodeGuests.AsNoTracking()
                 .Where(g => g.TvEpisodeId == e.Id && g.TvGuest!.IsActive)
-                .OrderBy(g => g.SortOrder).ThenBy(g => g.TvGuest!.SortOrder).ThenBy(g => g.TvGuestId)
+                .OrderBy(g => g.TvGuest!.SortOrder).ThenBy(g => g.TvGuestId)
                 .Select(g => g.TvGuest!)
                 .Select(EcosystemQueries.PersonCard<TvGuest>())
                 .ToListAsync(ct))

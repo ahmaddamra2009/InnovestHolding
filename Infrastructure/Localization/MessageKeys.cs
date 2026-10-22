@@ -39,6 +39,7 @@ public static class MessageKeys
     public const string DateRequired = "Msg_DateRequired";
     public const string UtcOffset = "Msg_UtcOffset";
     public const string SlugTaken = "Msg_SlugTaken";
+    public const string SlugReserved = "Msg_SlugReserved";
     public const string SlugInvalid = "Msg_SlugInvalid";
     public const string ImageStorage = "Msg_ImageStorage";
     public const string ImageSize = "Msg_ImageSize";
@@ -264,5 +265,7 @@ public static class MessageKeys
         public const string ExpressInterest = "Ui_ExpressInterest";
         public const string SponsorshipPackages = "Ui_SponsorshipPackages";
         public const string ProfilesAria = "Ui_ProfilesAria";
+        public const string WatchOnYouTube = "Ui_WatchOnYouTube";
+        public const string ExternalLink = "Ui_ExternalLink";
     }
 }

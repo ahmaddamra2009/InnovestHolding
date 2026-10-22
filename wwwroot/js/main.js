@@ -425,6 +425,9 @@ document.addEventListener('DOMContentLoaded', () => {
       frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
       frame.allowFullscreen = true;
       frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      // The player needs its own scripts and origin (it is cross-origin, so it cannot reach this page); no forms,
+      // no top navigation; "watch on YouTube" opens a new tab.
+      frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox');
       facade.replaceChildren(frame);
       facade.classList.add('is-playing');
       frame.focus();

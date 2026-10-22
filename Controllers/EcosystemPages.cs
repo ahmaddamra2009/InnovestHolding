@@ -129,8 +129,12 @@ public abstract partial class PublicControllerBase
         SeoBuilder.Set(node, "description", SeoBuilder.Shorten(bio.IsEmpty ? role : bio.Value, 300));
         SeoBuilder.Set(node, "sameAs", profiles.Select(x => x.Url).ToArray());
         var metaDescription = v.P(p.MetaDescriptionAr, p.MetaDescriptionEn);
-        var seo = SeoBuilder.BuildDetail(route, p.Slug, v, baseUrl, available, name, v.P(p.MetaTitleAr, p.MetaTitleEn).Value,
-            !metaDescription.IsEmpty ? metaDescription.Value : role.Length > 0 ? role : bio.Value, p.Photo, "profile", node);
+        // Indexed only with a description (bio or meta description) in Arabic, and the English page also in English.
+        var describedAr = EcosystemQueries.PersonHasDescription(p.BioAr, p.MetaDescriptionAr);
+        var describedEn = available && EcosystemQueries.PersonHasDescription(p.BioEn, p.MetaDescriptionEn);
+        var seo = SeoBuilder.BuildDetail(route, p.Slug, v, baseUrl, describedEn, name, v.P(p.MetaTitleAr, p.MetaTitleEn).Value,
+            !metaDescription.IsEmpty ? metaDescription.Value : role.Length > 0 ? role : bio.Value, p.Photo, "profile", node,
+            indexable: describedAr);
 
         var rel = await related(v, p.Id);
         return Detail(v, route, p.Slug, seo, new DetailPageVm

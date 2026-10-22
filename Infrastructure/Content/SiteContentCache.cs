@@ -63,10 +63,14 @@ public sealed record SiteSnapshot(
     ListCount PartnersCount,
     IReadOnlyList<PartnerGroupRow> PartnerGroups,
     MediaRef? FounderPhoto = null,
-    EcosystemData? EcosystemData = null)
+    EcosystemData? EcosystemData = null,
+    IReadOnlyDictionary<string, MediaRef>? Images = null)
 {
     /// <summary>Counts of the ecosystem lists and the sponsorship packages (empty when not loaded).</summary>
     public EcosystemData Ecosystem => EcosystemData ?? EcosystemData.None;
+
+    /// <summary>An uploaded site image (<see cref="SiteImages"/>), or null while none is uploaded (the caller falls back).</summary>
+    public MediaRef? Image(string key) => Images?.GetValueOrDefault(key);
 
     public IReadOnlyList<ItemRow> ItemsOf(string group) => Items.GetValueOrDefault(group) ?? [];
 
@@ -202,12 +206,20 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
                 p.Url, p.PartnerGroupId, p.ShowOnHome))
             .ToListAsync(ct);
 
-        // The founder's photo: the key holds the FileKey of an uploaded image (one small read when it is set).
-        var founderKey = content.GetValueOrDefault(ContentKeys.FounderPhoto)?.Ar;
-        var founderPhoto = string.IsNullOrEmpty(founderKey)
-            ? null
-            : await db.MediaFiles.AsNoTracking().Where(m => m.FileKey == founderKey)
-                .Select(m => new MediaRef(m.FileKey, m.Format, m.Width, m.Height, m.AltAr, m.AltEn)).FirstOrDefaultAsync(ct);
+        // The site images (logos, hero, founder photo): each key holds the FileKey of an uploaded image; one small read
+        // for those that are set, none when no image is uploaded.
+        var imageKeys = SiteImages.All
+            .Select(i => (i.Key, FileKey: content.GetValueOrDefault(i.Key)?.Ar))
+            .Where(x => !string.IsNullOrEmpty(x.FileKey)).ToList();
+        var fileKeys = imageKeys.Select(x => x.FileKey!).Distinct().ToList();
+        var files = fileKeys.Count == 0
+            ? new Dictionary<string, MediaRef>()
+            : await db.MediaFiles.AsNoTracking().Where(m => fileKeys.Contains(m.FileKey))
+                .Select(m => new MediaRef(m.FileKey, m.Format, m.Width, m.Height, m.AltAr, m.AltEn))
+                .ToDictionaryAsync(m => m.FileKey, StringComparer.Ordinal, ct);
+        var images = imageKeys.Where(x => files.ContainsKey(x.FileKey!))
+            .ToDictionary(x => x.Key, x => files[x.FileKey!], StringComparer.Ordinal);
+        var founderPhoto = images.GetValueOrDefault(ContentKeys.FounderPhoto);
 
         var partnerGroups = await db.PartnerGroups.AsNoTracking()
             .Where(g => g.IsActive)
@@ -247,7 +259,8 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
             new ListCount(partners.Count, partners.Count(p => Has(p.NameEn))),
             partnerGroups,
             founderPhoto,
-            ecosystem);
+            ecosystem,
+            images);
     }
 
     /// <summary>

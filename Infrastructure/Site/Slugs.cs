@@ -24,6 +24,15 @@ public static partial class Slugs
         "en", "ar", "admin", "account", "home", "forms", "media", "assets", "uploads", "page", "index",
     };
 
+    /// <summary>
+    /// True for "{entityType}-{digits}" (e.g. "speaker-12"): the address the admin gives an item that has no English
+    /// title, after its insert. Reserved for that use.
+    /// </summary>
+    public static bool IsAutomatic(string entityType, string slug) =>
+        slug.Length > entityType.Length + 1
+        && slug.StartsWith(entityType + "-", StringComparison.Ordinal)
+        && slug.AsSpan(entityType.Length + 1).IndexOfAnyExceptInRange('0', '9') < 0;
+
     public static bool IsValid(string? slug) =>
         slug is { Length: > 0 and <= MaxLength } && Pattern().IsMatch(slug) && !Reserved.Contains(slug);
 

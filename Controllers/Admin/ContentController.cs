@@ -29,40 +29,51 @@ public class ContentController : AdminControllerBase
         return View(ViewPath, input);
     }
 
-    public const string FounderPhotoKey = "FounderPhoto";
+    public const string SiteImagesKey = "SiteImages";
 
-    private async Task<MediaFile?> FounderPhotoRowAsync(bool tracked)
+    private async Task<MediaFile?> SiteImageRowAsync(string key, bool tracked)
     {
-        var key = await _db.SiteContents.AsNoTracking().Where(c => c.SectionKey == ContentKeys.FounderPhoto)
+        var fileKey = await _db.SiteContents.AsNoTracking().Where(c => c.SectionKey == key)
             .Select(c => c.ContentAr).FirstOrDefaultAsync();
-        if (string.IsNullOrEmpty(key)) return null;
+        if (string.IsNullOrEmpty(fileKey)) return null;
         var query = tracked ? _db.MediaFiles : _db.MediaFiles.AsNoTracking();
-        return await query.FirstOrDefaultAsync(m => m.FileKey == key);
+        return await query.FirstOrDefaultAsync(m => m.FileKey == fileKey);
     }
 
-    private async Task SetFounderPhotoAsync()
+    /// <summary>The image forms above the text editor: one per registered site image (SiteImages), with its current file.</summary>
+    private async Task SetSiteImagesAsync()
     {
-        var m = await FounderPhotoRowAsync(false);
-        ViewData[FounderPhotoKey] = new FounderPhotoInput { Current = MediaRefs.Of(m), ImageAltAr = m?.AltAr, ImageAltEn = m?.AltEn };
+        var forms = new List<(SiteImage Image, SiteImageInput Input)>();
+        foreach (var image in SiteImages.All)
+        {
+            var m = await SiteImageRowAsync(image.Key, false);
+            forms.Add((image, new SiteImageInput { Key = image.Key, Current = MediaRefs.Of(m), ImageAltAr = m?.AltAr, ImageAltEn = m?.AltEn }));
+        }
+        ViewData[SiteImagesKey] = forms;
     }
 
     /// <summary>
-    /// The founder block's photo (its own small form: a file cannot be part of the big text form without making every
-    /// text save a multipart upload). The key founder_photo holds the image's FileKey; a replaced or removed image is
-    /// deleted with its file.
+    /// A site image (logo, hero image, founder photo — SiteImages), each in its own small form: a file cannot be part of
+    /// the big text form without making every text save a multipart upload. The key holds the image's FileKey (only a
+    /// registered key is accepted); a replaced or removed image is deleted with its file; while it is empty the site
+    /// shows its bundled image.
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> FounderPhoto(FounderPhotoInput input)
+    public async Task<IActionResult> SiteImage(SiteImageInput input)
     {
-        if (!ModelState.IsValid) return InvalidRedirectToEdit();
-        var current = await FounderPhotoRowAsync(true);
-        var uploaded = await UploadImageAsync(input);
+        var image = SiteImages.Find(input.Key);
+        if (image is null)
+            ModelState.AddModelError(nameof(input.Key), L(MessageKeys.InvalidValueNoField));
+        if (!ModelState.IsValid || image is null) return InvalidRedirectToEdit();
+        var key = image.Key;
+        var current = await SiteImageRowAsync(key, true);
+        var uploaded = await UploadImageAsync(input, image.IsLogo ? Infrastructure.Media.ImageUse.Logo : Infrastructure.Media.ImageUse.General);
         if (!ModelState.IsValid) return InvalidRedirectToEdit();
 
-        var row = await _db.SiteContents.FirstOrDefaultAsync(c => c.SectionKey == ContentKeys.FounderPhoto);
+        var row = await _db.SiteContents.FirstOrDefaultAsync(c => c.SectionKey == key);
         if (row is null)
         {
-            row = new SiteContent { SectionKey = ContentKeys.FounderPhoto };
+            row = new SiteContent { SectionKey = key };
             _db.SiteContents.Add(row);
         }
         var leaving = ApplyImage(_db, current, uploaded, input, m => row.ContentAr = m?.FileKey ?? "");
@@ -78,6 +89,15 @@ public class ContentController : AdminControllerBase
         return RedirectToAction(nameof(Edit));
     }
 
+    /// <summary>The founder photo's form address (C2), kept: the same as <see cref="SiteImage"/> for founder_photo.</summary>
+    [HttpPost]
+    public Task<IActionResult> FounderPhoto(FounderPhotoInput input) =>
+        SiteImage(new SiteImageInput
+        {
+            Key = ContentKeys.FounderPhoto, Image = input.Image, RemoveImage = input.RemoveImage,
+            ImageAltAr = input.ImageAltAr, ImageAltEn = input.ImageAltEn,
+        });
+
     private IActionResult InvalidRedirectToEdit()
     {
         TempData["Error"] = JoinErrors();
@@ -91,7 +111,7 @@ public class ContentController : AdminControllerBase
         ViewData[PageChoicesKey] = SiteRoutes.All
             .Select(p => new KeyValuePair<string, string>(p.Key, $"{titles.GetValueOrDefault(p.Key) ?? p.Key} ({p.Path})"))
             .ToList();
-        await SetFounderPhotoAsync();
+        await SetSiteImagesAsync();
     }
 
     public const string PageChoicesKey = "PageChoices";

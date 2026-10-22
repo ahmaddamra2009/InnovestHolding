@@ -250,4 +250,7 @@
   <data name="Field_PriceEn" xml:space="preserve"><value>السعر (بالإنجليزية)</value></data>
   <data name="Field_Benefits" xml:space="preserve"><value>المزايا</value></data>
   <data name="Field_BenefitsEn" xml:space="preserve"><value>المزايا (بالإنجليزية)</value></data>
+  <data name="Msg_SlugReserved" xml:space="preserve"><value>الشكل «{0}-رقم» محجوز للروابط التلقائية — اختر رابطاً مختصراً آخر.</value></data>
+  <data name="Ui_WatchOnYouTube" xml:space="preserve"><value>المشاهدة على يوتيوب</value></data>
+  <data name="Ui_ExternalLink" xml:space="preserve"><value>(يفتح موقعاً آخر)</value></data>
 </root>

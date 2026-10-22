@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using static InnovestHolding.Tests.TestHelpers;
 
 namespace InnovestHolding.Tests;
@@ -137,8 +138,8 @@ public class EcosystemTests(TestAppFactory f)
 
     private static TvGuest NewGuest(string slug, bool english, bool active = true) => new()
     {
-        Slug = slug, NameAr = "ضيف " + slug, NameEn = english ? "Guest " + slug : null, JobTitleAr = "", BioAr = "",
-        IsActive = active, SortOrder = 900,
+        Slug = slug, NameAr = "ضيف " + slug, NameEn = english ? "Guest " + slug : null, JobTitleAr = "",
+        BioAr = "نبذة الضيف", BioEn = english ? "Guest bio" : null, IsActive = active, SortOrder = 900,
     };
 
     private static TvEpisode NewEpisode(string slug, bool english, string? video = null, bool active = true) => new()
@@ -347,14 +348,16 @@ public class EcosystemTests(TestAppFactory f)
 
     // ── T-C3.3: event ↔ speakers ──
 
-    [Fact] // the event page lists its published speakers in the event's order (and as Event performers); deleting a speaker removes the link only
+    [Fact] // the event page lists its published speakers in the speakers-list order (and as Event performers); deleting a speaker removes the link only
     public async Task Event_page_lists_its_speakers_in_order()
     {
         var a = Slug("spk-a");
         var b = Slug("spk-b");
         var hidden = Slug("spk-h");
+        // B is first in the speakers list although it was added second (and linked with a later position).
         var idA = await AddAsync(NewSpeaker(a, true));
         var idB = await AddAsync(NewSpeaker(b, true));
+        await f.DbAsync(async db => { (await db.Speakers.FindAsync(idB))!.SortOrder = 1; (await db.Speakers.FindAsync(idA))!.SortOrder = 2; return await db.SaveChangesAsync(); });
         var idH = await AddAsync(NewSpeaker(hidden, true, active: false));
         var eventSlug = Slug("evt");
         var eventId = await AddAsync(new Event
@@ -368,8 +371,8 @@ public class EcosystemTests(TestAppFactory f)
             await f.DbAsync(async db =>
             {
                 db.EventSpeakers.AddRange(
-                    new EventSpeaker { EventId = eventId, SpeakerId = idB, SortOrder = 0 },
-                    new EventSpeaker { EventId = eventId, SpeakerId = idA, SortOrder = 1 },
+                    new EventSpeaker { EventId = eventId, SpeakerId = idA, SortOrder = 0 },
+                    new EventSpeaker { EventId = eventId, SpeakerId = idB, SortOrder = 1 },
                     new EventSpeaker { EventId = eventId, SpeakerId = idH, SortOrder = 2 });
                 return await db.SaveChangesAsync();
             });
@@ -411,18 +414,20 @@ public class EcosystemTests(TestAppFactory f)
         var g2 = Slug("guest-2");
         var idG1 = await AddAsync(NewGuest(g1, true));
         var idG2 = await AddAsync(NewGuest(g2, true));
+        // The page shows the guests in the guests-list order: G2 first.
+        await f.DbAsync(async db => { (await db.TvGuests.FindAsync(idG2))!.SortOrder = 1; (await db.TvGuests.FindAsync(idG1))!.SortOrder = 2; return await db.SaveChangesAsync(); });
         var client = await f.SignedInClientAsync();
         var title = Unique("حلقة");
         var token = await client.GetTokenAsync("/Admin/TvEpisodes/Create");
         var r = await client.PostAsync("/Admin/TvEpisodes/Create", MediaUploadTests.Multipart(token, null,
             ("TitleAr", title), ("TitleEn", "Episode " + g1), ("SummaryAr", "ملخص"), ("SummaryEn", "Summary"),
             ("Season", "2"), ("Number", "5"), ("AiredOn", "2026-09-01"), ("VideoUrl", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
-            ("GuestIds", idG2.ToString()), ("GuestIds", idG1.ToString()), ("IsActive", "true")));
+            ("GuestIds", idG1.ToString()), ("GuestIds", idG2.ToString()), ("IsActive", "true")));
         Assert.Equal(HttpStatusCode.Redirect, r.StatusCode);
         var episode = await f.DbAsync(db => db.TvEpisodes.SingleAsync(e => e.TitleAr == title));
         try
         {
-            Assert.Equal([idG2, idG1], await f.DbAsync(db => db.TvEpisodeGuests.Where(x => x.TvEpisodeId == episode.Id)
+            Assert.Equal([idG1, idG2], await f.DbAsync(db => db.TvEpisodeGuests.Where(x => x.TvEpisodeId == episode.Id)
                 .OrderBy(x => x.SortOrder).Select(x => x.TvGuestId).ToListAsync()));
 
             foreach (var path in new[] { "/tv/episodes/" + episode.Slug, "/en/tv/episodes/" + episode.Slug })
@@ -431,7 +436,9 @@ public class EcosystemTests(TestAppFactory f)
                 Assert.Contains("data-video-id=\"dQw4w9WgXcQ\"", html);
                 Assert.DoesNotContain("<iframe", html, StringComparison.OrdinalIgnoreCase);
                 Assert.DoesNotContain("ytimg", html, StringComparison.OrdinalIgnoreCase);
-                Assert.DoesNotMatch("(src|href|poster)=\"https?://[^\"]*youtube", html);
+                Assert.DoesNotMatch("(src|poster|data)=\"https?://[^\"]*youtube", html); // nothing the browser loads
+                // A plain link to the video (followed only on a click), without a referrer.
+                Assert.Contains("<a href=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" rel=\"noopener noreferrer\" class=\"video-link\">", html);
                 var pos1 = html.IndexOf($"/tv/guests/{g1}\"", StringComparison.Ordinal);
                 var pos2 = html.IndexOf($"/tv/guests/{g2}\"", StringComparison.Ordinal);
                 Assert.True(pos2 > 0 && pos1 > pos2, $"guest order: g2={pos2} g1={pos1}");
@@ -581,4 +588,236 @@ public class EcosystemTests(TestAppFactory f)
             foreach (var id in ids) await RemoveAsync<SponsorshipPackage>(id);
         }
     }
-}
+
+    // ── Fix round (RE-RUN 1) ──
+
+    [Fact] // Y1: a profile lists only published events / episodes, in both languages
+    public async Task Profiles_list_only_published_related_items()
+    {
+        var s = Slug("rel-spk");
+        var g = Slug("rel-gst");
+        var idS = await AddAsync(NewSpeaker(s, true));
+        var idG = await AddAsync(NewGuest(g, true));
+        var live = Slug("rel-live");
+        var draft = Slug("rel-draft");
+        Event NewEvent(string slug, bool active) => new()
+        {
+            Slug = slug, TitleAr = "فعالية " + slug, TitleEn = "Event " + slug, DescriptionAr = "وصف", SummaryAr = "ملخص",
+            EventDay = 3, EventMonthAr = "مارس", LocationAr = "القاهرة", TimeAr = "", IsActive = active, SortOrder = 900,
+        };
+        var e1 = await AddAsync(NewEvent(live, true));
+        var e2 = await AddAsync(NewEvent(draft, false));
+        var ep1 = await AddAsync(NewEpisode(Slug("rel-ep-live"), true));
+        var ep2 = await AddAsync(NewEpisode(Slug("rel-ep-hidden"), true, active: false));
+        try
+        {
+            await f.DbAsync(async db =>
+            {
+                db.EventSpeakers.AddRange(new EventSpeaker { EventId = e1, SpeakerId = idS }, new EventSpeaker { EventId = e2, SpeakerId = idS });
+                db.TvEpisodeGuests.AddRange(new TvEpisodeGuest { TvEpisodeId = ep1, TvGuestId = idG }, new TvEpisodeGuest { TvEpisodeId = ep2, TvGuestId = idG });
+                return await db.SaveChangesAsync();
+            });
+            var epSlugs = await f.DbAsync(db => db.TvEpisodes.Where(x => x.Id == ep1 || x.Id == ep2).OrderBy(x => x.Id).Select(x => x.Slug).ToListAsync());
+            foreach (var prefix in new[] { "", "/en" })
+            {
+                var speaker = await f.NewClient().GetStringAsync(prefix + "/forum/speakers/" + s);
+                Assert.Contains($"href=\"{prefix}/forum/events/{live}\"", speaker);
+                Assert.DoesNotContain(draft, speaker);
+                var guest = await f.NewClient().GetStringAsync(prefix + "/tv/guests/" + g);
+                Assert.Contains($"href=\"{prefix}/tv/episodes/{epSlugs[0]}\"", guest);
+                Assert.DoesNotContain(epSlugs[1], guest);
+            }
+        }
+        finally
+        {
+            await RemoveAsync<Event>(e1);
+            await RemoveAsync<Event>(e2);
+            await RemoveAsync<TvEpisode>(ep1);
+            await RemoveAsync<TvEpisode>(ep2);
+            await RemoveAsync<Speaker>(idS);
+            await RemoveAsync<TvGuest>(idG);
+        }
+    }
+
+    [Fact] // SEO L2: a profile with no description is noindex in both languages and out of the sitemap until it has one
+    public async Task Profile_without_a_description_is_not_indexed()
+    {
+        var slug = Slug("thin");
+        var id = await AddAsync(new TvGuest { Slug = slug, NameAr = "ضيف بلا نبذة", NameEn = "Guest without a bio", IsActive = true, SortOrder = 900 });
+        try
+        {
+            Assert.Equal("noindex, follow", await RobotsAsync("/tv/guests/" + slug));
+            Assert.Equal("noindex, follow", await RobotsAsync("/en/tv/guests/" + slug));
+            Assert.DoesNotContain("<link rel=\"alternate\"", await f.NewClient().GetStringAsync("/tv/guests/" + slug));
+            Assert.DoesNotContain(slug, string.Join("\n", await SitemapLocsAsync()));
+
+            // A meta description (Arabic) indexes the Arabic page; the English page waits for its own.
+            await f.DbAsync(async db => { (await db.TvGuests.FindAsync(id))!.MetaDescriptionAr = "ضيف في البرنامج"; return await db.SaveChangesAsync(); });
+            Assert.Null(await RobotsAsync("/tv/guests/" + slug));
+            Assert.Equal("noindex, follow", await RobotsAsync("/en/tv/guests/" + slug));
+            var locs = await SitemapLocsAsync();
+            Assert.Contains($"{Base}/tv/guests/{slug}", locs);
+            Assert.DoesNotContain($"{Base}/en/tv/guests/{slug}", locs);
+
+            await f.DbAsync(async db => { (await db.TvGuests.FindAsync(id))!.BioEn = "A guest of the programme."; return await db.SaveChangesAsync(); });
+            Assert.Null(await RobotsAsync("/en/tv/guests/" + slug));
+            Assert.Contains($"{Base}/en/tv/guests/{slug}", await SitemapLocsAsync());
+        }
+        finally
+        {
+            await RemoveAsync<TvGuest>(id);
+        }
+    }
+
+    [Fact] // Security L1: a typed {type}-{number} slug is refused (it would take a later item's automatic address); title slugs skip it
+    public async Task Automatic_slug_form_is_reserved()
+    {
+        var client = await f.SignedInClientAsync();
+        var name = Unique("محجوز");
+        var t1 = await client.GetTokenAsync("/Admin/Speakers/Create");
+        var typed = await client.PostAsync("/Admin/Speakers/Create", MediaUploadTests.Multipart(t1, null, ("NameAr", name), ("Slug", "speaker-987654"), ("IsActive", "true")));
+        Assert.Equal(HttpStatusCode.OK, typed.StatusCode);
+        Assert.Contains(Msg.Ar(Infrastructure.Localization.MessageKeys.SlugReserved, "speaker"), System.Net.WebUtility.HtmlDecode(await typed.Content.ReadAsStringAsync()));
+        Assert.False(await f.DbAsync(db => db.Speakers.AnyAsync(x => x.NameAr == name)));
+
+        // Shared with news (C2 code path).
+        var t2 = await client.GetTokenAsync("/Admin/News/Create");
+        var news = await client.PostAsync("/Admin/News/Create", MediaUploadTests.Multipart(t2, null, ("TitleAr", name), ("Slug", "news-987654"), ("IsActive", "true")));
+        Assert.Equal(HttpStatusCode.OK, news.StatusCode);
+        Assert.False(await f.DbAsync(db => db.News.AnyAsync(x => x.TitleAr == name)));
+
+        // An English title that reads like the automatic form gets -2.
+        var t3 = await client.GetTokenAsync("/Admin/Speakers/Create");
+        var titled = await client.PostAsync("/Admin/Speakers/Create", MediaUploadTests.Multipart(t3, null, ("NameAr", name), ("NameEn", "Speaker 987654"), ("IsActive", "true")));
+        Assert.Equal(HttpStatusCode.Redirect, titled.StatusCode);
+        var row = await f.DbAsync(db => db.Speakers.SingleAsync(x => x.NameAr == name));
+        try
+        {
+            Assert.Equal("speaker-987654-2", row.Slug);
+            // Its own automatic slug stays accepted on edit.
+            var t4 = await client.GetTokenAsync($"/Admin/Speakers/Edit/{row.Id}");
+            await f.DbAsync(async db => { (await db.Speakers.FindAsync(row.Id))!.Slug = "speaker-" + row.Id; return await db.SaveChangesAsync(); });
+            var keep = await client.PostAsync("/Admin/Speakers/Edit", MediaUploadTests.Multipart(t4, null,
+                ("Id", row.Id.ToString()), ("Slug", "speaker-" + row.Id), ("NameAr", name), ("IsActive", "true")));
+            Assert.Equal(HttpStatusCode.Redirect, keep.StatusCode);
+        }
+        finally
+        {
+            await RemoveAsync<Speaker>(row.Id);
+        }
+    }
+
+    [Fact] // Performance F1: the sitemap is built once per snapshot; a content save (snapshot invalidation) rebuilds it
+    public async Task Sitemap_is_cached_until_content_changes()
+    {
+        var slug = Slug("cached");
+        await SitemapLocsAsync(); // built and cached for the current snapshot
+        // A row written behind the app's back (no SaveChanges → no invalidation) is not in the cached sitemap...
+        await f.DbAsync(db => db.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO TvGuests (Slug, NameAr, JobTitleAr, OrganizationAr, BioAr, MetaTitleAr, MetaDescriptionAr, SortOrder, IsActive, CreatedAt, UpdatedAt) VALUES ({slug}, N'ضيف', N'', N'', N'نبذة', N'', N'', 900, 1, SYSUTCDATETIME(), SYSUTCDATETIME())"));
+        try
+        {
+            Assert.DoesNotContain($"{Base}/tv/guests/{slug}", await SitemapLocsAsync());
+            // ...and appears once the snapshot is dropped (what every admin save does through the interceptor).
+            f.Services.GetRequiredService<ISiteContentCache>().Invalidate();
+            Assert.Contains($"{Base}/tv/guests/{slug}", await SitemapLocsAsync());
+        }
+        finally
+        {
+            await f.DbAsync(db => db.TvGuests.Where(x => x.Slug == slug).ExecuteDeleteAsync());
+            f.Services.GetRequiredService<ISiteContentCache>().Invalidate();
+        }
+    }
+
+    [Fact] // Noor L1 / Security L2: poster alt = title; a non-YouTube video is a no-referrer link marked external
+    public async Task Episode_poster_alt_and_external_video_link()
+    {
+        var key = Guid.NewGuid().ToString("N");
+        var slug = Slug("poster");
+        var mediaId = await AddAsync(new MediaFile { FileKey = key, Format = "jpeg", Width = 1200, Height = 630, Bytes = 1, AltAr = "" });
+        var episode = NewEpisode(slug, true, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        episode.ThumbnailId = mediaId;
+        var id = await AddAsync(episode);
+        try
+        {
+            var html = await f.NewClient().GetStringAsync("/en/tv/episodes/" + slug);
+            Assert.Matches($"<img class=\"video-poster\" src=\"/media/{key}\\.jpg\"[^>]* alt=\"Episode {slug}\"", html);
+
+            await f.DbAsync(async db => { (await db.TvEpisodes.FindAsync(id))!.VideoUrl = "https://vimeo.com/123"; return await db.SaveChangesAsync(); });
+            var other = await f.NewClient().GetStringAsync("/en/tv/episodes/" + slug);
+            Assert.Contains("<a href=\"https://vimeo.com/123\" class=\"btn btn-accent\" rel=\"noopener noreferrer\">", other);
+            Assert.Contains("(opens another site)", other);
+            Assert.DoesNotContain("data-video-id", other);
+        }
+        finally
+        {
+            await RemoveAsync<TvEpisode>(id);
+            await RemoveAsync<MediaFile>(mediaId);
+        }
+    }
+
+    [Fact] // CTO (Anas): logo (on dark / on light) and hero image uploaded in admin, used by header, footer, home, Organization logo; removed → bundled files
+    public async Task Site_images_replace_the_bundled_brand_files()
+    {
+        var anon = await f.NewClient().PostAsync("/Admin/Content/SiteImage", Form(("Key", SiteImages.LogoOnDark)));
+        Assert.NotEqual(HttpStatusCode.OK, anon.StatusCode);
+        var client = await f.SignedInClientAsync();
+        async Task<string> UploadAsync(string key, string fixture, string type)
+        {
+            var token = await client.GetTokenAsync("/Admin/Content/Edit");
+            var r = await client.PostAsync("/Admin/Content/SiteImage", MediaUploadTests.Multipart(token,
+                (fixture, ImageInspectorTests.Fixture(fixture), type), ("Key", key), ("ImageAltAr", "صورة"), ("ImageAltEn", "Image")));
+            Assert.Equal(HttpStatusCode.Redirect, r.StatusCode);
+            return await f.DbAsync(db => db.SiteContents.Where(s => s.SectionKey == key).Select(s => s.ContentAr).SingleAsync());
+        }
+        try
+        {
+            var dark = await UploadAsync(SiteImages.LogoOnDark, "lossy.webp", "image/webp");
+            var light = await UploadAsync(SiteImages.LogoOnLight, "og-1200x630.jpg", "image/jpeg");
+            var hero = await UploadAsync(SiteImages.HeroImage, "photo-exif.jpg", "image/jpeg");
+            foreach (var path in new[] { "/", "/en", "/about" })
+            {
+                var html = await f.NewClient().GetStringAsync(path);
+                Assert.Contains($"src=\"/media/{dark}.webp\" alt=", html);           // header (and footer)
+                Assert.True(Regex.Matches(html, $"/media/{dark}\\.webp").Count >= 2, path);
+                Assert.DoesNotContain("/assets/brand/logo-on-dark.png", html);
+                Assert.Equal($"{Base}/media/{light}.jpg", Node(html, "Organization").GetProperty("logo").GetString());
+            }
+            Assert.Contains($"src=\"/media/{hero}.jpg\"", await f.NewClient().GetStringAsync("/en"));
+            Assert.Contains("alt=\"Image\" class=\"hero-triangle hero-image\"", await f.NewClient().GetStringAsync("/en"));
+
+            // An unknown key writes nothing.
+            var siteName = await f.DbAsync(db => db.SiteContents.Where(s => s.SectionKey == "site_name").Select(s => s.ContentAr).SingleAsync());
+            var mediaCount = await f.DbAsync(db => db.MediaFiles.CountAsync());
+            var bad = await client.PostAsync("/Admin/Content/SiteImage", MediaUploadTests.Multipart(await client.GetTokenAsync("/Admin/Content/Edit"),
+                ("x.webp", ImageInspectorTests.Fixture("lossy.webp"), "image/webp"), ("Key", "site_name")));
+            Assert.Equal(HttpStatusCode.Redirect, bad.StatusCode);
+            Assert.Equal(siteName, await f.DbAsync(db => db.SiteContents.Where(s => s.SectionKey == "site_name").Select(s => s.ContentAr).SingleAsync()));
+            Assert.Equal(mediaCount, await f.DbAsync(db => db.MediaFiles.CountAsync()));
+
+            // Removed → the bundled logo and the drawn triangle come back.
+            foreach (var key in new[] { SiteImages.LogoOnDark, SiteImages.LogoOnLight, SiteImages.HeroImage })
+            {
+                var r = await client.PostAsync("/Admin/Content/SiteImage", MediaUploadTests.Multipart(await client.GetTokenAsync("/Admin/Content/Edit"), null,
+                    ("Key", key), ("RemoveImage", "true")));
+                Assert.Equal(HttpStatusCode.Redirect, r.StatusCode);
+            }
+            var home = await f.NewClient().GetStringAsync("/");
+            Assert.Contains("/assets/brand/logo-on-dark.png", home);
+            Assert.Contains("<svg viewBox=\"0 0 400 360\" class=\"hero-triangle\">", home);
+            Assert.Equal($"{Base}/assets/brand/logo-on-light.png", Node(home, "Organization").GetProperty("logo").GetString());
+            Assert.Equal(0, await f.DbAsync(db => db.MediaFiles.CountAsync(m => m.FileKey == dark || m.FileKey == light || m.FileKey == hero)));
+        }
+        finally
+        {
+            await f.DbAsync(async db =>
+            {
+                var keys = new[] { SiteImages.LogoOnDark, SiteImages.LogoOnLight, SiteImages.HeroImage };
+                var rows = await db.SiteContents.Where(s => keys.Contains(s.SectionKey)).ToListAsync();
+                var files = rows.Select(r => r.ContentAr).ToList();
+                db.MediaFiles.RemoveRange(db.MediaFiles.Where(m => files.Contains(m.FileKey)));
+                db.SiteContents.RemoveRange(rows);
+                return await db.SaveChangesAsync();
+            });
+        }
+    }}

@@ -18,7 +18,7 @@ public class HeadersTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("nosniff", Header(response, "X-Content-Type-Options"));
         Assert.Equal("DENY", Header(response, "X-Frame-Options"));
-        Assert.Equal("frame-ancestors 'none'", Header(response, "Content-Security-Policy"));
+        Assert.Equal("frame-ancestors 'none'; frame-src https://www.youtube-nocookie.com", Header(response, "Content-Security-Policy"));
         Assert.Equal("strict-origin-when-cross-origin", Header(response, "Referrer-Policy"));
         Assert.StartsWith("max-age=", Header(response, "Strict-Transport-Security"));
     }

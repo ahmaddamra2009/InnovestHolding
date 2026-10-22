@@ -18,7 +18,7 @@
         </div>
         <lang-pair label="رابط الفيديو (https — رابط يوتيوب يُعرض بمشغّل لا يتصل بيوتيوب إلا عند الضغط؛ أي رابط آخر يظهر زراً)" name-ar="VideoUrl" value-ar="@Model.VideoUrl" max="500" ltr="true" placeholder="https://www.youtube.com/watch?v=…" />
         <fieldset class="image-field">
-            <legend>ضيوف الحلقة (بالترتيب المعروض)</legend>
+            <legend>ضيوف الحلقة (يظهرون بترتيب قائمة «الضيوف»)</legend>
             @if (Model.GuestChoices.Count == 0)
             {
                 <p class="field-hint">لا يوجد ضيوف بعد — أضفهم من «ضيوف البرنامج» ثم اربطهم هنا.</p>

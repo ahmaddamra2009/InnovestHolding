@@ -250,4 +250,7 @@
   <data name="Field_PriceEn" xml:space="preserve"><value>Price (English)</value></data>
   <data name="Field_Benefits" xml:space="preserve"><value>Benefits</value></data>
   <data name="Field_BenefitsEn" xml:space="preserve"><value>Benefits (English)</value></data>
+  <data name="Msg_SlugReserved" xml:space="preserve"><value>The form "{0}-number" is reserved for automatic addresses — choose another short link.</value></data>
+  <data name="Ui_WatchOnYouTube" xml:space="preserve"><value>Watch on YouTube</value></data>
+  <data name="Ui_ExternalLink" xml:space="preserve"><value>(opens another site)</value></data>
 </root>

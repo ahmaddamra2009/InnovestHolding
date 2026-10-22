@@ -40,26 +40,14 @@ public class EventsController : AdminControllerBase
     /// <summary>The posted speaker ids: distinct, in order, all existing; otherwise a ModelState error and null.</summary>
     private async Task<List<int>?> CheckSpeakersAsync(EventInput input)
     {
-        var ids = input.SpeakerIds.Distinct().ToList();
-        if (ids.Count == 0) return ids;
-        var known = await _db.Speakers.AsNoTracking().Where(s => ids.Contains(s.Id)).Select(s => s.Id).ToListAsync();
-        if (known.Count == ids.Count) return ids;
-        ModelState.AddModelError(nameof(input.SpeakerIds), L(MessageKeys.InvalidValueNoField));
-        return null;
+        var known = (await _db.Speakers.AsNoTracking().Where(s => input.SpeakerIds.Contains(s.Id)).Select(s => s.Id).ToListAsync()).ToHashSet();
+        return CheckLinks(input.SpeakerIds, known, nameof(input.SpeakerIds));
     }
 
     /// <summary>Replaces the event's speakers with <paramref name="ids"/>, in that order.</summary>
-    private async Task LinkSpeakersAsync(int eventId, IReadOnlyList<int> ids)
-    {
-        var current = await _db.EventSpeakers.Where(es => es.EventId == eventId).ToListAsync();
-        _db.EventSpeakers.RemoveRange(current.Where(c => !ids.Contains(c.SpeakerId)));
-        for (var i = 0; i < ids.Count; i++)
-        {
-            var row = current.FirstOrDefault(c => c.SpeakerId == ids[i]);
-            if (row is null) _db.EventSpeakers.Add(new EventSpeaker { EventId = eventId, SpeakerId = ids[i], SortOrder = i });
-            else row.SortOrder = i;
-        }
-    }
+    private async Task LinkSpeakersAsync(int eventId, IReadOnlyList<int> ids) =>
+        ReplaceLinks(_db.EventSpeakers, await _db.EventSpeakers.Where(es => es.EventId == eventId).ToListAsync(), ids,
+            es => es.SpeakerId, (id, i) => new EventSpeaker { EventId = eventId, SpeakerId = id, SortOrder = i }, (es, i) => es.SortOrder = i);
 
     public async Task<IActionResult> Create() => await FormAsync(CreateView, new EventInput { UtcOffset = await DefaultOffsetAsync() });
 

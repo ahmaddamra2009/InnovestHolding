@@ -67,6 +67,7 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
             Cta = cta,
             Breadcrumbs = crumbs,
             Socials = Socials(),
+            Brand = new BrandImagesVm(s.Image(SiteImages.LogoOnDark), s.Image(SiteImages.HeroImage)),
         };
     }
 

@@ -27,7 +27,14 @@
     <div class="footer-top">
       <div class="footer-brand">
         <div class="footer-logo">
-          <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="200" height="51" loading="lazy">
+          @if (Model.Brand.LogoOnDark is { } logo)
+          {
+            <img src="@logo.Url" alt="@siteName" width="@logo.Width" height="@logo.Height" loading="lazy">
+          }
+          else
+          {
+            <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="200" height="51" loading="lazy">
+          }
         </div>
         <p class="footer-desc" lang="@footerDesc.Lang" dir="@footerDesc.Dir">@footerDesc</p>
         @if (Model.Socials.Count > 0)

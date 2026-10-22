@@ -41,21 +41,43 @@ public class SeoController(ISiteContentCache cache, IWebHostEnvironment environm
         var baseUrl = SiteUrl.Resolve(snapshot.Content.GetValueOrDefault(SiteUrl.ContentKey)?.Ar, environment, Request);
         if (baseUrl is null) return NotFound();
 
-        var ct = HttpContext.RequestAborted;
+        // Built once per snapshot: every content save drops the snapshot (ContentCacheInvalidationInterceptor), so the
+        // next request builds a new one and with it a new sitemap; between saves the sitemap costs no query.
+        var built = Built.GetOrCreateValue(snapshot);
+        if (!built.TryGetValue(baseUrl, out var xml))
+        {
+            xml = await BuildAsync(snapshot, baseUrl, HttpContext.RequestAborted);
+            built[baseUrl] = xml;
+        }
+        Response.Headers.CacheControl = "public, max-age=3600";
+        return Content(xml, "application/xml; charset=utf-8");
+    }
+
+    /// <summary>The sitemap of a snapshot, per base URL; collected with the snapshot once it leaves the cache.</summary>
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<SiteSnapshot,
+        System.Collections.Concurrent.ConcurrentDictionary<string, string>> Built = new();
+
+    private async Task<string> BuildAsync(SiteSnapshot snapshot, string baseUrl, CancellationToken ct)
+    {
         var news = (await db.News.AsNoTracking().Where(n => n.IsActive).OrderBy(n => n.SortOrder).ThenBy(n => n.Id)
                 .Select(n => new { n.Slug, n.UpdatedAt, n.TitleEn, n.SummaryEn }).ToListAsync(ct))
             .Select(n => (Key: DetailKeys.NewsItem, n.Slug, n.UpdatedAt, En: EventQueries.NewsHasEnglish(n.TitleEn, n.SummaryEn)));
         var events = (await db.Events.AsNoTracking().Where(e => e.IsActive).OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
                 .Select(e => new { e.Slug, e.UpdatedAt, e.TitleEn, e.SummaryEn, e.DescriptionEn }).ToListAsync(ct))
             .Select(e => (Key: DetailKeys.ForumEvent, e.Slug, e.UpdatedAt, En: EventQueries.HasEnglish(e.TitleEn, e.SummaryEn, e.DescriptionEn)));
-        var speakers = (await db.Speakers.AsNoTracking().Where(p => p.IsActive).OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
-                .Select(p => new { p.Slug, p.UpdatedAt, p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn }).ToListAsync(ct))
+        // Profiles: only those with a description (EcosystemQueries.PersonHasDescription, the rule of the page itself).
+        var speakers = (await db.Speakers.AsNoTracking().Where(p => p.IsActive && (p.BioAr != "" || p.MetaDescriptionAr != ""))
+                .OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
+                .Select(p => new { p.Slug, p.UpdatedAt, p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn, p.MetaDescriptionEn }).ToListAsync(ct))
             .Select(p => (Key: DetailKeys.ForumSpeaker, p.Slug, p.UpdatedAt,
-                En: EcosystemQueries.PersonHasEnglish(p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn)));
-        var guests = (await db.TvGuests.AsNoTracking().Where(p => p.IsActive).OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
-                .Select(p => new { p.Slug, p.UpdatedAt, p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn }).ToListAsync(ct))
+                En: EcosystemQueries.PersonHasEnglish(p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn)
+                    && EcosystemQueries.PersonHasDescription(p.BioEn, p.MetaDescriptionEn)));
+        var guests = (await db.TvGuests.AsNoTracking().Where(p => p.IsActive && (p.BioAr != "" || p.MetaDescriptionAr != ""))
+                .OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
+                .Select(p => new { p.Slug, p.UpdatedAt, p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn, p.MetaDescriptionEn }).ToListAsync(ct))
             .Select(p => (Key: DetailKeys.TvGuest, p.Slug, p.UpdatedAt,
-                En: EcosystemQueries.PersonHasEnglish(p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn)));
+                En: EcosystemQueries.PersonHasEnglish(p.NameEn, p.JobTitleAr, p.JobTitleEn, p.BioAr, p.BioEn)
+                    && EcosystemQueries.PersonHasDescription(p.BioEn, p.MetaDescriptionEn)));
         var episodes = (await db.TvEpisodes.AsNoTracking().Where(e => e.IsActive).OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
                 .Select(e => new { e.Slug, e.UpdatedAt, e.TitleEn, e.SummaryEn }).ToListAsync(ct))
             .Select(e => (Key: DetailKeys.TvEpisode, e.Slug, e.UpdatedAt, En: EcosystemQueries.EpisodeHasEnglish(e.TitleEn, e.SummaryEn)));
@@ -128,9 +150,7 @@ public class SeoController(ISiteContentCache cache, IWebHostEnvironment environm
             w.WriteEndDocument();
         }
 
-        Response.Headers.CacheControl = "public, max-age=3600";
         // XmlWriter over a StringBuilder declares utf-16; the response is UTF-8.
-        var xml = sb.ToString().Replace("encoding=\"utf-16\"", "encoding=\"utf-8\"");
-        return Content(xml, "application/xml; charset=utf-8");
+        return sb.ToString().Replace("encoding=\"utf-16\"", "encoding=\"utf-8\"");
     }
 }

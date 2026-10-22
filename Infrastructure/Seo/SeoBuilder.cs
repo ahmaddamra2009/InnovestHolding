@@ -103,14 +103,18 @@ public static class SeoBuilder
     /// item's, else its list page's, else the site default.
     /// </summary>
     /// <param name="node">The item's schema.org node (NewsArticle / Event) without @id, url, inLanguage and image.</param>
+    /// <param name="indexable">False for a page too thin to index in either language (a profile without a description):
+    /// <c>noindex, follow</c>, no hreflang.</param>
     public static SeoVm BuildDetail(DetailRoute route, string slug, SiteViews v, string? baseUrl, bool englishAvailable,
-        LText title, string metaTitle, string description, MediaRef? image, string ogType, Dictionary<string, object> node)
+        LText title, string metaTitle, string description, MediaRef? image, string ogType, Dictionary<string, object> node,
+        bool indexable = true)
     {
         var english = v.English;
         var siteName = v.Content.Text("site_name").Value;
         var name = string.IsNullOrWhiteSpace(metaTitle) ? title.Value : metaTitle.Trim();
         var fullTitle = $"{name} | {siteName}";
-        var robots = SeoPolicy.DecideDetail(english, englishAvailable);
+        var robots = indexable ? SeoPolicy.DecideDetail(english, englishAvailable) : RobotsDecision.NoIndexFollow;
+        var paired = indexable && englishAvailable;
 
         string? Abs(string path) => baseUrl is null ? null : baseUrl + path;
         var own = CultureUrls.Detail(route.Key, slug, english);
@@ -135,10 +139,10 @@ public static class SeoBuilder
             Description: Shorten(description),
             SiteName: siteName,
             Canonical: canonical,
-            AlternateAr: englishAvailable ? Abs(CultureUrls.Detail(route.Key, slug, false)) : null,
-            AlternateEn: englishAvailable ? Abs(CultureUrls.Detail(route.Key, slug, true)) : null,
+            AlternateAr: paired ? Abs(CultureUrls.Detail(route.Key, slug, false)) : null,
+            AlternateEn: paired ? Abs(CultureUrls.Detail(route.Key, slug, true)) : null,
             OgLocale: english ? "en_US" : "ar_AR",
-            OgLocaleAlternate: englishAvailable ? (english ? "ar_AR" : "en_US") : null,
+            OgLocaleAlternate: paired ? (english ? "ar_AR" : "en_US") : null,
             OgImage: og.Url,
             OgImageAlt: og.Alt ?? title.Value,
             JsonLd: JsonSerializer.Serialize(new Dictionary<string, object> { ["@context"] = "https://schema.org", ["@graph"] = graph }, Json),
@@ -234,7 +238,8 @@ public static class SeoBuilder
         Put(org, "name", siteName);
         Put(org, "alternateName", other == siteName ? null : other);
         Put(org, "url", Abs(CultureUrls.Home(english)));
-        Put(org, "logo", Abs(BrandAssets.LogoOnLight));
+        // The uploaded logo for a light background, else the bundled one.
+        Put(org, "logo", Abs(v.Snapshot.Image(SiteImages.LogoOnLight)?.Url ?? BrandAssets.LogoOnLight));
         Put(org, "description", c.Text("brand_positioning").Value);
         Put(org, "email", email);
         Put(org, "telephone", phone);

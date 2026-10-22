@@ -4,7 +4,7 @@
 @{
     var c = Model.Card;
 }
-<article class="entity-card@(Model.People ? " is-person" : "") reveal@(HomeViewModel.Delay(Model.Index % 6 + 1))">
+<article class="entity-card@(Model.People ? " is-person" : "") reveal">
   <div class="entity-media">
     @if (c.Image is { } img)
     {

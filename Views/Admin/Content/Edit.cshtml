@@ -2,15 +2,22 @@
 @using InnovestHolding.Infrastructure.Content
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "تعديل المحتوى"; }
 
-@if (ViewData[InnovestHolding.Controllers.Admin.ContentController.FounderPhotoKey] is FounderPhotoInput founderPhoto)
+@if (ViewData[InnovestHolding.Controllers.Admin.ContentController.SiteImagesKey] is List<(SiteImage Image, SiteImageInput Input)> siteImages)
 {
-    @* Its own form (multipart): the photo of the founder block on the About page. *@
-    <form method="post" asp-action="FounderPhoto" asp-controller="Content" enctype="multipart/form-data" class="admin-card">
-        <div class="admin-card-header"><span class="admin-card-title">صورة المؤسس (قسم كلمة المؤسس في صفحة «من نحن»)</span></div>
-        @{ ViewData["ImageLabel"] = "الصورة"; ViewData["ImagePrefix"] = "founder-"; }
-        <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="founderPhoto" view-data="ViewData" />
-        <button type="submit" class="btn-admin btn-primary">حفظ الصورة</button>
-    </form>
+    @* One small form (multipart) per site image: logos, home hero image, founder photo. *@
+    <details class="admin-card" open="@siteImages.Any(x => x.Input.Current is null)">
+        <summary class="admin-card-title">صور الموقع (الشعار، صورة الواجهة، صورة المؤسس)</summary>
+        @foreach (var (image, input) in siteImages)
+        {
+            <form method="post" asp-action="SiteImage" asp-controller="Content" enctype="multipart/form-data" class="row-editor" id="image-@image.Key">
+                <input type="hidden" name="Key" value="@image.Key">
+                <p class="field-hint">@image.Hint</p>
+                @{ ViewData["ImageLabel"] = image.Label; ViewData["ImagePrefix"] = image.Key + "-"; ViewData["ImageUse"] = image.IsLogo ? "logo" : null; }
+                <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="input" view-data="ViewData" />
+                <button type="submit" class="btn-admin btn-primary">حفظ الصورة</button>
+            </form>
+        }
+    </details>
 }
 
 <form method="post" asp-action="Edit" asp-controller="Content" class="content-editor">

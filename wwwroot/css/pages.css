@@ -631,3 +631,7 @@ html[lang="en"] .page-body p { line-height: 1.8; }
   .video-play { width: 64px; height: 64px; }
 }
 @media (max-width: 400px) { .entity-grid.is-people { grid-template-columns: 1fr; } }
+.video-link { margin-inline-start: 6px; color: var(--accent-ink); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.external-icon { width: 16px; height: 16px; margin-inline-start: 6px; vertical-align: -2px; }
+.hero-image { height: auto; object-fit: contain; border-radius: var(--radius-lg); }
+@media (max-width: 1024px) { .hero-art .hero-image { margin-block-start: 24px; } }

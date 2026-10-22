@@ -36,6 +36,12 @@ public static class EcosystemQueries
     public static bool PersonHasEnglish(string? nameEn, string? jobTitleAr, string? jobTitleEn, string? bioAr, string? bioEn) =>
         Has(nameEn) && (!Has(jobTitleAr) || Has(jobTitleEn)) && (!Has(bioAr) || Has(bioEn));
 
+    /// <summary>
+    /// A profile page is indexed only with a description in that language (a bio or a meta description): a name alone
+    /// is a thin page. Until then it renders as <c>noindex, follow</c> and stays out of the sitemap.
+    /// </summary>
+    public static bool PersonHasDescription(string? bio, string? metaDescription) => Has(bio) || Has(metaDescription);
+
     public static Expression<Func<T, bool>> PersonEnglish<T>() where T : PersonProfile =>
         p => p.NameEn != null && p.NameEn != ""
              && (p.JobTitleAr == "" || (p.JobTitleEn != null && p.JobTitleEn != ""))

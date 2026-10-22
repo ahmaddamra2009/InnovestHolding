@@ -28,6 +28,9 @@ public sealed class ShellVm
     public required IReadOnlyList<BreadcrumbVm> Breadcrumbs { get; init; }
     public required IReadOnlyList<SocialVm> Socials { get; init; }
 
+    /// <summary>The uploaded brand images (null = the bundled files / the drawn triangle).</summary>
+    public BrandImagesVm Brand { get; init; } = new(null, null);
+
     /// <summary>The header starts transparent over a dark hero (home) instead of solid.</summary>
     public bool OverHero => CurrentKey == Infrastructure.Site.PageKeys.Home;
 
@@ -86,6 +89,9 @@ public static class SocialIcons
 }
 
 public sealed record SocialVm(string Network, string Url);
+
+/// <summary>The site logo (on a dark background) and the home hero image when the admin uploaded them.</summary>
+public sealed record BrandImagesVm(Infrastructure.Content.MediaRef? LogoOnDark, Infrastructure.Content.MediaRef? Hero);
 
 // ── Page blocks: a page is its header (title, intro, body) + an ordered list of blocks (Views/Site/_Blocks) ──
 
@@ -203,7 +209,8 @@ public sealed class DetailPageVm
 
 /// <summary>
 /// An episode's video. With a YouTube id the page shows a poster and a play button, and only the click loads the
-/// privacy-enhanced player (no request to YouTube before it); otherwise <see cref="LinkUrl"/> is a plain https link.
+/// privacy-enhanced player (no request to YouTube before it). <see cref="LinkUrl"/> is the stored https address, shown as a
+/// plain link (beside the player, or alone when the address is not a YouTube video).
 /// </summary>
 public sealed record VideoVm(string? YouTubeId, string? LinkUrl, ImageVm? Poster, LText Title);
 

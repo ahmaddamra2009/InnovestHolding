@@ -1,6 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace InnovestHolding.Models;
+/// <summary>An item with its own detail page, as the shared admin CRUD (EcosystemAdminControllers) handles it.</summary>
+public interface IDetailEntity
+{
+    int Id { get; }
+    string Slug { get; set; }
+    int SortOrder { get; set; }
+    DateTime UpdatedAt { get; set; }
+}
 
 // The content of the three units that starts empty and is filled by the admin: Forum speakers, TV guests and
 // episodes, Network investment opportunities and sponsorship packages. Every text is an Ar/En pair (English falls
@@ -10,7 +18,7 @@ namespace InnovestHolding.Models;
 /// A person with a public profile page (a Forum speaker or a TV guest). Not an EF hierarchy: each subclass is its own
 /// table with the same columns.
 /// </summary>
-public abstract class PersonProfile
+public abstract class PersonProfile : IDetailEntity
 {
     public int Id { get; set; }
 
@@ -90,7 +98,7 @@ public class EventSpeaker
 }
 
 /// <summary>An episode of the TV programme (/tv/episodes/{slug}).</summary>
-public class TvEpisode
+public class TvEpisode : IDetailEntity
 {
     public int Id { get; set; }
 
@@ -164,7 +172,7 @@ public class TvEpisodeGuest
 /// (IsActive = false) until the admin publishes it. Stage and ask are free text ("on request" is allowed): the site
 /// never shows a figure the admin did not write.
 /// </summary>
-public class InvestmentOpportunity
+public class InvestmentOpportunity : IDetailEntity
 {
     public int Id { get; set; }
 
