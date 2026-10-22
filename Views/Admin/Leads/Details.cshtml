@@ -28,7 +28,7 @@
             }
             else
             {
-                <span class="badge-new">جديد</span>
+                <span class="badge-new">غير مقروء</span>
             }
         </span>
     </div>
@@ -41,7 +41,7 @@
         @foreach (var field in Model.Fields)
         {
             <dt>@field.Label</dt>
-            <dd class="@(field.Ltr ? "cell-ltr" : null)">@if (string.IsNullOrWhiteSpace(field.Value)) { <span class="form-hint">—</span> } else { <span class="lead-value">@field.Value</span> }</dd>
+            <dd class="@(field.Ltr ? "cell-ltr" : null)">@if (string.IsNullOrWhiteSpace(field.Value)) { <span class="form-hint">—</span> } else { <span class="lead-value" dir="auto">@field.Value</span> }</dd>
         }
     </dl>
 </div>

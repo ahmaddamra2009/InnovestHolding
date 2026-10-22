@@ -24,7 +24,7 @@
         <div class="form-group">
             @{ Label(id, labelKey, required || kindRequired); }
             <input type="@type" id="@id" name="@name" class="form-control@(ltr ? " ltr-input" : "")" maxlength="@max"
-                   required="@required" data-required="@(kindRequired ? "true" : null)" autocomplete="@autocomplete"
+                   required="@required" @KindRequired(kindRequired) autocomplete="@autocomplete"
                    dir="@(ltr ? "ltr" : null)" placeholder="@placeholder">
         </div>
     }
@@ -38,7 +38,12 @@
         </div>
     }
 
-    // <!option>: no tag helper in these markup methods (a tag helper would need an async method).
+    // data-required is written only on a field its type requires (main.js requires it while that type is chosen). Razor
+    // writes a data-* attribute even when its value is null (data-required=""), so it cannot be a conditional attribute.
+    private static Microsoft.AspNetCore.Html.IHtmlContent? KindRequired(bool on) => on ? new Microsoft.AspNetCore.Html.HtmlString("data-required=\"true\"") : null;
+
+    // <!option> everywhere in this file: no tag helper in these markup methods (a tag helper would need an async method),
+    // and the other selects follow the same form.
     private void Select(string p, string name, string labelKey, IReadOnlyList<ChoiceVm> choices, bool required = false,
         string emptyKey = K.Ui.FormChoose, bool kindRequired = false)
     {
@@ -47,7 +52,7 @@
         var inv = System.Globalization.CultureInfo.InvariantCulture;
         <div class="form-group">
             @{ Label(id, labelKey, required || kindRequired); }
-            <select id="@id" name="@name" class="form-control" required="@required" data-required="@(kindRequired ? "true" : null)">
+            <select id="@id" name="@name" class="form-control" required="@required" @KindRequired(kindRequired)>
                 <!option value="">@L[emptyKey]</!option>
                 @foreach (var c in choices)
                 {
@@ -186,7 +191,7 @@
                 <select id="@(p)-unit" name="unit" class="form-control" required>
                   @foreach (var u in sponsor.Units)
                   {
-                    <option value="@u.Unit" selected="@(u.Unit == sponsor.Unit)" lang="@u.Label.Lang" dir="@u.Label.Dir">@u.Label</option>
+                    <!option value="@u.Unit" selected="@(u.Unit == sponsor.Unit)" lang="@u.Label.Lang" dir="@u.Label.Dir">@u.Label</!option>
                   }
                 </select>
               </div>
@@ -195,13 +200,13 @@
                 <div class="form-group">
                   @{ Label(p + "-package", K.Ui.FormPackage, false); }
                   <select id="@(p)-package" name="packageId" class="form-control">
-                    <option value="">@L[K.Ui.FormPackageAny]</option>
+                    <!option value="">@L[K.Ui.FormPackageAny]</!option>
                     @foreach (var u in sponsor.Units.Where(u => u.Packages.Count > 0))
                     {
                       <optgroup label="@u.Label" data-unit="@u.Unit">
                         @foreach (var pk in u.Packages)
                         {
-                          <option value="@pk.Id.ToString(inv)" lang="@pk.Text.Lang" dir="@pk.Text.Dir">@pk.Text</option>
+                          <!option value="@pk.Id.ToString(inv)" lang="@pk.Text.Lang" dir="@pk.Text.Dir">@pk.Text</!option>
                         }
                       </optgroup>
                     }

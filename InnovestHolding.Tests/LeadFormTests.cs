@@ -459,6 +459,45 @@ public class LeadFormTests(TestAppFactory f)
         Assert.DoesNotContain(commands, l => l.Contains("[Events]"));
     }
 
+    [Theory] // C4-QA-1: only the fields the server requires for a type carry data-required="true" (main.js makes exactly
+             // those required while the type is chosen); an optional field carries no data-required at all
+    [InlineData("/angel-network/join")]
+    [InlineData("/en/angel-network/join")]
+    public async Task Join_page_marks_only_the_server_required_fields_of_each_type(string path)
+    {
+        var html = await f.NewClient().GetStringAsync(path);
+        var investorAt = html.IndexOf("<fieldset class=\"kind-fields\" data-kind=\"investor\">", StringComparison.Ordinal);
+        var startupAt = html.IndexOf("<fieldset class=\"kind-fields\" data-kind=\"startup\">", StringComparison.Ordinal);
+        var endAt = html.IndexOf("class=\"form-consent\"", StringComparison.Ordinal);
+        Assert.True(investorAt > 0 && startupAt > investorAt && endAt > startupAt, "the two type fieldsets were not found");
+
+        // The server's per-type required fields (FormsController.Leads.cs: InvestorTypeId; StartupName, SectorId, StageId).
+        AssertMarks(html[investorAt..startupAt], ["investorTypeId"],
+            ["organization", "ticketSizeId", "sectorIds", "linkedInUrl", "message"]);
+        AssertMarks(html[startupAt..endAt], ["startupName", "sectorId", "stageId"],
+            ["fundingId", "websiteUrl", "pitch"]);
+        Assert.DoesNotMatch("data-required(?!=\"true\")", html);   // no empty or other-valued marker anywhere on the page
+
+        // main.js has no JS test runner: a static check that it requires only the "true" marker (not attribute presence).
+        var js = await f.NewClient().GetStringAsync("/js/main.js");
+        Assert.Contains("querySelectorAll('[data-required=\"true\"]')", js);
+        Assert.DoesNotContain("'[data-required]'", js);
+
+        static void AssertMarks(string set, string[] required, string[] optional)
+        {
+            var fields = System.Text.RegularExpressions.Regex.Matches(set, "<(?:input|select|textarea)\\b[^>]*>")
+                .Select(m => m.Value).Where(tag => tag.Contains(" name=\"", StringComparison.Ordinal))
+                .Select(tag => (Name: System.Text.RegularExpressions.Regex.Match(tag, " name=\"([^\"]+)\"").Groups[1].Value, Tag: tag))
+                .ToList();
+            foreach (var name in required.Concat(optional)) Assert.Contains(fields, x => x.Name == name);   // the probe saw them
+            foreach (var (name, tag) in fields)
+            {
+                if (required.Contains(name)) Assert.Contains("data-required=\"true\"", tag);
+                else Assert.DoesNotContain("data-required", tag);
+            }
+        }
+    }
+
     private Task<int> LeadCount(string email) => f.DbAsync(async db =>
         await db.Registrations.CountAsync(r => r.Email == email) + await db.NetworkApplications.CountAsync(r => r.Email == email)
         + await db.SponsorshipEnquiries.CountAsync(r => r.Email == email) + await db.OpportunityInterests.CountAsync(r => r.Email == email));

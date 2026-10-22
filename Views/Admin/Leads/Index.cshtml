@@ -104,7 +104,7 @@
                     <td>
                         @if (!item.IsRead)
                         {
-                            <span class="badge-new">جديد</span>
+                            <span class="badge-new">غير مقروء</span>
                         }
                         else
                         {
@@ -113,7 +113,7 @@
                     </td>
                     <td><span class="lead-status lead-status-@LeadStatuses.Key(item.Status)">@L[LeadStatuses.LabelKey(item.Status)]</span>@if (!string.IsNullOrWhiteSpace(item.Note)) { <span class="lead-note-mark" title="توجد ملاحظة داخلية">✎</span> }</td>
                     <td>@LeadInbox.Label(item.Type)</td>
-                    <td><a href="/Admin/Leads/Details/@item.Id@QueryString.Create(new[] { new KeyValuePair<string, string?>("type", item.Type), new KeyValuePair<string, string?>("listType", f.Type), new KeyValuePair<string, string?>("read", f.Read), new KeyValuePair<string, string?>("status", statusKey), new KeyValuePair<string, string?>("page", list.Page > 1 ? list.Page.ToString(inv) : null) }.Where(p => p.Value is not null))"><strong>@item.Name</strong></a></td>
+                    <td><a href="/Admin/Leads/Details/@item.Id@QueryString.Create(new[] { new KeyValuePair<string, string?>("type", item.Type), new KeyValuePair<string, string?>("listType", f.Type), new KeyValuePair<string, string?>("read", f.Read), new KeyValuePair<string, string?>("status", statusKey), new KeyValuePair<string, string?>("page", list.Page > 1 ? list.Page.ToString(inv) : null) }.Where(p => p.Value is not null))"><strong dir="auto">@item.Name</strong></a></td>
                     <td class="cell-ltr">@item.Email</td>
                     <td>@item.Summary</td>
                     <td>@(item.Culture == "en" ? "English" : "العربية")</td>

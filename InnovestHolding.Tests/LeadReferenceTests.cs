@@ -127,7 +127,7 @@ public class LeadReferenceTests(TestAppFactory f)
         var interestId = await f.DbAsync(db => db.OpportunityInterests.Where(x => x.Email == email).Select(x => x.Id).SingleAsync());
 
         var admin = await f.SignedInClientAsync();
-        Assert.Contains($"<span class=\"lead-value\">#{opp}</span>", await admin.GetStringAsync($"/Admin/Leads/Details/{interestId}?type=interest"));
+        Assert.Contains($"<span class=\"lead-value\" dir=\"auto\">#{opp}</span>", await admin.GetStringAsync($"/Admin/Leads/Details/{interestId}?type=interest"));
 
         Assert.Equal(1, await RemoveAsync<InvestmentOpportunity>(opp));
         Assert.Equal(1, await RemoveAsync<SponsorshipPackage>(pkg));
@@ -138,7 +138,7 @@ public class LeadReferenceTests(TestAppFactory f)
         Assert.Equal((null, pkgTitle), (enquiry.PackageId, enquiry.PackageTitle));
         var detail = await admin.GetStringAsync($"/Admin/Leads/Details/{interestId}?type=interest");
         Assert.Contains(oppTitle, detail);
-        Assert.Contains("<span class=\"lead-value\">حُذفت</span>", detail);
+        Assert.Contains("<span class=\"lead-value\" dir=\"auto\">حُذفت</span>", detail);
     }
 
     [Fact] // the detail page's «express interest» link pre-selects its opportunity in the list page's form, in both languages

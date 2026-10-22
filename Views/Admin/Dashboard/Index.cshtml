@@ -40,7 +40,7 @@
 {
     <div class="admin-card">
         <div class="admin-card-header">
-            <span class="admin-card-title">الطلبات الجديدة (@leads.Leads)</span>
+            <span class="admin-card-title">الطلبات غير المقروءة (@leads.Leads)</span>
             <a href="/Admin/Leads" class="btn-admin btn-secondary btn-sm">كل الطلبات</a>
         </div>
         <div class="stats-cards">
@@ -48,7 +48,7 @@
             {
                 var count = leads.Of(key);
                 <a class="stat-card-admin lead-type-card@(count > 0 ? " has-unread" : "")" href="/Admin/Leads?type=@key&amp;status=unread">
-                    <div class="stat-card-info"><h3>@count</h3><p>@label — جديد</p></div>
+                    <div class="stat-card-info"><h3>@count</h3><p>@label — غير مقروء</p></div>
                 </a>
             }
         </div>

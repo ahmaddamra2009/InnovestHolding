@@ -416,7 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Join the Network: the chosen type (investor / startup) shows its own fields; the other set is hidden AND disabled,
   // so it is neither validated by the browser nor posted. Without JavaScript both sets stay visible and the server
-  // ignores the other type's fields. Fields marked data-required become required only while their set is shown.
+  // ignores the other type's fields. Fields marked data-required="true" become required only while their set is shown
+  // (any other value, or none, leaves the field optional).
   document.querySelectorAll('form.js-kind-form').forEach(form => {
     const sets = form.querySelectorAll('fieldset.kind-fields');
     function apply() {
@@ -426,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const on = set.dataset.kind === kind;
         set.hidden = !on;
         set.disabled = !on;
-        set.querySelectorAll('[data-required]').forEach(el => { el.required = on; });
+        set.querySelectorAll('[data-required="true"]').forEach(el => { el.required = on; });
       });
     }
     form.querySelectorAll('input[name="kind"]').forEach(r => r.addEventListener('change', apply));

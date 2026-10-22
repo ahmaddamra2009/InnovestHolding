@@ -572,7 +572,7 @@ public class EcosystemTests(TestAppFactory f)
         try
         {
             var ar = await f.NewClient().GetStringAsync("/tv/sponsorship");
-            Assert.Contains(tv, ar);
+            Assert.Contains($">{tv}</h3>", ar);   // the positive anchor of the card markup the next negative check relies on
             Assert.Contains("<li>ميزة 2</li>", ar);
             // The Forum package is not in the TV page's packages block; the enquiry form offers it only in the Forum group
             // of its package select (C4 integration), and the inactive one nowhere.
