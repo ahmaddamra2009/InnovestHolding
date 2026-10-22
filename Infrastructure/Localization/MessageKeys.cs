@@ -79,6 +79,7 @@ public static class MessageKeys
         public const string Unit = "Field_Unit";
         public const string Package = "Field_Package";
         public const string Opportunity = "Field_Opportunity";
+        public const string AdminNote = "Field_AdminNote";
         public const string Username = "Field_Username";
         public const string Password = "Field_Password";
         public const string CurrentPassword = "Field_CurrentPassword";
@@ -189,6 +190,10 @@ public static class MessageKeys
         public const string MessageDeleted = "Admin_MessageDeleted";
         public const string RegistrationDeleted = "Admin_RegistrationDeleted";
         public const string LeadDeleted = "Admin_LeadDeleted";
+        public const string LeadUpdated = "Admin_LeadUpdated";
+        public const string LeadStatusNew = "Admin_LeadStatusNew";
+        public const string LeadStatusContacted = "Admin_LeadStatusContacted";
+        public const string LeadStatusClosed = "Admin_LeadStatusClosed";
         public const string OptionAdded = "Admin_OptionAdded";
         public const string OptionUpdated = "Admin_OptionUpdated";
         public const string OptionDeleted = "Admin_OptionDeleted";

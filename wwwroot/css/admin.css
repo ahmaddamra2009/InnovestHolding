@@ -18,6 +18,9 @@
   --admin-border: #E2E4ED;
   --admin-success: #22c55e;
   --admin-danger: #ef4444;
+  --admin-danger-rgb: 239, 68, 68;
+  --admin-accent-rgb: 247, 134, 16;
+  --admin-success-rgb: 34, 197, 94;
   --admin-sidebar-w: 260px;
   --admin-header-h: 64px;
   --admin-radius: 12px;
@@ -260,11 +263,16 @@ select.form-control { cursor: pointer; }
 .admin-thumb { width: 64px; height: 40px; object-fit: cover; border-radius: 6px; vertical-align: middle; }
 /* Applications inbox (Leads) */
 .sidebar-badge { margin-inline-start: auto; min-width: 22px; padding: 1px 7px; border-radius: 11px; background: var(--admin-accent); color: var(--admin-navy); font-size: 0.72rem; font-weight: 800; text-align: center; line-height: 1.6; }
-.badge-new { display: inline-flex; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; background: rgba(239,68,68,0.1); color: var(--admin-danger); }
+.badge-new { display: inline-flex; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; background: rgba(var(--admin-danger-rgb), 0.1); color: var(--admin-danger); }
 .lead-type-card { text-decoration: none; color: inherit; padding: 16px 20px; }
-.lead-type-card.has-unread { border-color: rgba(247,134,16,0.45); }
+.lead-type-card.has-unread { border-color: rgba(var(--admin-accent-rgb), 0.45); }
 .lead-type-card.has-unread h3 { color: var(--admin-accent-ink); }
-.admin-table tr.is-unread td { font-weight: 700; background: rgba(247,134,16,0.04); }
+.admin-table tr.is-unread td { font-weight: 700; background: rgba(var(--admin-accent-rgb), 0.04); }
+.lead-status { display: inline-flex; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+.lead-status-new { background: rgba(var(--admin-accent-rgb), 0.14); color: var(--admin-accent-ink); }
+.lead-status-contacted { background: rgba(var(--admin-success-rgb), 0.12); color: var(--admin-text); }
+.lead-status-closed { background: var(--admin-border); color: var(--admin-text-muted); }
+.lead-note-mark { margin-inline-start: 6px; color: var(--admin-text-muted); }
 .lead-filter { margin-bottom: 16px; }
 .table-scroll { overflow-x: auto; max-width: 100%; }
 /* A scrolling table must not widen the page: the main column may shrink below its content. */

@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using InnovestHolding.Data;
 using InnovestHolding.Infrastructure.Leads;
+using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -60,12 +61,12 @@ public class LeadInboxTests(TestAppFactory f)
         var (id, email) = await AddSponsorshipAsync();
         var client = await f.SignedInClientAsync();
 
-        var list = await client.GetStringAsync("/Admin/Leads?type=sponsorship&status=unread");
+        var list = await client.GetStringAsync("/Admin/Leads?type=sponsorship&read=unread");
         Assert.Contains(email, list);
         Assert.Contains("<time class=\"utc-time\" datetime=\"", list);
         Assert.DoesNotContain(email, await client.GetStringAsync("/Admin/Leads?type=investor"));
         Assert.Contains(email, await client.GetStringAsync("/Admin/Leads"));            // the unified list
-        Assert.DoesNotContain(email, await client.GetStringAsync("/Admin/Leads?type=sponsorship&status=read"));
+        Assert.DoesNotContain(email, await client.GetStringAsync("/Admin/Leads?type=sponsorship&read=read"));
 
         var detail = await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship");
         Assert.Contains("Inbox Person", detail);
@@ -78,7 +79,7 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.Redirect, toggled.StatusCode);
         Assert.Equal("/Admin/Leads?type=sponsorship", toggled.Headers.Location!.OriginalString);
         Assert.True(await f.DbAsync(db => db.SponsorshipEnquiries.Where(s => s.Id == id).Select(s => s.IsRead).SingleAsync()));
-        Assert.Contains(email, await client.GetStringAsync("/Admin/Leads?type=sponsorship&status=read"));
+        Assert.Contains(email, await client.GetStringAsync("/Admin/Leads?type=sponsorship&read=read"));
 
         // the type must match the row's table: a sponsorship id posted as an interest deletes nothing
         Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync("/Admin/Leads/Delete", Form(token, ("type", "interest"), ("id", id.ToString())))).StatusCode);
@@ -122,6 +123,112 @@ public class LeadInboxTests(TestAppFactory f)
         var client = await f.SignedInClientAsync();
         Assert.Contains($"<span class=\"sidebar-badge\">{counts.Leads}</span>", await client.GetStringAsync("/Admin/Dashboard"));
     }
+
+    private async Task<int> AddQuickAsync(string email) => await f.DbAsync(async db =>
+    {
+        var r = new Registration { FullName = "Quick Row", Email = email, Culture = "ar", CreatedAt = DateTime.UtcNow };
+        db.Registrations.Add(r);
+        await db.SaveChangesAsync();
+        return r.Id;
+    });
+
+    [Fact] // a quick registration's id posted as a forum lead finds nothing on every action
+    public async Task A_type_that_does_not_match_the_row_is_404_on_details_toggle_update_and_delete()
+    {
+        var email = Unique("mismatch") + "@example.com";
+        var id = await AddQuickAsync(email);
+        var client = await f.SignedInClientAsync();
+        var token = await client.GetTokenAsync("/Admin/Leads");
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/Admin/Leads/Details/{id}?type=forum")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync("/Admin/Leads/ToggleRead", Form(token, ("type", "forum"), ("id", id.ToString())))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync("/Admin/Leads/Update", Form(token, ("Type", "forum"), ("Id", id.ToString()), ("Status", "closed")))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync("/Admin/Leads/Delete", Form(token, ("type", "forum"), ("id", id.ToString())))).StatusCode);
+        var row = await f.DbAsync(db => db.Registrations.AsNoTracking().SingleAsync(r => r.Id == id));
+        Assert.Equal((false, LeadStatus.New, Registration.Quick), (row.IsRead, row.Status, row.Kind));
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/Admin/Leads/Details/{id}?type=quick")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Status_and_note_are_saved_by_an_antiforgery_post_and_filter_the_list()
+    {
+        var (id, email) = await AddSponsorshipAsync();
+        var client = await f.SignedInClientAsync();
+        var detail = await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship");
+        var token = ExtractToken(detail);
+        FormUrlEncodedContent Body(string? tk, string status, string note) =>
+            Form(tk, ("Type", "sponsorship"), ("Id", id.ToString()), ("Status", status), ("AdminNote", note));
+
+        // anonymous and token-less posts change nothing
+        var anon = f.NewClient();
+        var anonToken = await anon.GetTokenAsync("/Account/Login");
+        Assert.Contains("/Account/Login", (await anon.PostAsync("/Admin/Leads/Update", Body(anonToken, "closed", "x"))).Headers.Location!.OriginalString);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/Admin/Leads/Update", Body(null, "closed", "x"))).StatusCode);
+        // only the three keys; a number or a casing variant is not a status; an over-long note is refused
+        foreach (var bad in new[] { "2", "Closed", "archived", "" })
+            await client.PostAsync("/Admin/Leads/Update", Body(token, bad, "x"));
+        await client.PostAsync("/Admin/Leads/Update", Body(token, "closed", new string('n', LeadLimits.NoteMax + 1)));
+        var row = await f.DbAsync(db => db.SponsorshipEnquiries.AsNoTracking().SingleAsync(s => s.Id == id));
+        Assert.Equal((LeadStatus.New, (string?)null), (row.Status, row.AdminNote));
+
+        var ok = await client.PostAsync("/Admin/Leads/Update", Body(token, "contacted", "Called <b>Monday</b>"));
+        Assert.Equal(HttpStatusCode.Redirect, ok.StatusCode);
+        row = await f.DbAsync(db => db.SponsorshipEnquiries.AsNoTracking().SingleAsync(s => s.Id == id));
+        Assert.Equal((LeadStatus.Contacted, "Called <b>Monday</b>"), (row.Status, row.AdminNote));
+        Assert.Contains("Called &lt;b&gt;Monday&lt;/b&gt;", await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship"));
+
+        Assert.Contains(email, await client.GetStringAsync("/Admin/Leads?type=sponsorship&status=contacted"));
+        Assert.DoesNotContain(email, await client.GetStringAsync("/Admin/Leads?type=sponsorship&status=new"));
+        Assert.DoesNotContain(email, await client.GetStringAsync("/Admin/Leads?type=sponsorship&status=closed"));
+    }
+
+    [Fact]
+    public async Task Export_is_admin_only_csv_with_bom_that_respects_the_filter_and_neutralises_formulas()
+    {
+        var formulaName = "=HYPERLINK(\"http://x\")" + Guid.NewGuid().ToString("N");
+        var email = Unique("csv") + "@example.com";
+        await f.DbAsync(async db =>
+        {
+            db.OpportunityInterests.Add(new OpportunityInterest { FullName = formulaName, Email = email, Phone = "+20 1", Message = "m",
+                ConsentAt = DateTime.UtcNow, Culture = "ar", CreatedAt = DateTime.UtcNow, Status = LeadStatus.Closed, AdminNote = "@note" });
+            return await db.SaveChangesAsync();
+        });
+        // another type with the SAME status: only the type filter keeps it out of the file
+        var (otherId, otherEmail) = await AddSponsorshipAsync();
+        await f.DbAsync(db => db.SponsorshipEnquiries.Where(s => s.Id == otherId).ExecuteUpdateAsync(s => s.SetProperty(x => x.Status, LeadStatus.Closed)));
+
+        var anon = await f.NewClient().GetAsync("/Admin/Leads/Export");
+        Assert.Equal(HttpStatusCode.Redirect, anon.StatusCode);
+        Assert.Contains("/Account/Login", anon.Headers.Location!.OriginalString);
+
+        var client = await f.SignedInClientAsync();
+        var r = await client.GetAsync("/Admin/Leads/Export?type=interest&status=closed");
+        Assert.Equal(HttpStatusCode.OK, r.StatusCode);
+        Assert.Equal("text/csv", r.Content.Headers.ContentType!.MediaType);
+        Assert.StartsWith("attachment", r.Content.Headers.ContentDisposition!.ToString());
+        var bytes = await r.Content.ReadAsByteArrayAsync();
+        Assert.Equal(new byte[] { 0xEF, 0xBB, 0xBF }, bytes[..3]);
+        var text = System.Text.Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
+        Assert.StartsWith("\"النوع\",", text);
+        Assert.Contains("\"'" + formulaName.Replace("\"", "\"\"") + "\"", text);   // apostrophe + doubled quotes
+        Assert.Contains("\"'@note\"", text);
+        Assert.Contains("\"" + Msg.Ar(MessageKeys.Admin.LeadStatusClosed) + "\"", text);
+        Assert.Contains(email, text);
+        Assert.DoesNotContain(otherEmail, text);   // the type filter is applied
+        Assert.DoesNotContain(email, await (await client.GetAsync("/Admin/Leads/Export?type=interest&status=new")).Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData("=1+1", "\"'=1+1\"")]
+    [InlineData("+20 100", "\"'+20 100\"")]
+    [InlineData("-5", "\"'-5\"")]
+    [InlineData("@SUM(A1)", "\"'@SUM(A1)\"")]
+    [InlineData("\tx", "\"'\tx\"")]
+    [InlineData("\rx", "\"'\rx\"")]
+    [InlineData("a\"b", "\"a\"\"b\"")]
+    [InlineData("نص عربي", "\"نص عربي\"")]
+    [InlineData(null, "\"\"")]
+    public void Csv_cells_are_quoted_and_formula_prefixes_neutralised(string? value, string expected) =>
+        Assert.Equal(expected, LeadCsv.Cell(value));
 }
 
 /// <summary>The AddLeadForms migration on a database in the multi-page state (RefineSiteStructure) holding real rows.</summary>
@@ -129,7 +236,7 @@ public class LeadInboxTests(TestAppFactory f)
 public class LeadFormsMigrationTests
 {
     private const string Before = "20261022172550_RefineSiteStructure";
-    private const string LeadForms = "20261022194726_AddLeadForms";
+    private const string LeadForms = "20261022210507_AddLeadForms";
 
     private static async Task<string> Json(AppDbContext db, string sql) =>
         (await db.Database.SqlQueryRaw<string>(sql).ToListAsync()).Single() ?? "";
@@ -175,6 +282,7 @@ public class LeadFormsMigrationTests
         Assert.Equal(msgs, await Json(db, OldMessages));
         Assert.Equal(events, await Json(db, OldEvents));
         Assert.Equal(["quick", "quick"], await db.Registrations.OrderBy(r => r.Id).Select(r => r.Kind).ToListAsync());
+        Assert.All(await db.Registrations.ToListAsync(), r => Assert.True(r.Status == LeadStatus.New && r.AdminNote is null));
         Assert.All(await db.Registrations.ToListAsync(), r => Assert.True(r.ConsentAt is null && r.EventId is null && r.EventTitle is null));
         Assert.Equal(0, await db.NetworkApplications.CountAsync() + await db.SponsorshipEnquiries.CountAsync() + await db.OpportunityInterests.CountAsync());
 

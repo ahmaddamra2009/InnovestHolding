@@ -305,4 +305,9 @@
   <data name="Ui_FormSubmitEnquiry" xml:space="preserve"><value>أرسل الاستفسار</value></data>
   <data name="Ui_FormSubmitInterest" xml:space="preserve"><value>سجّل اهتمامي</value></data>
   <data name="Admin_LeadDeleted" xml:space="preserve"><value>تم حذف الطلب</value></data>
+  <data name="Admin_LeadUpdated" xml:space="preserve"><value>تم حفظ حالة الطلب والملاحظة</value></data>
+  <data name="Admin_LeadStatusNew" xml:space="preserve"><value>جديد</value></data>
+  <data name="Admin_LeadStatusContacted" xml:space="preserve"><value>تم التواصل</value></data>
+  <data name="Admin_LeadStatusClosed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="Field_AdminNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>
 </root>

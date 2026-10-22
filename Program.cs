@@ -70,6 +70,8 @@ builder.Services.AddStaticAssetCompression();
 
 // What a lead may refer to that a later phase publishes (opportunities, sponsorship packages): none yet.
 builder.Services.AddSingleton<InnovestHolding.Infrastructure.Forms.ILeadReferences, InnovestHolding.Infrastructure.Forms.NoLeadReferences>();
+// The global cap of the lead forms (all visitors together), beside the per-IP rate limit.
+builder.Services.AddSingleton<InnovestHolding.Infrastructure.Forms.LeadVolumeGuard>();
 
 // AppDbContext + the site content cache and its invalidation interceptor (one helper, shared with the tests).
 builder.Services.AddAppDbContext(connectionString);

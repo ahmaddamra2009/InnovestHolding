@@ -33,16 +33,20 @@ public sealed record LeadFormChoices(
             .OrderBy(i => i.SortOrder).ThenBy(i => i.Id)
             .Select(i => new { i.Group, Choice = new FormChoice(i.Id, i.TextAr, i.TextEn) })
             .ToListAsync(ct);
-        var events = await db.Events.AsNoTracking()
-            .Where(e => e.IsActive)
-            .OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
-            .Select(e => new FormChoice(e.Id, e.TitleAr, e.TitleEn))
-            .ToListAsync(ct);
+        var events = await EventsAsync(db, ct);
 
         IReadOnlyList<FormChoice> Of(string group) => items.Where(i => i.Group == group).Select(i => i.Choice).ToList();
         return new LeadFormChoices(events, Of(ContentItemGroups.InvestorTypes), Of(ContentItemGroups.TicketSizes),
             Of(ContentItemGroups.Sectors), Of(ContentItemGroups.StartupStages), Of(ContentItemGroups.FundingRanges));
     }
+
+    /// <summary>The active events (the Forum registration form needs only these: one query).</summary>
+    public static async Task<IReadOnlyList<FormChoice>> EventsAsync(AppDbContext db, CancellationToken ct) =>
+        await db.Events.AsNoTracking()
+            .Where(e => e.IsActive)
+            .OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
+            .Select(e => new FormChoice(e.Id, e.TitleAr, e.TitleEn))
+            .ToListAsync(ct);
 
     /// <summary>The choice with this id in <paramref name="list"/>, or null (also for a null id).</summary>
     public static FormChoice? Find(IReadOnlyList<FormChoice> list, int? id) => id is { } v ? list.FirstOrDefault(c => c.Id == v) : null;

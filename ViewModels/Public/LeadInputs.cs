@@ -63,6 +63,9 @@ public sealed class ForumRegistrationInput : LeadInputBase
 /// <summary>POST /forms/join — an investor or a startup («Kind»).</summary>
 public sealed class JoinInput : LeadInputBase
 {
+    /// <summary>A link may not carry a quote, an angle bracket or whitespace (it is shown to the admin, and may be a link one day).</summary>
+    public const string SafeUrlChars = @"^[^""<>\s]*$";
+
     [Display(Name = F.ApplicantType)]
     [Required(ErrorMessage = K.Required)]
     [RegularExpression("^(investor|startup)$", ErrorMessage = K.InvalidValue)]
@@ -96,6 +99,7 @@ public sealed class JoinInput : LeadInputBase
     [Display(Name = F.LinkedInUrl)]
     [StringLength(500, ErrorMessage = K.MaxLength)]
     [HttpsUrl]
+    [RegularExpression(SafeUrlChars, ErrorMessage = K.HttpsUrl)]
     public string? LinkedInUrl { get; set; }
 
     [Display(Name = F.Message)]
@@ -115,6 +119,7 @@ public sealed class JoinInput : LeadInputBase
     [Display(Name = F.WebsiteUrl)]
     [StringLength(500, ErrorMessage = K.MaxLength)]
     [HttpsUrl]
+    [RegularExpression(SafeUrlChars, ErrorMessage = K.HttpsUrl)]
     public string? WebsiteUrl { get; set; }
 
     [Display(Name = F.Pitch)]

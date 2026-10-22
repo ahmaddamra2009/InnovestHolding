@@ -19,11 +19,11 @@ public static class LeadFormViews
 
     private static LText Consent(SiteViews v) => v.Content.Text(ContentKeys.FormsConsent);
 
-    public static ForumRegistrationFormVm ForumRegistrationForm(this SiteViews v, LeadFormChoices choices, LText submit) => new(
+    public static ForumRegistrationFormVm ForumRegistrationForm(this SiteViews v, IReadOnlyList<FormChoice> events, LText submit) => new(
         CultureUrls.Form(ForumRegistration, v.English), "forum-reg", Consent(v), submit,
         new FormSideVm(v.Content.Text("register_badge"), v.Content.Text("register_title"), v.Content.Text("register_text"),
             v.Snapshot.Benefits.Select(b => v.P(b.Ar, b.En)).ToList(), false),
-        v.Choices(choices.Events),
+        v.Choices(events),
         v.Snapshot.Interests.Select(i => new ChoiceVm(i.Id, v.P(i.NameAr, i.NameEn))).ToList());
 
     /// <param name="kind">The ?type= of the request; anything but investor/startup selects nothing.</param>

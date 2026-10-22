@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InnovestHolding.Models;
 
-public class Registration
+public class Registration : ILead
 {
     public int Id { get; set; }
 
@@ -59,6 +59,13 @@ public class Registration
     public string Culture { get; set; } = "ar";
 
     public bool IsRead { get; set; } = false;
+
+    /// <summary>Where the admin is with this lead (existing rows: New).</summary>
+    public LeadStatus Status { get; set; }
+
+    /// <summary>The admin's internal note (never shown on the public site).</summary>
+    [MaxLength(LeadLimits.NoteMax)]
+    public string? AdminNote { get; set; }
 
     /// <summary>UTC.</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

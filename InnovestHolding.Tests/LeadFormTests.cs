@@ -335,6 +335,82 @@ public class LeadFormTests(TestAppFactory f)
         Assert.DoesNotContain(sink.Lines, l => l.Contains(email) || l.Contains(name) || l.Contains(phone));
     }
 
+    // Every option field, forged with an id of ANOTHER list (or an unknown id): refused, nothing written.
+    [Theory]
+    [InlineData("/forms/join", "investor", "InvestorTypeId", ContentItemGroups.Sectors)]
+    [InlineData("/forms/join", "investor", "TicketSizeId", ContentItemGroups.InvestorTypes)]
+    [InlineData("/forms/join", "investor", "SectorIds", ContentItemGroups.TicketSizes)]
+    [InlineData("/forms/join", "startup", "SectorId", ContentItemGroups.StartupStages)]
+    [InlineData("/forms/join", "startup", "StageId", ContentItemGroups.FundingRanges)]
+    [InlineData("/forms/join", "startup", "FundingId", ContentItemGroups.TicketSizes)]
+    [InlineData("/forms/forum-registration", null, "InterestOptionId", null)]
+    [InlineData("/forms/forum-registration", null, "EventId", null)]
+    public async Task Every_option_field_refuses_an_id_of_another_list(string path, string? kind, string field, string? otherGroup)
+    {
+        var (c, t) = await ClientAsync();
+        var email = Unique("forge") + "@example.com";
+        var forged = otherGroup is null ? "999999" : (await Group(otherGroup, 0)).ToString();
+        var body = new List<(string, string)>(Base(email));
+        if (kind == "investor")
+            body.AddRange([("Kind", "investor"), ("Country", "Egypt"), ("InvestorTypeId", (await Group(ContentItemGroups.InvestorTypes, 0)).ToString())]);
+        if (kind == "startup")
+            body.AddRange([("Kind", "startup"), ("Country", "Egypt"), ("StartupName", "QA"), ("SectorId", (await Group(ContentItemGroups.Sectors, 0)).ToString()),
+                ("StageId", (await Group(ContentItemGroups.StartupStages, 0)).ToString())]);
+        body.RemoveAll(p => p.Item1 == field);
+        body.Add((field, forged));
+        await AssertRefused(await c.PostAsync(path, Form(t, body.ToArray())), field);
+        Assert.Equal(0, await LeadCount(email));
+    }
+
+    [Fact] // a link may not carry a quote, an angle bracket or whitespace (stored text shown to the admin)
+    public async Task Links_with_quotes_or_angle_brackets_are_refused()
+    {
+        var (c, t) = await ClientAsync();
+        var email = Unique("url") + "@example.com";
+        var type = (await Group(ContentItemGroups.InvestorTypes, 0)).ToString();
+        await AssertRefused(await c.PostAsync("/forms/join", Form(t, [.. Base(email), ("Kind", "investor"), ("Country", "Egypt"), ("InvestorTypeId", type),
+            ("LinkedInUrl", "https://example.invalid/q\"><script>x</script>")])), "LinkedInUrl");
+        await AssertRefused(await c.PostAsync("/forms/join", Form(t, [.. Base(email), ("Kind", "startup"), ("Country", "Egypt"), ("StartupName", "QA"),
+            ("SectorId", (await Group(ContentItemGroups.Sectors, 0)).ToString()), ("StageId", (await Group(ContentItemGroups.StartupStages, 0)).ToString()),
+            ("WebsiteUrl", "https://example.invalid/a<b")])), "WebsiteUrl");
+        Assert.Equal(0, await LeadCount(email));
+    }
+
+    [Fact] // the admin's workflow fields cannot be set from a public form
+    public async Task Status_and_note_cannot_be_over_posted()
+    {
+        var (c, t) = await ClientAsync();
+        var email = Unique("st") + "@example.com";
+        Assert.Equal(HttpStatusCode.OK, (await c.PostAsync("/forms/opportunity-interest", Form(t, [.. Base(email), ("Status", "2"), ("AdminNote", "forged")]))).StatusCode);
+        var row = await f.DbAsync(db => db.OpportunityInterests.AsNoTracking().SingleAsync(x => x.Email == email));
+        Assert.Equal((LeadStatus.New, (string?)null), (row.Status, row.AdminNote));
+    }
+
+    [Fact] // the global cap per form (all addresses together); honeypot and refused posts do not use the budget
+    public async Task The_global_cap_refuses_a_form_once_its_window_is_full()
+    {
+        await using var app = f.WithWebHostBuilder(b => b.UseSetting("Security:RateLimit:LeadFormGlobalPermitLimit", "2"));
+        async Task<HttpResponseMessage> Post(string path, (string, string)[] body)
+        {
+            var client = app.CreateClient();
+            client.DefaultRequestHeaders.Add(TestClientIpStartupFilter.Header, NewIp());   // a new address every time
+            var token = await client.GetTokenAsync("/en/tv/sponsorship");
+            return await client.PostAsync(path, Form(token, body));
+        }
+        var email = Unique("cap") + "@example.com";
+        (string, string)[] valid = [.. Base(email), ("CompanyName", "Co"), ("Unit", "tv")];
+        Assert.Equal(HttpStatusCode.OK, (await Post("/en/forms/sponsorship", [.. valid, ("Website", "bot")])).StatusCode);   // honeypot: not counted
+        Assert.Equal(HttpStatusCode.BadRequest, (await Post("/en/forms/sponsorship", [.. Base(email), ("Unit", "tv")])).StatusCode);   // refused: not counted
+        Assert.Equal(HttpStatusCode.OK, (await Post("/en/forms/sponsorship", valid)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await Post("/en/forms/sponsorship", valid)).StatusCode);
+        var full = await Post("/en/forms/sponsorship", valid);
+        Assert.Equal(HttpStatusCode.TooManyRequests, full.StatusCode);
+        Assert.Equal(Msg.En(MessageKeys.TooManyRequests), await Message(full));
+        Assert.Equal(2, await f.DbAsync(db => db.SponsorshipEnquiries.CountAsync(s => s.Email == email)));
+        // another form keeps its own window
+        Assert.Equal(HttpStatusCode.OK, (await Post("/forms/opportunity-interest", Base(email))).StatusCode);
+    }
+
     private Task<int> LeadCount(string email) => f.DbAsync(async db =>
         await db.Registrations.CountAsync(r => r.Email == email) + await db.NetworkApplications.CountAsync(r => r.Email == email)
         + await db.SponsorshipEnquiries.CountAsync(r => r.Email == email) + await db.OpportunityInterests.CountAsync(r => r.Email == email));

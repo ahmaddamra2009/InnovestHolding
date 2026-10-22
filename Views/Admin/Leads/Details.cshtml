@@ -1,11 +1,14 @@
 @model InnovestHolding.Controllers.Admin.LeadDetailVm
 @using InnovestHolding.Infrastructure.Leads
+@using InnovestHolding.Models
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = LeadInbox.Label(Model.Type);
     var back = "/Admin/Leads" + QueryString.Create(new[]
     {
-        new KeyValuePair<string, string?>("status", Model.Status),
+        new KeyValuePair<string, string?>("type", Model.Back.Type),
+        new KeyValuePair<string, string?>("read", Model.Back.Read),
+        new KeyValuePair<string, string?>("status", Model.Back.Status is { } s ? LeadStatuses.Key(s) : null),
         new KeyValuePair<string, string?>("page", Model.Page?.ToString(System.Globalization.CultureInfo.InvariantCulture)),
     }.Where(p => p.Value is not null));
 }
@@ -15,14 +18,17 @@
 <div class="admin-card">
     <div class="admin-card-header">
         <span class="admin-card-title">@Model.Title</span>
-        @if (Model.IsRead)
-        {
-            <span class="badge-active">مقروء</span>
-        }
-        else
-        {
-            <span class="badge-new">جديد</span>
-        }
+        <span>
+            <span class="lead-status lead-status-@LeadStatuses.Key(Model.Status)">@L[LeadStatuses.LabelKey(Model.Status)]</span>
+            @if (Model.IsRead)
+            {
+                <span class="badge-active">مقروء</span>
+            }
+            else
+            {
+                <span class="badge-new">جديد</span>
+            }
+        </span>
     </div>
 
     <dl class="lead-detail">
@@ -36,20 +42,42 @@
             <dd class="@(field.Ltr ? "cell-ltr" : null)">@if (string.IsNullOrWhiteSpace(field.Value)) { <span class="form-hint">—</span> } else { <span class="lead-value">@field.Value</span> }</dd>
         }
     </dl>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">المتابعة (للإدارة فقط)</span></div>
+    <form method="post" asp-action="Update" asp-controller="Leads" class="lead-update">
+        <input type="hidden" name="Type" value="@Model.Type">
+        <input type="hidden" name="Id" value="@Model.Id">
+        <div class="form-group">
+            <label for="lead-status-select">الحالة</label>
+            <select id="lead-status-select" name="Status" class="form-control">
+                @foreach (var s in LeadStatuses.All)
+                {
+                    <option value="@LeadStatuses.Key(s)" selected="@(Model.Status == s)">@L[LeadStatuses.LabelKey(s)]</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="lead-note">@L[K.Fields.AdminNote] <span class="form-hint">(لا تظهر للزائر أبداً — @LeadLimits.NoteMax حرف كحد أقصى)</span></label>
+            <textarea id="lead-note" name="AdminNote" class="form-control" maxlength="@LeadLimits.NoteMax" rows="4">@Model.AdminNote</textarea>
+        </div>
+        <button type="submit" class="btn-admin btn-primary">حفظ الحالة والملاحظة</button>
+    </form>
 
     <div class="inline-actions" style="margin-top:20px;">
         <form method="post" asp-action="ToggleRead" asp-controller="Leads" style="display:inline;">
             <input type="hidden" name="type" value="@Model.Type">
             <input type="hidden" name="id" value="@Model.Id">
-            <input type="hidden" name="status" value="@Model.Status">
-            <input type="hidden" name="page" value="@Model.Page">
             <input type="hidden" name="fromDetails" value="true">
             <button type="submit" class="btn-admin @(Model.IsRead ? "btn-secondary" : "btn-primary")">@(Model.IsRead ? "تعليم كغير مقروء" : "تعليم كمقروء ✓")</button>
         </form>
         <form method="post" asp-action="Delete" asp-controller="Leads" style="display:inline;">
             <input type="hidden" name="type" value="@Model.Type">
             <input type="hidden" name="id" value="@Model.Id">
-            <input type="hidden" name="status" value="@Model.Status">
+            <input type="hidden" name="listType" value="@Model.Back.Type">
+            <input type="hidden" name="read" value="@Model.Back.Read">
+            <input type="hidden" name="status" value="@(Model.Back.Status is { } bs ? LeadStatuses.Key(bs) : null)">
             <input type="hidden" name="page" value="@Model.Page">
             <button type="submit" class="btn-admin btn-danger" onclick="return confirm('حذف هذا الطلب نهائياً؟')">حذف</button>
         </form>

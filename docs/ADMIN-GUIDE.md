@@ -287,11 +287,43 @@ This guide describes branch `feature/3-new-structure-brand` (phase C1) before it
 شبكة: الرابط (`https://` كامل)، الترتيب، مفعّل. **الشبكة بلا رابط لا تظهر** في الفوتر. تُضاف الروابط المفعّلة أيضاً إلى
 البيانات المنظمة (`sameAs`) للموقع.
 
-## 14. التسجيلات ورسائل التواصل
+## 14. صندوق الطلبات والتسجيلات ورسائل التواصل
 
-«التسجيلات» و«رسائل التواصل»: الأحدث أولاً، **50 في الصفحة** مع تنقل بين الصفحات. تظهر لغة الصفحة التي أُرسل منها
-النموذج (عربي/إنجليزي). يمكن تعليم الرسالة «مقروء» أو حذفها، والحذف نهائي. النموذجان يُرسَلان الآن إلى `/forms/register`
-و`/forms/contact` (أو `/en/forms/…`)؛ لا أثر لذلك على ما تراه في اللوحة.
+### «الطلبات (كل النماذج)» (`/Admin/Leads`)
+القائمة الجانبية ← «الوارد» ← «الطلبات (كل النماذج)». صندوق واحد لكل ما يرسله الزوار عبر نماذج الموقع، **الأحدث أولاً، 50 في الصفحة**
+مع تنقل بين الصفحات. بجانب «الطلبات» و«رسائل التواصل» في القائمة شارة بعدد **غير المقروء**، وفي «نظرة عامة» بطاقة بأعداد غير
+المقروء لكل نوع.
+- **الأنواع** (مرشّح «النوع»): تسجيل في المنتدى · انضمام — مستثمر · انضمام — شركة ناشئة · استفسار رعاية · اهتمام بالفرص · تسجيل
+  سريع (الرئيسية). **مرشّح الحالة:** الكل / غير مقروء / مقروء. يبقى المرشّح بعد تعليم الطلب أو حذفه.
+- **الجدول:** الحالة («جديد» أو «مقروء»)، النوع، الاسم، البريد، التفاصيل (جهة أو نوع أو فعالية…)، لغة الصفحة التي أُرسل منها النموذج،
+  التاريخ (بتوقيت متصفحكم؛ مرّروا المؤشر لترى UTC)، والإجراءات.
+- **التفاصيل:** تفتح كل حقول الطلب. زر **«مقروء/غير مقروء»** يبدّل الحالة (لا يُعلَّم الطلب مقروءاً تلقائياً عند فتحه)، وزر **الحذف**
+  بعد تأكيد؛ **الحذف نهائي**.
+- ما يجمعه كل نموذج (النماذج الأربعة الأولى تتطلب الاسم والبريد وتعليم مربع الموافقة؛ الهاتف اختياري):
+  - **التسجيل في المنتدى** (`/forum/registration`): الجهة، المسمى الوظيفي، الدولة، مجال الاهتمام (من «خيارات مجال الاهتمام»)،
+    والفعالية (اختيارية؛ فعالية مفعّلة فقط، وإلا «أي فعالية»).
+  - **الانضمام** (`/angel-network/join`): النوع (مستثمر أو شركة ناشئة) والدولة (إلزاميان). المستثمر: الجهة، نوع المستثمر، حجم
+    الاستثمار، القطاعات، رابط LinkedIn (`https://`)، رسالة. الشركة الناشئة: **اسم الشركة والقطاع والمرحلة إلزامية**، والتمويل المطلوب،
+    الموقع (`https://`)، نبذة.
+  - **الرعاية** (`/tv/sponsorship`): اسم الشركة ومسؤول التواصل والجهة المراد رعايتها (المنتدى أو التلفزيون)، الباقة (إن وُجدت باقات)، رسالة.
+  - **اهتمام بالفرص** (`/angel-network/opportunities`): الاسم والبريد والهاتف ورسالة؛ الفرصة «عموماً» ما دامت صفحات الفرص غير متوفرة.
+  - **التسجيل السريع** في الصفحة الرئيسية كما كان (الاسم والبريد والهاتف ومجال الاهتمام).
+  يُحفظ مع كل طلب: وقت الموافقة ولغة الصفحة ووقت الإرسال. القوائم المنسدلة تُحفَظ بنصها العربي وقت الإرسال، فلا يتغير طلب قديم إن
+  عدّلتم الخيارات لاحقاً.
+- **تعديل نصوص النماذج وخياراتها:** «النصوص العامة» ← بطاقة «نماذج الطلبات» (نص الموافقة، وعناوين ونصوص أعمدة الانضمام والرعاية
+  والاهتمام)؛ و«القوائم» ← أربع قوائم: أنواع المستثمرين، حجم الاستثمار، مراحل الشركة الناشئة، التمويل المطلوب (القطاعات من قائمة
+  «القطاعات التي نخدمها»). الخيار المخفي لا يظهر في النموذج.
+- صفحة «الفرص» تعرض نموذج الاهتمام **تحت نص «قريباً»** دون أن تُعدّ الصفحة ذات محتوى (تبقى `noindex`). وصفحة «الرعاية» تدخل محركات
+  البحث بعد أن أصبحت لها فقرة تمهيدية.
+- لا يُرسَل أي بريد عند وصول طلب: راجعوا الصندوق (الشارة) دورياً.
+
+### بيانات شخصية (PII)
+الطلبات بيانات شخصية: **تظهر لمن يدخل اللوحة فقط** ولا تظهر في الموقع العام. لا يسجّل التطبيق أي بيانات من النماذج في سجلاته. لا يُحفظ عنوان
+IP ولا متصفح الزائر مع الطلب. احذفوا ما لم تعد تحتاجونه، ولا تنسخوه إلى قنوات غير آمنة. لا تُصدَّر الطلبات إلى CSV في هذا الإصدار.
+
+### «التسجيلات» و«رسائل التواصل»
+«التسجيلات» تعرض كل التسجيلات (مع عمود «النموذج»: سريع أو منتدى) و«رسائل التواصل» رسائل صفحة التواصل: الأحدث أولاً، **50 في الصفحة**. تظهر
+لغة الصفحة (عربي/إنجليزي). يمكن تعليم الرسالة «مقروء» أو حذفها، والحذف نهائي. النماذج تُرسَل إلى `/forms/…` (أو `/en/forms/…`).
 
 ## 15. تغيير كلمة المرور
 
@@ -611,11 +643,48 @@ point the box disappears.
 network: full `https://` URL, order, active. **A network with no URL is not shown** in the footer. Active links are also
 added to the site's structured data (`sameAs`).
 
-## 14. Registrations and contact messages
+## 14. Applications inbox, registrations and contact messages
 
-«التسجيلات» and «رسائل التواصل»: newest first, **50 per page** with paging. The language of the page the form was sent
-from (Arabic/English) is shown. A message can be marked read or deleted; deletion is permanent. The forms now post to
-`/forms/register` and `/forms/contact` (or `/en/forms/…`); this changes nothing you see in the panel.
+### «الطلبات (كل النماذج)» (`/Admin/Leads`)
+Sidebar → «الوارد» → «الطلبات (كل النماذج)». One inbox for everything visitors send through the site's forms, **newest first, 50
+per page** with paging. A badge with the **unread** count sits beside «الطلبات» and «رسائل التواصل» in the sidebar, and the
+«نظرة عامة» dashboard has a card with the unread count per type.
+- **Types** («النوع» filter): forum registration · join — investor · join — startup · sponsorship enquiry · interest in
+  opportunities · quick registration (home page). **Status filter:** all / unread / read. The filter is kept after you mark or
+  delete a lead.
+- **The table:** status («جديد» or «مقروء»), type, name, e-mail, details (organisation, type, event...), the language of the
+  page the form was sent from, the date (in your browser's time zone; hover for UTC), and actions.
+- **Details:** opens every field of the lead. The **read/unread** button toggles the status (a lead is not marked read just by
+  opening it), and **delete** asks for confirmation; **deletion is permanent**.
+- What each form collects (the first four require name, e-mail and the consent box; the phone is optional):
+  - **Forum registration** (`/forum/registration`): organisation, job title, country, area of interest (from «خيارات مجال
+    الاهتمام»), and the event (optional; an active event only, otherwise «any event»).
+  - **Join** (`/angel-network/join`): type (investor or startup) and country (required). Investor: organisation, investor type,
+    ticket size, sectors, LinkedIn link (`https://`), message. Startup: **startup name, sector and stage are required**, plus
+    funding sought, website (`https://`), pitch.
+  - **Sponsorship** (`/tv/sponsorship`): company name, contact person, what to sponsor (the forum or the TV program), package
+    (when packages exist), message.
+  - **Opportunity interest** (`/angel-network/opportunities`): name, e-mail, phone, message; the opportunity reads «in
+    general» while opportunity pages do not exist yet.
+  - **Quick registration** on the home page is as before (name, e-mail, phone, area of interest).
+  Each lead also stores the consent time, the page language and the submission time. Choice lists are stored with their Arabic
+  text at submission time, so an old lead does not change if you later edit the options.
+- **Editing the form texts and options:** «النصوص العامة» → card «نماذج الطلبات» (the consent text and the side headings and
+  texts of the join, sponsorship and interest forms); «القوائم» → four lists: investor types, ticket sizes, startup stages,
+  funding sought (sectors come from the «sectors we serve» list). A hidden option is not offered in the form.
+- The «Opportunities» page shows the interest form **under its «coming soon» text** without counting as page content (it stays
+  `noindex`). The «Sponsorship» page becomes indexable now that it has an intro paragraph.
+- No e-mail is sent when a lead arrives: check the inbox (the badge) regularly.
+
+### Personal data (PII)
+Leads are personal data: **visible only to signed-in admins** and never on the public site. The application writes nothing from
+the forms to its logs. The visitor's IP address and browser are not stored with the lead. Delete what you no longer need and do
+not copy it to insecure channels. There is no CSV export in this release.
+
+### «التسجيلات» and «رسائل التواصل»
+«التسجيلات» lists every registration (with a «form» column: quick or forum) and «رسائل التواصل» the contact page's messages:
+newest first, **50 per page**. The page language is shown. A message can be marked read or deleted; deletion is permanent. The
+forms post to `/forms/...` (or `/en/forms/...`).
 
 ## 15. Changing the password
 

@@ -284,8 +284,8 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     public async Task<IActionResult> Registration()
     {
         var v = await ViewsAsync();
-        var choices = await LeadFormChoices.LoadAsync(db, HttpContext.RequestAborted);
-        return Page(PageKeys.ForumRegistration, v, [new LeadFormBlock(v.ForumRegistrationForm(choices, v.Content.Text("cta_register")))]);
+        var events = await LeadFormChoices.EventsAsync(db, HttpContext.RequestAborted);
+        return Page(PageKeys.ForumRegistration, v, [new LeadFormBlock(v.ForumRegistrationForm(events, v.Content.Text("cta_register")))]);
     }
 
     internal static PagerVm? Pager(int total, int size, int page, string url)

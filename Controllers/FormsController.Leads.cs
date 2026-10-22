@@ -22,6 +22,11 @@ public partial class FormsController
 
     private JsonResult Success(string key) => Json(new { success = true, message = Loc[key].Value });
 
+    /// <summary>The form's global window is full (<see cref="LeadVolumeGuard"/>): the same JSON 429 as the per-IP limit.</summary>
+    private ObjectResult Full() => StatusCode(StatusCodes.Status429TooManyRequests, new { success = false, message = Loc[MessageKeys.TooManyRequests].Value });
+
+    private bool Admit(string form) => HttpContext.RequestServices.GetRequiredService<LeadVolumeGuard>().TryAcquire(form);
+
     /// <summary>400 with one message; <paramref name="field"/> names the input to focus (the form field's name).</summary>
     private BadRequestObjectResult Fail(string message, string? field) => BadRequest(new { success = false, message, field });
 
@@ -60,7 +65,7 @@ public partial class FormsController
         FormChoice? evt = null;
         if (input.EventId is not null)
         {
-            evt = LeadFormChoices.Find((await LeadFormChoices.LoadAsync(data, ct)).Events, input.EventId);
+            evt = LeadFormChoices.Find(await LeadFormChoices.EventsAsync(data, ct), input.EventId);
             if (evt is null) return BadChoice(F.Event, nameof(input.EventId));
         }
 
@@ -82,6 +87,7 @@ public partial class FormsController
             Culture = Cultures.CurrentName,
             CreatedAt = now,
         });
+        if (!Admit(nameof(ForumRegistration))) return Full();
         await data.SaveChangesAsync(ct);
         return Success(MessageKeys.ForumRegistrationSuccess);
     }
@@ -157,6 +163,7 @@ public partial class FormsController
             row.Pitch = LeadText.Optional(input.Pitch);
         }
 
+        if (!Admit(nameof(Join))) return Full();
         data.NetworkApplications.Add(row);
         await data.SaveChangesAsync(HttpContext.RequestAborted);
         return Success(MessageKeys.JoinSuccess);
@@ -180,6 +187,7 @@ public partial class FormsController
             if (package is null) return BadChoice(F.Package, nameof(input.PackageId));
         }
 
+        if (!Admit(nameof(Sponsorship))) return Full();
         var now = DateTime.UtcNow;
         data.SponsorshipEnquiries.Add(new SponsorshipEnquiry
         {
@@ -217,6 +225,7 @@ public partial class FormsController
             if (opportunity is null) return BadChoice(F.Opportunity, nameof(input.OpportunityId));
         }
 
+        if (!Admit(nameof(OpportunityInterest))) return Full();
         var now = DateTime.UtcNow;
         data.OpportunityInterests.Add(new OpportunityInterest
         {

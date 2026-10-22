@@ -7,8 +7,31 @@ namespace InnovestHolding.Models;
 // time (an option edit or delete never rewrites a lead). Culture, ConsentAt, IsRead and CreatedAt are written by the
 // server, never bound from a request.
 
+/// <summary>The admin's workflow state of a lead. Stored as a number; the labels come from the resx.</summary>
+public enum LeadStatus
+{
+    New = 0,
+    Contacted = 1,
+    Closed = 2,
+}
+
+/// <summary>What the admin inbox reads and changes on every lead table.</summary>
+public interface ILead
+{
+    int Id { get; }
+    bool IsRead { get; set; }
+    LeadStatus Status { get; set; }
+    string? AdminNote { get; set; }
+}
+
+public static class LeadLimits
+{
+    /// <summary>The internal note's column length.</summary>
+    public const int NoteMax = 2000;
+}
+
 /// <summary>A «Join the Network» application, as an investor or as a startup.</summary>
-public class NetworkApplication
+public class NetworkApplication : ILead
 {
     public const string Investor = "investor";
     public const string Startup = "startup";
@@ -72,12 +95,19 @@ public class NetworkApplication
 
     public bool IsRead { get; set; }
 
+    /// <summary>Where the admin is with this lead (default New); changed only from the admin inbox.</summary>
+    public LeadStatus Status { get; set; }
+
+    /// <summary>The admin's internal note (never shown on the public site).</summary>
+    [MaxLength(LeadLimits.NoteMax)]
+    public string? AdminNote { get; set; }
+
     /// <summary>UTC.</summary>
     public DateTime CreatedAt { get; set; }
 }
 
 /// <summary>A sponsorship enquiry for the Forum or the TV Program.</summary>
-public class SponsorshipEnquiry
+public class SponsorshipEnquiry : ILead
 {
     public const string Forum = "forum";
     public const string Tv = "tv";
@@ -116,6 +146,13 @@ public class SponsorshipEnquiry
 
     public bool IsRead { get; set; }
 
+    /// <summary>Where the admin is with this lead (default New); changed only from the admin inbox.</summary>
+    public LeadStatus Status { get; set; }
+
+    /// <summary>The admin's internal note (never shown on the public site).</summary>
+    [MaxLength(LeadLimits.NoteMax)]
+    public string? AdminNote { get; set; }
+
     /// <summary>UTC.</summary>
     public DateTime CreatedAt { get; set; }
 }
@@ -125,7 +162,7 @@ public class SponsorshipEnquiry
 /// opportunities in general (the form of the opportunities page); it names one opportunity once opportunities are
 /// published (no foreign key yet: the opportunities table arrives later).
 /// </summary>
-public class OpportunityInterest
+public class OpportunityInterest : ILead
 {
     public int Id { get; set; }
 
@@ -152,6 +189,13 @@ public class OpportunityInterest
     public string Culture { get; set; } = "ar";
 
     public bool IsRead { get; set; }
+
+    /// <summary>Where the admin is with this lead (default New); changed only from the admin inbox.</summary>
+    public LeadStatus Status { get; set; }
+
+    /// <summary>The admin's internal note (never shown on the public site).</summary>
+    [MaxLength(LeadLimits.NoteMax)]
+    public string? AdminNote { get; set; }
 
     /// <summary>UTC.</summary>
     public DateTime CreatedAt { get; set; }

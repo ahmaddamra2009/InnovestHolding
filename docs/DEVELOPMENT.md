@@ -255,6 +255,33 @@ aliases `/Home/Register` and `/Home/Contact`, kept for one release for pages cac
 global antiforgery filter and the honeypot; every URL of one action shares one rate-limit bucket. `robots.txt` disallows
 `/forms` and `/en/forms`. In views build the URL with `CultureUrls.Form("contact", english)`.
 
+### Adding a lead form (PR-C4)
+A lead form is a public POST under `/forms/*` that stores a person's data for the admin inbox. Existing ones:
+`/forms/forum-registration` (extends `Registration`, `Kind = forum`), `/forms/join` (`NetworkApplication`, investor|startup),
+`/forms/sponsorship` (`SponsorshipEnquiry`) and `/forms/opportunity-interest` (`OpportunityInterest`), each also under `/en/forms/...`.
+Conventions (all in `Controllers/FormsController.Leads.cs`, `FormsController` is `partial`):
+1. **Route:** exact attribute routes only, `[HttpPost("/forms/<name>")]` + `[HttpPost("/en/forms/<name>")]`; never `{id}`, never
+   a page URL. Build the action URL in views with `CultureUrls.Form("<name>", english)`.
+2. **Attributes on every action:** `[JsonFormEndpoint]` (the 429 handler answers JSON), `[EnableRateLimiting(RateLimitPolicies.PublicForm)]`
+   (one bucket per action, shared by both languages), `[RequestSizeLimit(InputLimits.PublicBodyBytes)]` (32 KB); antiforgery is the
+   global filter. Add the action to the route-pin/metadata test.
+3. **Input** in `ViewModels/Public/LeadInputs.cs`: derive from `LeadInputBase` (name, e-mail, phone, `[MustBeTrue]` consent, honeypot
+   `Website`); lengths mirror the columns; URLs `[HttpsUrl]`; nothing binds to an entity. Honeypot filled -> answer success and
+   write nothing. Choice fields are ids checked against the ACTIVE rows of their own `ContentItems` group (`FormOptions` groups
+   in `ContentItemGroups`, loaded by `Infrastructure/Forms/LeadForms.cs`) or an active entity; the row stores the Arabic text
+   (snapshot, cut to the column length). References to entities of another phase go through `ILeadReferences`
+   (`NoLeadReferences` knows none, so an id answers 400 until it is replaced in `Program.cs`).
+4. **Answer** JSON `{ success, message }` in the page language; a 400 carries `field` (main.js marks it `aria-invalid` and focuses it).
+   Store `Culture`, `ConsentAt`, `CreatedAt` (UTC). **Do not log any submitted value** (a test captures the logs and fails on PII).
+5. **Entity + migration:** a table (or columns) with `IsRead` and `CreatedAt` indexes; add the type to `LeadInbox`
+   (`Types`, `Query`, `UnreadAsync`), to `LeadsController` (`LoadAsync`, `ToggleRead`, `Delete`; the type must match the row's table) and add
+   the entity to the content-cache interceptor's `NotContent` list (a lead must not invalidate the site cache).
+6. **View:** a `LeadFormBlock { IsContent = false }` (it does not count as page content, so an otherwise empty page stays
+   `noindex`), rendered by `Views/Shared/Blocks/_LeadForm.cshtml` (labels above inputs, required marks, consent, honeypot).
+7. **Texts:** labels in `MessageKeys.Fields`/`Ui` + both resx files; editable texts as `forms`-group keys in `ContentKeys`; the
+   consent sentence is the key `forms_consent`. Ship seed rows in the migration, guarded (`WHERE NOT EXISTS` / unchanged
+   value), as in the pattern above.
+
 ### Brand: tokens and fonts
 Tokens are CSS variables on `:root` at the top of `wwwroot/css/style.css`: `--navy-deep #111145`, `--navy-brand #233082`,
 `--orange #F78610`, `--orange-ink #AD5600` (the orange for small text on a light background), `--cream #F4F1EA`. The old
@@ -373,3 +400,4 @@ The app and the tests were not run for this note.
 
 Verified on 2026-10-22 (PR-C2 sections) by reading the code in the `InnovestHolding-c2` worktree (branch `feature/4-media-detail-pages`, base C1, RE-RUN 1 uncommitted). The app and the tests were not run for this note.
 Verified on 2026-10-22 (PR-C3 sections) by reading the code at commit `705152e` in the `InnovestHolding-c3` worktree and grepping `migration-C3*.sql`. The app, the build and the tests were not run for this note.
+Verified on 2026-10-22 (PR-C4 sections) by reading the code at commit `a257d2e` in the `InnovestHolding-c4` worktree and grepping `migration-C4*.sql`. The app, the build and the tests were not run for this note.

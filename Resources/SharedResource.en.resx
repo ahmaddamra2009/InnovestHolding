@@ -305,4 +305,9 @@
   <data name="Ui_FormSubmitEnquiry" xml:space="preserve"><value>Send enquiry</value></data>
   <data name="Ui_FormSubmitInterest" xml:space="preserve"><value>Register my interest</value></data>
   <data name="Admin_LeadDeleted" xml:space="preserve"><value>The application was deleted</value></data>
+  <data name="Admin_LeadUpdated" xml:space="preserve"><value>The status and note were saved</value></data>
+  <data name="Admin_LeadStatusNew" xml:space="preserve"><value>New</value></data>
+  <data name="Admin_LeadStatusContacted" xml:space="preserve"><value>Contacted</value></data>
+  <data name="Admin_LeadStatusClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Field_AdminNote" xml:space="preserve"><value>Internal note</value></data>
 </root>

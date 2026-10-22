@@ -11,10 +11,13 @@ public sealed class LeadRow
     public int Id { get; init; }
     public string Name { get; init; } = "";
     public string Email { get; init; } = "";
+    public string? Phone { get; init; }
     /// <summary>The line that tells leads apart in the list (organisation, company, event, interest…).</summary>
     public string Summary { get; init; } = "";
     public string Culture { get; init; } = "";
     public bool IsRead { get; init; }
+    public LeadStatus Status { get; init; }
+    public string? Note { get; init; }
     public DateTime CreatedAt { get; init; }
 }
 
@@ -80,25 +83,25 @@ public static class LeadInbox
         {
             Type = kind, Id = r.Id, Name = r.FullName, Email = r.Email,
             Summary = r.EventTitle ?? r.Organization ?? r.Interest,
-            Culture = r.Culture, IsRead = r.IsRead, CreatedAt = r.CreatedAt,
+            Phone = r.Phone, Culture = r.Culture, IsRead = r.IsRead, Status = r.Status, Note = r.AdminNote, CreatedAt = r.CreatedAt,
         });
         IQueryable<LeadRow> Network(string kind) => db.NetworkApplications.Where(a => a.Kind == kind).Select(a => new LeadRow
         {
             Type = kind, Id = a.Id, Name = a.FullName, Email = a.Email,
             Summary = a.Organization ?? a.InvestorType ?? "",
-            Culture = a.Culture, IsRead = a.IsRead, CreatedAt = a.CreatedAt,
+            Phone = a.Phone, Culture = a.Culture, IsRead = a.IsRead, Status = a.Status, Note = a.AdminNote, CreatedAt = a.CreatedAt,
         });
         IQueryable<LeadRow> Sponsorships() => db.SponsorshipEnquiries.Select(s => new LeadRow
         {
             Type = Sponsorship, Id = s.Id, Name = s.ContactName, Email = s.Email,
             Summary = s.CompanyName,
-            Culture = s.Culture, IsRead = s.IsRead, CreatedAt = s.CreatedAt,
+            Phone = s.Phone, Culture = s.Culture, IsRead = s.IsRead, Status = s.Status, Note = s.AdminNote, CreatedAt = s.CreatedAt,
         });
         IQueryable<LeadRow> Interests() => db.OpportunityInterests.Select(i => new LeadRow
         {
             Type = Interest, Id = i.Id, Name = i.FullName, Email = i.Email,
             Summary = i.OpportunityTitle ?? "",
-            Culture = i.Culture, IsRead = i.IsRead, CreatedAt = i.CreatedAt,
+            Phone = i.Phone, Culture = i.Culture, IsRead = i.IsRead, Status = i.Status, Note = i.AdminNote, CreatedAt = i.CreatedAt,
         });
 
         return type switch
@@ -112,16 +115,17 @@ public static class LeadInbox
         };
     }
 
+    /// <summary>Unread rows per type in one statement; the kind values travel as parameters (the model's constants).</summary>
     public static Task<UnreadCounts> UnreadAsync(AppDbContext db, CancellationToken ct = default) =>
         db.Database.SqlQueryRaw<UnreadCounts>(
             """
             SELECT
-              (SELECT COUNT(*) FROM Registrations WHERE IsRead = 0 AND Kind = 'quick') AS Quick,
-              (SELECT COUNT(*) FROM Registrations WHERE IsRead = 0 AND Kind = 'forum') AS Forum,
-              (SELECT COUNT(*) FROM NetworkApplications WHERE IsRead = 0 AND Kind = 'investor') AS Investor,
-              (SELECT COUNT(*) FROM NetworkApplications WHERE IsRead = 0 AND Kind = 'startup') AS Startup,
+              (SELECT COUNT(*) FROM Registrations WHERE IsRead = 0 AND Kind = {0}) AS Quick,
+              (SELECT COUNT(*) FROM Registrations WHERE IsRead = 0 AND Kind = {1}) AS Forum,
+              (SELECT COUNT(*) FROM NetworkApplications WHERE IsRead = 0 AND Kind = {2}) AS Investor,
+              (SELECT COUNT(*) FROM NetworkApplications WHERE IsRead = 0 AND Kind = {3}) AS Startup,
               (SELECT COUNT(*) FROM SponsorshipEnquiries WHERE IsRead = 0) AS Sponsorship,
               (SELECT COUNT(*) FROM OpportunityInterests WHERE IsRead = 0) AS Interest,
               (SELECT COUNT(*) FROM ContactMessages WHERE IsRead = 0) AS Messages
-            """).SingleAsync(ct);
+            """, Quick, Forum, Investor, Startup).SingleAsync(ct);
 }
