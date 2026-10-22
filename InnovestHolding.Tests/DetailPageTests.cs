@@ -142,6 +142,46 @@ public class DetailPageTests(TestAppFactory f)
         Assert.Equal("noindex, nofollow", string.Join(",", r.Headers.GetValues("X-Robots-Tag")));
     }
 
+    [Theory] // Y4: the old link of an UNPUBLISHED item is a 404, never a 301 that would reveal the item's new address
+    [InlineData("news")]
+    [InlineData("event")]
+    public async Task Old_slug_of_an_unpublished_item_is_404(string kind)
+    {
+        var oldSlug = Unique("gone-old").ToLowerInvariant();
+        var newSlug = Unique("gone-new").ToLowerInvariant();
+        var news = kind == "news";
+        var id = news
+            ? await AddAsync(NewsItem(newSlug, english: true, active: false))
+            : await AddAsync(new Event
+            {
+                Slug = newSlug, TitleAr = "فعالية مخفية", TitleEn = "Hidden", SummaryEn = "Summary", DescriptionAr = "وصف",
+                EventDay = 1, EventMonthAr = "مايو", IsActive = false, RegistrationOpen = true,
+            });
+        await f.DbAsync(db =>
+        {
+            db.SlugRedirects.Add(new SlugRedirect { EntityType = news ? SlugTypes.News : SlugTypes.Event, OldSlug = oldSlug, EntityId = id });
+            return db.SaveChangesAsync();
+        });
+        var prefix = news ? "/news/" : "/forum/events/";
+        try
+        {
+            foreach (var path in new[] { prefix + oldSlug, "/en" + prefix + oldSlug })
+            {
+                var r = await f.NewClient().GetAsync(path);
+                Assert.Equal(HttpStatusCode.NotFound, r.StatusCode);
+            }
+            // The normaliser's spelling fix (capitals, trailing slash) does not resolve it to the new slug either.
+            var spelled = await f.NewClient().GetAsync(prefix.ToUpperInvariant() + oldSlug.ToUpperInvariant() + "/");
+            Assert.Equal(HttpStatusCode.MovedPermanently, spelled.StatusCode);
+            Assert.Equal(prefix + oldSlug, spelled.Headers.Location!.OriginalString);
+            Assert.DoesNotContain(newSlug, spelled.Headers.Location!.OriginalString);
+        }
+        finally
+        {
+            if (news) await RemoveAsync<News>(id); else await RemoveAsync<Event>(id);
+        }
+    }
+
     [Theory] // an unpublished news item or event is a 404 in both languages and absent from the sitemap
     [InlineData("news")]
     [InlineData("event")]
