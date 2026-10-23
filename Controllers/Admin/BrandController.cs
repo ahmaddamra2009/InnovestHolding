@@ -53,12 +53,6 @@ public class BrandController : AdminControllerBase
         };
     }
 
-    private async Task<MediaFile?> CurrentAsync(string key)
-    {
-        var fileKey = await _db.SiteContents.AsNoTracking().Where(c => c.SectionKey == key).Select(c => c.ContentAr).FirstOrDefaultAsync();
-        return string.IsNullOrEmpty(fileKey) ? null : await _db.MediaFiles.FirstOrDefaultAsync(m => m.FileKey == fileKey);
-    }
-
     /// <summary>
     /// Upload, replace or remove one brand image. A refused file re-renders the screen with the reason under that slot
     /// (status 200) and writes nothing.
@@ -72,52 +66,15 @@ public class BrandController : AdminControllerBase
             TempData["Error"] = slot is null ? L(MessageKeys.InvalidValueNoField) : JoinErrors();
             return RedirectToAction(nameof(Index));
         }
-        if (!slot.HasAlt) input.ImageAltAr = input.ImageAltEn = null;
-
-        if (input.HasUpload)
+        var (result, refusal) = await SaveSlotImageAsync(_db, slot, input);
+        if (result == SlotSave.Refused) return View(ViewPath, await PageAsync(slot.Key, refusal));
+        TempData["Success"] = result switch
         {
-            var refusal = await CheckSlotAsync(slot, input.Image!);
-            if (refusal is not null) return View(ViewPath, await PageAsync(slot.Key, refusal));
-        }
-
-        var current = await CurrentAsync(slot.Key);
-        var uploaded = await UploadImageAsync(input, slot.Use);
-        if (!ModelState.IsValid) return View(ViewPath, await PageAsync(slot.Key, JoinErrors()));
-
-        var row = await _db.SiteContents.FirstOrDefaultAsync(c => c.SectionKey == slot.Key);
-        if (row is null)
-        {
-            row = new SiteContent { SectionKey = slot.Key };
-            _db.SiteContents.Add(row);
-        }
-        var leaving = ApplyImage(_db, current, uploaded, input, m => row.ContentAr = m?.FileKey ?? "");
-        row.UpdatedAt = DateTime.UtcNow;
-        // Nothing uploaded: no row (the bundled file is used).
-        if (string.IsNullOrEmpty(row.ContentAr))
-        {
-            if (_db.Entry(row).State == EntityState.Added) _db.Entry(row).State = EntityState.Detached;
-            else _db.SiteContents.Remove(row);
-        }
-        await SaveWithImageAsync(_db, uploaded, leaving);
-        TempData["Success"] = uploaded is not null
-            ? L(MessageKeys.Admin.BrandSaved, slot.Label)
-            : input.RemoveImage && current is not null
-                ? L(MessageKeys.Admin.BrandReverted, slot.Label)
-                : L(MessageKeys.Admin.PhotoSaved);
+            SlotSave.Uploaded => L(MessageKeys.Admin.BrandSaved, slot.Label),
+            SlotSave.Removed => L(MessageKeys.Admin.BrandReverted, slot.Label),
+            _ => L(MessageKeys.Admin.PhotoSaved),
+        };
         return Redirect(Url.Action(nameof(Index))! + "#brand-" + slot.Key);
-    }
-
-    /// <summary>
-    /// The slot's rules: type and length from the request first (an oversized or wrongly typed file is never read), then
-    /// the bytes (at most the slot's cap). Null = acceptable; the shared pipeline then checks and stores it.
-    /// </summary>
-    private async Task<string?> CheckSlotAsync(BrandImage slot, IFormFile file)
-    {
-        if (BrandImages.CheckUpload(slot, file.FileName, file.ContentType, file.Length) is { } early) return early;
-        await using var stream = file.OpenReadStream();
-        var buffer = new byte[file.Length];
-        var read = await stream.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false, HttpContext.RequestAborted);
-        return BrandImages.Check(slot, buffer.AsSpan(0, read), file.FileName, file.ContentType);
     }
 
     /// <summary>The mobile browser bar colour: #RRGGBB, or empty for the default.</summary>

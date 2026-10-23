@@ -130,8 +130,8 @@ public class AdminAuthTests(TestAppFactory f)
             .ToList();
 
         // An empty scan cannot pass: 15 + Pages, ContentItems, PartnerGroups + Speakers, TvGuests, TvEpisodes,
-        // Opportunities, SponsorshipPackages + Leads + (C5) SiteTexts, Brand, PageSections.
-        Assert.Equal(27, controllers.Count);
+        // Opportunities, SponsorshipPackages + Leads + (C5) SiteTexts, Brand, PageSections + (F9) ForumIdentity.
+        Assert.Equal(28, controllers.Count);
         Assert.All(controllers, t => Assert.True(typeof(AdminControllerBase).IsAssignableFrom(t), t.Name));
 
         var authorize = typeof(AdminControllerBase).GetCustomAttribute<AuthorizeAttribute>();

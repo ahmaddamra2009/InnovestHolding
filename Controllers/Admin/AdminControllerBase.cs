@@ -132,6 +132,58 @@ public abstract class AdminControllerBase : Controller
         Media.DeleteFiles(leaving);
     }
 
+    // ── Slot images (Admin/Brand, Admin/ForumIdentity): a SiteContents key holding a MediaFiles FileKey ──
+
+    protected enum SlotSave { Refused, Uploaded, Removed, Updated }
+
+    /// <summary>
+    /// Uploads, replaces or removes the image of one slot, or updates its alt texts: the slot's own rules first
+    /// (<see cref="Infrastructure.Content.BrandImages.CheckUpload"/> before a byte is read, then
+    /// <see cref="Infrastructure.Content.BrandImages.Check"/>), then the shared pipeline (MediaStore) under the slot's caps.
+    /// A replacement stores a new random key; nothing uploaded = no row (the bundled default is used). Refused → nothing
+    /// is written and the reason is returned.
+    /// </summary>
+    protected async Task<(SlotSave Result, string? Refusal)> SaveSlotImageAsync(AppDbContext db,
+        Infrastructure.Content.BrandImage slot, BrandImageInput input)
+    {
+        if (!slot.HasAlt) input.ImageAltAr = input.ImageAltEn = null;
+        if (input.HasUpload)
+        {
+            var file = input.Image!;
+            var refusal = Infrastructure.Content.BrandImages.CheckUpload(slot, file.FileName, file.ContentType, file.Length);
+            if (refusal is null)
+            {
+                await using var stream = file.OpenReadStream();
+                var buffer = new byte[file.Length];
+                var read = await stream.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false, HttpContext.RequestAborted);
+                refusal = Infrastructure.Content.BrandImages.Check(slot, buffer.AsSpan(0, read), file.FileName, file.ContentType);
+            }
+            if (refusal is not null) return (SlotSave.Refused, refusal);
+        }
+
+        var fileKey = await db.SiteContents.AsNoTracking().Where(c => c.SectionKey == slot.Key).Select(c => c.ContentAr).FirstOrDefaultAsync();
+        var current = string.IsNullOrEmpty(fileKey) ? null : await db.MediaFiles.FirstOrDefaultAsync(m => m.FileKey == fileKey);
+        var uploaded = await UploadImageAsync(input, slot.Use);
+        if (!ModelState.IsValid) return (SlotSave.Refused, JoinErrors());
+
+        var row = await db.SiteContents.FirstOrDefaultAsync(c => c.SectionKey == slot.Key);
+        if (row is null)
+        {
+            row = new SiteContent { SectionKey = slot.Key };
+            db.SiteContents.Add(row);
+        }
+        var leaving = ApplyImage(db, current, uploaded, input, m => row.ContentAr = m?.FileKey ?? "");
+        row.UpdatedAt = DateTime.UtcNow;
+        // Nothing uploaded: no row (the bundled file is used).
+        if (string.IsNullOrEmpty(row.ContentAr))
+        {
+            if (db.Entry(row).State == EntityState.Added) db.Entry(row).State = EntityState.Detached;
+            else db.SiteContents.Remove(row);
+        }
+        await SaveWithImageAsync(db, uploaded, leaving);
+        return (uploaded is not null ? SlotSave.Uploaded : input.RemoveImage && current is not null ? SlotSave.Removed : SlotSave.Updated, null);
+    }
+
     // ── Slugs (detail pages) ──
 
     /// <summary>

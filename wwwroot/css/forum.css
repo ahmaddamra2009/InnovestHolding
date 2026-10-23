@@ -1,0 +1,121 @@
+/* ==========================================
+   FORUM IDENTITY — the forum's pages only (/forum…, /en/forum…: body.theme-forum, decided by the server from the
+   route table). Served inside /forum-theme.css, which appends the admin's values (Admin › هوية المنتدى) as a later
+   `body.theme-forum { --forum-…: … }` rule, so every --forum-* value below is a DEFAULT the admin can override.
+   Palette: Layla, FORUM-IDENTITY.md (event profile PDF). Keep the defaults equal to ForumIdentity.Colors (a test checks).
+   Scope: the header stays the company's navy bar (only its accent turns red and the forum sub-brand is added); the
+   footer stays the company's; the content (<main>) takes the forum palette.
+   ========================================== */
+
+.theme-forum {
+  --forum-primary: #d21e33;
+  --forum-primary-rgb: 210, 30, 51;
+  --forum-primary-deep: #a11c34;
+  --forum-primary-deep-rgb: 161, 28, 52;
+  --forum-hero-start: #d51d33;
+  --forum-hero-start-rgb: 213, 29, 51;
+  --forum-gold: #bd932e;
+  --forum-gold-rgb: 189, 147, 46;
+  --forum-gold-ink: #8c6510;
+  --forum-gold-ink-rgb: 140, 101, 16;
+  --forum-link: #a11c34;
+  --forum-link-rgb: 161, 28, 52;
+  --forum-surface: #f1e8d2;
+  --forum-surface-rgb: 241, 232, 210;
+  --forum-ink: #252626;
+  --forum-ink-rgb: 37, 38, 38;
+  --forum-text: #4b4c4c;
+  --forum-text-rgb: 75, 76, 76;
+  --forum-on-primary: #ffffff;
+  --forum-on-primary-rgb: 255, 255, 255;
+}
+
+/* ---- Content: the company tokens re-pointed to the forum palette ---- */
+.theme-forum main {
+  --accent: var(--forum-primary);
+  --accent-rgb: var(--forum-primary-rgb);
+  --accent-light: var(--forum-gold);
+  --accent-lighter: var(--forum-gold);
+  --accent-dark: var(--forum-primary-deep);
+  --accent-ink: var(--forum-gold-ink);
+  --navy-night: var(--forum-primary-deep);
+  --navy-deep: var(--forum-primary-deep);
+  --navy-mid: var(--forum-primary);
+  --navy-brand: var(--forum-link);
+  --navy: var(--forum-primary-deep);
+  --navy-light: var(--forum-primary);
+  --navy-lighter: var(--forum-link);
+  --navy-dark: var(--forum-primary-deep);
+  --cream: var(--forum-surface);
+  --off-white: var(--forum-surface);
+  --text-dark: var(--forum-ink);
+  --text-body: var(--forum-text);
+  --text-light: var(--forum-on-primary);
+  --text-on-dark: var(--forum-on-primary);
+  --text-on-dark-muted: var(--forum-on-primary);
+  --shadow-accent: 0 12px 32px rgba(var(--forum-primary-rgb), 0.28);
+  --shadow-card: 0 10px 30px rgba(var(--forum-gold-ink-rgb), 0.12);
+}
+
+/* Headings red on light sections (large text: 3:1 rule, checked on save). */
+.theme-forum main .page-section:not(.is-dark) .block-title { color: var(--forum-primary); }
+
+/* ---- Title band: red gradient + gold open ring (CSS only) instead of the navy band and orange triangles ---- */
+.theme-forum .page-hero {
+  background: linear-gradient(135deg, var(--forum-hero-start) 0%, var(--forum-primary-deep) 100%);
+  color: var(--forum-on-primary);
+}
+.theme-forum .page-hero .hero-tri { display: none; }
+.theme-forum .page-hero::after {
+  content: ''; position: absolute; z-index: 1; pointer-events: none;
+  width: 340px; height: 340px; inset-inline-end: -110px; top: -150px;
+  border: 28px solid var(--forum-gold); border-radius: 50%; opacity: .95;
+}
+.theme-forum .breadcrumb a:hover { color: var(--forum-surface); }
+
+/* ---- Unit tabs ---- */
+.theme-forum .unit-tabs a:hover { color: var(--forum-gold-ink); }
+.theme-forum .unit-tabs a.active { color: var(--forum-ink); border-bottom-color: var(--forum-primary); }
+
+/* ---- Buttons: primary = red pill with light text; secondary = gold outline ---- */
+.theme-forum :is(.btn-accent, .nav-cta, .form-submit-btn) {
+  background: var(--forum-primary); color: var(--forum-on-primary); border-radius: var(--radius-full);
+  box-shadow: 0 10px 28px rgba(var(--forum-primary-rgb), 0.28);
+}
+.theme-forum :is(.btn-accent, .nav-cta, .form-submit-btn):hover {
+  background: var(--forum-primary-deep); color: var(--forum-on-primary);
+  box-shadow: 0 12px 32px rgba(var(--forum-primary-rgb), 0.35);
+}
+.theme-forum main .btn { border-radius: var(--radius-full); }
+.theme-forum main .btn-outline { color: var(--forum-gold-ink); border-color: var(--forum-gold); }
+.theme-forum main .btn-outline:hover { background: var(--forum-gold); color: var(--forum-ink); }
+.theme-forum main .btn-outline-light:hover { border-color: var(--forum-gold); }
+
+/* ---- Header: the company bar, with a red accent and the forum sub-brand ---- */
+.theme-forum #main-header { --accent: var(--forum-primary); --accent-rgb: var(--forum-primary-rgb); border-bottom-color: rgba(var(--forum-primary-rgb), 0.35); }
+.forum-subbrand {
+  display: inline-flex; align-items: center; gap: 10px; flex-shrink: 1; min-width: 0;
+  margin-inline-start: 32px; margin-inline-end: auto;
+  color: var(--text-light); font-weight: 800; font-size: 1rem; line-height: 1.25;
+}
+.forum-subbrand:hover { color: var(--forum-surface); }
+/* The free space is shared by the sub-brand and the menu, so the menu stays centred as on the company pages. */
+.theme-forum .nav-container > .nav-links { margin-inline-end: auto; }
+.forum-symbol { height: 34px; width: auto; flex-shrink: 0; }
+.forum-logo-img { height: 44px; width: auto; max-width: 220px; object-fit: contain; }
+.forum-wordmark { white-space: nowrap; }
+
+@media (max-width: 1100px) {
+  .forum-wordmark { white-space: normal; max-width: 9em; font-size: .9rem; }
+}
+@media (max-width: 600px) {
+  .theme-forum .logo-img { height: 32px; }
+  .forum-subbrand { margin-inline-start: 24px; gap: 6px; }
+  .forum-symbol { height: 26px; }
+  .forum-logo-img { height: 32px; max-width: 34vw; }
+  .forum-wordmark { font-size: .78rem; max-width: 7.5em; }
+  .theme-forum .page-hero::after { width: 200px; height: 200px; border-width: 18px; top: -110px; inset-inline-end: -90px; opacity: .45; }
+}
+@media (max-width: 380px) {
+  .forum-wordmark { display: none; }
+}

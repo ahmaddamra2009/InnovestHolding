@@ -72,7 +72,17 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
             Socials = Socials(),
             Brand = new BrandImagesVm(logo, s.Image(SiteImages.HeroImage), LogoAlt(logo)),
             Footer = FooterBuilder.Build(this),
+            Forum = ForumIdentity.IsForumPage(currentKey) ? ForumBrand() : null,
         };
+    }
+
+    /// <summary>The forum sub-brand of the header (forum pages).</summary>
+    public ForumBrandVm ForumBrand()
+    {
+        var logo = s.Image(ForumIdentity.LogoOnDark);
+        var name = Title(PageKeys.Forum);
+        var alt = logo is null ? LText.Empty : Bilingual.Pick(logo.AltAr, logo.AltEn, english);
+        return new ForumBrandVm(Url(PageKeys.Forum), name, logo, alt.IsEmpty ? name : alt);
     }
 
     /// <summary>The logo's alt: the uploaded logo's alt text in the page language, else the site name (as before C5).</summary>
