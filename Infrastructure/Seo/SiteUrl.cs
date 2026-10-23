@@ -44,9 +44,11 @@ public static class SiteUrl
     /// <summary>
     /// A Unicode format character (category Cf: bidi overrides such as U+202E, zero-width U+200B/U+200D, the BOM, soft
     /// hyphen…). Invisible or reordering, so a link could read differently from where it goes (Yasser I-C5F-1).
+    /// Checked per code point (Rune), not per UTF-16 unit: a supplementary Cf character such as the tag characters
+    /// U+E0001–U+E007F or U+1BCA0–U+1BCA3 is a surrogate pair whose halves are category Surrogate (Yasser L-C5DF-1).
     /// </summary>
     public static bool HasFormatChar(string value) =>
-        value.Any(c => char.GetUnicodeCategory(c) == System.Globalization.UnicodeCategory.Format);
+        value.EnumerateRunes().Any(r => System.Text.Rune.GetUnicodeCategory(r) == System.Globalization.UnicodeCategory.Format);
 
     /// <summary>An absolute https URL (or empty, which is allowed by the caller). No javascript:, no //host, no control
     /// or format (Cf) character anywhere.</summary>

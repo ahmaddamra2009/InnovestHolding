@@ -491,4 +491,27 @@ public class PublicFixC5Tests(TestAppFactory f)
         Assert.DoesNotContain("wrap", rule);
         Assert.Contains("gap: 10px;", rule); // 7 icons = 7×40 + 6×10 = 340px ≤ 375 − 2×16 (container padding): one row
     }
+
+    // ── Nader C5-3b: the same row in the contact block (/contact and the home contact section) ──
+
+    [Fact]
+    public void Contact_social_icon_row_wraps_and_does_not_widen_the_grid()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "InnovestHolding.csproj"))) dir = dir.Parent;
+        Assert.NotNull(dir);
+        var css = File.ReadAllText(Path.Combine(dir!.FullName, "wwwroot", "css", "pages.css")).Replace("\r\n", "\n");
+        // Only in the one-column phone layout (<= 576px), like the footer: up to 7 icons keep today's single row.
+        const string phoneStart = "@media (max-width: 576px) {\n  .contact-social .social-links { flex-wrap: wrap; }\n  .contact-grid > .contact-info { min-width: 0; }\n}";
+        Assert.Contains(phoneStart, css);
+        var outside = css.Replace(phoneStart, "");
+        Assert.DoesNotContain(".contact-social .social-links", outside); // no unconditional rule: wider screens unchanged
+        Assert.DoesNotContain(".contact-info { min-width", outside);
+        // The selector matches the markup: .contact-info is a direct child of .contact-grid and holds the social row.
+        var view = File.ReadAllText(Path.Combine(dir.FullName, "Views", "Shared", "Blocks", "_ContactBlock.cshtml")).Replace("\r\n", "\n");
+        Assert.Matches("<div class=\"contact-grid\">\n  <div class=\"contact-info[ \"]", view);
+        var info = view[view.IndexOf("<div class=\"contact-info", StringComparison.Ordinal)..view.IndexOf("<div class=\"contact-form-wrap", StringComparison.Ordinal)];
+        Assert.Contains("<div class=\"contact-social\">", info);
+        Assert.Contains("<div class=\"social-links\">", info);
+    }
 }

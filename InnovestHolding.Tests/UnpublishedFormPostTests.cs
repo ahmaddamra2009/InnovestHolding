@@ -93,7 +93,7 @@ public class PageEditSectionsCardTests(TestAppFactory f)
         // The card comes after the page form closes (no nested forms).
         var pageFormEnd = about.IndexOf("</form>", about.IndexOf("معاينة الإنجليزية", StringComparison.Ordinal), StringComparison.Ordinal);
         Assert.True(pageFormEnd > 0 && about.IndexOf("id=\"blocks\"", StringComparison.Ordinal) > pageFormEnd);
-        Assert.Contains("href=\"/Admin/PageSections\"", about); // sidebar «أقسام الصفحة الرئيسية»
+        Assert.Contains("href=\"/Admin/PageSections\"", about); // sidebar «أقسام الصفحات»
 
         var privacy = await client.GetStringAsync("/Admin/Pages/Edit/privacy"); // no registry sections
         Assert.DoesNotContain("id=\"blocks\"", privacy);

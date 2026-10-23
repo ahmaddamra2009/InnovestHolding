@@ -128,6 +128,58 @@ public class C5FixAdminTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/Admin/PageSections/Toggle/tv", Form(ExtractToken(tvEdit), ("section", "units")))).StatusCode);
     }
 
+    // ── Hassan D3: Toggle counts what the page renders (registry rows; a fixed section is always visible) ──
+
+    private Task SetVisibleAsync(string page, string section, bool visible) => f.DbAsync(async db =>
+    {
+        (await db.PageSections.SingleAsync(r => r.PageKey == page && r.SectionKey == section)).IsVisible = visible;
+        return await db.SaveChangesAsync();
+    });
+
+    private Task<bool> IsVisibleAsync(string page, string section) =>
+        f.DbAsync(db => db.PageSections.Where(r => r.PageKey == page && r.SectionKey == section).Select(r => r.IsVisible).SingleAsync());
+
+    [Fact]
+    public async Task Toggle_counts_rendered_sections_not_stored_rows()
+    {
+        var client = await f.SignedInClientAsync();
+        const string stray = "nc_d3_stray";
+        await WithAllSectionsRestoredAsync(async () =>
+        {
+            try
+            {
+                // A: a stored row that is not in the registry (renders nothing) does not count. investor_services hidden,
+                // join_cta the last rendered section → hiding it is refused although two stored rows are "visible".
+                var page = PageKeys.NetworkInvestors;
+                await SetVisibleAsync(page, "investor_services", false);
+                await f.DbAsync(async db =>
+                {
+                    db.PageSections.Add(new PageSection { PageKey = page, SectionKey = stray, IsVisible = true, SortOrder = 999 });
+                    return await db.SaveChangesAsync();
+                });
+                var token = await client.GetTokenAsync($"/Admin/PageSections/Index/{page}");
+                Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync($"/Admin/PageSections/Toggle/{page}", Form(token, ("section", "join_cta")))).StatusCode);
+                Assert.True(await IsVisibleAsync(page, "join_cta"));
+
+                // B: a fixed section stored hidden still renders, so it counts: the last hideable section CAN be hidden.
+                page = PageKeys.Contact;
+                await SetVisibleAsync(page, "contact", false);
+                Assert.True(await IsVisibleAsync(page, "faq"));
+                token = await client.GetTokenAsync($"/Admin/PageSections/Index/{page}");
+                Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync($"/Admin/PageSections/Toggle/{page}", Form(token, ("section", "faq")))).StatusCode);
+                Assert.False(await IsVisibleAsync(page, "faq"));
+            }
+            finally
+            {
+                await f.DbAsync(async db =>
+                {
+                    db.PageSections.RemoveRange(db.PageSections.Where(r => r.SectionKey == stray));
+                    return await db.SaveChangesAsync();
+                });
+            }
+        });
+    }
+
     [Fact]
     public async Task The_last_visible_section_shows_its_state_without_a_switch()
     {
@@ -285,7 +337,9 @@ public class C5FixAdminTests(TestAppFactory f)
 
     // ── I-C5F-1: no Unicode format (Cf) character anywhere in a link ──
 
-    public static readonly TheoryData<string> FormatChars = ["‮", "‪", "⁦", "​", "‌", "‍", "‎", "‏", "﻿", "­", "؜"];
+    // The last two are supplementary-plane Cf characters (surrogate pairs): TAG LATIN CAPITAL LETTER A and
+    // SHORTHAND FORMAT LETTER OVERLAP — refused per code point, not per UTF-16 unit (Yasser L-C5DF-1).
+    public static readonly TheoryData<string> FormatChars = ["‮", "‪", "⁦", "​", "‌", "‍", "‎", "‏", "﻿", "­", "؜", "\U000E0041", "\U0001BCA0"];
 
     [Theory]
     [MemberData(nameof(FormatChars))]
@@ -354,6 +408,15 @@ public class C5FixAdminTests(TestAppFactory f)
         Assert.Matches("href=\"/Admin/PageSections\"[^>]*>[\\s\\S]{0,400}?أقسام الصفحات", html);   // the sidebar entry
         var other = Decode(await (await client.GetAsync("/Admin/PageSections/Index/forum")).Content.ReadAsStringAsync());
         Assert.Contains("<span class=\"admin-card-title\">أقسام الصفحات: ", other);
+
+        // The hints that point to that screen use its current name (the separate Site-texts card «عناوين أقسام الصفحة
+        // الرئيسية» is another screen and keeps its name).
+        foreach (var path in new[] { "/Admin/Pages/Edit/home", "/Admin/Stats" })
+        {
+            var hint = Decode(await (await client.GetAsync(path)).Content.ReadAsStringAsync());
+            Assert.Contains("«أقسام الصفحات»", hint);
+            Assert.DoesNotContain("أقسام الصفحة الرئيسية", hint);
+        }
     }
 
     [Fact]
