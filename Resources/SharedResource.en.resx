@@ -233,6 +233,12 @@
   <data name="Ui_SponsorshipPackages" xml:space="preserve"><value>Sponsorship packages</value></data>
   <data name="Ui_ProfilesAria" xml:space="preserve"><value>{0} profiles</value></data>
   <data name="Admin_SectorInUse" xml:space="preserve"><value>This sector is used by an investment opportunity — deactivate it instead of deleting it.</value></data>
+  <data name="Admin_SiteTextsSaved" xml:space="preserve"><value>The site texts were saved</value></data>
+  <data name="Admin_SiteTextReset" xml:space="preserve"><value>The text is back to its default</value></data>
+  <data name="Admin_SiteTextGroupReset" xml:space="preserve"><value>Every text of the group is back to its default</value></data>
+  <data name="Admin_SiteTextPlaceholders" xml:space="preserve"><value>"{0}" ({1}): the text must contain {2} as the default does, and nothing else between {{ }}</value></data>
+  <data name="Admin_SiteTextMarkup" xml:space="preserve"><value>"{0}" ({1}): links and tags (and javascript: or data:) are not allowed in this field</value></data>
+  <data name="Admin_SiteTextFormatSpec" xml:space="preserve"><value>"{0}" ({1}): write the placeholders exactly as they are, e.g. {{0}}, with no format or width after the number (such as {{0:…}} or {{0,…}})</value></data>
   <data name="Field_JobTitle" xml:space="preserve"><value>Role</value></data>
   <data name="Field_JobTitleEn" xml:space="preserve"><value>Role (English)</value></data>
   <data name="Field_Organization" xml:space="preserve"><value>Organization</value></data>

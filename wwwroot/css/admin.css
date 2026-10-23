@@ -302,3 +302,10 @@ select.form-control { cursor: pointer; }
 .icon-picker-option:has(input:focus-visible) { outline: 2px solid var(--admin-navy); outline-offset: 2px; }
 .icon-picker-none { font-size: 1.2rem; line-height: 24px; }
 .icon-picker-label { font-size: 0.75rem; color: var(--admin-text-muted); }
+
+/* Admin › رسائل وأزرار الموقع (SiteTexts) */
+.site-text { padding-block: 12px; border-block-end: 1px solid var(--admin-border); }
+.site-text:last-child { border-block-end: 0; }
+.site-text-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 8px; }
+.site-text-head code { font-size: 0.72rem; }
+@media (max-width: 768px) { .site-text .btn-sm { width: 100%; } }

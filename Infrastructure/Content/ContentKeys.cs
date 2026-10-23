@@ -50,7 +50,8 @@ public sealed record ContentKey(
 /// Registry of every SiteContents key the site reads. The admin editor is generated from it (only these keys can be
 /// saved — no over-posting); the migrations AddBilingualContent and ApplyCompanyProfile insert every one of them.
 /// Rows that are no longer read (seo_title, seo_description — the home page's SEO is in Pages since the multi-page
-/// site; footer_platforms_title) stay in the database untouched but are not listed here.
+/// site; footer_platforms_title; about_years and about_years_label — the old "years of experience" badge, which no page
+/// shows since the company-profile redesign) stay in the database untouched but are not listed here.
 /// </summary>
 public static class ContentKeys
 {
@@ -129,8 +130,6 @@ public static class ContentKeys
         new("about_text_1", "about", "النص الأول", Multiline: true),
         new("about_text_2", "about", "النص الثاني", Multiline: true),
         new("tagline", "about", "الشعار تحت الشعار في الصورة", 200),
-        new("about_years", "about", "سنوات الخبرة", 50, Neutral: true),
-        new("about_years_label", "about", "نص شارة الخبرة (كل سطر في سطر)", 200, ContentFormat.Lines, Multiline: true),
         new("vision_title", "about", "عنوان الرؤية", 100),
         new("vision_text", "about", "نص الرؤية", 1000, Multiline: true),
         new("mission_title", "about", "عنوان الرسالة", 100),

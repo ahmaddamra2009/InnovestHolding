@@ -238,6 +238,16 @@ public static class MessageKeys
         public const string ImageHintGeneral = "Admin_ImageHintGeneral";
         public const string ImageHintLogo = "Admin_ImageHintLogo";
         public const string SectorInUse = "Admin_SectorInUse";
+        // Admin › رسائل وأزرار الموقع (Infrastructure/Content/PublicTexts).
+        public const string SiteTextsSaved = "Admin_SiteTextsSaved";
+        public const string SiteTextReset = "Admin_SiteTextReset";
+        public const string SiteTextGroupReset = "Admin_SiteTextGroupReset";
+        /// <summary>{0} = the text, {1} = the language, {2} = the placeholders the default has.</summary>
+        public const string SiteTextPlaceholders = "Admin_SiteTextPlaceholders";
+        /// <summary>{0} = the text, {1} = the language.</summary>
+        public const string SiteTextMarkup = "Admin_SiteTextMarkup";
+        /// <summary>{0} = the text, {1} = the language.</summary>
+        public const string SiteTextFormatSpec = "Admin_SiteTextFormatSpec";
     }
 
     public static class Ui

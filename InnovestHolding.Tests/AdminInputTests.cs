@@ -62,18 +62,18 @@ public class OverPostingTests(TestAppFactory f)
         var (c, t) = await AdminAsync("/Admin/Content/Edit");
         var evilKey = Unique("evil")[..30];
         var value = Unique("years")[..30];
-        var original = await f.DbAsync(db => db.SiteContents.Where(s => s.SectionKey == "about_years").Select(s => s.ContentAr).SingleAsync());
+        var original = await f.DbAsync(db => db.SiteContents.Where(s => s.SectionKey == "contact_phone").Select(s => s.ContentAr).SingleAsync());
         try
         {
             var response = await c.PostAsync("/Admin/Content/Edit",
-                Form(t, ($"content[{evilKey}].Ar", "x"), ("content[about_years].Ar", value)));
+                Form(t, ($"content[{evilKey}].Ar", "x"), ("content[contact_phone].Ar", value)));
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
             Assert.Equal(0, await f.DbAsync(db => db.SiteContents.CountAsync(s => s.SectionKey == evilKey)));
-            Assert.Equal(value, await f.DbAsync(db => db.SiteContents.Where(s => s.SectionKey == "about_years").Select(s => s.ContentAr).SingleAsync()));
+            Assert.Equal(value, await f.DbAsync(db => db.SiteContents.Where(s => s.SectionKey == "contact_phone").Select(s => s.ContentAr).SingleAsync()));
         }
         finally
         {
-            await f.DbAsync(async db => { (await db.SiteContents.SingleAsync(s => s.SectionKey == "about_years")).ContentAr = original; return await db.SaveChangesAsync(); });
+            await f.DbAsync(async db => { (await db.SiteContents.SingleAsync(s => s.SectionKey == "contact_phone")).ContentAr = original; return await db.SaveChangesAsync(); });
         }
     }
 
