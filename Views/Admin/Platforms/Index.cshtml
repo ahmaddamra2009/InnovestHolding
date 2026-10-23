@@ -1,24 +1,67 @@
 @model List<Platform>
+@using InnovestHolding.Infrastructure.Content
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "الخدمات"; }
 <div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">إضافة خدمة</span></div>
+    <form method="post" asp-action="Create" asp-controller="Platforms">
+        <lang-pair label="اسم الخدمة" name-ar="TitleAr" name-en="TitleEn" max="200" required="true" id-prefix="new-" />
+        <lang-pair label="الوصف (كل سطر نقطة)" name-ar="DescriptionAr" name-en="DescriptionEn" max="4000" rows="2" id-prefix="new-" />
+        <lang-pair label="رابط «اعرف المزيد» (اختياري — لا يظهر الرابط إن تُرك فارغاً)" name-ar="LinkUrl" max="500" ltr="true" placeholder="https://" id-prefix="new-" />
+        <partial name="~/Views/Admin/Shared/_IconPicker.cshtml" model="@(new IconPickerVm("IconKey", null, NoneLabel: "بلا أيقونة (المثلث)"))" />
+        <button type="submit" class="btn-admin btn-primary">إضافة</button>
+    </form>
+</div>
+<div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">الخدمات (@Model.Count)</span></div>
-    <p class="form-hint" style="margin-bottom:12px;">بطاقات «خدماتنا» في الصفحة الرئيسية وصفحة المنظومة. الوصف: كل سطر نقطة في القائمة.</p>
-    @foreach (var item in Model)
+    <p class="form-hint">بطاقات «خدماتنا» في الصفحة الرئيسية وصفحة المنظومة، بهذا الترتيب. الخدمة المخفية لا تظهر للزوار وتبقى محفوظة.</p>
+    @if (Model.Count == 0)
     {
-        var prefix = $"pl{item.Id}-";
-        <form method="post" asp-action="Update" asp-controller="Platforms" class="row-form">
-            <input type="hidden" name="id" value="@item.Id">
-            <div class="row-form-head">
-                <strong>@item.TitleAr</strong>
-                <partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TitleEn) && (string.IsNullOrWhiteSpace(item.DescriptionAr) || !string.IsNullOrWhiteSpace(item.DescriptionEn)))" />
-                <button type="submit" form="toggle-@item.Id" class="@(item.IsActive ? "badge-active" : "badge-inactive")" style="border:0;cursor:pointer;" title="تبديل الظهور">@(item.IsActive ? "ظاهرة" : "مخفية")</button>
-            </div>
-            <lang-pair label="اسم الخدمة" name-ar="TitleAr" name-en="TitleEn" value-ar="@item.TitleAr" value-en="@item.TitleEn" max="200" required="true" id-prefix="@prefix" />
-            <lang-pair label="الوصف (كل سطر نقطة)" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@item.DescriptionAr" value-en="@item.DescriptionEn" max="4000" rows="2" id-prefix="@prefix" />
-            <lang-pair label="الاسم المختصر في الفوتر (اختياري)" name-ar="ShortTitleAr" name-en="ShortTitleEn" value-ar="@item.ShortTitleAr" value-en="@item.ShortTitleEn" max="100" id-prefix="@prefix" />
-            <lang-pair label="رابط «اعرف المزيد» (اختياري — لا يظهر الرابط إن تُرك فارغاً)" name-ar="LinkUrl" value-ar="@item.LinkUrl" max="500" ltr="true" placeholder="https://" id-prefix="@prefix" />
-            <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
-        </form>
-        <form method="post" asp-action="Toggle" asp-controller="Platforms" id="toggle-@item.Id"><input type="hidden" name="id" value="@item.Id"></form>
+        <p class="form-hint">لا توجد خدمات. القسم يُخفى من الموقع حتى تضيف خدمة.</p>
+    }
+    else
+    {
+        <div class="table-scroll">
+            <table class="admin-table" style="min-width:600px;">
+                <thead><tr><th>#</th><th>الخدمة</th><th>EN</th><th>الحالة</th><th>الترتيب</th><th>إجراءات</th></tr></thead>
+                <tbody>
+                @for (var i = 0; i < Model.Count; i++)
+                {
+                    var item = Model[i];
+                    var prefix = $"pl{item.Id}-";
+                    var icon = Icons.Svg(item.IconKey);
+                    <tr id="row-@item.Id" tabindex="-1" class="@(item.IsActive ? "" : "row-hidden")">
+                        <td>@(i + 1)</td>
+                        <td>
+                            @if (icon is not null)
+                            {
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(icon)</svg>
+                            }
+                            <strong>@item.TitleAr</strong>
+                            <details class="row-editor">
+                                <summary>تعديل</summary>
+                                <form method="post" asp-action="Update" asp-controller="Platforms" class="edit-form">
+                                    <input type="hidden" name="Id" value="@item.Id">
+                                    <lang-pair label="اسم الخدمة" name-ar="TitleAr" name-en="TitleEn" value-ar="@item.TitleAr" value-en="@item.TitleEn" max="200" required="true" id-prefix="@prefix" />
+                                    <lang-pair label="الوصف (كل سطر نقطة)" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@item.DescriptionAr" value-en="@item.DescriptionEn" max="4000" rows="2" id-prefix="@prefix" />
+                                    <lang-pair label="رابط «اعرف المزيد» (اختياري — لا يظهر الرابط إن تُرك فارغاً)" name-ar="LinkUrl" value-ar="@item.LinkUrl" max="500" ltr="true" placeholder="https://" id-prefix="@prefix" />
+                                    <partial name="~/Views/Admin/Shared/_IconPicker.cshtml" model="@(new IconPickerVm("IconKey", item.IconKey, NoneLabel: string.IsNullOrEmpty(item.IconSvg) ? "بلا أيقونة (المثلث)" : "الأيقونة الأصلية"))" />
+                                    <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
+                                </form>
+                            </details>
+                        </td>
+                        <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TitleEn) && (string.IsNullOrWhiteSpace(item.DescriptionAr) || !string.IsNullOrWhiteSpace(item.DescriptionEn)))" /></td>
+                        <td><partial name="~/Views/Admin/Shared/_VisibleSwitch.cshtml" model="@(new VisibleSwitchVm("Platforms", item.Id.ToString(), item.TitleAr, item.IsActive))" /></td>
+                        <td><partial name="~/Views/Admin/Shared/_ReorderCell.cshtml" model="@(new ReorderCellVm("Platforms", item.Id.ToString(), item.TitleAr, i + 1, Model.Count))" /></td>
+                        <td class="actions">
+                            <form method="post" asp-action="Delete" asp-controller="Platforms" style="display:inline;">
+                                <input type="hidden" name="id" value="@item.Id">
+                                <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذه الخدمة نهائياً؟ يمكنك بدلاً من ذلك إخفاءها.')">حذف</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
     }
 </div>

@@ -118,8 +118,6 @@ public static class MessageKeys
         public const string NameEn = "Field_NameEn";
         public const string Label = "Field_Label";
         public const string LabelEn = "Field_LabelEn";
-        public const string ShortTitle = "Field_ShortTitle";
-        public const string ShortTitleEn = "Field_ShortTitleEn";
         public const string ShortLabel = "Field_ShortLabel";
         public const string ShortLabelEn = "Field_ShortLabelEn";
         public const string Text = "Field_Text";
@@ -180,9 +178,6 @@ public static class MessageKeys
         public const string NavAdded = "Admin_NavAdded";
         public const string NavUpdated = "Admin_NavUpdated";
         public const string NavDeleted = "Admin_NavDeleted";
-        public const string SubItemAdded = "Admin_SubItemAdded";
-        public const string SubItemUpdated = "Admin_SubItemUpdated";
-        public const string SubItemDeleted = "Admin_SubItemDeleted";
         public const string PartnerAdded = "Admin_PartnerAdded";
         public const string PartnerUpdated = "Admin_PartnerUpdated";
         public const string PartnerDeleted = "Admin_PartnerDeleted";
@@ -362,5 +357,14 @@ public static class MessageKeys
         public const string ProfilesAria = "Ui_ProfilesAria";
         public const string WatchOnYouTube = "Ui_WatchOnYouTube";
         public const string ExternalLink = "Ui_ExternalLink";
+    }
+
+    /// <summary>C5 list screens (Nav/footer, services, social links): admin messages, Arabic admin.</summary>
+    public static class AdminLists
+    {
+        public const string FooterLimit = "Admin_FooterLimit";
+        public const string SocialExists = "Admin_SocialExists";
+        public const string IconInvalid = "Admin_IconInvalid";
+        public const string CustomSocialIncomplete = "Admin_CustomSocialIncomplete";
     }
 }

@@ -322,7 +322,9 @@ public class SiteStructureTests(TestAppFactory f)
             var token = await client.GetTokenAsync("/Admin/Pages");
             Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync($"/Admin/Pages/ToggleMenu/{PageKeys.ForumSpeakers}", Form(token))).StatusCode);
             var home = await f.NewClient().GetStringAsync("/");
-            Assert.DoesNotContain(Link(), home);                                       // header, drawer, footer
+            var footerAt = home.IndexOf("<footer class=\"site-footer\">", StringComparison.Ordinal);
+            Assert.DoesNotContain(Link(), home[..footerAt]);                           // header, drawer
+            Assert.Contains(Link(), home[footerAt..]);   // C5: the footer has its own switch (Pages.ShowInFooter)
             Assert.Equal(HttpStatusCode.OK, (await f.NewClient().GetAsync(url)).StatusCode); // still reachable
 
             token = await client.GetTokenAsync($"/Admin/Pages/Edit/{PageKeys.ForumSpeakers}");

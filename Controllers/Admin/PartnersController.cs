@@ -19,7 +19,7 @@ public class PartnersController : AdminControllerBase
     {
         ViewData[GroupsKey] = await _db.PartnerGroups.AsNoTracking().OrderBy(g => g.SortOrder).ThenBy(g => g.Id).ToListAsync();
         return View("~/Views/Admin/Partners/Index.cshtml",
-            await _db.Partners.AsNoTracking().Include(p => p.Logo).OrderBy(p => p.SortOrder).ToListAsync());
+            await _db.Partners.AsNoTracking().Include(p => p.Logo).OrderBy(p => p.SortOrder).ThenBy(p => p.Id).ToListAsync());
     }
 
     public const string GroupsKey = "PartnerGroups";
@@ -75,6 +75,38 @@ public class PartnersController : AdminControllerBase
         await _db.SaveChangesAsync();
         TempData["Success"] = L(MessageKeys.Admin.StatusToggled);
         return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>
+    /// ▲▼ within the partner's group (ungrouped partners together). Partners have ONE global order (the home strip
+    /// follows it; the Forum Partners page groups it), so a move swaps the places of the partner and its in-group
+    /// neighbour in that order: the global list is renumbered 1..n in its current order first (invisible), then the two
+    /// numbers are exchanged. Every other partner keeps its place.
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> Move(int id, int direction)
+    {
+        if (direction is not (-1 or 1)) return NotFound();
+        var all = await _db.Partners.OrderBy(p => p.SortOrder).ThenBy(p => p.Id).ToListAsync();
+        var item = all.FirstOrDefault(p => p.Id == id);
+        if (item == null) return NotFound();
+        for (var i = 0; i < all.Count; i++) all[i].SortOrder = i + 1;
+
+        var group = all.Where(p => p.PartnerGroupId == item.PartnerGroupId).ToList();
+        var index = group.IndexOf(item);
+        var target = index + direction;
+        if (target >= 0 && target < group.Count)
+        {
+            var other = group[target];
+            (item.SortOrder, other.SortOrder) = (other.SortOrder, item.SortOrder);
+        }
+        if (_db.ChangeTracker.HasChanges())
+        {
+            foreach (var p in all.Where(p => _db.Entry(p).State == EntityState.Modified)) p.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+        }
+        TempData["Success"] = L(MessageKeys.Admin.OrderChanged);
+        return RedirectToAction(nameof(Index), null, null, $"row-{id}");
     }
 
     [HttpPost]

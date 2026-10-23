@@ -74,8 +74,6 @@
   <data name="Field_NameEn" xml:space="preserve"><value>الاسم (الإنجليزية)</value></data>
   <data name="Field_Label" xml:space="preserve"><value>التسمية</value></data>
   <data name="Field_LabelEn" xml:space="preserve"><value>التسمية (الإنجليزية)</value></data>
-  <data name="Field_ShortTitle" xml:space="preserve"><value>الاسم المختصر</value></data>
-  <data name="Field_ShortTitleEn" xml:space="preserve"><value>الاسم المختصر (الإنجليزية)</value></data>
   <data name="Field_ShortLabel" xml:space="preserve"><value>التسمية المختصرة</value></data>
   <data name="Field_ShortLabelEn" xml:space="preserve"><value>التسمية المختصرة (الإنجليزية)</value></data>
   <data name="Field_Text" xml:space="preserve"><value>النص</value></data>
@@ -93,9 +91,6 @@
   <data name="Admin_NavAdded" xml:space="preserve"><value>تمت إضافة العنصر بنجاح</value></data>
   <data name="Admin_NavUpdated" xml:space="preserve"><value>تم تحديث العنصر بنجاح</value></data>
   <data name="Admin_NavDeleted" xml:space="preserve"><value>تم حذف العنصر بنجاح</value></data>
-  <data name="Admin_SubItemAdded" xml:space="preserve"><value>تمت إضافة العنصر الفرعي بنجاح</value></data>
-  <data name="Admin_SubItemUpdated" xml:space="preserve"><value>تم تحديث العنصر الفرعي بنجاح</value></data>
-  <data name="Admin_SubItemDeleted" xml:space="preserve"><value>تم حذف العنصر الفرعي بنجاح</value></data>
   <data name="Admin_PartnerAdded" xml:space="preserve"><value>تمت إضافة الشريك بنجاح</value></data>
   <data name="Admin_PartnerUpdated" xml:space="preserve"><value>تم تحديث الشريك بنجاح</value></data>
   <data name="Admin_PartnerDeleted" xml:space="preserve"><value>تم حذف الشريك بنجاح</value></data>
@@ -340,4 +335,8 @@
   <data name="Admin_CsvReference" xml:space="preserve"><value>المرجع (الفرصة / الباقة / الفعالية)</value></data>
   <data name="Admin_CsvReferenceId" xml:space="preserve"><value>رقم المرجع</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>
+  <data name="Admin_FooterLimit" xml:space="preserve"><value>الحد الأقصى {0} أعمدة و{1} روابط في كل عمود.</value></data>
+  <data name="Admin_SocialExists" xml:space="preserve"><value>هذه الشبكة مضافة بالفعل.</value></data>
+  <data name="Admin_IconInvalid" xml:space="preserve"><value>الأيقونة غير متاحة، اختر من القائمة.</value></data>
+  <data name="Admin_CustomSocialIncomplete" xml:space="preserve"><value>الشبكة الأخرى تحتاج اسماً وأيقونة من القائمة.</value></data>
 </root>

@@ -1,19 +1,78 @@
 @model List<SocialLink>
-@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "روابط التواصل الاجتماعي"; }
+@using InnovestHolding.Infrastructure.Content
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "روابط التواصل الاجتماعي";
+    var missing = SocialLink.Networks.Where(n => Model.All(s => s.Network != n)).ToList();
+}
 <div class="admin-card">
-    <div class="admin-card-header"><span class="admin-card-title">الروابط في الفوتر — الرابط الفارغ لا يظهر</span></div>
-    @foreach (var item in Model)
-    {
-        var name = SocialIcons.All.TryGetValue(item.Network, out var icon) ? icon.Name : item.Network;
-        <form method="post" asp-action="Update" asp-controller="SocialLinks" class="row-form">
-            <input type="hidden" name="id" value="@item.Id">
-            <div class="row-form-head"><strong>@name</strong></div>
-            <lang-pair label="الرابط (https://)" name-ar="Url" value-ar="@item.Url" max="500" ltr="true" placeholder="https://" id-prefix="s@(item.Id)-" />
-            <div class="inline-form">
-                <div class="form-group"><label>الترتيب</label><input type="number" name="SortOrder" value="@item.SortOrder" class="form-control" min="0" max="100000"></div>
-                <div class="form-check"><input type="checkbox" name="IsActive" value="true" @(item.IsActive ? "checked" : "")> <label>مفعّل</label></div>
-                <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
-            </div>
-        </form>
-    }
+    <div class="admin-card-header"><span class="admin-card-title">إضافة شبكة</span></div>
+    <p class="form-hint">شبكة معروفة (أيقونتها واسمها من الموقع) أو «شبكة أخرى» باسم وأيقونة من القائمة. الرابط يجب أن يبدأ بـ https:// والرابط الفارغ لا يظهر.</p>
+    <form method="post" asp-action="Create" asp-controller="SocialLinks">
+        <div class="form-group">
+            <label for="new-network">الشبكة</label>
+            <select id="new-network" name="Network" class="form-control" required>
+                @foreach (var n in missing)
+                {
+                    <option value="@n">@SocialIcons.All[n].Name</option>
+                }
+                <option value="@SocialLink.Custom">شبكة أخرى…</option>
+            </select>
+        </div>
+        <lang-pair label="الرابط (https://)" name-ar="Url" max="500" ltr="true" placeholder="https://" id-prefix="new-" />
+        <fieldset class="form-group" style="border:0;padding:0;margin:0;">
+            <legend class="form-hint">لـ «شبكة أخرى» فقط:</legend>
+            <div class="form-group"><label for="new-label">اسم الشبكة (يُقرأ لقارئ الشاشة)</label><input type="text" id="new-label" name="Label" class="form-control" maxlength="60"></div>
+            <partial name="~/Views/Admin/Shared/_IconPicker.cshtml" model="@(new IconPickerVm("IconKey", null, AllowNone: false))" />
+        </fieldset>
+        <button type="submit" class="btn-admin btn-primary">إضافة</button>
+    </form>
+</div>
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">الروابط في الفوتر وقسم التواصل (@Model.Count)</span></div>
+    <div class="table-scroll">
+        <table class="admin-table" style="min-width:600px;">
+            <thead><tr><th>#</th><th>الشبكة</th><th>الرابط</th><th>الحالة</th><th>الترتيب</th><th>إجراءات</th></tr></thead>
+            <tbody>
+            @for (var i = 0; i < Model.Count; i++)
+            {
+                var item = Model[i];
+                var custom = item.Network == SocialLink.Custom;
+                var name = SocialIcons.All.TryGetValue(item.Network, out var known) ? known.Name : (item.Label ?? item.Network);
+                var shown = item.IsActive && !string.IsNullOrWhiteSpace(item.Url);
+                <tr id="row-@item.Id" tabindex="-1" class="@(shown ? "" : "row-hidden")">
+                    <td>@(i + 1)</td>
+                    <td>
+                        <strong>@name</strong>@if (custom) { <span class="field-hint"> · شبكة أخرى</span> }
+                        <details class="row-editor">
+                            <summary>تعديل</summary>
+                            <form method="post" asp-action="Update" asp-controller="SocialLinks" class="edit-form">
+                                <input type="hidden" name="Id" value="@item.Id">
+                                <lang-pair label="الرابط (https://)" name-ar="Url" value-ar="@item.Url" max="500" ltr="true" placeholder="https://" id-prefix="s@(item.Id)-" />
+                                @if (custom)
+                                {
+                                    <div class="form-group"><label for="s@(item.Id)-label">اسم الشبكة</label><input type="text" id="s@(item.Id)-label" name="Label" value="@item.Label" class="form-control" maxlength="60" required></div>
+                                    <partial name="~/Views/Admin/Shared/_IconPicker.cshtml" model="@(new IconPickerVm("IconKey", item.IconKey, AllowNone: false))" />
+                                }
+                                <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
+                            </form>
+                        </details>
+                    </td>
+                    <td class="cell-ltr">@if (string.IsNullOrWhiteSpace(item.Url)) { <span class="field-hint">فارغ — لا يظهر</span> } else { <code>@item.Url</code> }</td>
+                    <td><partial name="~/Views/Admin/Shared/_VisibleSwitch.cshtml" model="@(new VisibleSwitchVm("SocialLinks", item.Id.ToString(), name, item.IsActive))" /></td>
+                    <td><partial name="~/Views/Admin/Shared/_ReorderCell.cshtml" model="@(new ReorderCellVm("SocialLinks", item.Id.ToString(), name, i + 1, Model.Count))" /></td>
+                    <td class="actions">
+                        @if (custom)
+                        {
+                            <form method="post" asp-action="Delete" asp-controller="SocialLinks" style="display:inline;">
+                                <input type="hidden" name="id" value="@item.Id">
+                                <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذه الشبكة نهائياً؟')">حذف</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
 </div>

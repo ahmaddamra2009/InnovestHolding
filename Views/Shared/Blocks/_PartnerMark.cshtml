@@ -1,5 +1,5 @@
 @model PartnerVm
-@* A partner: its logo (alt = its name) or its name; a link to its site when the admin set one (sponsor links are
+@* A partner: its logo (alt = the admin's alt text in the page language, else its name: SiteViews.Image) or its name; a link to its site when the admin set one (sponsor links are
    marked rel="sponsored", SEO decision). *@
 @{
     var name = Model.Name;
@@ -9,7 +9,7 @@
   <a href="@Model.Url" rel="sponsored noopener" target="_blank">
     @if (Model.Logo is { } logo)
     {
-      <img src="@logo.Src" width="@logo.Width" height="@logo.Height" alt="@name" lang="@name.Lang" loading="lazy" decoding="async">
+      <img src="@logo.Src" width="@logo.Width" height="@logo.Height" alt="@logo.Alt" lang="@logo.Alt.Lang" loading="lazy" decoding="async">
     }
     else
     {
@@ -19,7 +19,7 @@
 }
 else if (Model.Logo is { } logo)
 {
-  <img src="@logo.Src" width="@logo.Width" height="@logo.Height" alt="@name" lang="@name.Lang" loading="lazy" decoding="async">
+  <img src="@logo.Src" width="@logo.Width" height="@logo.Height" alt="@logo.Alt" lang="@logo.Alt.Lang" loading="lazy" decoding="async">
 }
 else
 {

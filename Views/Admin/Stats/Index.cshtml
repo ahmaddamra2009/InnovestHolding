@@ -1,23 +1,71 @@
 @model List<Stat>
-@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "إدارة الإحصائيات"; }
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "أرقام الأثر";
+    var visibleRank = 0;
+}
 <div class="admin-card">
-    <div class="admin-card-header"><span class="admin-card-title">الإحصائيات (@Model.Count)</span></div>
-    @foreach (var item in Model)
+    <div class="admin-card-header"><span class="admin-card-title">إضافة رقم</span></div>
+    <form method="post" asp-action="Create" asp-controller="Stats">
+        <lang-pair label="التسمية" name-ar="LabelAr" name-en="LabelEn" max="100" required="true" id-prefix="new-" />
+        <lang-pair label="التسمية المختصرة في عدادات الواجهة (اختياري)" name-ar="ShortLabelAr" name-en="ShortLabelEn" max="100" id-prefix="new-" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+            <div class="form-group"><label for="new-value">القيمة</label><input type="number" id="new-value" name="Value" class="form-control" min="0" max="1000000000" inputmode="numeric" required></div>
+            <div class="form-group"><label for="new-suffix">اللاحقة (+، %، K)</label><input type="text" id="new-suffix" name="Suffix" class="form-control ltr-input" dir="ltr" value="+" maxlength="10"></div>
+        </div>
+        <button type="submit" class="btn-admin btn-primary">إضافة</button>
+    </form>
+</div>
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">أرقام الأثر (@Model.Count)</span></div>
+    <p class="form-hint">أول الأرقام الظاهرة تظهر في واجهة الصفحة الرئيسية (العدد من «أقسام الصفحة الرئيسية»)، وكلها في قسم الأثر، بهذا الترتيب. الرقم المخفي لا يظهر في أي منهما.</p>
+    @if (Model.Count == 0)
     {
-        var prefix = $"st{item.Id}-";
-        <form method="post" asp-action="Update" asp-controller="Stats" class="row-form">
-            <input type="hidden" name="id" value="@item.Id">
-            <div class="row-form-head">
-                <strong>@item.LabelAr</strong>
-                <partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.LabelEn))" />
-            </div>
-            <lang-pair label="التسمية" name-ar="LabelAr" name-en="LabelEn" value-ar="@item.LabelAr" value-en="@item.LabelEn" max="100" required="true" id-prefix="@prefix" />
-            <lang-pair label="التسمية المختصرة في عدادات الواجهة (اختياري)" name-ar="ShortLabelAr" name-en="ShortLabelEn" value-ar="@item.ShortLabelAr" value-en="@item.ShortLabelEn" max="100" id-prefix="@prefix" />
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
-                <div class="form-group"><label>القيمة</label><input type="number" name="value" class="form-control" value="@item.Value" min="0" max="1000000000" required></div>
-                <div class="form-group"><label>اللاحقة</label><input type="text" name="suffix" class="form-control ltr-input" dir="ltr" value="@item.Suffix" maxlength="10"></div>
-            </div>
-            <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
-        </form>
+        <p class="form-hint">لا توجد أرقام. القسم يُخفى من الموقع.</p>
+    }
+    else
+    {
+        <div class="table-scroll">
+            <table class="admin-table" style="min-width:600px;">
+                <thead><tr><th>#</th><th>الرقم</th><th>EN</th><th>الحالة</th><th>الترتيب</th><th>إجراءات</th></tr></thead>
+                <tbody>
+                @for (var i = 0; i < Model.Count; i++)
+                {
+                    var item = Model[i];
+                    var prefix = $"st{item.Id}-";
+                    if (item.IsActive) { visibleRank++; }
+                    <tr id="row-@item.Id" tabindex="-1" class="@(item.IsActive ? "" : "row-hidden")">
+                        <td>@(i + 1)</td>
+                        <td>
+                            <strong><bdi dir="ltr">@(item.Value + item.Suffix)</bdi> @item.LabelAr</strong>
+                            @if (item.IsActive) { <span class="field-hint"> · ظاهر رقم @visibleRank</span> }
+                            <details class="row-editor">
+                                <summary>تعديل</summary>
+                                <form method="post" asp-action="Update" asp-controller="Stats" class="edit-form">
+                                    <input type="hidden" name="Id" value="@item.Id">
+                                    <lang-pair label="التسمية" name-ar="LabelAr" name-en="LabelEn" value-ar="@item.LabelAr" value-en="@item.LabelEn" max="100" required="true" id-prefix="@prefix" />
+                                    <lang-pair label="التسمية المختصرة في عدادات الواجهة (اختياري)" name-ar="ShortLabelAr" name-en="ShortLabelEn" value-ar="@item.ShortLabelAr" value-en="@item.ShortLabelEn" max="100" id-prefix="@prefix" />
+                                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+                                        <div class="form-group"><label for="@(prefix)value">القيمة</label><input type="number" id="@(prefix)value" name="value" class="form-control" value="@item.Value" min="0" max="1000000000" inputmode="numeric" required></div>
+                                        <div class="form-group"><label for="@(prefix)suffix">اللاحقة</label><input type="text" id="@(prefix)suffix" name="suffix" class="form-control ltr-input" dir="ltr" value="@item.Suffix" maxlength="10"></div>
+                                    </div>
+                                    <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
+                                </form>
+                            </details>
+                        </td>
+                        <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.LabelEn))" /></td>
+                        <td><partial name="~/Views/Admin/Shared/_VisibleSwitch.cshtml" model="@(new VisibleSwitchVm("Stats", item.Id.ToString(), item.LabelAr, item.IsActive))" /></td>
+                        <td><partial name="~/Views/Admin/Shared/_ReorderCell.cshtml" model="@(new ReorderCellVm("Stats", item.Id.ToString(), item.LabelAr, i + 1, Model.Count))" /></td>
+                        <td class="actions">
+                            <form method="post" asp-action="Delete" asp-controller="Stats" style="display:inline;">
+                                <input type="hidden" name="id" value="@item.Id">
+                                <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا الرقم نهائياً؟ يمكنك بدلاً من ذلك إخفاءه.')">حذف</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
     }
 </div>
