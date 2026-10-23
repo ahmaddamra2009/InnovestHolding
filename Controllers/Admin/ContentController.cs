@@ -67,6 +67,8 @@ public class ContentController : AdminControllerBase
             ModelState.AddModelError(nameof(input.Key), L(MessageKeys.InvalidValueNoField));
         if (!ModelState.IsValid || image is null) return InvalidRedirectToEdit();
         var key = image.Key;
+        // An image no page draws (the light logo) has no alt text: a posted one is ignored, never stored.
+        if (!image.HasAlt) { input.ImageAltAr = null; input.ImageAltEn = null; }
         var current = await SiteImageRowAsync(key, true);
         var uploaded = await UploadImageAsync(input, image.IsLogo ? Infrastructure.Media.ImageUse.Logo : Infrastructure.Media.ImageUse.General);
         if (!ModelState.IsValid) return InvalidRedirectToEdit();

@@ -366,6 +366,23 @@ public static class MessageKeys
         public const string SocialExists = "Admin_SocialExists";
         public const string IconInvalid = "Admin_IconInvalid";
         public const string CustomSocialIncomplete = "Admin_CustomSocialIncomplete";
+        /// <summary>{0} = the cap (SocialLinksController.MaxCustom).</summary>
+        public const string SocialCustomLimit = "Admin_SocialCustomLimit";
+        /// <summary>Tooltip of a menu row's site switch; {0} = the link's name.</summary>
+        public const string NavToggleSite = "Admin_NavToggleSite";
+        /// <summary>Tooltip of a menu row's header switch; {0} = the link's name.</summary>
+        public const string NavToggleHeader = "Admin_NavToggleHeader";
+    }
+
+    /// <summary>C5 Admin/Pages/Edit hints.</summary>
+    public static class AdminPages
+    {
+        /// <summary>Next to «تظهر في الفوتر» while the footer is customised.</summary>
+        public const string FooterAutoOnly = "Admin_PageFooterAutoOnly";
+        /// <summary>The link to «القائمة والفوتر» › footer columns.</summary>
+        public const string FooterColumnsLink = "Admin_PageFooterColumnsLink";
+        /// <summary>confirm() before a sections-card button reloads the page over unsaved edits.</summary>
+        public const string UnsavedChanges = "Admin_PageUnsavedChanges";
     }
 
     /// <summary>C5 Admin/PageSections (show/hide, order, counts): admin messages.</summary>
@@ -380,5 +397,12 @@ public static class MessageKeys
         public const string Moved = "Admin_SectionMoved";
         /// <summary>{0} = the count's label, {1} = its maximum.</summary>
         public const string LimitInvalid = "Admin_SectionLimitInvalid";
+        /// <summary>Status of a section that cannot be hidden (no switch).</summary>
+        public const string Fixed = "Admin_SectionFixed";
+        public const string FixedHint = "Admin_SectionFixedHint";
+        /// <summary>Status of the last visible section (no switch: hiding it is refused).</summary>
+        public const string Visible = "Admin_SectionVisible";
+        /// <summary>The screen's name (sidebar and heading): it manages every page's sections (QA C5-7).</summary>
+        public const string ScreenTitle = "Admin_SectionsScreenTitle";
     }
 }

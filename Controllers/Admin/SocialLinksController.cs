@@ -15,6 +15,9 @@ namespace InnovestHolding.Controllers.Admin;
 /// </summary>
 public class SocialLinksController(AppDbContext db) : AdminControllerBase
 {
+    /// <summary>Custom networks are capped: each one is an icon in every page's footer and the contact block (Yasser L-C5F-1).</summary>
+    public const int MaxCustom = 10;
+
     public async Task<IActionResult> Index() =>
         View("~/Views/Admin/SocialLinks/Index.cshtml",
             await db.SocialLinks.AsNoTracking().OrderBy(s => s.SortOrder).ThenBy(s => s.Id).ToListAsync());
@@ -29,6 +32,8 @@ public class SocialLinksController(AppDbContext db) : AdminControllerBase
         else if (!custom && await db.SocialLinks.AnyAsync(s => s.Network == network))
             ModelState.AddModelError(nameof(input.Network), L(MessageKeys.AdminLists.SocialExists));
         if (custom) CheckCustom(input.Label, input.IconKey);
+        if (custom && await db.SocialLinks.CountAsync(s => s.Network == SocialLink.Custom) >= MaxCustom)
+            ModelState.AddModelError(nameof(input.Network), L(MessageKeys.AdminLists.SocialCustomLimit, MaxCustom));
         if (!ModelState.IsValid) return InvalidRedirect();
 
         var max = await db.SocialLinks.MaxAsync(s => (int?)s.SortOrder) ?? 0;

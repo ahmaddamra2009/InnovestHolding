@@ -7,7 +7,9 @@ namespace InnovestHolding.Infrastructure.Content;
 /// <param name="IsLogo">Uploaded under the logo caps (<see cref="Media.ImageUse.Logo"/>: 1 MB, 1200 px), like partner logos.</param>
 /// <param name="IsBrand">A brand asset (<see cref="BrandImages"/>): edited only on Admin/Brand under its own rules, never
 /// by the Content editor's image forms. Listed here so the snapshot loads it with the other site images.</param>
-public sealed record SiteImage(string Key, string Label, string Hint, bool IsLogo = false, bool IsBrand = false);
+/// <param name="HasAlt">False: the image is never drawn on a page (the light logo is read by search engines only, as a
+/// URL in the Organization data), so its form offers no alt text and the save stores none (Hassan C5 F4).</param>
+public sealed record SiteImage(string Key, string Label, string Hint, bool IsLogo = false, bool IsBrand = false, bool HasAlt = true);
 
 /// <summary>
 /// The site's uploadable images. Each one falls back to what the site showed before it existed (the bundled brand
@@ -24,7 +26,7 @@ public static class SiteImages
         new(LogoOnDark, "الشعار على خلفية داكنة",
             "يظهر في رأس الموقع وتذييله وبطاقة «من نحن» في الرئيسية. يُفضّل PNG أو WebP بخلفية شفافة. فارغ = الشعار المرفق مع الموقع.", IsLogo: true),
         new(LogoOnLight, "الشعار على خلفية فاتحة",
-            "شعار المؤسسة الذي تقرؤه محركات البحث (بيانات المؤسسة). يُفضّل PNG أو WebP بخلفية شفافة. فارغ = الشعار المرفق مع الموقع.", IsLogo: true),
+            "شعار المؤسسة الذي تقرؤه محركات البحث (بيانات المؤسسة). يُفضّل PNG أو WebP بخلفية شفافة. فارغ = الشعار المرفق مع الموقع.", IsLogo: true, HasAlt: false),
         new(HeroImage, "صورة الواجهة في الرئيسية",
             "تظهر بجانب عنوان الصفحة الرئيسية مكان المثلث البرتقالي. فارغ = المثلث."),
         new(ContentKeys.FounderPhoto, "صورة المؤسس", "قسم كلمة المؤسس في صفحة «من نحن» (يظهر القسم عند كتابة الكلمة)."),

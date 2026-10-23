@@ -71,7 +71,8 @@ public static class PageSectionRegistry
             [PageKeys.TvGuests] = [new("list", "القائمة", CanHide: false)],
             [PageKeys.ForumRegistration] = [new("form", "النموذج", CanHide: false)],
             [PageKeys.NetworkJoin] = [new("form", "النموذج", CanHide: false)],
-            [PageKeys.Tv] = [new("units", "الوحدات")],
+            // The hub's only section: hiding it would leave the page empty, so it has no switch (Hassan C5 F5).
+            [PageKeys.Tv] = [new("units", "الوحدات", CanHide: false)],
         };
 
     /// <summary>The sections of a page (empty for a page without sections, e.g. privacy).</summary>

@@ -2,7 +2,8 @@
 @using InnovestHolding.Infrastructure.Site
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = Model.IsHome ? "أقسام الصفحة الرئيسية" : "كتل الصفحة: " + Model.PageTitle;
+    // QA C5-7: the screen manages every page's sections, so it is «أقسام الصفحات: <the page in view>».
+    ViewData["Title"] = L[K.AdminSections.ScreenTitle] + ": " + Model.PageTitle;
 }
 <div class="admin-card">
     <div class="admin-card-header">

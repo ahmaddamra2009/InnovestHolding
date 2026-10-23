@@ -58,8 +58,8 @@
                             </td>
                             <td class="cell-ltr"><code>@item.Href</code></td>
                             <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TitleEn))" /></td>
-                            <td><partial name="~/Views/Admin/Shared/_VisibleSwitch.cshtml" model="@(new VisibleSwitchVm("Nav", item.Id.ToString(), item.TitleAr, item.IsActive))" /></td>
-                            <td><partial name="~/Views/Admin/Shared/_VisibleSwitch.cshtml" model="@(new VisibleSwitchVm("Nav", item.Id.ToString(), item.TitleAr, item.ShowInHeader, "ToggleHeader"))" /></td>
+                            <td><partial name="~/Views/Admin/Shared/_VisibleSwitch.cshtml" model="@(new VisibleSwitchVm("Nav", item.Id.ToString(), item.TitleAr, item.IsActive, TitleKey: K.AdminLists.NavToggleSite))" /></td>
+                            <td><partial name="~/Views/Admin/Shared/_VisibleSwitch.cshtml" model="@(new VisibleSwitchVm("Nav", item.Id.ToString(), item.TitleAr, item.ShowInHeader, "ToggleHeader", TitleKey: K.AdminLists.NavToggleHeader))" /></td>
                             <td><partial name="~/Views/Admin/Shared/_ReorderCell.cshtml" model="@(new ReorderCellVm("Nav", item.Id.ToString(), item.TitleAr, i + 1, Model.Items.Count))" /></td>
                             <td class="actions">
                                 <form method="post" asp-action="Delete" asp-controller="Nav" style="display:inline;">

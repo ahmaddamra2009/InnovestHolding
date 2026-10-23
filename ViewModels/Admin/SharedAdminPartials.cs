@@ -19,9 +19,11 @@ public sealed record ReorderCellVm(string Controller, string Id, string Name, in
 /// <summary>
 /// Views/Admin/Shared/_VisibleSwitch: the «ظاهر / مخفي» button of one row, posting <see cref="Action"/> with <c>id</c>
 /// (+ <see cref="Extra"/>). <see cref="Disabled"/> renders it inert (e.g. a section that cannot be hidden).
+/// <see cref="TitleKey"/>: a resx key ({0} = the name) for the tooltip when a row has two switches (QA C5-6); null = the
+/// default «تبديل ظهور «X»».
 /// </summary>
 public sealed record VisibleSwitchVm(string Controller, string Id, string Name, bool Visible,
-    string Action = "Toggle", IReadOnlyDictionary<string, string>? Extra = null, bool Disabled = false);
+    string Action = "Toggle", IReadOnlyDictionary<string, string>? Extra = null, bool Disabled = false, string? TitleKey = null);
 
 /// <summary>
 /// Views/Admin/Shared/_IconPicker: a radio grid over Infrastructure/Content/Icons.All bound to <see cref="Field"/>.
