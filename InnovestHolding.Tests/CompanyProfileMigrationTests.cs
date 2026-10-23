@@ -68,8 +68,10 @@ public class CompanyProfileMigrationTests
             """);
         var realBefore = await RealDataAsync(db);
 
-        await db.Database.MigrateAsync();
-        Assert.Empty(await db.Database.GetPendingMigrationsAsync());
+        // Up to the last migration before the N8 rename, which rewrites the brand names in real news/FAQ text on
+        // purpose (covered by RenameHoldingAndForumTests).
+        await db.GetService<IMigrator>().MigrateAsync("20261023011038_AddAdminControl");
+        Assert.Equal(["20261023141145_RenameHoldingAndForum"], await db.Database.GetPendingMigrationsAsync());
 
         // Real data: byte-identical (events, news, partners are real); partners stay visible.
         Assert.Equal(realBefore, await RealDataAsync(db));

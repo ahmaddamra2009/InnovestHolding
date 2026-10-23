@@ -329,7 +329,8 @@ public class AdminControlSiteTests(TestAppFactory f)
         var html = await r.Content.ReadAsStringAsync();
         Assert.Contains(WebUtility.HtmlEncode("1. متى نجمع بياناتك"), html);
         Assert.Contains($"{Base}/privacy", await SitemapAsync());
-        Assert.Contains(WebUtility.HtmlEncode(AddAdminControl.PrivacyRow.Single(c => c.Column == "MetaDescriptionAr").Value), html);
+        // RenameHoldingAndForum (N8) renames «إنوفست هولدينغ» in the shipped text.
+        Assert.Contains(WebUtility.HtmlEncode(AddAdminControl.PrivacyRow.Single(c => c.Column == "MetaDescriptionAr").Value.Replace("هولدينغ", "القابضة")), html);
         // The row ships with an English meta pair too, so /en/privacy is indexable and listed.
         var en = await f.NewClient().GetAsync("/en/privacy");
         Assert.Equal(HttpStatusCode.OK, en.StatusCode);
