@@ -109,7 +109,7 @@ public class AdminAuthTests(TestAppFactory f)
         "/Admin/InterestOptions", "/Admin/RegisterBenefits", "/Admin/SocialLinks",
         "/Admin/Pages", "/Admin/Pages/Edit/about", "/Admin/ContentItems", "/Admin/ContentItems?group=values",
         "/Admin/SiteTexts", "/Admin/SiteTexts?tab=messages", "/Admin/Brand",
-        "/Admin/PageSections", "/Admin/PageSections/Index/forum"
+        "/Admin/PageSections", "/Admin/PageSections/Index/forum", "/Admin/Nav?tab=footer"
     ];
 
     [Theory]

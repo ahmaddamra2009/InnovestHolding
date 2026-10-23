@@ -16,7 +16,7 @@ namespace InnovestHolding.Controllers.Admin;
 /// The home page renders Content keys, not its row's texts: its form keeps only title, SEO and image, and it is always
 /// published and in the menu (posted values for the other fields are ignored).
 /// </summary>
-public class PagesController(AppDbContext db) : AdminControllerBase
+public class PagesController(AppDbContext db, ISiteContentCache cache) : AdminControllerBase
 {
     private const string EditView = "~/Views/Admin/Pages/Edit.cshtml";
 
@@ -31,8 +31,13 @@ public class PagesController(AppDbContext db) : AdminControllerBase
     {
         if (SiteRoutes.Find(id) is not { } page) return NotFound();
         var row = await db.Pages.AsNoTracking().Include(p => p.Image).FirstOrDefaultAsync(p => p.Key == page.Key);
-        return View(EditView, new PageEditVm(page, ToInput(row), row is null));
+        return View(EditView, await VmAsync(page, ToInput(row), row is null));
     }
+
+    /// <summary>The edit model plus the page's sections card (embedded below the form: its own POST forms).</summary>
+    private async Task<PageEditVm> VmAsync(SitePage page, PageEditInput input, bool isNew) =>
+        new(page, input, isNew, PageSectionRegistry.Of(page.Key).Count == 0 ? null
+            : await PageSectionsController.LoadCardAsync(db, cache, page.Key, HttpContext.RequestAborted));
 
     [HttpPost]
     public async Task<IActionResult> Edit(string? id, PageEditInput input)
@@ -44,9 +49,9 @@ public class PagesController(AppDbContext db) : AdminControllerBase
         var emptyAction = Optional(input.EmptyActionPage);
         if (!isHome && emptyAction is not null && (!SiteRoutes.IsKey(emptyAction) || emptyAction == page.Key))
             ModelState.AddModelError(nameof(PageEditInput.EmptyActionPage), L(MessageKeys.InvalidValueNoField));
-        if (!ModelState.IsValid) return View(EditView, new PageEditVm(page, input, row is null));
+        if (!ModelState.IsValid) return View(EditView, await VmAsync(page, input, row is null));
         var uploaded = await UploadImageAsync(input);
-        if (!ModelState.IsValid) return View(EditView, new PageEditVm(page, input, row is null));
+        if (!ModelState.IsValid) return View(EditView, await VmAsync(page, input, row is null));
 
         if (row is null)
         {
@@ -175,4 +180,5 @@ public sealed record PagesIndexVm(IReadOnlyDictionary<string, Page> Rows)
             .OrderBy(c => Rows[c.Key].SortOrder).Select(c => c.Key).ToList();
 }
 
-public sealed record PageEditVm(SitePage Page, PageEditInput Input, bool IsNew);
+/// <param name="Sections">The page's «كتل الصفحة» card (Admin/PageSections), null for a page without sections.</param>
+public sealed record PageEditVm(SitePage Page, PageEditInput Input, bool IsNew, PageSectionsCardVm? Sections = null);

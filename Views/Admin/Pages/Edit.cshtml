@@ -83,6 +83,11 @@
         <a href="@SiteRoutes.PathFor(Model.Page, true)" target="_blank" rel="noopener" class="btn-admin btn-secondary">معاينة الإنجليزية</a>
     </div>
 </form>
+@if (Model.Sections is { } sections)
+{
+    @* «كتل الصفحة» (Admin/PageSections): outside the form above — the card's buttons are their own POST forms. *@
+    <partial name="~/Views/Admin/PageSections/_Card.cshtml" model="sections" />
+}
 <script>
     // Live length hints for the SEO fields (a warning, never a block).
     (function () {
