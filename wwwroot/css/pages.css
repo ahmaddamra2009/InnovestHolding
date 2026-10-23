@@ -388,6 +388,7 @@ html[lang="en"] .page-body p { line-height: 1.8; }
   clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
 [dir="rtl"] .about-brand-panel::before { clip-path: polygon(0 0, 100% 0, 0 100%); }
+.about-brand-panel picture { display: flex; justify-content: center; width: 100%; }
 .about-brand-panel img { width: min(100%, 300px); height: auto; }
 .about-brand-panel p { color: var(--text-on-dark); font-weight: 600; }
 .about-more { margin-top: 28px; }
