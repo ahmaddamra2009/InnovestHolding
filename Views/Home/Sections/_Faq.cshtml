@@ -1,0 +1,9 @@
+﻿@model HomeViewModel
+@{ var c = Model.Content; }
+    <!-- 9. FAQ -->
+    <section class="faq-section" id="faq">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("faq_badge"), c.Text("faq_title"), c.Text("faq_subtitle"), Model.Icon("faq")))" />
+        <partial name="Blocks/_Faq" model="Model.Faqs" />
+      </div>
+    </section>

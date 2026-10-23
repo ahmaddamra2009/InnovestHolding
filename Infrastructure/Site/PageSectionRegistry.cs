@@ -81,24 +81,72 @@ public static class PageSectionRegistry
         Of(pageKey).FirstOrDefault(d => d.Key == sectionKey);
 
     /// <summary>
-    /// The items to render: registry sections only, admin-visible, non-null (today's empty rule), in stored order; a
-    /// section without a stored row comes at the end, in registry order; unknown stored keys are ignored.
+    /// Every registry section of a page with the admin's switch, in render order: stored order (SortOrder, Id) first,
+    /// then the registry sections that have no stored row (visible, registry order). Unknown stored keys are ignored.
+    /// A section that cannot be hidden (<see cref="SectionDef.CanHide"/> false) is always visible, whatever is stored.
+    /// </summary>
+    public static IReadOnlyList<(SectionDef Def, bool Visible)> Layout(SiteSnapshot s, string pageKey)
+    {
+        var defs = Of(pageKey);
+        var stored = s.SectionsOf(pageKey);
+        var result = new List<(SectionDef, bool)>(defs.Count);
+        foreach (var row in stored)
+            if (defs.FirstOrDefault(d => d.Key == row.Key) is { } def && !result.Exists(x => x.Item1.Key == def.Key))
+                result.Add((def, row.IsVisible || !def.CanHide));
+        foreach (var def in defs)
+            if (!result.Exists(x => x.Item1.Key == def.Key))
+                result.Add((def, true));
+        return result;
+    }
+
+    /// <summary>The admin's switch of one section (true when it has no row or cannot be hidden).</summary>
+    public static bool IsVisible(SiteSnapshot s, string pageKey, string sectionKey) =>
+        Layout(s, pageKey).Where(x => x.Def.Key == sectionKey).Select(x => x.Visible).FirstOrDefault();
+
+    /// <summary>
+    /// The items to render: registry sections only, admin-visible, non-null (today's empty rule), in the order of
+    /// <see cref="Layout"/>.
     /// </summary>
     public static IReadOnlyList<T> Arrange<T>(SiteSnapshot s, string pageKey, IEnumerable<(string Key, T? Item)> items) where T : class
     {
-        var stored = s.SectionsOf(pageKey);
-        var defs = Of(pageKey).Select(d => d.Key).ToList();
-        int Rank(string key)
-        {
-            for (var i = 0; i < stored.Count; i++)
-                if (stored[i].Key == key) return i;
-            return stored.Count + defs.IndexOf(key);
-        }
-        bool Visible(string key) => stored.FirstOrDefault(r => r.Key == key)?.IsVisible ?? true;
-        return items
-            .Where(x => x.Item is not null && defs.Contains(x.Key) && Visible(x.Key))
-            .OrderBy(x => Rank(x.Key))
-            .Select(x => x.Item!)
-            .ToList();
+        var layout = Layout(s, pageKey);
+        var given = items.Where(x => x.Item is not null).ToList();
+        var result = new List<T>(given.Count);
+        foreach (var (def, visible) in layout)
+            if (visible)
+                result.AddRange(given.Where(x => x.Key == def.Key).Select(x => x.Item!));
+        return result;
     }
+
+    // ── Counts (Content keys of ContentKeys, group "sections"; edited inline on the sections screen) ──
+
+    /// <param name="Key">A Count key of Infrastructure/Content/ContentKeys (its rule, max and default live there).</param>
+    /// <param name="Page">The page whose sections screen edits it.</param>
+    /// <param name="Section">The row of that page it is shown on.</param>
+    public sealed record SectionLimit(string Key, string Page, string Section, string Label)
+    {
+        private ContentKey Def => ContentKeys.Find(Key)!;
+
+        /// <summary>The largest accepted value (12 for the C5 counts, 50 for home_news_limit).</summary>
+        public int Max => Def.CountMax;
+
+        /// <summary>The value used while the stored one is missing or invalid (= the C4 number).</summary>
+        public int Default => ContentKeys.ParseCount(Def.Default, ContentKeys.HomeNewsLimitFallback, Max);
+    }
+
+    /// <summary>The counts an admin sets from the sections screen.</summary>
+    public static readonly IReadOnlyList<SectionLimit> Limits =
+    [
+        new(ContentKeys.HeroStatsLimit, PageKeys.Home, "hero_stats", "عدد الأرقام في الواجهة"),
+        new(ContentKeys.HomeEventsLimit, PageKeys.Home, "events", "عدد الفعاليات على الصفحة الرئيسية"),
+        new(ContentKeys.HomeNewsLimit, PageKeys.Home, "news", "عدد الأخبار على الصفحة الرئيسية"),
+        new(ContentKeys.ForumEventsLimit, PageKeys.Forum, "events", "عدد الفعاليات في صفحة المنتدى"),
+    ];
+
+    public static SectionLimit? FindLimit(string? key) => Limits.FirstOrDefault(l => l.Key == key);
+
+    /// <summary>A valid count of <paramref name="limit"/>'s rule (ASCII digits, 1..Max), else null.</summary>
+    public static int? ParseLimit(SectionLimit limit, string? value) =>
+        int.TryParse(value?.Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var n)
+        && n >= 1 && n <= limit.Max ? n : null;
 }

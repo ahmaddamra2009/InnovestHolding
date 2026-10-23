@@ -1,0 +1,9 @@
+﻿@model HomeViewModel
+@{ var c = Model.Content; }
+    <!-- 4. SERVICES (the table is still called Platforms) -->
+    <section class="platforms-section" id="platforms">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("platforms_badge"), c.Text("platforms_title"), c.Text("platforms_subtitle"), Model.Icon("platforms")))" />
+        <partial name="Blocks/_ServiceGrid" model="@(new ServicesBlock(new SectionHeaderVm(LText.Empty, LText.Empty, LText.Empty, ""), Model.Services, c.Text("platforms_read_more")))" />
+      </div>
+    </section>

@@ -26,21 +26,22 @@ public class SitePagesController : PublicControllerBase
         var v = await ViewsAsync();
         var c = v.Content;
         var founder = c.Text("founder_message");
+        var s = v.Snapshot;
         return Page(PageKeys.About, v,
         [
-            new VisionBlock(
+            ("vision", new VisionBlock(
             [
-                (c.Text("vision_title"), c.Text("vision_text"), Icons.Svg("eye")!),
-                (c.Text("mission_title"), c.Text("mission_text"), Icons.Svg("target")!),
-            ]),
-            v.ItemsSection(C.Values),
-            v.ItemsSection(C.WhyPoints, compact: true),
-            v.Snapshot.Stats.Count == 0 ? null : new StatsBlock(c.Text("impact_title"), c.Text("impact_intro"), v.Stats()),
-            v.ItemsSection(C.Sectors, compact: true),
-            v.ItemsSection(C.PartnersInSuccess),
-            founder.IsEmpty ? null : new FounderBlock(c.Text("founder_heading"), c.Text("founder_name"), c.Text("founder_title"), founder,
-                v.Image(v.Snapshot.FounderPhoto, c.Text("founder_name"))),
-            v.CtaBand(),
+                (c.Text("vision_title"), c.Text("vision_text"), v.Icon("vision_icon")),
+                (c.Text("mission_title"), c.Text("mission_text"), v.Icon("mission_icon")),
+            ])),
+            ("values", v.ItemsSection(C.Values)),
+            ("why", v.ItemsSection(C.WhyPoints, compact: true)),
+            ("stats", s.Stats.Count == 0 ? null : new StatsBlock(c.Text("impact_title"), c.Text("impact_intro"), v.Stats())),
+            ("sectors", v.ItemsSection(C.Sectors, compact: true)),
+            ("partners_in_success", v.ItemsSection(C.PartnersInSuccess)),
+            ("founder", founder.IsEmpty ? null : new FounderBlock(c.Text("founder_heading"), c.Text("founder_name"), c.Text("founder_title"), founder,
+                v.Image(s.FounderPhoto, c.Text("founder_name")))),
+            ("cta_band", v.CtaBand()),
         ]);
     }
 
@@ -50,13 +51,14 @@ public class SitePagesController : PublicControllerBase
         var v = await ViewsAsync();
         return Page(PageKeys.Ecosystem, v,
         [
-            new CardsBlock(v.Content.Text("ecosystem_title"), v.Content.Text("ecosystem_subtitle"), v.Cards(PageKeys.Ecosystem, true), true),
-            v.ItemsSection(C.EcosystemPillars, compact: true),
-            v.Snapshot.Platforms.Count == 0 ? null : new ServicesBlock(v.Header("platforms", SiteViews.BadgeGrid), v.Services(), v.Content.Text("platforms_read_more")),
-            v.ItemsSection(C.Programs),
-            v.ItemsSection(C.GovernmentServices),
-            v.ItemsSection(C.UniversityServices),
-            v.CtaBand(),
+            ("units", new CardsBlock(v.Content.Text("ecosystem_title"), v.Content.Text("ecosystem_subtitle"), v.Cards(PageKeys.Ecosystem, true), true)),
+            ("pillars", v.ItemsSection(C.EcosystemPillars, compact: true)),
+            ("services", v.Snapshot.Platforms.Count == 0 ? null : new ServicesBlock(
+                v.Header("platforms"), v.Services(), v.Content.Text("platforms_read_more"))),
+            ("programs", v.ItemsSection(C.Programs)),
+            ("government", v.ItemsSection(C.GovernmentServices)),
+            ("universities", v.ItemsSection(C.UniversityServices)),
+            ("cta_band", v.CtaBand()),
         ]);
     }
 
@@ -68,14 +70,22 @@ public class SitePagesController : PublicControllerBase
         return Page(PageKeys.Contact, v,
         [
             // The page intro already introduces the channels: the block repeats only the details.
-            new ContactBlock(v.ContactForm("contact") with { Intro = LText.Empty }),
-            faqs.Count == 0 ? null : new FaqBlock(v.Header("faq", SiteViews.BadgeQuestion), faqs),
+            ("contact", new ContactBlock(v.ContactForm("contact") with { Intro = LText.Empty })),
+            ("faq", faqs.Count == 0 ? null : new FaqBlock(v.Header("faq"), faqs)),
         ]);
     }
 
-    /// <summary>The privacy policy: the page's own texts only. (C5 contract stub by Dev 1 — Dev 2 owns this action.)</summary>
+    /// <summary>
+    /// GET /privacy (and /en/privacy): the policy is the page's own intro and body (plain text, encoded; a blank line =
+    /// a new paragraph) — no sections. Unpublished → the branded 404. While the admin has emptied it, the page shows its
+    /// "coming soon" text with a button to the Contact page (its robots decision is SeoPolicy's: noindex, follow).
+    /// </summary>
     [AcceptVerbs("GET", "HEAD")]
-    public async Task<IActionResult> Privacy() => Page(PageKeys.Privacy, await ViewsAsync(), []);
+    public async Task<IActionResult> Privacy()
+    {
+        var v = await ViewsAsync();
+        return Page(PageKeys.Privacy, v, [], v.PageLink(PageKeys.Contact));
+    }
 }
 
 public class ForumController(AppDbContext db, TimeProvider time) : PublicControllerBase
@@ -84,13 +94,14 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     public async Task<IActionResult> Index()
     {
         var v = await ViewsAsync();
-        var events = v.EventCards(v.Snapshot.Events.Take(3), time.GetUtcNow());
+        var events = v.EventCards(v.Snapshot.Events.Take(v.Count(ContentKeys.ForumEventsLimit)), time.GetUtcNow());
         return Page(PageKeys.Forum, v,
         [
-            new CardsBlock(LText.Empty, LText.Empty, v.Cards(PageKeys.Forum, false), false),
-            v.ItemsSection(C.ForumComponents),
-            events.Count == 0 ? null : new EventsBlock(events, null, new LinkVm(v.Url(PageKeys.ForumEvents), v.Title(PageKeys.ForumEvents))),
-            v.CtaBand(),
+            ("units", new CardsBlock(LText.Empty, LText.Empty, v.Cards(PageKeys.Forum, false), false)),
+            ("components", v.ItemsSection(C.ForumComponents)),
+            // The block's link is "all events" (not the event action).
+            ("events", events.Count == 0 ? null : new EventsBlock(events, null, v.PageLink(PageKeys.ForumEvents))),
+            ("cta_band", v.CtaBand()),
         ]);
     }
 
@@ -98,19 +109,20 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     public async Task<IActionResult> Events()
     {
         var v = await ViewsAsync();
+        if (Unpublished(v, PageKeys.ForumEvents)) return NotFoundPage(v);
         var size = ContentKeys.PageSize(v.Snapshot.Content);
         var total = v.Snapshot.EventsCount.Total;
-        if (PageNumber(total, size, out var redirect) is not { } n) return redirect ?? await NotFoundPageAsync();
+        if (PageNumber(total, size, out var redirect) is not { } n) return redirect ?? NotFoundPage(v);
 
         var now = time.GetUtcNow();
         var rows = await EventQueries.Ordered(db.Events.AsNoTracking().Where(e => e.IsActive), now)
             .Skip((n - 1) * size).Take(size)
             .Select(EventQueries.Row)
             .ToListAsync(HttpContext.RequestAborted);
-        var register = new LinkVm(v.Url(PageKeys.ForumRegistration), v.Title(PageKeys.ForumRegistration));
+        var action = v.EventsAction();
         return Page(PageKeys.ForumEvents, v,
-            [rows.Count == 0 ? null : new EventsBlock(v.EventCards(rows, now), Pager(total, size, n, v.Url(PageKeys.ForumEvents)), register)],
-            register);
+            [("list", rows.Count == 0 ? null : new EventsBlock(v.EventCards(rows, now), Pager(total, size, n, v.Url(PageKeys.ForumEvents)), action))],
+            action);
     }
 
     /// <summary>GET /forum/events/{slug} (and /en/…): an active event; an old slug 301s to the current one.</summary>
@@ -175,8 +187,8 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
             _ => LText.Empty,
         };
         var actions = new List<LinkVm>();
-        if (e.RegistrationOpen && !past && r.Status != EventStatus.Cancelled)
-            actions.Add(new LinkVm(v.Url(PageKeys.ForumRegistration), v.Title(PageKeys.ForumRegistration)));
+        if (e.RegistrationOpen && !past && r.Status != EventStatus.Cancelled && v.EventsAction() is { } register)
+            actions.Add(register);
 
         // schema.org Event needs a real start date; an event that only has the free-text day/month is described as a
         // web page (no fabricated date).
@@ -252,8 +264,7 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     public Task<IActionResult> Speakers() =>
         EntityListAsync(PageKeys.ForumSpeakers,
             EcosystemQueries.PeopleOrdered(db.Speakers.AsNoTracking().Where(s => s.IsActive)).Select(EcosystemQueries.PersonCard<Speaker>()),
-            (v, s) => PersonCard(v, s, DetailKeys.ForumSpeaker), true,
-            v => new LinkVm(v.Url(PageKeys.ForumRegistration), v.Title(PageKeys.ForumRegistration)));
+            (v, s) => PersonCard(v, s, DetailKeys.ForumSpeaker), true, v => v.EventsAction());
 
     /// <summary>GET /forum/speakers/{slug} (and /en/…): a published speaker and the published events they speak at.</summary>
     [AcceptVerbs("GET", "HEAD")]
@@ -266,7 +277,7 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
                     db.Events.AsNoTracking().Where(e => e.IsActive && db.EventSpeakers.Any(es => es.EventId == e.Id && es.SpeakerId == id)), now)
                 .Select(EventQueries.Row).ToListAsync(HttpContext.RequestAborted);
             return events.Count == 0 ? null : new RelatedVm(v.Title(PageKeys.ForumEvents), EventCards(v, events, now), false);
-        }, v => [new LinkVm(v.Url(PageKeys.ForumRegistration), v.Title(PageKeys.ForumRegistration))]);
+        }, v => Actions(v.EventsAction()));
     }
 
     [AcceptVerbs("GET", "HEAD")]
@@ -274,14 +285,15 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     {
         var v = await ViewsAsync();
         var groups = v.PartnerGroups();
+        var row = v.Snapshot.Page(PageKeys.ForumPartners);
         return Page(PageKeys.ForumPartners, v,
         [
-            groups.Count == 0
-                ? new EmptyBlock(v.P(v.Snapshot.Page(PageKeys.ForumPartners)?.EmptyTextAr, v.Snapshot.Page(PageKeys.ForumPartners)?.EmptyTextEn),
-                    new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact)))
-                : new PartnersBlock(v.Content.Text("partners_title"), groups),
-            Packages(v, SponsorshipUnits.Forum),
-            v.ItemsSection(C.PartnerTypes),
+            ("partners", groups.Count == 0
+                ? new EmptyBlock(v.P(row?.EmptyTextAr, row?.EmptyTextEn),
+                    v.EmptyAction(PageKeys.ForumPartners, v.PageLink(PageKeys.Contact)))
+                : new PartnersBlock(v.Content.Text("partners_title"), groups)),
+            ("packages", Packages(v, SponsorshipUnits.Forum)),
+            ("partner_types", v.ItemsSection(C.PartnerTypes)),
         ]);
     }
 
@@ -289,8 +301,9 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     public async Task<IActionResult> Registration()
     {
         var v = await ViewsAsync();
+        if (Unpublished(v, PageKeys.ForumRegistration)) return NotFoundPage(v);
         var events = await LeadFormChoices.EventsAsync(db, HttpContext.RequestAborted);
-        return Page(PageKeys.ForumRegistration, v, [new LeadFormBlock(v.ForumRegistrationForm(events, v.Content.Text("cta_register")))]);
+        return Page(PageKeys.ForumRegistration, v, [("form", new LeadFormBlock(v.ForumRegistrationForm(events, v.Content.Text("cta_register"))))]);
     }
 
     internal static PagerVm? Pager(int total, int size, int page, string url)
@@ -302,9 +315,16 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
 
 public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource> l) : PublicControllerBase
 {
-    /// <summary>The Join page, with the applicant type pre-selected when <paramref name="type"/> is given (?type=).</summary>
-    private static LinkVm Join(SiteViews v, string? type = null) =>
-        new(v.Url(PageKeys.NetworkJoin) + (type is null ? "" : "?type=" + type), v.Title(PageKeys.NetworkJoin));
+    /// <summary>
+    /// The Join page, with the applicant type pre-selected when <paramref name="type"/> is given (?type=); null while the
+    /// Join page is unpublished (no link to a 404).
+    /// </summary>
+    private static LinkVm? Join(SiteViews v, string? type = null) =>
+        v.PageLink(PageKeys.NetworkJoin) is { } join ? join with { Href = join.Href + (type is null ? "" : "?type=" + type) } : null;
+
+    /// <summary>The call to join of the Investors/Startups pages (hideable section "join_cta"); null without a Join link.</summary>
+    private static CtaBlock? JoinCta(SiteViews v, string type) =>
+        Join(v, type) is { } join ? new CtaBlock(v.Title(PageKeys.NetworkJoin), v.Summary(PageKeys.NetworkJoin), [join]) : null;
 
     /// <summary>
     /// The "express interest" action of an opportunity page: the interest form under the opportunities list (its section
@@ -326,10 +346,10 @@ public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource>
         var v = await ViewsAsync();
         return Page(PageKeys.Network, v,
         [
-            new CardsBlock(LText.Empty, LText.Empty, v.Cards(PageKeys.Network, false), false),
-            v.ItemsSection(C.InvestorServices),
-            v.ItemsSection(C.NetworkSteps),
-            v.CtaBand(),
+            ("units", new CardsBlock(LText.Empty, LText.Empty, v.Cards(PageKeys.Network, false), false)),
+            ("investor_services", v.ItemsSection(C.InvestorServices)),
+            ("steps", v.ItemsSection(C.NetworkSteps)),
+            ("cta_band", v.CtaBand()),
         ]);
     }
 
@@ -338,7 +358,10 @@ public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource>
     {
         var v = await ViewsAsync();
         return Page(PageKeys.NetworkInvestors, v,
-            [v.ItemsSection(C.InvestorServices), new CtaBlock(v.Title(PageKeys.NetworkJoin), v.Summary(PageKeys.NetworkJoin), [Join(v, Models.NetworkApplication.Investor)])]);
+        [
+            ("investor_services", v.ItemsSection(C.InvestorServices)),
+            ("join_cta", JoinCta(v, Models.NetworkApplication.Investor)),
+        ]);
     }
 
     [AcceptVerbs("GET", "HEAD")]
@@ -347,9 +370,9 @@ public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource>
         var v = await ViewsAsync();
         return Page(PageKeys.NetworkStartups, v,
         [
-            v.ItemsSection(C.StartupServices),
-            v.ItemsSection(C.Sectors, compact: true),
-            new CtaBlock(v.Title(PageKeys.NetworkJoin), v.Summary(PageKeys.NetworkJoin), [Join(v, Models.NetworkApplication.Startup)]),
+            ("startup_services", v.ItemsSection(C.StartupServices)),
+            ("sectors", v.ItemsSection(C.Sectors, compact: true)),
+            ("join_cta", JoinCta(v, Models.NetworkApplication.Startup)),
         ]);
     }
 
@@ -365,8 +388,8 @@ public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource>
             // The "express interest" form under the list (not content: an empty list stays noindex).
             // Its select comes from the cached snapshot (open + published, invalidated on every admin save); the POST
             // re-checks the chosen id against the database (ILeadReferences.OpenOpportunityAsync).
-            v => new LeadFormBlock(v.InterestForm(v.Snapshot.Ecosystem.OpenOpportunityChoices, selected,
-                new LText(l[MessageKeys.Ui.FormSubmitInterest].Value, false)), IsContent: false));
+            ("interest_form", v => new LeadFormBlock(v.InterestForm(v.Snapshot.Ecosystem.OpenOpportunityChoices, selected,
+                new LText(l[MessageKeys.Ui.FormSubmitInterest].Value, false)), IsContent: false)));
     }
 
     /// <summary>
@@ -403,8 +426,10 @@ public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource>
         if (!ask.IsEmpty) facts.Add(new FactVm("coins", Ui(MessageKeys.Ui.Ask), ask));
 
         var actions = new List<LinkVm>();
-        if (o.IsOpen) actions.Add(InterestAction(v, o.Id));
-        actions.Add(Join(v));
+        // "Express interest" opens the form under the opportunities list: not while the admin hides that form.
+        if (o.IsOpen && PageSectionRegistry.IsVisible(v.Snapshot, PageKeys.NetworkOpportunities, "interest_form"))
+            actions.Add(InterestAction(v, o.Id));
+        if (Join(v) is { } join) actions.Add(join);
 
         var route = SiteRoutes.Detail(DetailKeys.NetworkOpportunity);
         var baseUrl = BaseUrl(v);
@@ -434,29 +459,28 @@ public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource>
     public async Task<IActionResult> Join()
     {
         var v = await ViewsAsync();
+        if (Unpublished(v, PageKeys.NetworkJoin)) return NotFoundPage(v);
         var choices = await LeadFormChoices.LoadAsync(db, HttpContext.RequestAborted);
         var type = Request.Query["type"].Count == 1 ? Request.Query["type"][0] : null;
         return Page(PageKeys.NetworkJoin, v,
-            [new LeadFormBlock(v.JoinForm(choices, type, new LText(l[MessageKeys.Ui.FormSubmitApplication].Value, false)))]);
+            [("form", new LeadFormBlock(v.JoinForm(choices, type, new LText(l[MessageKeys.Ui.FormSubmitApplication].Value, false))))]);
     }
 }
 
 public class TvController(AppDbContext db, IStringLocalizer<SharedResource> l) : PublicControllerBase
 {
-    private static LinkVm Sponsor(SiteViews v) => new(v.Url(PageKeys.TvSponsorship), v.Title(PageKeys.TvSponsorship));
-
     [AcceptVerbs("GET", "HEAD")]
     public async Task<IActionResult> Index()
     {
         var v = await ViewsAsync();
-        return Page(PageKeys.Tv, v, [new CardsBlock(LText.Empty, LText.Empty, v.Cards(PageKeys.Tv, false), false)], Sponsor(v));
+        return Page(PageKeys.Tv, v, [("units", new CardsBlock(LText.Empty, LText.Empty, v.Cards(PageKeys.Tv, false), false))], v.TvAction());
     }
 
     [AcceptVerbs("GET", "HEAD")]
     public Task<IActionResult> Episodes() =>
         EntityListAsync(PageKeys.TvEpisodes,
             EcosystemQueries.EpisodesOrdered(db.TvEpisodes.AsNoTracking().Where(e => e.IsActive)).Select(EcosystemQueries.EpisodeCard),
-            EpisodeCard, false, Sponsor);
+            EpisodeCard, false, v => v.TvAction());
 
     /// <summary>
     /// GET /tv/episodes/{slug} (and /en/…): a published episode, its video (click-to-load: no request to YouTube
@@ -535,7 +559,7 @@ public class TvController(AppDbContext db, IStringLocalizer<SharedResource> l) :
             Video = video,
             Badge = label,
             Facts = facts,
-            Actions = [Sponsor(v)],
+            Actions = Actions(v.TvAction()),
             Related = guests.Count == 0 ? [] : [new RelatedVm(v.Title(PageKeys.TvGuests), guests, true)],
             ArabicOnly = v.English && !available,
             Back = new LinkVm(v.Url(PageKeys.TvEpisodes), v.Title(PageKeys.TvEpisodes)),
@@ -546,7 +570,7 @@ public class TvController(AppDbContext db, IStringLocalizer<SharedResource> l) :
     public Task<IActionResult> Guests() =>
         EntityListAsync(PageKeys.TvGuests,
             EcosystemQueries.PeopleOrdered(db.TvGuests.AsNoTracking().Where(g => g.IsActive)).Select(EcosystemQueries.PersonCard<TvGuest>()),
-            (v, g) => PersonCard(v, g, DetailKeys.TvGuest), true, Sponsor);
+            (v, g) => PersonCard(v, g, DetailKeys.TvGuest), true, v => v.TvAction());
 
     /// <summary>GET /tv/guests/{slug} (and /en/…): a published guest and the published episodes they appear in.</summary>
     [AcceptVerbs("GET", "HEAD")]
@@ -557,7 +581,7 @@ public class TvController(AppDbContext db, IStringLocalizer<SharedResource> l) :
                     db.TvEpisodes.AsNoTracking().Where(x => x.IsActive && db.TvEpisodeGuests.Any(g => g.TvEpisodeId == x.Id && g.TvGuestId == id)))
                 .Select(EcosystemQueries.EpisodeCard).ToListAsync(HttpContext.RequestAborted);
             return episodes.Count == 0 ? null : new RelatedVm(v.Title(PageKeys.TvEpisodes), episodes.Select(x => EpisodeCard(v, x)).ToList(), false);
-        }, v => [Sponsor(v)]);
+        }, v => Actions(v.TvAction()));
 
     [AcceptVerbs("GET", "HEAD")]
     public async Task<IActionResult> Sponsorship()
@@ -570,8 +594,8 @@ public class TvController(AppDbContext db, IStringLocalizer<SharedResource> l) :
         var form = v.SponsorshipForm(unit, packages.PackageChoices(Models.SponsorshipEnquiry.Forum),
             packages.PackageChoices(Models.SponsorshipEnquiry.Tv), new LText(l[MessageKeys.Ui.FormSubmitEnquiry].Value, false));
         // The TV packages (when published), then the enquiry form.
-        return Page(PageKeys.TvSponsorship, v, [Packages(v, SponsorshipUnits.Tv), new LeadFormBlock(form)],
-            new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact)));
+        return Page(PageKeys.TvSponsorship, v, [("packages", Packages(v, SponsorshipUnits.Tv)), ("form", new LeadFormBlock(form))],
+            v.PageLink(PageKeys.Contact));
     }
 }
 
@@ -581,9 +605,10 @@ public class NewsroomController(AppDbContext db) : PublicControllerBase
     public async Task<IActionResult> Index()
     {
         var v = await ViewsAsync();
+        if (Unpublished(v, PageKeys.News)) return NotFoundPage(v);
         var size = ContentKeys.PageSize(v.Snapshot.Content);
         var total = v.Snapshot.NewsCount.Total;
-        if (PageNumber(total, size, out var redirect) is not { } n) return redirect ?? await NotFoundPageAsync();
+        if (PageNumber(total, size, out var redirect) is not { } n) return redirect ?? NotFoundPage(v);
 
         var rows = await db.News.AsNoTracking().Where(x => x.IsActive)
             .OrderBy(x => x.SortOrder).ThenBy(x => x.Id).Skip((n - 1) * size).Take(size)
@@ -591,8 +616,8 @@ public class NewsroomController(AppDbContext db) : PublicControllerBase
                 x.Slug, x.Image == null ? null : new MediaRef(x.Image.FileKey, x.Image.Format, x.Image.Width, x.Image.Height, x.Image.AltAr, x.Image.AltEn)))
             .ToListAsync(HttpContext.RequestAborted);
         return Page(PageKeys.News, v,
-            [rows.Count == 0 ? null : new NewsBlock(v.NewsCards(rows), ForumController.Pager(total, size, n, v.Url(PageKeys.News)), v.Content.Text("news_read_more"))],
-            new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact)));
+            [("list", rows.Count == 0 ? null : new NewsBlock(v.NewsCards(rows), ForumController.Pager(total, size, n, v.Url(PageKeys.News)), v.Content.Text("news_read_more")))],
+            v.PageLink(PageKeys.Contact));
     }
 
     /// <summary>GET /news/{slug} (and /en/…): an active news item; an old slug 301s to the current one.</summary>
