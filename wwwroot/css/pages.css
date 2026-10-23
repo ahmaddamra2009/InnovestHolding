@@ -672,6 +672,10 @@ html[lang="en"] .page-body p { line-height: 1.8; }
 .lead-form .form-consent { display: flex; align-items: flex-start; gap: 10px; margin: 8px 0 16px; }
 .lead-form .form-consent input { margin-top: 4px; }
 .lead-form .form-consent label { font-size: .88rem; color: var(--text-body); line-height: 1.7; cursor: pointer; }
+/* The privacy policy link of the consent box: after the label (no {privacy} token) or inside it (token). */
+.lead-form .form-consent-text { font-size: .88rem; line-height: 1.7; }
+.lead-form .form-consent-text label { margin-inline-end: 6px; }
+.lead-form .form-consent .consent-privacy { color: var(--navy-brand); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .lead-form .form-control[aria-invalid="true"] { border-color: var(--status-error); }
 .lead-form textarea.form-control { min-height: 110px; }
 

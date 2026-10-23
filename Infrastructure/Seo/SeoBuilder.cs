@@ -242,11 +242,12 @@ public static class SeoBuilder
         var siteName = c.Text("site_name").Value;
         var other = new ContentVm(v.Snapshot.Content, !english).Text("site_name").Value;
         var email = c.Neutral("contact_email");
-        var phone = c.Neutral("contact_phone");
+        // The visible pages show the phone as typed; the structured data carries it as E.164, or not at all.
+        var phone = ContactFormats.ToE164(c.Neutral("contact_phone"));
         var address = new Dictionary<string, object> { ["@type"] = "PostalAddress" };
         Put(address, "streetAddress", c.Text("contact_address").Value);
         Put(address, "addressLocality", c.Neutral("org_address_locality"));
-        Put(address, "addressCountry", c.Neutral("org_address_country"));
+        Put(address, "addressCountry", ContactFormats.CountryCode(c.Neutral("org_address_country")));
         var contactPoint = new Dictionary<string, object> { ["@type"] = "ContactPoint" };
         Put(contactPoint, "email", email);
         Put(contactPoint, "telephone", phone);
@@ -308,13 +309,16 @@ public static class SeoBuilder
         if (orgId is not null && type is "AboutPage" or "ContactPage") webPage["about"] = new Dictionary<string, object> { ["@id"] = orgId };
 
         // The visible list of the page (the ecosystem lists its units). A paged list passes the rows it renders, so
-        // the ItemList never names a row of another page; rows with a detail page carry its URL.
+        // the ItemList never names a row of another page; rows with a detail page carry its URL. A list whose section
+        // the admin hides is not described (structured data follows what the page shows, SEO-C5 §3).
         var listItems = listedNames is not null
             ? listedNames.Select(x => (x.Name, x.Url is null ? null : Abs(x.Url))).ToList()
             : page.Key switch
             {
-                PageKeys.Ecosystem => v.Cards(PageKeys.Ecosystem, false).Select(x => (x.Title.Value, Abs(x.Href))).ToList(),
-                PageKeys.ForumPartners => v.Partners().Select(p => (p.Name.Value, (string?)null)).ToList(),
+                PageKeys.Ecosystem when PageSectionRegistry.IsVisible(v.Snapshot, PageKeys.Ecosystem, "units") =>
+                    v.Cards(PageKeys.Ecosystem, false).Select(x => (x.Title.Value, Abs(x.Href))).ToList(),
+                PageKeys.ForumPartners when PageSectionRegistry.IsVisible(v.Snapshot, PageKeys.ForumPartners, "partners") =>
+                    v.Partners().Select(p => (p.Name.Value, (string?)null)).ToList(),
                 _ => [],
             };
         if (listItems.Count > 0)

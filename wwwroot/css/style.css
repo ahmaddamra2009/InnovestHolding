@@ -972,6 +972,10 @@ footer::before {
 @media (max-width: 576px) {
   .logo-img { height: 36px; }
 
+  /* One footer column: 8+ social networks (wider than the column) take a second row instead of being cut off.
+     Up to 7 icons (340px) fit on one row from 375px up, so that layout is unchanged. */
+  footer .social-links { flex-wrap: wrap; }
+
   .footer-top {
     grid-template-columns: 1fr;
     gap: 28px;

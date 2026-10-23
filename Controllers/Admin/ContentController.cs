@@ -229,6 +229,7 @@ public class ContentController : AdminControllerBase
     {
         if (string.IsNullOrWhiteSpace(value)) return null;
         var v = value.Trim().Replace("\r\n", "\n").Replace('\r', '\n'); // one line-break form: LF
+        if (key.Rule == ContentRule.CountryCode && ContactFormats.CountryCode(v) is { } country) return country; // eg → EG
         return key.Rule == ContentRule.BaseUrl && SiteUrl.TryNormalize(v, out var normalized) ? normalized : v;
     }
 
@@ -264,6 +265,8 @@ public class ContentController : AdminControllerBase
                                        && list.All(SiteRoutes.IsKey) && list.Distinct(StringComparer.Ordinal).Count() == list.Count,
             ContentRule.Digits => value.Ar.Trim() is { Length: >= 8 and <= 15 } d && d.All(char.IsAsciiDigit),
             ContentRule.UtcOffset => EventDates.TryParseOffset(value.Ar.Trim(), out _),
+            ContentRule.Phone => ContactFormats.IsPhone(value.Ar),
+            ContentRule.CountryCode => ContactFormats.CountryCode(value.Ar) is not null,
             _ => true
         };
         if (!ok)
@@ -276,6 +279,8 @@ public class ContentController : AdminControllerBase
                 ContentRule.PageKey or ContentRule.Digits or ContentRule.IconKey or ContentRule.PageKeyList => L(MessageKeys.InvalidValue, label),
                 ContentRule.Link => L(MessageKeys.HttpsUrl, label),
                 ContentRule.UtcOffset => L(MessageKeys.UtcOffset),
+                ContentRule.Phone => L(MessageKeys.ContentPhone, label),
+                ContentRule.CountryCode => L(MessageKeys.ContentCountryCode, label),
                 _ => L(MessageKeys.HttpsUrl, label)
             };
             ModelState.AddModelError(arField, message);

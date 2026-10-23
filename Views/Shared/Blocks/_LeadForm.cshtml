@@ -12,6 +12,39 @@
     var busy = form is ForumRegistrationFormVm ? K.Ui.FormRegistering : K.Ui.FormSending;
 }
 @functions {
+    private const string PrivacyToken = "{privacy}";
+
+    /// <summary>
+    /// The privacy policy link of a consent box: a new tab (the half-filled form stays), rel=noopener, and a visually
+    /// hidden note saying so. Built as content (values encoded by the view's encoder), so no layout whitespace enters
+    /// the sentence.
+    /// </summary>
+    private Microsoft.AspNetCore.Html.IHtmlContent PrivacyAnchor(LinkVm link)
+    {
+        var a = new Microsoft.AspNetCore.Html.HtmlContentBuilder();
+        a.AppendHtml("<a href=\"").Append(link.Href).AppendHtml("\" class=\"consent-privacy\" target=\"_blank\" rel=\"noopener\"");
+        if (link.Title.Lang is { } lang) a.AppendHtml(" lang=\"").Append(lang).AppendHtml("\" dir=\"").Append(link.Title.Dir ?? "rtl").AppendHtml("\"");
+        a.AppendHtml(">").Append(link.Title.Value).AppendHtml("<span class=\"visually-hidden\"> ").Append(L[K.Ui.OpensInNewTab].Value).AppendHtml("</span></a>");
+        return a;
+    }
+
+    /// <summary>The consent sentence; each {privacy} token becomes the link, or the page title as plain text without one.</summary>
+    private Microsoft.AspNetCore.Html.IHtmlContent ConsentText(LeadFormVm form)
+    {
+        var b = new Microsoft.AspNetCore.Html.HtmlContentBuilder();
+        var parts = form.Consent.Value.Split(PrivacyToken);
+        for (var i = 0; i < parts.Length; i++)
+        {
+            if (i > 0)
+            {
+                if (form.Privacy is { } link) b.AppendHtml(PrivacyAnchor(link));
+                else b.Append(form.PrivacyTitle.Value);
+            }
+            b.Append(parts[i]);
+        }
+        return b;
+    }
+
     private void Label(string id, string textKey, bool required)
     {
         <label for="@id">@L[textKey]@if (required){<span class="req" aria-hidden="true">*</span>}</label>
@@ -242,7 +275,18 @@
 
           <div class="form-consent">
             <input type="checkbox" id="@(p)-consent" name="consent" value="true" required>
-            <label for="@(p)-consent"><span lang="@form.Consent.Lang" dir="@form.Consent.Dir">@form.Consent</span><span class="req" aria-hidden="true">*</span></label>
+            @if (!form.Consent.Value.Contains(PrivacyToken, StringComparison.Ordinal) && form.Privacy is { } after)
+            {
+              <div class="form-consent-text">
+                <label for="@(p)-consent"><span lang="@form.Consent.Lang" dir="@form.Consent.Dir">@form.Consent</span><span class="req" aria-hidden="true">*</span></label>
+                @PrivacyAnchor(after)
+              </div>
+            }
+            else
+            {
+            @* same indentation as the C4 line: Razor emits it, and without a link the box stays byte-identical (NC-0) *@
+            <label for="@(p)-consent"><span lang="@form.Consent.Lang" dir="@form.Consent.Dir">@ConsentText(form)</span><span class="req" aria-hidden="true">*</span></label>
+            }
           </div>
           <input type="text" name="Website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
           <div id="@(p)-msg" class="form-message" role="alert" hidden></div>

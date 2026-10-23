@@ -42,6 +42,10 @@ public enum ContentRule
     IconKey,
     /// <summary>Comma-separated route-table keys, 1–<see cref="ContentKeys.MaxPageList"/>, no duplicates.</summary>
     PageKeyList,
+    /// <summary>A phone as typed: optional leading «+», digits, spaces and dashes, 7–15 digits (<see cref="ContactFormats.IsPhone"/>).</summary>
+    Phone,
+    /// <summary>An ISO 3166-1 alpha-2 country code, stored upper-case (<see cref="ContactFormats.CountryCode"/>).</summary>
+    CountryCode,
 }
 
 /// <param name="Key">SiteContents.SectionKey.</param>
@@ -267,7 +271,7 @@ public static class ContentKeys
         new("contact_subtitle", "contact", "الوصف", 1000, Multiline: true),
         new("contact_intro", "contact", "النص التعريفي", 1000, Multiline: true),
         new("contact_address", "contact", "العنوان", 300),
-        new("contact_phone", "contact", "الهاتف", 50, Neutral: true),
+        new("contact_phone", "contact", "الهاتف (مثال: ‎+20 1141410808)", 50, Rule: ContentRule.Phone, Neutral: true),
         new("contact_email", "contact", "البريد الإلكتروني", 200, Neutral: true),
         new("contact_whatsapp", "contact", "رقم واتساب بالصيغة الدولية — أرقام فقط (اختياري)", 15, Rule: ContentRule.Digits, Neutral: true, AllowEmpty: true),
         new("contact_website", "contact", "الموقع الإلكتروني (https — اختياري)", 200, Rule: ContentRule.HttpsUrl, Neutral: true, AllowEmpty: true),
@@ -286,7 +290,7 @@ public static class ContentKeys
         new("seo_og_image_alt", "seo", "النص البديل لصورة المشاركة", 200),
         new("site_base_url", "seo", "رابط الموقع الأساسي (https://النطاق — مطلوب للـ canonical وخريطة الموقع)", 200, Rule: ContentRule.BaseUrl, Neutral: true, AllowEmpty: true),
         new("org_address_locality", "seo", "المدينة (للبيانات المنظمة — اختياري)", 100, Neutral: true, AllowEmpty: true),
-        new("org_address_country", "seo", "رمز الدولة (للبيانات المنظمة — اختياري، مثل EG)", 10, Neutral: true, AllowEmpty: true),
+        new("org_address_country", "seo", "رمز الدولة (للبيانات المنظمة — اختياري، حرفان مثل EG)", 10, Rule: ContentRule.CountryCode, Neutral: true, AllowEmpty: true),
 
         new("founder_heading", "founder", "عنوان القسم (المميز بين { })", 200, ContentFormat.Highlight),
         new("founder_name", "founder", "الاسم", 200),

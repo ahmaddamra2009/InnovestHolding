@@ -177,6 +177,8 @@
   <data name="Msg_SlugInvalid" xml:space="preserve"><value>The slug may only contain lower-case letters, digits and single hyphens (e.g. forum-2026)</value></data>
   <data name="Msg_SlugTaken" xml:space="preserve"><value>This slug is (or was) used by another item — choose another</value></data>
   <data name="Msg_UtcOffset" xml:space="preserve"><value>The UTC offset must look like +02:00 or -05:30</value></data>
+  <data name="Msg_ContentPhone" xml:space="preserve"><value>{0}: the phone number is not valid — digits, spaces and dashes only, an optional leading +, 7 to 15 digits</value></data>
+  <data name="Msg_ContentCountryCode" xml:space="preserve"><value>{0}: the country code must be two Latin letters per ISO 3166 (e.g. EG)</value></data>
   <data name="Msg_DateRequired" xml:space="preserve"><value>Enter the start date, or the day and month as text</value></data>
   <data name="Msg_EndBeforeStart" xml:space="preserve"><value>The end must be after the start</value></data>
   <data name="Field_Slug" xml:space="preserve"><value>Slug</value></data>
@@ -260,6 +262,7 @@
   <data name="Msg_SlugReserved" xml:space="preserve"><value>The form "{0}-number" is reserved for automatic addresses — choose another short link.</value></data>
   <data name="Ui_WatchOnYouTube" xml:space="preserve"><value>Watch on YouTube</value></data>
   <data name="Ui_ExternalLink" xml:space="preserve"><value>(opens another site)</value></data>
+  <data name="Ui_OpensInNewTab" xml:space="preserve"><value>(opens in a new tab)</value></data>
   <data name="Msg_ForumRegistrationSuccess" xml:space="preserve"><value>Your Forum registration was received! We will contact you with the event details</value></data>
   <data name="Msg_JoinSuccess" xml:space="preserve"><value>Your application was received! Our team will review it and contact you</value></data>
   <data name="Msg_SponsorshipSuccess" xml:space="preserve"><value>Your sponsorship enquiry was received! Our team will contact you with the details</value></data>
