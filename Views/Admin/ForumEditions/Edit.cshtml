@@ -1,0 +1,86 @@
+@model ForumEditionEditInput
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "تعديل النسخة";
+    var full = Model.Photos.Count >= ForumEdition.MaxPhotos;
+}
+<p style="margin-bottom:12px;"><a href="/Admin/ForumEditions" class="btn-admin btn-secondary btn-sm">← كل النسخ</a></p>
+
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">بيانات النسخة</span></div>
+    <form method="post" asp-action="Update" asp-controller="ForumEditions">
+        @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
+        <input type="hidden" name="Id" value="@Model.Id">
+        <div class="form-group" style="max-width:200px;">
+            <label for="Year">السنة <span class="req">*</span></label>
+            <input type="number" id="Year" name="Year" value="@Model.Year" class="form-control" min="@ForumEdition.MinYear" max="@ForumEdition.MaxYear" required>
+            <span asp-validation-for="Year" class="field-error"></span>
+        </div>
+        <lang-pair label="تسمية النسخة (مثل: النسخة الرابعة)" name-ar="EditionLabelAr" name-en="EditionLabelEn" value-ar="@Model.EditionLabelAr" value-en="@Model.EditionLabelEn" max="60" />
+        <lang-pair label="العنوان" name-ar="TitleAr" name-en="TitleEn" value-ar="@Model.TitleAr" value-en="@Model.TitleEn" max="200" required="true" />
+        <lang-pair label="المكان (اختياري)" name-ar="PlaceAr" name-en="PlaceEn" value-ar="@Model.PlaceAr" value-en="@Model.PlaceEn" max="200" />
+        <lang-pair label="النص (اختياري — سطر فارغ = فقرة جديدة)" name-ar="TextAr" name-en="TextEn" value-ar="@Model.TextAr" value-en="@Model.TextEn" max="4000" rows="5" />
+        <div class="form-check" style="margin-bottom:20px;"><input type="checkbox" id="IsActive" name="IsActive" value="true" @(Model.IsActive ? "checked" : "")> <label for="IsActive">ظاهرة في الموقع</label><input type="hidden" name="IsActive" value="false"></div>
+        <button type="submit" class="btn-admin btn-primary">حفظ التعديلات</button>
+    </form>
+</div>
+
+<div class="admin-card" id="photos" tabindex="-1">
+    <div class="admin-card-header"><span class="admin-card-title">الصور (@Model.Photos.Count / @ForumEdition.MaxPhotos)</span></div>
+    <p class="form-hint">الصورة الأولى غلاف النسخة. ▲▼ تغيّر الترتيب. النص البديل يصف الصورة لقارئ الشاشة (فارغ = عنوان النسخة).</p>
+    @if (Model.Photos.Count == 0)
+    {
+        <p style="text-align:center;color:var(--admin-text-muted);padding:24px 0;">لا توجد صور بعد — تظهر النسخة بنصها فقط.</p>
+    }
+    else
+    {
+        <div class="table-scroll">
+        <table class="admin-table" style="min-width:680px;">
+            <thead><tr><th>الصورة</th><th>النص البديل</th><th>الترتيب</th><th>إجراءات</th></tr></thead>
+            <tbody>
+            @for (var i = 0; i < Model.Photos.Count; i++)
+            {
+                var photo = Model.Photos[i];
+                var name = i == 0 ? "صورة الغلاف" : $"الصورة {i + 1}";
+                <tr id="photo-@photo.Id" tabindex="-1">
+                    <td>
+                        @if (photo.Image is { } img) { <img class="admin-thumb" src="@img.Url" width="@img.Width" height="@img.Height" alt="" loading="lazy"> <span class="field-hint" dir="ltr">@img.Width × @img.Height</span> }
+                        @if (i == 0) { <span class="badge-active">الغلاف</span> }
+                    </td>
+                    <td>
+                        <form method="post" asp-action="UpdatePhoto" asp-controller="ForumEditions" class="edit-form">
+                            <input type="hidden" name="EditionId" value="@Model.Id">
+                            <input type="hidden" name="PhotoId" value="@photo.Id">
+                            <lang-pair label="النص البديل" name-ar="ImageAltAr" name-en="ImageAltEn" value-ar="@photo.AltAr" value-en="@photo.AltEn" max="200" id-prefix="ph@(photo.Id)-" />
+                            <button type="submit" class="btn-admin btn-primary btn-sm">حفظ الوصف</button>
+                        </form>
+                    </td>
+                    <td><partial name="~/Views/Admin/Shared/_ReorderCell.cshtml" model="@(new ReorderCellVm("ForumEditions", photo.Id.ToString(), name, i + 1, Model.Photos.Count, "MovePhoto", new Dictionary<string, string> { ["editionId"] = Model.Id.ToString() }))" /></td>
+                    <td>
+                        <form method="post" asp-action="DeletePhoto" asp-controller="ForumEditions" style="display:inline;">
+                            <input type="hidden" name="id" value="@photo.Id">
+                            <input type="hidden" name="editionId" value="@Model.Id">
+                            <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذه الصورة؟')">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+    }
+
+    @if (full)
+    {
+        <p class="form-hint">بلغت النسخة الحد الأقصى (@ForumEdition.MaxPhotos صورة). احذف صورة لإضافة غيرها.</p>
+    }
+    else
+    {
+        <form method="post" asp-action="AddPhoto" asp-controller="ForumEditions" enctype="multipart/form-data" style="margin-top:16px;">
+            <input type="hidden" name="EditionId" value="@Model.Id">
+            @{ ViewData["ImageLabel"] = "إضافة صورة (صورة واحدة في كل مرة)"; ViewData["ImagePrefix"] = "add-"; }
+            <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="new ForumEditionPhotoInput()" view-data="ViewData" />
+            <button type="submit" class="btn-admin btn-primary">رفع الصورة</button>
+        </form>
+    }
+</div>

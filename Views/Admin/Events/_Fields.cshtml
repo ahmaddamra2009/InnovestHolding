@@ -15,6 +15,13 @@
 
 <fieldset class="image-field">
     <legend>الموعد</legend>
+    <div class="form-check" style="margin-bottom:8px;"><input type="checkbox" id="DateIsMonth" name="DateIsMonth" value="true" @(Model.DateIsMonth ? "checked" : "")> <label for="DateIsMonth">الشهر فقط (اليوم غير معروف بعد)</label><input type="hidden" name="DateIsMonth" value="false"></div>
+    <div class="form-group" style="max-width:260px;">
+        <label for="Month">الشهر والسنة</label>
+        <input id="Month" name="Month" type="month" class="form-control ltr-input" dir="ltr" min="2000-01" max="2100-12" value="@Model.Month" placeholder="2026-06">
+        <span asp-validation-for="Month" class="field-error"></span>
+    </div>
+    <p class="field-hint">مع «الشهر فقط» يُخزَّن من أول الشهر إلى آخر يوم فيه (بفرق التوقيت أدناه)، وتُظهر البطاقة الشهر والسنة دون يوم، ويُتجاهل البدء والانتهاء واليوم النصي.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
         <div class="form-group"><label for="StartsAtLocal">البدء (بتوقيت مكان الفعالية)</label><input id="StartsAtLocal" name="StartsAtLocal" type="datetime-local" class="form-control" value="@Local(Model.StartsAtLocal)"><span asp-validation-for="StartsAtLocal" class="field-error"></span></div>
         <div class="form-group"><label for="EndsAtLocal">الانتهاء (اختياري)</label><input id="EndsAtLocal" name="EndsAtLocal" type="datetime-local" class="form-control" value="@Local(Model.EndsAtLocal)"><span asp-validation-for="EndsAtLocal" class="field-error"></span></div>

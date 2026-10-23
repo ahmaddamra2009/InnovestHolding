@@ -1,0 +1,59 @@
+@model List<ForumEditionRowVm>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "النسخ السابقة";
+}
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">إضافة نسخة</span></div>
+    <p class="form-hint">تظهر النسخ الظاهرة في صفحة «النسخ السابقة» للمنتدى بالترتيب أدناه، ويظهر أحدثها في صفحة المنتدى. بعد الإضافة تنتقل إلى صفحة النسخة لإضافة صورها (حتى @ForumEdition.MaxPhotos صورة).</p>
+    <form method="post" asp-action="Create" asp-controller="ForumEditions">
+        <div class="form-group" style="max-width:200px;">
+            <label for="new-year">السنة <span class="req">*</span></label>
+            <input type="number" id="new-year" name="Year" class="form-control" min="@ForumEdition.MinYear" max="@ForumEdition.MaxYear" required>
+        </div>
+        <lang-pair label="تسمية النسخة (مثل: النسخة الرابعة)" name-ar="EditionLabelAr" name-en="EditionLabelEn" max="60" id-prefix="new-" />
+        <lang-pair label="العنوان" name-ar="TitleAr" name-en="TitleEn" max="200" required="true" id-prefix="new-" />
+        <button type="submit" class="btn-admin btn-primary">إضافة</button>
+    </form>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">النسخ (@Model.Count)</span></div>
+    @if (Model.Count == 0)
+    {
+        <p style="text-align:center;color:var(--admin-text-muted);padding:40px 0;">لا توجد نسخ — يُخفى هذا القسم من صفحة المنتدى.</p>
+    }
+    else
+    {
+        <div class="table-scroll">
+        <table class="admin-table" style="min-width:720px;">
+            <thead><tr><th>الغلاف</th><th>السنة</th><th>النسخة</th><th>الصور</th><th>EN</th><th>الظهور</th><th>الترتيب</th><th>إجراءات</th></tr></thead>
+            <tbody>
+            @for (var i = 0; i < Model.Count; i++)
+            {
+                var item = Model[i];
+                <tr id="row-@item.Id" tabindex="-1" class="@(item.IsActive ? "" : "row-hidden")">
+                    <td>@if (item.Cover is { } cover) { <img class="admin-thumb" src="@cover.Url" alt=""> } else { <span class="field-hint">—</span> }</td>
+                    <td dir="ltr">@item.Year</td>
+                    <td>
+                        <strong>@item.TitleAr</strong>
+                        @if (!string.IsNullOrWhiteSpace(item.LabelAr)) { <span class="field-hint"> · @item.LabelAr</span> }
+                    </td>
+                    <td>@item.PhotoCount / @ForumEdition.MaxPhotos</td>
+                    <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="item.HasEnglish" /></td>
+                    <td><partial name="~/Views/Admin/Shared/_VisibleSwitch.cshtml" model="@(new VisibleSwitchVm("ForumEditions", item.Id.ToString(), item.TitleAr, item.IsActive))" /></td>
+                    <td><partial name="~/Views/Admin/Shared/_ReorderCell.cshtml" model="@(new ReorderCellVm("ForumEditions", item.Id.ToString(), item.TitleAr, i + 1, Model.Count))" /></td>
+                    <td class="actions">
+                        <a href="/Admin/ForumEditions/Edit/@item.Id" class="btn-admin btn-secondary btn-sm">تعديل والصور</a>
+                        <form method="post" asp-action="Delete" asp-controller="ForumEditions" style="display:inline;">
+                            <input type="hidden" name="id" value="@item.Id">
+                            <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذه النسخة وكل صورها؟')">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+    }
+</div>

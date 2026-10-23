@@ -428,4 +428,22 @@ public static class MessageKeys
         /// <summary>The screen's name (sidebar and heading): it manages every page's sections (QA C5-7).</summary>
         public const string ScreenTitle = "Admin_SectionsScreenTitle";
     }
+
+    /// <summary>F10 admin: «النسخ السابقة» (ForumEditions) and the month-only event date.</summary>
+    public static class AdminForumEditions
+    {
+        public const string Year = "Field_Year";
+        public const string Month = "Field_Month";
+        /// <summary>The month-only event: a yyyy-MM month from 2000 to 2100 is required.</summary>
+        public const string MonthRequired = "Msg_MonthRequired";
+        public const string EditionAdded = "Admin_EditionAdded";
+        public const string EditionUpdated = "Admin_EditionUpdated";
+        public const string EditionDeleted = "Admin_EditionDeleted";
+        public const string PhotoAdded = "Admin_EditionPhotoAdded";
+        public const string PhotoUpdated = "Admin_EditionPhotoUpdated";
+        public const string PhotoDeleted = "Admin_EditionPhotoDeleted";
+        public const string PhotoRequired = "Admin_EditionPhotoRequired";
+        /// <summary>{0} = the maximum number of photos of one edition.</summary>
+        public const string PhotoLimit = "Admin_EditionPhotoLimit";
+    }
 }
