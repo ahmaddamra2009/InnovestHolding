@@ -1,0 +1,22 @@
+@model BrandHeadVm
+@* Theme colour and icons (Admin, «الهوية البصرية»). With nothing uploaded this is exactly the bundled set. /favicon.ico
+   is always linked: crawlers and old browsers ask for it blindly. An uploaded file's URL carries its random key, so a
+   replacement is a new URL (no stale tab icon or home-screen icon). *@
+<meta name="theme-color" content="@Model.ThemeColor">
+<link rel="icon" href="~/favicon.ico" sizes="any">
+@if (Model.Favicon is { } icon)
+{
+    <link rel="icon" href="@icon.Url" type="image/png" sizes="@(icon.Width)x@(icon.Height)">
+}
+else
+{
+    <link rel="icon" href="~/assets/brand/favicon.svg" asp-append-version="true" type="image/svg+xml">
+}
+@if (Model.AppleTouchIcon is { } apple)
+{
+    <link rel="apple-touch-icon" href="@apple.Url">
+}
+else
+{
+    <link rel="apple-touch-icon" href="~/assets/brand/apple-touch-icon.png" asp-append-version="true">
+}

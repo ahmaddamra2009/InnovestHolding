@@ -19,10 +19,7 @@
         <meta name="robots" content="noindex, nofollow">
         <title>@ViewData["Title"]</title>
     }
-    <meta name="theme-color" content="#111145">
-    <link rel="icon" href="~/favicon.ico" sizes="any">
-    <link rel="icon" href="~/assets/brand/favicon.svg" asp-append-version="true" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="~/assets/brand/apple-touch-icon.png" asp-append-version="true">
+    @await Component.InvokeAsync("BrandHead")
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">

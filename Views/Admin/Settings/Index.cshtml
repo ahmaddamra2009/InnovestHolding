@@ -2,6 +2,12 @@
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "الإعدادات"; }
 
 <div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">الهوية البصرية</span></div>
+    <p class="form-hint">أيقونة المتصفح، أيقونة الآيفون، صورة المشاركة الافتراضية ولون شريط المتصفح على الجوال.</p>
+    <a asp-controller="Brand" asp-action="Index" class="btn-admin btn-secondary">فتح «الهوية البصرية»</a>
+</div>
+
+<div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">تغيير كلمة المرور</span></div>
     <form method="post" asp-action="ChangePassword" asp-controller="Settings" style="max-width:500px;">
         @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }

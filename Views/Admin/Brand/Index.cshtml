@@ -1,0 +1,97 @@
+@model BrandPageVm
+@using InnovestHolding.Infrastructure.Content
+@using InnovestHolding.Infrastructure.Media
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "الهوية البصرية"; }
+
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">الهوية البصرية</span></div>
+    <p class="form-hint">
+        أيقونة المتصفح، أيقونة الآيفون، صورة المشاركة الافتراضية ولون شريط المتصفح على الجوال. كل صورة لها نموذجها الخاص؛
+        ما لم تُرفع صورة يبقى الملف الافتراضي المرفق مع الموقع مستخدماً. الشعاران وصورة الواجهة وصورة المؤسس تُعدَّل من
+        <a asp-controller="Content" asp-action="Edit" asp-fragment="image-logo_on_dark">النصوص العامة ← صور الموقع</a>.
+    </p>
+</div>
+
+@foreach (var s in Model.Slots)
+{
+    var slot = s.Slot;
+    var current = s.Input.Current;
+    var prefix = slot.Key + "-";
+    var accept = string.Join(",", slot.Formats.SelectMany(f => f == ImageFormat.Jpeg
+        ? new[] { ".jpg", ".jpeg", "image/jpeg" } : new[] { ".png", "image/png" }));
+    var previewClass = slot.Key == BrandImages.OgDefault ? "brand-preview brand-preview--og"
+        : slot.Key == BrandImages.AppleTouchIcon ? "brand-preview brand-preview--apple" : "brand-preview brand-preview--icon";
+    <form method="post" asp-controller="Brand" asp-action="Image" enctype="multipart/form-data" class="admin-card" id="brand-@slot.Key">
+        <div class="admin-card-header"><span class="admin-card-title">@slot.Label</span></div>
+        <input type="hidden" name="Key" value="@slot.Key">
+        <p class="form-hint">@slot.Guidance</p>
+        <div class="brand-row">
+            <figure class="@previewClass">
+                @if (current is not null)
+                {
+                    <img src="@current.Url" width="@current.Width" height="@current.Height" alt="" loading="lazy">
+                    <figcaption>
+                        <span dir="ltr">@current.Width × @current.Height</span> · <span dir="ltr">@((s.Bytes ?? 0) / 1024) KB</span>
+                        @if (s.Advice is null)
+                        {
+                            <span class="brand-ok">✓ مطابقة للتوصيات</span>
+                        }
+                    </figcaption>
+                }
+                else
+                {
+                    <img src="@slot.DefaultPath" alt="" loading="lazy">
+                    <figcaption>الافتراضي المرفق · <span dir="ltr">@slot.DefaultSize</span></figcaption>
+                }
+            </figure>
+            <div class="brand-form">
+                @if (s.Advice is not null)
+                {
+                    <p class="brand-warning" role="status">@s.Advice</p>
+                }
+                <div class="form-group">
+                    <label for="@(prefix)Image">@(current is null ? "اختر ملفاً" : "استبدال الملف")</label>
+                    <input type="file" id="@(prefix)Image" name="Image" class="form-control@(s.Error is null ? "" : " is-invalid")" accept="@accept"
+                           aria-describedby="@(prefix)hint@(s.Error is null ? "" : " " + prefix + "error")">
+                    <span class="field-hint" id="@(prefix)hint">الحجم الأقصى @(slot.MaxBytes >= 1024 * 1024 ? $"{slot.MaxBytes / (1024 * 1024)} MB" : $"{slot.MaxBytes / 1024} KB").</span>
+                    @if (s.Error is not null)
+                    {
+                        <span class="field-error" id="@(prefix)error" role="alert">@s.Error</span>
+                    }
+                </div>
+                @if (slot.HasAlt)
+                {
+                    <lang-pair label="النص البديل (يصف الصورة عند المشاركة — فارغ = النص البديل العام في النصوص العامة)" name-ar="ImageAltAr" name-en="ImageAltEn" value-ar="@s.Input.ImageAltAr" value-en="@s.Input.ImageAltEn" max="200" id-prefix="@prefix" />
+                }
+                @if (current is not null)
+                {
+                    <label class="form-check"><input type="checkbox" name="RemoveImage" value="true" id="@(prefix)RemoveImage"> حذف والعودة إلى الملف الافتراضي المرفق</label>
+                }
+                <div class="inline-actions">
+                    <button type="submit" class="btn-admin btn-primary">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </form>
+}
+
+<form method="post" asp-controller="Brand" asp-action="ThemeColor" class="admin-card" id="brand-theme">
+    <div class="admin-card-header"><span class="admin-card-title">لون شريط المتصفح على الجوال (theme-color)</span></div>
+    <p class="form-hint">لون شريط العنوان في متصفحات الجوال. بالصيغة #RRGGBB؛ فارغ = اللون الافتراضي <span dir="ltr">@BrandImages.DefaultThemeColor</span>.</p>
+    <div class="brand-row">
+        <span class="brand-swatch" style="background:@Model.ThemeColor" aria-hidden="true"></span>
+        <div class="form-group">
+            <label for="ThemeColor">اللون الحالي <span dir="ltr">@Model.ThemeColor</span></label>
+            <input type="text" id="ThemeColor" name="ThemeColor" dir="ltr" maxlength="7" class="form-control@(Model.ThemeColorError is null ? "" : " is-invalid")"
+                   value="@(Model.ThemeColorTyped ?? (Model.ThemeColor == BrandImages.DefaultThemeColor ? "" : Model.ThemeColor))"
+                   placeholder="@BrandImages.DefaultThemeColor" pattern="#[0-9A-Fa-f]{6}" autocomplete="off">
+            @if (Model.ThemeColorError is not null)
+            {
+                <span class="field-error" role="alert">@Model.ThemeColorError</span>
+            }
+        </div>
+    </div>
+    <div class="inline-actions">
+        <button type="submit" class="btn-admin btn-primary">حفظ اللون</button>
+    </div>
+</form>
