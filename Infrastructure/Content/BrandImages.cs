@@ -18,13 +18,16 @@ namespace InnovestHolding.Infrastructure.Content;
 /// cannot be flattened: CTO decision).</param>
 /// <param name="DefaultPath">The bundled file shown while nothing is uploaded.</param>
 /// <param name="HasAlt">The image carries an alt text (the share image's og:image:alt).</param>
+/// <param name="MaxPixels">Largest width × height (0 = MaxSide²).</param>
 public sealed record BrandImage(
     string Key, string Label, string Guidance, ImageFormat[] Formats,
     int MinWidth, int MinHeight, int MaxSide, bool Square, bool RejectAlpha, int MaxBytes,
-    string DefaultPath, string DefaultSize, bool HasAlt = false)
+    string DefaultPath, string DefaultSize, bool HasAlt = false, long MaxPixels = 0)
 {
-    /// <summary>The upload caps passed to the shared pipeline (MediaStore): bytes and longest side of this slot.</summary>
-    public ImageUse Use => new(Key, MaxBytes, MaxSide, (long)MaxSide * MaxSide);
+    public long PixelCap => MaxPixels > 0 ? MaxPixels : (long)MaxSide * MaxSide;
+
+    /// <summary>The upload caps passed to the shared pipeline (MediaStore): bytes, longest side and pixels of this slot.</summary>
+    public ImageUse Use => new(Key, MaxBytes, MaxSide, PixelCap);
 }
 
 /// <summary>The three uploadable brand assets and the theme colour (G26, G27, G28).</summary>
@@ -51,9 +54,9 @@ public static partial class BrandImages
             [ImageFormat.Png], 180, 180, 180, Square: true, RejectAlpha: true, MaxBytes: 512 * KB,
             DefaultPath: "/assets/brand/apple-touch-icon.png", DefaultSize: "180×180"),
         new(OgDefault, "صورة المشاركة الافتراضية (og:image)",
-            "تُستخدم عند مشاركة أي صفحة ليست لها صورة خاصة بها (واتساب، لينكدإن، X). JPG أو PNG، 1200×630 بكسل أو أكبر بنسبة 1.91:1، حتى 5 MB (يُفضَّل أقل من 600 KB لواتساب).",
-            [ImageFormat.Jpeg, ImageFormat.Png], 1200, 630, ImageInspector.MaxSide, Square: false, RejectAlpha: false, MaxBytes: MediaStore.MaxBytes,
-            DefaultPath: "/assets/brand/og-default.jpg", DefaultSize: "1200×630", HasAlt: true),
+            "تُستخدم عند مشاركة أي صفحة ليست لها صورة خاصة بها (واتساب، لينكدإن، X). JPG أو PNG، من 1200×630 بكسل (بنسبة 1.91:1) حتى 4000 بكسل لأطول ضلع و12 ميغابكسل، حتى 5 MB (يُفضَّل أقل من 600 KB لواتساب).",
+            [ImageFormat.Jpeg, ImageFormat.Png], 1200, 630, 4000, Square: false, RejectAlpha: false, MaxBytes: MediaStore.MaxBytes,
+            DefaultPath: "/assets/brand/og-default.jpg", DefaultSize: "1200×630", HasAlt: true, MaxPixels: 12_000_000),
     ];
 
     public static BrandImage? Find(string? key) => All.FirstOrDefault(i => i.Key == key);
@@ -69,19 +72,30 @@ public static partial class BrandImages
 
     private static string Bytes(int bytes) => bytes >= 1024 * 1024 ? $"{bytes / (1024 * 1024)} MB" : $"{bytes / 1024} KB";
 
+    private static string TypeError(BrandImage slot) => $"الصيغة غير مدعومة. المسموح: {FormatList(slot)} فقط.";
+
+    /// <summary>
+    /// What can be decided before a byte is read: the extension and the declared type are formats of the slot, and the
+    /// length is within its cap. Null = go on and read the file.
+    /// </summary>
+    public static string? CheckUpload(BrandImage slot, string? fileName, string? contentType, long length)
+    {
+        if (ImageInspector.FromExtension(fileName) is not { } byName || !slot.Formats.Contains(byName)) return TypeError(slot);
+        if (ImageInspector.FromContentType(contentType) is not { } byType || !slot.Formats.Contains(byType)) return TypeError(slot);
+        if (length > slot.MaxBytes) return $"الملف أكبر من {Bytes(slot.MaxBytes)}.";
+        return null;
+    }
+
     /// <summary>
     /// The slot's own rules, checked before the shared pipeline stores anything: format, byte size, dimensions, square,
-    /// alpha. Returns the Arabic refusal message, or null when the slot accepts the file. A file the inspector cannot
-    /// read returns null too: the pipeline (MediaStore.SaveAsync) then refuses it with its usual message.
+    /// pixels, alpha. Returns the Arabic refusal message, or null when the slot accepts the file. A file the inspector
+    /// cannot read returns null too: the pipeline (MediaStore.SaveAsync) then refuses it with its usual message.
     /// </summary>
     public static string? Check(BrandImage slot, ReadOnlySpan<byte> data, string? fileName, string? contentType)
     {
-        var typeError = $"الصيغة غير مدعومة. المسموح: {FormatList(slot)} فقط.";
-        if (ImageInspector.FromExtension(fileName) is not { } byName || !slot.Formats.Contains(byName)) return typeError;
-        if (ImageInspector.FromContentType(contentType) is not { } byType || !slot.Formats.Contains(byType)) return typeError;
-        if (data.Length > slot.MaxBytes) return $"الملف أكبر من {Bytes(slot.MaxBytes)}.";
+        if (CheckUpload(slot, fileName, contentType, data.Length) is { } early) return early;
         if (ImageInspector.Inspect(data, out var info) != ImageProblem.None) return null;
-        if (!slot.Formats.Contains(info!.Format)) return typeError;
+        if (!slot.Formats.Contains(info!.Format)) return TypeError(slot);
 
         var (w, h) = (info.Width, info.Height);
         if (slot.Square && w != h) return $"الصورة غير مربعة (الأبعاد {w}×{h}). يجب أن تكون مربعة.";
@@ -90,7 +104,9 @@ public static partial class BrandImages
         if (w < slot.MinWidth || h < slot.MinHeight)
             return $"الأبعاد {w}×{h} صغيرة جداً: الحد الأدنى {slot.MinWidth}×{slot.MinHeight}.";
         if (w > slot.MaxSide || h > slot.MaxSide)
-            return $"الأبعاد {w}×{h} كبيرة جداً: الحد الأقصى {slot.MaxSide}×{slot.MaxSide}.";
+            return $"الأبعاد {w}×{h} كبيرة جداً: الحد الأقصى {slot.MaxSide} بكسل لأطول ضلع.";
+        if ((long)w * h > slot.PixelCap)
+            return $"الأبعاد {w}×{h} كبيرة جداً: الحد الأقصى {slot.PixelCap / 1_000_000} ميغابكسل.";
         if (slot.RejectAlpha && info.Format == ImageFormat.Png && PngHasTransparency(data))
             return "الصورة تحتوي على شفافية (قناة ألفا). أيقونة الآيفون يجب أن تكون بخلفية مصمتة: احفظها PNG بلا شفافية ثم ارفعها من جديد.";
         return null;

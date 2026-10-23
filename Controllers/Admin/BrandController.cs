@@ -100,21 +100,20 @@ public class BrandController : AdminControllerBase
         }
         await SaveWithImageAsync(_db, uploaded, leaving);
         TempData["Success"] = uploaded is not null
-            ? $"تم حفظ «{slot.Label}». قد يحتاج المتصفح وقتاً لإظهار الأيقونة الجديدة."
+            ? L(MessageKeys.Admin.BrandSaved, slot.Label)
             : input.RemoveImage && current is not null
-                ? $"عاد «{slot.Label}» إلى الملف الافتراضي المرفق."
+                ? L(MessageKeys.Admin.BrandReverted, slot.Label)
                 : L(MessageKeys.Admin.PhotoSaved);
         return Redirect(Url.Action(nameof(Index))! + "#brand-" + slot.Key);
     }
 
     /// <summary>
-    /// The slot's rules on the uploaded bytes, read up to the slot's cap + 1 (an oversized file is refused on its length
-    /// without being read). Null = acceptable; the shared pipeline then checks and stores it.
+    /// The slot's rules: type and length from the request first (an oversized or wrongly typed file is never read), then
+    /// the bytes (at most the slot's cap). Null = acceptable; the shared pipeline then checks and stores it.
     /// </summary>
     private async Task<string?> CheckSlotAsync(BrandImage slot, IFormFile file)
     {
-        if (file.Length > slot.MaxBytes)
-            return BrandImages.Check(slot, new byte[slot.MaxBytes + 1], file.FileName, file.ContentType);
+        if (BrandImages.CheckUpload(slot, file.FileName, file.ContentType, file.Length) is { } early) return early;
         await using var stream = file.OpenReadStream();
         var buffer = new byte[file.Length];
         var read = await stream.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false, HttpContext.RequestAborted);
@@ -128,7 +127,7 @@ public class BrandController : AdminControllerBase
         var value = (input.ThemeColor ?? "").Trim();
         if (!ModelState.IsValid || (value.Length > 0 && !BrandImages.HexColor().IsMatch(value)))
             return View(ViewPath, await PageAsync(typedColor: value,
-                colorError: "اللون غير صالح: اكتبه بالصيغة #RRGGBB (مثل #111145)، أو اتركه فارغاً للون الافتراضي."));
+                colorError: L(MessageKeys.Admin.ThemeColorInvalid)));
 
         // Empty = the default colour. The row is kept (a migration may have written it with the default); none is
         // created just to hold the default.
@@ -145,7 +144,7 @@ public class BrandController : AdminControllerBase
             row.UpdatedAt = DateTime.UtcNow;
         }
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تم حفظ لون المتصفح.";
+        TempData["Success"] = L(MessageKeys.Admin.ThemeColorSaved);
         return Redirect(Url.Action(nameof(Index))! + "#brand-theme");
     }
 }

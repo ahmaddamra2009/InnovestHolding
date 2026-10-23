@@ -238,6 +238,12 @@ public static class MessageKeys
         public const string ImageHintGeneral = "Admin_ImageHintGeneral";
         public const string ImageHintLogo = "Admin_ImageHintLogo";
         public const string SectorInUse = "Admin_SectorInUse";
+        public const string BrandSaved = "Admin_BrandSaved";
+        public const string BrandReverted = "Admin_BrandReverted";
+        public const string ThemeColorInvalid = "Admin_ThemeColorInvalid";
+        public const string ThemeColorSaved = "Admin_ThemeColorSaved";
+        /// <summary>The login page's site name when the content cannot be read (C4's hard-coded value).</summary>
+        public const string LoginSiteName = "Admin_LoginSiteName";
     }
 
     public static class Ui

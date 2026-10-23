@@ -1,13 +1,10 @@
 @model LoginViewModel
-@using InnovestHolding.Infrastructure.Content
-@inject ISiteContentCache SiteCache
 @{
     Layout = null;
-    // The same brand settings as the public site (one cached snapshot, no query on a cache hit): site name (Arabic,
-    // the admin language), the uploaded logo on dark, the icons and theme colour; the bundled files while none is set.
-    var snapshot = await SiteCache.GetAsync(Context.RequestAborted);
-    var siteName = new ContentVm(snapshot.Content, false).Text("site_name").Value;
-    var logo = snapshot.Image(SiteImages.LogoOnDark);
+    // Site name and logo on dark from the brand settings, with a fallback when the content cannot be read.
+    var brand = await LoginBrandVm.LoadAsync(Context);
+    var siteName = brand.SiteName;
+    var logo = brand.Logo;
 }
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -15,8 +12,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>@(string.IsNullOrWhiteSpace(siteName) ? "تسجيل الدخول" : $"تسجيل الدخول - {siteName}")</title>
-    @await Component.InvokeAsync("BrandHead")
+    <title>تسجيل الدخول - @siteName</title>
+@{ Write(await Component.InvokeAsync("BrandHead")); }
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">

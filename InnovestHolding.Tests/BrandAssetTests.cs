@@ -2,7 +2,11 @@ using System.Buffers.Binary;
 using System.Net;
 using System.Text;
 using InnovestHolding.Infrastructure.Content;
+using InnovestHolding.Models;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using static InnovestHolding.Tests.TestHelpers;
 
 namespace InnovestHolding.Tests;
@@ -121,6 +125,29 @@ public class BrandImageRuleTests
         Assert.Null(BrandImages.Advice(Og, 1200, 630, 100_000));
         Assert.Contains("1.91:1", BrandImages.Advice(Og, 1200, 1200, 100_000));
         Assert.Contains("600 KB", BrandImages.Advice(Og, 1200, 630, 700 * 1024));
+    }
+
+    [Theory] // Yasser L-C5B-1: the share image is capped at 4000 px on the long side and 12 MP
+    [InlineData(4000, 2100, null)]
+    [InlineData(4000, 3000, null)]
+    [InlineData(4001, 2100, "4000 بكسل")]
+    [InlineData(3999, 3999, "12 ميغابكسل")]
+    public void Share_image_pixel_caps(int w, int h, string? error)
+    {
+        var result = Png(Og, PngBuilder.Png(w, h));
+        if (error is null) Assert.Null(result);
+        else Assert.Contains(error, result);
+        Assert.Equal(12_000_000, Og.Use.MaxPixels);
+        Assert.Equal(4000, Og.Use.MaxLongSide);
+    }
+
+    [Fact] // B5: type and length are refused from the request alone (nothing read)
+    public void Upload_header_check_needs_no_bytes()
+    {
+        Assert.Contains("512 KB", BrandImages.CheckUpload(Favicon, "f.png", "image/png", 512 * 1024 + 1));
+        Assert.Contains("5 MB", BrandImages.CheckUpload(Og, "o.jpg", "image/jpeg", 5L * 1024 * 1024 + 1));
+        Assert.Contains("PNG فقط", BrandImages.CheckUpload(Favicon, "f.gif", "image/gif", 10));
+        Assert.Null(BrandImages.CheckUpload(Favicon, "f.png", "image/png", 512 * 1024));
     }
 
     [Theory]
@@ -356,6 +383,94 @@ public class BrandAssetTests(TestAppFactory f)
             if (!existed)
                 await f.DbAsync(async db => { db.SiteContents.RemoveRange(db.SiteContents.Where(x => x.SectionKey == BrandImages.ThemeColorKey)); return await db.SaveChangesAsync(); });
         }
+    }
+
+    [Fact] // B4: with nothing uploaded the head lines are byte-identical to C4 (same indentation, same line ends)
+    public async Task Default_head_lines_are_byte_identical_to_c4()
+    {
+        await ResetAsync();
+        var html = await f.NewClient().GetStringAsync("/");
+        // The four lines exactly as C4's _Layout wrote them, joined by the layout's own line end (\1).
+        const string pattern = """
+            \n    <meta name="theme-color" content="#111145">(\r?\n)    <link rel="icon" href="/favicon.ico" sizes="any">\1    <link rel="icon" href="/assets/brand/favicon.svg\?v=[^"]+" type="image/svg\+xml">\1    <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png\?v=[^"]+">\1    <link rel="preconnect" href="https://fonts.googleapis.com">
+            """;
+        Assert.Matches(new System.Text.RegularExpressions.Regex(pattern), html);
+    }
+
+    [Fact] // Hassan B1: share image order — item image > list page image > uploaded default > legacy seo_og_image path
+    public async Task Share_image_order()
+    {
+        await ResetAsync();
+        static MediaFile M(string tag) => new() { FileKey = Guid.NewGuid().ToString("N"), Format = "jpeg", Width = 1200, Height = 630, Bytes = 1, AltAr = tag };
+        var item = M("item"); var page = M("page"); var site = M("site");
+        var slug = Unique("og-order").ToLowerInvariant();
+        var newsId = await f.DbAsync(async db =>
+        {
+            db.MediaFiles.AddRange(item, page, site);
+            var n = new News { TitleAr = "ترتيب صورة المشاركة", SummaryAr = "ملخص", Slug = slug, IsActive = true, SortOrder = 990, Image = item };
+            db.News.Add(n);
+            (await db.Pages.SingleAsync(p => p.Key == "news")).Image = page;
+            db.SiteContents.Add(new SiteContent { SectionKey = BrandImages.OgDefault, ContentAr = site.FileKey });
+            await db.SaveChangesAsync();
+            return n.Id;
+        });
+        async Task<string> OgAsync()
+        {
+            var html = await f.NewClient().GetStringAsync("/news/" + slug);
+            return System.Text.RegularExpressions.Regex.Match(html, "<meta property=\"og:image\" content=\"([^\"]*)\">").Groups[1].Value;
+        }
+        try
+        {
+            Assert.Equal($"{Base}/media/{item.FileKey}.jpg", await OgAsync());
+            await f.DbAsync(async db => { (await db.News.SingleAsync(n => n.Id == newsId)).ImageId = null; return await db.SaveChangesAsync(); });
+            Assert.Equal($"{Base}/media/{page.FileKey}.jpg", await OgAsync());
+            await f.DbAsync(async db => { (await db.Pages.SingleAsync(p => p.Key == "news")).ImageId = null; return await db.SaveChangesAsync(); });
+            Assert.Equal($"{Base}/media/{site.FileKey}.jpg", await OgAsync());
+            await ResetAsync();
+            Assert.Equal($"{Base}/assets/brand/og-default.jpg", await OgAsync()); // the legacy path key (its seeded value)
+        }
+        finally
+        {
+            await f.DbAsync(async db =>
+            {
+                db.News.RemoveRange(db.News.Where(n => n.Id == newsId));
+                (await db.Pages.SingleAsync(p => p.Key == "news")).ImageId = null;
+                await db.SaveChangesAsync();
+                var keys = new[] { item.FileKey, page.FileKey, site.FileKey };
+                db.MediaFiles.RemoveRange(db.MediaFiles.Where(m => keys.Contains(m.FileKey)));
+                return await db.SaveChangesAsync();
+            });
+            await ResetAsync();
+        }
+    }
+
+    private sealed class FailingCache : ISiteContentCache
+    {
+        public Task<SiteSnapshot> GetAsync(CancellationToken cancellationToken = default) =>
+            throw new InvalidOperationException("database unreachable (test)");
+
+        public void Invalidate() { }
+    }
+
+    [Fact] // Hassan B2 / Yasser L-C5B-2: the login page opens when the content cannot be read (bundled logo, resx name)
+    public async Task Login_renders_when_the_content_cache_fails()
+    {
+        await using var app = f.WithWebHostBuilder(b => b.ConfigureTestServices(s =>
+        {
+            s.RemoveAll<ISiteContentCache>();
+            s.AddSingleton<ISiteContentCache, FailingCache>();
+        }));
+        var client = app.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false, BaseAddress = new Uri("https://innovest.test"),
+        });
+        var r = await client.GetAsync("/Account/Login");
+        Assert.Equal(HttpStatusCode.OK, r.StatusCode);
+        var html = await r.Content.ReadAsStringAsync();
+        Assert.Contains("<title>تسجيل الدخول - Innovest Holding</title>", html);
+        Assert.Matches("<img src=\"/assets/brand/logo-on-dark.png\\?v=[^\"]+\" alt=\"Innovest Holding\">", html);
+        AssertDefaultHead(html);
+        Assert.Contains("name=\"__RequestVerificationToken\"", html);
     }
 
     [Fact] // the Content editor's image form cannot bypass the brand rules: brand keys are refused there and not listed
