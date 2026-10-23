@@ -49,11 +49,16 @@
             <h3 lang="@item.Text.Lang" dir="@item.Text.Dir">@item.Text</h3>
             @if (!item.Description.IsEmpty)
             {
-              <p lang="@item.Description.Lang" dir="@item.Description.Dir">@item.Description</p>
+              @* F10: one line per line of the description (the forum's awards list); a one-line text renders as before. *@
+              <p lang="@item.Description.Lang" dir="@item.Description.Dir">@ContentText.Lines(item.Description)</p>
             }
           </li>
         }
       </ul>
+    }
+    @if (!Model.Note.IsEmpty)
+    {
+      <p class="items-note" lang="@Model.Note.Lang" dir="@Model.Note.Dir">@Model.Note</p>
     }
   </div>
 </section>

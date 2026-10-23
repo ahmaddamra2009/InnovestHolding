@@ -112,12 +112,12 @@ namespace InnovestHolding.Migrations
                         .HasDefaultValueSql("SYSUTCDATETIME()");
 
                     b.Property<string>("DescriptionAr")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasMaxLength(3370)
+                        .HasColumnType("nvarchar(3370)");
 
                     b.Property<string>("DescriptionEn")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasMaxLength(3370)
+                        .HasColumnType("nvarchar(3370)");
 
                     b.Property<string>("Group")
                         .IsRequired()
@@ -138,12 +138,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("TextAr")
                         .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("TextEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -163,13 +163,13 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("AddressAr")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
                         .HasDefaultValue("");
 
                     b.Property<string>("AddressEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<byte>("AttendanceMode")
                         .HasColumnType("tinyint");
@@ -177,16 +177,19 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("CityAr")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)")
                         .HasDefaultValue("");
 
                     b.Property<string>("CityEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("DateIsMonth")
+                        .HasColumnType("bit");
 
                     b.Property<string>("DescriptionAr")
                         .IsRequired()
@@ -203,12 +206,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("EventMonthAr")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<string>("EventMonthEn")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<int?>("ImageId")
                         .HasColumnType("int");
@@ -218,34 +221,34 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("LocationAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("LocationEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("MetaDescriptionAr")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
                         .HasDefaultValue("");
 
                     b.Property<string>("MetaDescriptionEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaTitleAr")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)")
                         .HasDefaultValue("");
 
                     b.Property<string>("MetaTitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("OnlineUrl")
                         .HasMaxLength(500)
@@ -272,31 +275,31 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("SummaryAr")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)")
                         .HasDefaultValue("");
 
                     b.Property<string>("SummaryEn")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)");
 
                     b.Property<string>("TimeAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("TimeEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -386,12 +389,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -437,6 +440,114 @@ namespace InnovestHolding.Migrations
                         });
                 });
 
+            modelBuilder.Entity("InnovestHolding.Models.ForumEdition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("EditionLabelAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("EditionLabelEn")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PlaceAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("PlaceEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TextAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("TextEn")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TitleEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<short>("Year")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive", "SortOrder");
+
+                    b.ToTable("ForumEditions");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.ForumEditionPhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("ForumEditionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ImageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImageId")
+                        .IsUnique();
+
+                    b.HasIndex("ForumEditionId", "SortOrder");
+
+                    b.ToTable("ForumEditionPhotos");
+                });
+
             modelBuilder.Entity("InnovestHolding.Models.InterestOption", b =>
                 {
                     b.Property<int>("Id")
@@ -453,12 +564,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("NameAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("NameEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -480,12 +591,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("AskTextAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("AskTextEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("BodyAr")
                         .IsRequired()
@@ -510,21 +621,21 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("MetaDescriptionAr")
                         .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaDescriptionEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaTitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("MetaTitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<int?>("SectorItemId")
                         .HasColumnType("int");
@@ -540,30 +651,30 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("StageTextAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("StageTextEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("SummaryAr")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)");
 
                     b.Property<string>("SummaryEn")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)");
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -595,13 +706,13 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("AltAr")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)")
                         .HasDefaultValue("");
 
                     b.Property<string>("AltEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<int>("Bytes")
                         .HasColumnType("int");
@@ -668,12 +779,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.HasKey("Id");
 
@@ -706,12 +817,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.HasKey("Id");
 
@@ -847,12 +958,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("CategoryAr")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<string>("CategoryEn")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -870,33 +981,33 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("MetaDescriptionAr")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
                         .HasDefaultValue("");
 
                     b.Property<string>("MetaDescriptionEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaTitleAr")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)")
                         .HasDefaultValue("");
 
                     b.Property<string>("MetaTitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("NewsDateAr")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<string>("NewsDateEn")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<DateOnly?>("PublishedOn")
                         .HasColumnType("date");
@@ -919,12 +1030,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -1031,24 +1142,24 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("EmptyTextAr")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)");
 
                     b.Property<string>("EmptyTextEn")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)");
 
                     b.Property<int?>("ImageId")
                         .HasColumnType("int");
 
                     b.Property<string>("IntroAr")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasMaxLength(3370)
+                        .HasColumnType("nvarchar(3370)");
 
                     b.Property<string>("IntroEn")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasMaxLength(3370)
+                        .HasColumnType("nvarchar(3370)");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("bit");
@@ -1061,21 +1172,21 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("MetaDescriptionAr")
                         .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaDescriptionEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaTitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("MetaTitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<bool>("ShowInFooter")
                         .HasColumnType("bit");
@@ -1088,21 +1199,21 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("SummaryAr")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)");
 
                     b.Property<string>("SummaryEn")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)");
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -1179,12 +1290,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("NameAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("NameEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<int?>("PartnerGroupId")
                         .HasColumnType("int");
@@ -1233,12 +1344,15 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("NameAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("NameEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
+
+                    b.Property<bool>("ShowOnForumHub")
+                        .HasColumnType("bit");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -1282,12 +1396,12 @@ namespace InnovestHolding.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("ShortTitleAr")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("ShortTitleEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<bool>("ShowInFooter")
                         .HasColumnType("bit");
@@ -1297,12 +1411,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.HasKey("Id");
 
@@ -1330,12 +1444,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("TextAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("TextEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.HasKey("Id");
 
@@ -1530,8 +1644,8 @@ namespace InnovestHolding.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Label")
-                        .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Network")
                         .IsRequired()
@@ -1579,12 +1693,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("JobTitleAr")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("JobTitleEn")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("LinkedInUrl")
                         .HasMaxLength(500)
@@ -1593,39 +1707,39 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("MetaDescriptionAr")
                         .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaDescriptionEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaTitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("MetaTitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("NameAr")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("NameEn")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("OrganizationAr")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("OrganizationEn")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<int?>("PhotoId")
                         .HasColumnType("int");
@@ -1748,12 +1862,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("BenefitsAr")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasMaxLength(3370)
+                        .HasColumnType("nvarchar(3370)");
 
                     b.Property<string>("BenefitsEn")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasMaxLength(3370)
+                        .HasColumnType("nvarchar(3370)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -1765,24 +1879,24 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("PriceTextAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("PriceTextEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("Unit")
                         .IsRequired()
@@ -1819,20 +1933,20 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("LabelAr")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("LabelEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("ShortLabelAr")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<string>("ShortLabelEn")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(170)
+                        .HasColumnType("nvarchar(170)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -1880,21 +1994,21 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("MetaDescriptionAr")
                         .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaDescriptionEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaTitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("MetaTitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<int?>("Number")
                         .HasColumnType("int");
@@ -1913,24 +2027,24 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("SummaryAr")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)");
 
                     b.Property<string>("SummaryEn")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(840)
+                        .HasColumnType("nvarchar(840)");
 
                     b.Property<int?>("ThumbnailId")
                         .HasColumnType("int");
 
                     b.Property<string>("TitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("TitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -1997,12 +2111,12 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("JobTitleAr")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("JobTitleEn")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("LinkedInUrl")
                         .HasMaxLength(500)
@@ -2011,39 +2125,39 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("MetaDescriptionAr")
                         .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaDescriptionEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("MetaTitleAr")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("MetaTitleEn")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(330)
+                        .HasColumnType("nvarchar(330)");
 
                     b.Property<string>("NameAr")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("NameEn")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("OrganizationAr")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("OrganizationEn")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<int?>("PhotoId")
                         .HasColumnType("int");
@@ -2124,6 +2238,25 @@ namespace InnovestHolding.Migrations
                     b.Navigation("FooterColumn");
 
                     b.Navigation("NavItem");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.ForumEditionPhoto", b =>
+                {
+                    b.HasOne("InnovestHolding.Models.ForumEdition", "ForumEdition")
+                        .WithMany("Photos")
+                        .HasForeignKey("ForumEditionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InnovestHolding.Models.MediaFile", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ForumEdition");
+
+                    b.Navigation("Image");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.InvestmentOpportunity", b =>
@@ -2280,6 +2413,11 @@ namespace InnovestHolding.Migrations
             modelBuilder.Entity("InnovestHolding.Models.FooterColumn", b =>
                 {
                     b.Navigation("Links");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.ForumEdition", b =>
+                {
+                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.NavItem", b =>

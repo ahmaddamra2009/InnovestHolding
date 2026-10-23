@@ -214,6 +214,8 @@
   <data name="Ui_NewsSource" xml:space="preserve"><value>Source</value></data>
   <data name="Ui_ArabicOnlyNotice" xml:space="preserve"><value>This content is currently available in Arabic only.</value></data>
   <data name="Ui_ViewDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="Ui_EditionMorePhotos" xml:space="preserve"><value>More photos ({0})</value></data>
+  <data name="Ui_EditionPhotosAria" xml:space="preserve"><value>Photos of {0}</value></data>
   <data name="Msg_LogoLimits" xml:space="preserve"><value>A logo must not exceed 1 MB and 1200 pixels on its longest side</value></data>
   <data name="Admin_ImageHintGeneral" xml:space="preserve"><value>JPG, PNG or WebP, up to 5 MB, 8000 pixels per side and 25 million pixels. Suggested size 1200×630 (enough for the share image), ideally under 500 KB: the picture is served as uploaded. Location and camera data are removed on upload.</value></data>
   <data name="Admin_ImageHintLogo" xml:space="preserve"><value>Logo: JPG, PNG or WebP, up to 1 MB and 1200 pixels on the longest side. It is shown about 70 pixels high, so 400 pixels wide on a transparent background (PNG or WebP) and under 100 KB is enough.</value></data>
@@ -367,4 +369,15 @@
   <data name="Admin_ForumColorsSaved" xml:space="preserve"><value>Forum colours and fonts saved.</value></data>
   <data name="Admin_ForumResetNothing" xml:space="preserve"><value>The colours and fonts are already the defaults.</value></data>
   <data name="Admin_ForumResetDone" xml:space="preserve"><value>Default colours and fonts restored ({0} values).</value></data>
+  <data name="Field_Year" xml:space="preserve"><value>Year</value></data>
+  <data name="Field_Month" xml:space="preserve"><value>Month</value></data>
+  <data name="Msg_MonthRequired" xml:space="preserve"><value>Choose the month and year (2000 to 2100)</value></data>
+  <data name="Admin_EditionAdded" xml:space="preserve"><value>Edition added. Add its photos on this page.</value></data>
+  <data name="Admin_EditionUpdated" xml:space="preserve"><value>Edition saved</value></data>
+  <data name="Admin_EditionDeleted" xml:space="preserve"><value>Edition and its photos deleted</value></data>
+  <data name="Admin_EditionPhotoAdded" xml:space="preserve"><value>Photo added</value></data>
+  <data name="Admin_EditionPhotoUpdated" xml:space="preserve"><value>Photo description saved</value></data>
+  <data name="Admin_EditionPhotoDeleted" xml:space="preserve"><value>Photo deleted</value></data>
+  <data name="Admin_EditionPhotoRequired" xml:space="preserve"><value>Choose a photo to upload</value></data>
+  <data name="Admin_EditionPhotoLimit" xml:space="preserve"><value>This edition has the maximum number of photos ({0}). Delete one before adding another.</value></data>
 </root>

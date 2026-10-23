@@ -109,8 +109,10 @@ public class EventsController : AdminControllerBase
             SummaryEn = item.SummaryEn,
             DescriptionAr = item.DescriptionAr,
             DescriptionEn = item.DescriptionEn,
-            StartsAtLocal = item.StartsAt?.DateTime,
-            EndsAtLocal = item.EndsAt?.DateTime,
+            DateIsMonth = item.DateIsMonth,
+            Month = item.DateIsMonth ? item.StartsAt?.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture) : null,
+            StartsAtLocal = item.DateIsMonth ? null : item.StartsAt?.DateTime,
+            EndsAtLocal = item.DateIsMonth ? null : item.EndsAt?.DateTime,
             UtcOffset = offset,
             Status = item.Status,
             AttendanceMode = item.AttendanceMode,
@@ -201,6 +203,8 @@ public class EventsController : AdminControllerBase
         item.DescriptionEn = Lf(input.DescriptionEn);
         item.StartsAt = starts;
         item.EndsAt = input.EndsAt();
+        // F10 month-only: the 1st of the month 00:00 to its last day 23:59 (EventInput), the card shows month + year.
+        item.DateIsMonth = input.DateIsMonth && starts is not null;
         // The free-text day/month stay the list's fallback: with a date they are derived from it.
         if (starts is { } s)
         {

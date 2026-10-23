@@ -24,7 +24,7 @@ public class SocialLink : ISortable
     public string? Url { get; set; }
 
     /// <summary>Custom rows only: the network's name (aria-label / title), one language-neutral value.</summary>
-    [MaxLength(60)]
+    [MaxLength(100)]
     public string? Label { get; set; }
 
     /// <summary>Custom rows only: a key of Infrastructure/Content/Icons.</summary>

@@ -40,6 +40,8 @@ public class AppDbContext : DbContext
     public DbSet<PageSection> PageSections => Set<PageSection>();
     public DbSet<FooterColumn> FooterColumns => Set<FooterColumn>();
     public DbSet<FooterLink> FooterLinks => Set<FooterLink>();
+    public DbSet<ForumEdition> ForumEditions => Set<ForumEdition>();
+    public DbSet<ForumEditionPhoto> ForumEditionPhotos => Set<ForumEditionPhoto>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -291,6 +293,28 @@ public class AppDbContext : DbContext
             e.HasOne(l => l.NavItem).WithMany().HasForeignKey(l => l.NavItemId).OnDelete(DeleteBehavior.Cascade);
             e.ToTable(t => t.HasCheckConstraint("CK_FooterLinks_Target",
                 "([PageKey] IS NULL AND [NavItemId] IS NOT NULL) OR ([PageKey] IS NOT NULL AND [NavItemId] IS NULL)"));
+        });
+
+        // ── Forum content (F10) ──
+        // Events.DateIsMonth and PartnerGroups.ShowOnForumHub are plain bools (no model default): the migration adds them
+        // as bit NOT NULL DEFAULT 0, so existing rows render exactly as before.
+        modelBuilder.Entity<ForumEdition>(e =>
+        {
+            e.HasIndex(x => new { x.IsActive, x.SortOrder });
+            e.Property(x => x.EditionLabelAr).HasDefaultValue("");
+            e.Property(x => x.PlaceAr).HasDefaultValue("");
+            e.Property(x => x.TextAr).HasDefaultValue("");
+            Timestamps(e);
+            e.HasMany(x => x.Photos).WithOne(p => p.ForumEdition).HasForeignKey(p => p.ForumEditionId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ForumEditionPhoto>(e =>
+        {
+            e.HasIndex(x => new { x.ForumEditionId, x.SortOrder });
+            // One owner per file (the MediaFile rule); the app deletes the media row and its file itself.
+            e.HasIndex(x => x.ImageId).IsUnique();
+            e.HasOne(x => x.Image).WithMany().HasForeignKey(x => x.ImageId).OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         });
     }
 

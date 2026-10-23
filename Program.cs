@@ -170,6 +170,18 @@ using (var scope = app.Services.CreateScope())
         app.Logger.LogError(ex, "The uploads folder is not usable: image uploads will fail until the app pool can write to it.");
     }
 
+    // F10: the bundled forum photos and logos become ordinary uploads, once (marker-guarded; never overwrites; a failure
+    // is logged and the site starts — the pages render without the images).
+    try
+    {
+        await ForumMediaImport.RunAsync(db, media, ForumMediaImport.SourceRoot(app.Environment.ContentRootPath), app.Logger,
+            scope.ServiceProvider.GetRequiredService<TimeProvider>());
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError("Forum media import failed ({Error}); the site starts without the bundled forum images.", ex.GetType().Name);
+    }
+
     if (!app.Environment.IsDevelopment()
         && !SiteUrl.TryNormalize(await db.SiteContents.Where(c => c.SectionKey == SiteUrl.ContentKey)
                .Select(c => c.ContentAr).FirstOrDefaultAsync(), out _))

@@ -358,6 +358,10 @@ public static class MessageKeys
         public const string ExpressInterest = "Ui_ExpressInterest";
         public const string SponsorshipPackages = "Ui_SponsorshipPackages";
         public const string ProfilesAria = "Ui_ProfilesAria";
+        /// <summary>F10: the summary of an edition's further photos ({0} = how many, Latin digits).</summary>
+        public const string EditionMorePhotos = "Ui_EditionMorePhotos";
+        /// <summary>F10: the accessible name of an edition's photo gallery ({0} = the edition's title).</summary>
+        public const string EditionPhotosAria = "Ui_EditionPhotosAria";
         public const string WatchOnYouTube = "Ui_WatchOnYouTube";
         public const string ExternalLink = "Ui_ExternalLink";
         /// <summary>Visually hidden after the privacy link of a consent box (it opens in a new tab).</summary>
@@ -427,5 +431,23 @@ public static class MessageKeys
         public const string Visible = "Admin_SectionVisible";
         /// <summary>The screen's name (sidebar and heading): it manages every page's sections (QA C5-7).</summary>
         public const string ScreenTitle = "Admin_SectionsScreenTitle";
+    }
+
+    /// <summary>F10 admin: «النسخ السابقة» (ForumEditions) and the month-only event date.</summary>
+    public static class AdminForumEditions
+    {
+        public const string Year = "Field_Year";
+        public const string Month = "Field_Month";
+        /// <summary>The month-only event: a yyyy-MM month from 2000 to 2100 is required.</summary>
+        public const string MonthRequired = "Msg_MonthRequired";
+        public const string EditionAdded = "Admin_EditionAdded";
+        public const string EditionUpdated = "Admin_EditionUpdated";
+        public const string EditionDeleted = "Admin_EditionDeleted";
+        public const string PhotoAdded = "Admin_EditionPhotoAdded";
+        public const string PhotoUpdated = "Admin_EditionPhotoUpdated";
+        public const string PhotoDeleted = "Admin_EditionPhotoDeleted";
+        public const string PhotoRequired = "Admin_EditionPhotoRequired";
+        /// <summary>{0} = the maximum number of photos of one edition.</summary>
+        public const string PhotoLimit = "Admin_EditionPhotoLimit";
     }
 }

@@ -199,15 +199,20 @@ public class AdminControlMigrationTests
         }
     }
 
-    [Fact] // T5.3 — the frozen section rows of the migration are exactly the registry's (keys and order)
+    [Fact] // T5.3 — the frozen section rows of the migrations (AddAdminControl ∪ AddForumContent) are exactly the registry's
     public void Migration_section_rows_equal_the_registry()
     {
-        var frozen = AddAdminControl.SectionRows.ToDictionary(p => p.Page, p => string.Join(",", p.Sections));
+        // AddAdminControl wrote SortOrder 10, 20, …; AddForumContent (F10) interleaves its rows by their own SortOrder.
+        var frozen = AddAdminControl.SectionRows
+            .SelectMany(p => p.Sections.Select((s, i) => (p.Page, Section: s, Order: (i + 1) * 10)))
+            .Concat(AddForumContent.SectionRows)
+            .GroupBy(r => r.Page)
+            .ToDictionary(g => g.Key, g => string.Join(",", g.OrderBy(r => r.Order).Select(r => r.Section)));
         var registry = PageSectionRegistry.Pages.ToDictionary(p => p.Key, p => string.Join(",", p.Value.Select(d => d.Key)));
         Assert.Equal(registry.Keys.Order(), frozen.Keys.Order());
         foreach (var (page, keys) in registry) Assert.True(keys == frozen[page], $"{page}: registry {keys} / migration {frozen[page]}");
         Assert.All(registry.Keys, k => Assert.True(SiteRoutes.IsKey(k), k));
-        Assert.Equal(19, frozen.Count);
+        Assert.Equal(20, frozen.Count); // + forum.editions (F10)
     }
 
     [Fact] // T5.13 — MoveAsync: edges are no-ops, a move swaps and renumbers 1..n, foreign ids and bad directions are refused

@@ -1,0 +1,57 @@
+@model BulletCardsBlock
+@using InnovestHolding.Infrastructure.Content
+@* F10: cards with a title and bullets (one per line of the item's description); the optional band at the end
+   (audiences: the Strategic Link — its first line is the lead, the others its points). *@
+<section class="page-section is-cream forum-bullets" aria-labelledby="sec-@Model.Group">
+  <div class="container">
+    <div class="block-head">
+      <h2 class="block-title" id="sec-@Model.Group" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+      @if (!Model.Intro.IsEmpty)
+      {
+        <p class="block-intro" lang="@Model.Intro.Lang" dir="@Model.Intro.Dir">@Model.Intro</p>
+      }
+    </div>
+    <div class="forum-card-grid">
+      @foreach (var card in Model.Cards)
+      {
+        <article class="forum-card">
+          <h3>
+            @if (card.IconSvg is not null)
+            {
+              <svg class="forum-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(card.IconSvg)</svg>
+            }
+            <span lang="@card.Title.Lang" dir="@card.Title.Dir">@card.Title</span>
+          </h3>
+          @if (card.Bullets.Count > 0)
+          {
+            <ul class="forum-bullet-list">
+              @foreach (var b in card.Bullets)
+              {
+                <li lang="@b.Lang" dir="@b.Dir">@b</li>
+              }
+            </ul>
+          }
+        </article>
+      }
+    </div>
+    @if (Model.BandLines.Count > 0)
+    {
+      <div class="forum-band">
+        @if (!Model.BandTitle.IsEmpty)
+        {
+          <h3 lang="@Model.BandTitle.Lang" dir="@Model.BandTitle.Dir">@Model.BandTitle</h3>
+        }
+        <p class="forum-band-lead" lang="@Model.BandLines[0].Lang" dir="@Model.BandLines[0].Dir">@Model.BandLines[0]</p>
+        @if (Model.BandLines.Count > 1)
+        {
+          <ul class="forum-band-list">
+            @foreach (var line in Model.BandLines.Skip(1))
+            {
+              <li lang="@line.Lang" dir="@line.Dir">@line</li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  </div>
+</section>

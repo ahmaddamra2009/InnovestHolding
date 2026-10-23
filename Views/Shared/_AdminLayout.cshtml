@@ -24,7 +24,7 @@
             ("Brand", "", "الهوية البصرية", "<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"/><polyline points=\"21 15 16 10 5 21\"/>"),
             ("Settings", "", "الإعدادات", "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1\"/>"),
         ]),
-        ("منتدى إنوفست",
+        ("منتدى الإبتكار والإستثمار العربي",
         [
             ("Events", "", "الفعاليات", "<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/>"),
             ("Speakers", "", "المتحدثون", "<path d=\"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z\"/><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"/><line x1=\"12\" y1=\"19\" x2=\"12\" y2=\"23\"/>"),
@@ -33,6 +33,9 @@
             ("InterestOptions", "", "خيارات مجال الاهتمام", "<polyline points=\"9 11 12 14 22 4\"/><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"/>"),
             ("RegisterBenefits", "", "مزايا التسجيل", "<polyline points=\"20 6 9 17 4 12\"/>"),
             ("ForumIdentity", "", "هوية المنتدى", "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 3a9 9 0 0 0 0 18\"/>"),
+            // F10: the past editions, and a shortcut to the forum card of the Content editor (an anchor: never "active").
+            ("ForumEditions", "", "النسخ السابقة", "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><circle cx=\"8.5\" cy=\"10\" r=\"1.5\"/><polyline points=\"21 16 15 11 6 19\"/>"),
+            ("Content", "Edit#group-forum", "محتوى صفحة المنتدى", "<path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z\"/>"),
         ]),
         ("شبكة المستثمرين الملائكيين",
         [
@@ -49,6 +52,9 @@
             ("Leads", "", "الطلبات (كل النماذج)", "<path d=\"M22 12h-6l-2 3h-4l-2-3H2\"/><path d=\"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"/>"),
             ("Messages", "", "رسائل التواصل", "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\"/>")]),
     ];
+    // The link of the current screen (an anchor shortcut into another screen, e.g. "Edit#group-forum", never is).
+    bool IsCurrent(string controller, string action) =>
+        !action.Contains('#') && string.Equals(controller, current, StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -73,13 +79,13 @@
         <nav class="sidebar-nav">
             @foreach (var (title, links) in groups)
             {
-                var open = links.Any(l => string.Equals(l.Controller, current, StringComparison.OrdinalIgnoreCase));
+                var open = links.Any(l => IsCurrent(l.Controller, l.Action));
                 <details class="sidebar-group" open="@(open || title == groups[0].Title || title == groups[1].Title)" data-group="@title">
                     <summary class="sidebar-group-title">@title</summary>
                     @foreach (var link in links)
                     {
                         var href = "/Admin/" + link.Controller + (link.Action.Length > 0 ? "/" + link.Action : "");
-                        var active = string.Equals(link.Controller, current, StringComparison.OrdinalIgnoreCase);
+                        var active = IsCurrent(link.Controller, link.Action);
                         <a href="@href" class="sidebar-link@(active ? " active" : "")" aria-current="@(active ? "page" : null)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">@Html.Raw(link.Icon)</svg>
                             @link.Label

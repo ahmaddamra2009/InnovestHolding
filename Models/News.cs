@@ -6,27 +6,27 @@ public class News
 {
     public int Id { get; set; }
 
-    [Required, MaxLength(200)]
+    [Required, MaxLength(330)]
     public string TitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? TitleEn { get; set; }
 
     public string SummaryAr { get; set; } = string.Empty;
 
     public string? SummaryEn { get; set; }
 
-    [MaxLength(50)]
+    [MaxLength(80)]
     public string CategoryAr { get; set; } = string.Empty;
 
-    [MaxLength(50)]
+    [MaxLength(80)]
     public string? CategoryEn { get; set; }
 
     /// <summary>Free text per language (no date parsing: the admin writes it as it should read).</summary>
-    [MaxLength(50)]
+    [MaxLength(80)]
     public string NewsDateAr { get; set; } = string.Empty;
 
-    [MaxLength(50)]
+    [MaxLength(80)]
     public string? NewsDateEn { get; set; }
 
     /// <summary>"Read more" target; the link is not rendered while empty.</summary>
@@ -53,16 +53,16 @@ public class News
     /// <summary>Publication date (NewsArticle datePublished); the free-text date above stays what the cards show.</summary>
     public DateOnly? PublishedOn { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string MetaTitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? MetaTitleEn { get; set; }
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string MetaDescriptionAr { get; set; } = string.Empty;
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string? MetaDescriptionEn { get; set; }
 
     /// <summary>UTC; the sitemap's lastmod and NewsArticle dateModified.</summary>

@@ -52,10 +52,23 @@ public class MigrationTests(TestAppFactory f)
         all.AddRange((await db.Platforms.AsNoTracking().OrderBy(n => n.Id).ToListAsync()).Select(p => $"Pl|{p.TitleAr}|{p.TitleEn}|{p.DescriptionAr}|{p.DescriptionEn}|{p.ShortTitleAr}|{p.ShortTitleEn}|{p.ShowInFooter}|{p.LinkUrl}|{p.IsActive}|{p.IconSvg}"));
         all.AddRange((await db.Stats.AsNoTracking().OrderBy(n => n.Id).ToListAsync()).Select(s => $"St|{s.LabelAr}|{s.LabelEn}|{s.ShortLabelAr}|{s.ShortLabelEn}|{s.Value}|{s.Suffix}|{s.SortOrder}|{s.IconSvg}"));
         all.AddRange((await db.News.AsNoTracking().Where(n => n.Id <= 3).OrderBy(n => n.Id).ToListAsync()).Select(n => $"Nw|{n.TitleAr}|{n.TitleEn}|{n.SummaryAr}|{n.SummaryEn}|{n.CategoryAr}|{n.CategoryEn}|{n.NewsDateAr}|{n.NewsDateEn}|{n.SortOrder}"));
-        all.AddRange((await db.Events.AsNoTracking().Where(n => n.Id <= 3).OrderBy(n => n.Id).ToListAsync()).Select(e => $"Ev|{e.TitleAr}|{e.TitleEn}|{e.DescriptionAr}|{e.DescriptionEn}|{e.EventMonthAr}|{e.EventMonthEn}|{e.LocationAr}|{e.LocationEn}|{e.TimeAr}|{e.TimeEn}"));
-        all.AddRange((await db.Partners.AsNoTracking().Where(n => n.Id <= 10).OrderBy(n => n.Id).ToListAsync()).Select(p => $"Pa|{p.NameAr}|{p.NameEn}|{p.IsActive}"));
+        // F10: on a fresh install AddForumContent's events and partners are written BEFORE DbSeeder's demo rows (on an
+        // upgraded install, after the old rows), so ids differ: the demo rows are the first 3 / 10 that are not F10's,
+        // and F10's rows are compared by their identity.
+        var forumSlugs = Migrations.AddForumContent.Events.Select(e => e.Slug).ToList();
+        var forumPartners = Migrations.AddForumContent.Partners.Select(p => p.NameAr).ToList();
+        // Projected (never the whole entity): this snapshot also runs on databases older than Events.DateIsMonth.
+        all.AddRange(await db.Events.AsNoTracking().Where(e => !forumSlugs.Contains(e.Slug)).OrderBy(n => n.Id).Take(3)
+            .Select(e => "Ev|" + e.TitleAr + "|" + (e.TitleEn ?? "") + "|" + e.DescriptionAr + "|" + (e.DescriptionEn ?? "") + "|" + e.EventMonthAr
+                         + "|" + (e.EventMonthEn ?? "") + "|" + e.LocationAr + "|" + (e.LocationEn ?? "") + "|" + e.TimeAr + "|" + (e.TimeEn ?? "")).ToListAsync());
+        all.AddRange(await db.Events.AsNoTracking().Where(e => forumSlugs.Contains(e.Slug)).OrderBy(e => e.Slug)
+            .Select(e => "Ev|" + e.Slug + "|" + e.TitleAr + "|" + (e.TitleEn ?? "") + "|" + e.CityAr + "|" + (e.CityEn ?? "") + "|" + e.EventMonthAr
+                         + "|" + (e.EventMonthEn ?? "") + "|" + (e.IsActive ? "1" : "0")).ToListAsync());
+        all.AddRange((await db.Partners.AsNoTracking().Where(p => !forumPartners.Contains(p.NameAr)).OrderBy(n => n.Id).Take(10).ToListAsync()).Select(p => $"Pa|{p.NameAr}|{p.NameEn}|{p.IsActive}"));
+        all.AddRange((await db.Partners.AsNoTracking().Where(p => forumPartners.Contains(p.NameAr)).OrderBy(p => p.NameAr).ToListAsync())
+            .Select(p => $"Pa|{p.NameAr}|{p.NameEn}|{p.IsActive}|{p.ShowOnHome}|{p.PartnerGroupId is not null}"));
         all.AddRange((await db.Faqs.AsNoTracking().Where(n => n.Id <= 6).OrderBy(n => n.Id).ToListAsync()).Select(q => $"Fq|{q.QuestionAr}|{q.QuestionEn}|{q.AnswerAr}|{q.AnswerEn}"));
-        all.AddRange((await db.SiteContents.AsNoTracking().Where(c => c.SectionKey != ContentKeys.TimestampsUtcMarker && c.SectionKey != ContentKeys.MediaInstance).OrderBy(c => c.SectionKey).ToListAsync())
+        all.AddRange((await db.SiteContents.AsNoTracking().Where(c => c.SectionKey != ContentKeys.TimestampsUtcMarker && c.SectionKey != ContentKeys.MediaInstance && c.SectionKey != ForumMediaImport.Marker).OrderBy(c => c.SectionKey).ToListAsync())
             .Select(c => $"Sc|{c.SectionKey}|{c.ContentAr}|{c.ContentEn}"));
         all.AddRange((await db.InterestOptions.AsNoTracking().Where(o => o.Id <= 6).OrderBy(o => o.Id).ToListAsync()).Select(o => $"Io|{o.NameAr}|{o.NameEn}|{o.SortOrder}"));
         all.AddRange((await db.RegisterBenefits.AsNoTracking().OrderBy(o => o.Id).ToListAsync()).Select(o => $"Rb|{o.TextAr}|{o.TextEn}"));
@@ -116,7 +129,8 @@ public class MigrationTests(TestAppFactory f)
             "forms_consent", "join_kind_title", "join_side_title", "join_side_text", "sponsorship_form_title",
             "sponsorship_form_text", "interest_form_title", "interest_form_text"];
         Assert.Empty(ContentKeys.All.Select(k => k.Key)
-            .Where(k => !later.Contains(k) && !AdminLinksTests.AddedByAdminControl.Contains(k) && !k.StartsWith("section_") && !k.StartsWith("founder_"))
+            .Where(k => !later.Contains(k) && !AdminLinksTests.AddedByAdminControl.Contains(k) && !k.StartsWith("section_") && !k.StartsWith("founder_")
+                        && !Migrations.AddForumContent.NewKeys.Any(n => n[0] == k))
             .Except(keys.Select(k => k.SectionKey)));
         var cta = keys.Single(k => k.SectionKey == "cta_register");
         Assert.Equal("انضم الآن", cta.ContentAr);
@@ -145,7 +159,8 @@ public class MigrationTests(TestAppFactory f)
         // Only the later migrations (multi-page site) are still pending.
         Assert.Equal(["20261022152940_AddSiteStructure", "20261022153329_ApplyCompanyProfile", "20261022172550_RefineSiteStructure",
             "20261022200000_CorrectCoreValuesEnglish", "20261022202359_AddMediaAndDetailPages", "20261022213309_AddEcosystemEntities",
-            "20261022221815_AddLeadForms", "20261023011038_AddAdminControl", "20261023141145_RenameHoldingAndForum"], await db.Database.GetPendingMigrationsAsync());
+            "20261022221815_AddLeadForms", "20261023011038_AddAdminControl", "20261023141145_RenameHoldingAndForum",
+            "20261023144143_AddForumContent"], await db.Database.GetPendingMigrationsAsync());
     }
 
     [Fact] // a fresh install (migration + DbSeeder) equals an upgraded old install, row by row

@@ -46,6 +46,7 @@ public static class PageKeys
     public const string ForumSpeakers = "forum.speakers";
     public const string ForumPartners = "forum.partners";
     public const string ForumRegistration = "forum.registration";
+    public const string ForumEditions = "forum.editions";
     public const string Network = "network";
     public const string NetworkInvestors = "network.investors";
     public const string NetworkStartups = "network.startups";
@@ -79,6 +80,7 @@ public static class SiteRoutes
         new(PageKeys.ForumSpeakers, "/forum/speakers", PageKeys.Forum, "Forum", "Speakers", PageKind.List),
         new(PageKeys.ForumPartners, "/forum/partners", PageKeys.Forum, "Forum", "Partners", PageKind.List),
         new(PageKeys.ForumRegistration, "/forum/registration", PageKeys.Forum, "Forum", "Registration", PageKind.Form),
+        new(PageKeys.ForumEditions, "/forum/editions", PageKeys.Forum, "Forum", "Editions", PageKind.List),
         new(PageKeys.Network, "/angel-network", PageKeys.Ecosystem, "Network", "Index", PageKind.Static),
         new(PageKeys.NetworkInvestors, "/angel-network/investors", PageKeys.Network, "Network", "Investors", PageKind.Static),
         new(PageKeys.NetworkStartups, "/angel-network/startups", PageKeys.Network, "Network", "Startups", PageKind.Static),

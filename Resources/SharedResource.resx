@@ -214,6 +214,8 @@
   <data name="Ui_NewsSource" xml:space="preserve"><value>المصدر</value></data>
   <data name="Ui_ArabicOnlyNotice" xml:space="preserve"><value>هذا المحتوى متوفر باللغة العربية فقط حالياً.</value></data>
   <data name="Ui_ViewDetails" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="Ui_EditionMorePhotos" xml:space="preserve"><value>صور أخرى ({0})</value></data>
+  <data name="Ui_EditionPhotosAria" xml:space="preserve"><value>صور {0}</value></data>
   <data name="Msg_LogoLimits" xml:space="preserve"><value>الشعار يجب ألا يتجاوز 1 ميغابايت و1200 بكسل لأطول ضلع</value></data>
   <data name="Admin_ImageHintGeneral" xml:space="preserve"><value>JPG أو PNG أو WebP، حتى 5 ميغابايت و8000 بكسل لكل ضلع و25 مليون بكسل. المقاس المقترح 1200×630 (يكفي لصورة المشاركة)، ويُفضّل أقل من 500 كيلوبايت: الصورة تُعرض كما رُفعت. تُحذف بيانات الموقع والكاميرا من الملف عند الرفع.</value></data>
   <data name="Admin_ImageHintLogo" xml:space="preserve"><value>شعار: JPG أو PNG أو WebP، حتى 1 ميغابايت و1200 بكسل لأطول ضلع. يُعرض بارتفاع نحو 70 بكسل، فيكفي 400 بكسل عرضاً بخلفية شفافة (PNG أو WebP) وحجم أقل من 100 كيلوبايت.</value></data>
@@ -367,4 +369,15 @@
   <data name="Admin_ForumColorsSaved" xml:space="preserve"><value>تم حفظ ألوان المنتدى وخطوطه.</value></data>
   <data name="Admin_ForumResetNothing" xml:space="preserve"><value>الألوان والخطوط على الافتراضي أصلاً.</value></data>
   <data name="Admin_ForumResetDone" xml:space="preserve"><value>تمت استعادة الألوان والخطوط الافتراضية ({0} قيمة).</value></data>
+  <data name="Field_Year" xml:space="preserve"><value>السنة</value></data>
+  <data name="Field_Month" xml:space="preserve"><value>الشهر</value></data>
+  <data name="Msg_MonthRequired" xml:space="preserve"><value>اختر الشهر والسنة (من 2000 إلى 2100)</value></data>
+  <data name="Admin_EditionAdded" xml:space="preserve"><value>تمت إضافة النسخة. أضف صورها من هذه الصفحة.</value></data>
+  <data name="Admin_EditionUpdated" xml:space="preserve"><value>تم حفظ النسخة</value></data>
+  <data name="Admin_EditionDeleted" xml:space="preserve"><value>تم حذف النسخة وصورها</value></data>
+  <data name="Admin_EditionPhotoAdded" xml:space="preserve"><value>تمت إضافة الصورة</value></data>
+  <data name="Admin_EditionPhotoUpdated" xml:space="preserve"><value>تم حفظ وصف الصورة</value></data>
+  <data name="Admin_EditionPhotoDeleted" xml:space="preserve"><value>تم حذف الصورة</value></data>
+  <data name="Admin_EditionPhotoRequired" xml:space="preserve"><value>اختر صورة لرفعها</value></data>
+  <data name="Admin_EditionPhotoLimit" xml:space="preserve"><value>بلغت هذه النسخة الحد الأقصى ({0} صورة). احذف صورة قبل إضافة غيرها.</value></data>
 </root>

@@ -5,9 +5,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace InnovestHolding.Migrations
 {
     /// <summary>
-    /// N8 — naming. Arabic «هولدينغ» becomes «القابضة» («إنوفست هولدينغ» → «إنوفست القابضة»); the forum is «منتدى إنوفست» /
-    /// "Innovest Forum" (was «منتدى إنوفست العربي» / "Innovest Arab Forum"). English "Innovest Holding" is not touched.
-    /// Data only; the EF model does not change.
+    /// N8 — naming. Arabic «هولدينغ» becomes «القابضة» («إنوفست هولدينغ» → «إنوفست القابضة»); the forum's Arabic name
+    /// becomes «منتدى الإبتكار والإستثمار العربي» (was «منتدى إنوفست العربي»). English "Innovest Holding" and
+    /// "Innovest Arab Forum" are not touched. Up first widens the bounded columns it rewrites (.Widen.cs), then
+    /// rewrites the text; the EF model changes only by those column lengths.
     ///
     /// Rules (Security early checklist, feature/8-naming):
     /// - Every (table, column) pair is a constant below: display-text columns of CONTENT tables only. The lead tables
@@ -19,7 +20,11 @@ namespace InnovestHolding.Migrations
     /// - The find/replace pairs are frozen literals, applied longest first, matched and replaced with a binary collation.
     ///   Each UPDATE is guarded by a binary LIKE on the old phrases, so rows without them are not written and a second
     ///   run changes nothing. Rows an admin edited are included (CTO decision: brand rule).
-    /// - No pair makes a value longer (old length ≥ new length, pinned by a test), so no value can outgrow its column.
+    /// - Only «منتدى إنوفست العربي» → the official name grows a value (+13 per occurrence; the other pairs do not grow).
+    ///   A value of N characters holds at most ⌊N/19⌋ occurrences, so it needs at most N + 13·⌊N/19⌋ after Up; every
+    ///   bounded target column is widened to at least that before the UPDATEs (pinned by a test), so no value can
+    ///   outgrow its column and no row is skipped. The replace never truncates: the widest bounded column was 2000
+    ///   (≤ 3365 after, under REPLACE's 4000-character limit for a non-max input).
     /// - Down (option a): Up records (table, column, id, old value, new value) of every value it changes in the
     ///   migration-owned table <see cref="LogTable"/>. Down restores a value only while it still equals what Up wrote
     ///   (binary comparison), then drops the table. Text that said «القابضة» before Up, or that an admin changed after
@@ -35,14 +40,18 @@ namespace InnovestHolding.Migrations
         /// <summary>Migration-owned log of the values Up changed (read by Down, then dropped). Not an EF model table.</summary>
         public const string LogTable = "__RenameHoldingAndForumLog";
 
+        /// <summary>The forum's official Arabic name, spelt as on its logo (Anas, 2026-10-23).</summary>
+        public const string ForumNameAr = "منتدى الإبتكار والإستثمار العربي";
+
         /// <summary>Find → replace, applied in this order (longest phrase first, so no rule consumes part of another).</summary>
         public static readonly (string Find, string Replace)[] Pairs =
         [
-            // The forum brand only. Generic «المنتدى العربي» / "Arab Forum" are NOT renamed: they also name other
-            // organisations and the forum's own long name («منتدى الابتكار والاستثمار العربي») — CTO decision H2/N1.
-            ("منتدى إنوفست العربي", "منتدى إنوفست"),
-            ("Innovest Arab Forum", "Innovest Forum"),
-            ("INNOVEST ARAB FORUM", "INNOVEST FORUM"),
+            // The forum brand only (Arabic). Generic «المنتدى العربي» / "Arab Forum" are NOT renamed: they also name
+            // other organisations — CTO decision H2/N1. English "Innovest Arab Forum" is the official English name and
+            // is not touched (Anas, 2026-10-23).
+            // The old name followed by «للابتكار والاستثمار» first, so the official name does not repeat it.
+            ("منتدى إنوفست العربي للابتكار والاستثمار", ForumNameAr),
+            ("منتدى إنوفست العربي", ForumNameAr),
             // «الهولدينغ» before the bare word, so the article is not doubled («الالقابضة»).
             ("الهولدينغ", "القابضة"),
             ("هولدينغ", "القابضة"),
@@ -50,8 +59,8 @@ namespace InnovestHolding.Migrations
 
         /// <summary>
         /// The display-text columns of the content tables (discovered from AppDbContext / INFORMATION_SCHEMA on the C5
-        /// schema, then written out; never discovered at run time). Every pair is applied to every column: the Arabic
-        /// phrases do not occur in English text and vice versa, and English "Holding" matches no pair.
+        /// schema, then written out; never discovered at run time). Every pair is applied to every column (Arabic text
+        /// typed into an English column is renamed too); English "Holding" and "Innovest Arab Forum" match no pair.
         /// </summary>
         public static readonly (string Table, string[] Columns)[] Targets =
         [
@@ -167,6 +176,7 @@ namespace InnovestHolding.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            WidenColumns(migrationBuilder);
             foreach (var s in UpSql()) migrationBuilder.Sql(s);
         }
 
@@ -174,6 +184,7 @@ namespace InnovestHolding.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             foreach (var s in DownSql()) migrationBuilder.Sql(s);
+            NarrowColumns(migrationBuilder);
         }
     }
 }

@@ -6,10 +6,10 @@ public class Event
 {
     public int Id { get; set; }
 
-    [Required, MaxLength(200)]
+    [Required, MaxLength(330)]
     public string TitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? TitleEn { get; set; }
 
     public string DescriptionAr { get; set; } = string.Empty;
@@ -18,22 +18,22 @@ public class Event
 
     public int EventDay { get; set; }
 
-    [MaxLength(50)]
+    [MaxLength(80)]
     public string EventMonthAr { get; set; } = string.Empty;
 
-    [MaxLength(50)]
+    [MaxLength(80)]
     public string? EventMonthEn { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string LocationAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? LocationEn { get; set; }
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string TimeAr { get; set; } = string.Empty;
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? TimeEn { get; set; }
 
     public bool IsActive { get; set; } = true;
@@ -47,10 +47,10 @@ public class Event
     public string Slug { get; set; } = string.Empty;
 
     /// <summary>Card and meta-description text; the description above is the detail page's main text.</summary>
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string SummaryAr { get; set; } = string.Empty;
 
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string? SummaryEn { get; set; }
 
     /// <summary>Start with the event's own UTC offset. NULL: the free-text day/month/time above are shown instead.</summary>
@@ -58,20 +58,27 @@ public class Event
 
     public DateTimeOffset? EndsAt { get; set; }
 
+    /// <summary>
+    /// F10: the event is known to the month only. <see cref="StartsAt"/> is then the 1st of the month 00:00 and
+    /// <see cref="EndsAt"/> the last day 23:59 (at the event's offset), so ordering and past/upcoming need no special
+    /// case; the pages show month + year without a day, and the JSON-LD is a WebPage, never an Event.
+    /// </summary>
+    public bool DateIsMonth { get; set; }
+
     public EventStatus Status { get; set; } = EventStatus.Scheduled;
 
     public AttendanceMode AttendanceMode { get; set; } = AttendanceMode.Offline;
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string CityAr { get; set; } = string.Empty;
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? CityEn { get; set; }
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string AddressAr { get; set; } = string.Empty;
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string? AddressEn { get; set; }
 
     /// <summary>https link of an online or mixed event.</summary>
@@ -84,16 +91,16 @@ public class Event
     public int? ImageId { get; set; }
     public MediaFile? Image { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string MetaTitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? MetaTitleEn { get; set; }
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string MetaDescriptionAr { get; set; } = string.Empty;
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string? MetaDescriptionEn { get; set; }
 
     /// <summary>UTC; the sitemap's lastmod.</summary>

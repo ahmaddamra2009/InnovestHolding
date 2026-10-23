@@ -100,6 +100,27 @@
         </div>
       </section>
       break;
+    case ForumAboutBlock about:
+      <partial name="Blocks/_ForumAbout" model="about" />
+      break;
+    case FiguresBlock figures:
+      <partial name="Blocks/_Figures" model="figures" />
+      break;
+    case BulletCardsBlock bullets:
+      <partial name="Blocks/_BulletCards" model="bullets" />
+      break;
+    case NumberedItemsBlock numbered:
+      <partial name="Blocks/_Numbered" model="numbered" />
+      break;
+    case EditionsBlock editions:
+      <partial name="Blocks/_Editions" model="editions" />
+      break;
+    case PatronageBlock patronage:
+      <partial name="Blocks/_Patronage" model="patronage" />
+      break;
+    case FactsBlock facts:
+      <partial name="Blocks/_Facts" model="facts" />
+      break;
     default:
       <partial name="Blocks/_Misc" model="block" />
       break;

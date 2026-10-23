@@ -55,7 +55,7 @@ public abstract partial class PublicControllerBase
 
     protected IReadOnlyList<EntityCardVm> EventCards(SiteViews v, IEnumerable<EventRow> rows, DateTimeOffset now) =>
         v.EventCards(rows, now).Select(e => new EntityCardVm(e.Title, e.Href, e.Image,
-            new LText(N(e.Day) + " " + e.Month.Value, e.Month.IsFallback), e.Location, LText.Empty, [],
+            e.DateText, e.Location, LText.Empty, [],
             e.Status == EventStatus.Cancelled ? Ui(MessageKeys.Ui.EventCancelled) : e.Past ? Ui(MessageKeys.Ui.EventPast) : LText.Empty)).ToList();
 
     /// <summary>The active packages of a unit, or null when it has none.</summary>

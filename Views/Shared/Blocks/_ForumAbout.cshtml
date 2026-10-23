@@ -1,0 +1,39 @@
+@model ForumAboutBlock
+@using InnovestHolding.Infrastructure.Content
+@* F10 forum "about" block: edition label (eyebrow), tagline (heading), launch line, paragraphs, then the positioning
+   band. Every text is a SiteContents key (Admin content editor, forum card); an empty one is left out. *@
+<section class="page-section forum-about" aria-labelledby="@(Model.Tagline.IsEmpty ? null : "sec-forum-about")">
+  <div class="container narrow">
+    @if (!Model.Eyebrow.IsEmpty)
+    {
+      <p class="forum-eyebrow" lang="@Model.Eyebrow.Lang" dir="@Model.Eyebrow.Dir">@Model.Eyebrow</p>
+    }
+    @if (!Model.Tagline.IsEmpty)
+    {
+      <h2 class="block-title" id="sec-forum-about" lang="@Model.Tagline.Lang" dir="@Model.Tagline.Dir">@ContentText.Highlight(Model.Tagline)</h2>
+    }
+    @if (!Model.Lead.IsEmpty)
+    {
+      <p class="forum-lead" lang="@Model.Lead.Lang" dir="@Model.Lead.Dir">@Model.Lead</p>
+    }
+    @foreach (var p in Model.Paragraphs)
+    {
+      <p lang="@p.Lang" dir="@p.Dir">@p</p>
+    }
+  </div>
+  @if (Model.Positioning.Count > 0)
+  {
+    <div class="container narrow">
+      <div class="forum-band">
+        @if (!Model.PositioningTitle.IsEmpty)
+        {
+          <h3 lang="@Model.PositioningTitle.Lang" dir="@Model.PositioningTitle.Dir">@Model.PositioningTitle</h3>
+        }
+        @foreach (var p in Model.Positioning)
+        {
+          <p lang="@p.Lang" dir="@p.Dir">@p</p>
+        }
+      </div>
+    </div>
+  }
+</section>

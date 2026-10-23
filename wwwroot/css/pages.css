@@ -692,3 +692,156 @@ html[lang="en"] .page-body p { line-height: 1.8; }
 @media (max-width: 640px) {
   .lead-form .form-row, .lead-form .kind-options, .lead-form .check-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ==========================================
+   F10 — month-only events (home, forum, lists): the month name takes the day's place, the year goes under it.
+   ========================================== */
+.event-date-box.is-month .event-date-day { font-size: 1.05rem; line-height: 1.2; white-space: nowrap; }
+
+/* ==========================================
+   F10 — FORUM CONTENT BLOCKS (Views/Shared/Blocks/_ForumAbout, _Figures, _BulletCards, _Numbered, _Editions,
+   _Patronage, _Facts). These blocks render on the forum pages only, so every rule is scoped to .theme-forum and its
+   colours come ONLY from F9's --forum-* tokens (wwwroot/css/forum.css + the admin's values). Contrast rules: white text
+   only on --forum-primary / --forum-primary-deep; gold is a border or a mark, never a background under light text; text on
+   light surfaces is --forum-ink / --forum-text / --forum-gold-ink. Logical properties only (RTL and LTR).
+   ========================================== */
+.theme-forum .forum-eyebrow {
+  display: inline-block; margin-block-end: 10px; padding-block: 4px; padding-inline: 14px;
+  border: 2px solid var(--forum-gold); border-radius: 999px;
+  color: var(--forum-gold-ink); font-weight: 800; font-size: .9rem;
+}
+.theme-forum .forum-about .block-title { margin-block-end: 14px; }
+.theme-forum .forum-lead { font-size: 1.15rem; font-weight: 700; color: var(--forum-ink); margin-block-end: 14px; }
+.theme-forum .forum-about p { color: var(--forum-text); line-height: 1.9; margin-block-end: 12px; }
+
+/* The highlighted band (positioning, Strategic Link): deep red, light text. */
+.theme-forum .forum-band {
+  margin-block-start: 28px; padding-block: 24px; padding-inline: 28px; border-radius: 18px;
+  background: var(--forum-primary-deep); color: var(--forum-on-primary);
+  border-inline-start: 6px solid var(--forum-gold);
+}
+.theme-forum .forum-band h3 { color: var(--forum-on-primary); font-size: 1.2rem; margin-block-end: 10px; }
+.theme-forum .forum-about .forum-band p,
+.theme-forum .forum-band p,
+.theme-forum .forum-band li { color: var(--forum-on-primary); line-height: 1.8; }
+.theme-forum .forum-band-lead { font-weight: 700; margin-block-end: 8px; }
+.theme-forum .forum-band-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.theme-forum .forum-band-list li { position: relative; padding-inline-start: 22px; }
+.theme-forum .forum-band-list li::before {
+  content: ''; position: absolute; inset-inline-start: 0; top: .65em; width: 10px; height: 10px;
+  border: 2px solid var(--forum-gold); border-radius: 50%;
+}
+
+/* Figures: open gold rings with the figure in red (large text). */
+.theme-forum .forum-figure-grid {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 18px;
+}
+.theme-forum .forum-figure {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center;
+  padding-block: 22px; padding-inline: 12px; border: 3px solid var(--forum-gold); border-radius: 22px;
+  background: rgba(var(--forum-surface-rgb), 0.45);
+}
+.theme-forum .forum-figure-value { color: var(--forum-primary); font-size: 1.9rem; font-weight: 900; line-height: 1.1; }
+.theme-forum .forum-figure-label { color: var(--forum-ink); font-weight: 600; font-size: .95rem; }
+
+/* Bullet cards (audiences, pillars). */
+.theme-forum .forum-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.theme-forum .forum-card {
+  background: #fff; border-radius: 18px; padding-block: 22px; padding-inline: 22px;
+  border-block-start: 4px solid var(--forum-primary); box-shadow: 0 8px 24px rgba(var(--forum-ink-rgb), 0.08);
+}
+.theme-forum .forum-card h3 { display: flex; align-items: center; gap: 10px; color: var(--forum-ink); font-size: 1.1rem; margin-block-end: 12px; }
+.theme-forum .forum-card-icon { width: 26px; height: 26px; flex-shrink: 0; color: var(--forum-primary); }
+.theme-forum .forum-bullet-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.theme-forum .forum-bullet-list li { position: relative; padding-inline-start: 20px; color: var(--forum-text); line-height: 1.7; }
+.theme-forum .forum-bullet-list li::before {
+  content: ''; position: absolute; inset-inline-start: 0; top: .6em; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--forum-primary);
+}
+
+/* Numbered lists (goals, sectors): gold-ringed discs, number in deep red. */
+.theme-forum .forum-numbered-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.theme-forum .forum-numbered-list li { display: flex; align-items: flex-start; gap: 16px; }
+.theme-forum .forum-number {
+  flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--forum-gold);
+  color: var(--forum-primary-deep); font-weight: 900; font-size: 1rem; background: #fff;
+}
+.theme-forum .forum-numbered-text { display: grid; gap: 4px; padding-block-start: 10px; color: var(--forum-ink); font-weight: 600; line-height: 1.7; }
+.theme-forum .forum-numbered-desc { color: var(--forum-text); font-weight: 400; }
+.theme-forum .forum-note,
+.theme-forum .items-note {
+  margin-block-start: 24px; padding-block: 16px; padding-inline: 20px; border-radius: 14px;
+  background: var(--forum-surface); color: var(--forum-ink); line-height: 1.8;
+  border-inline-start: 4px solid var(--forum-gold);
+}
+
+/* Past editions: teaser cards (hub) and the gallery (/forum/editions). */
+.theme-forum .forum-edition-cards {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;
+}
+.theme-forum .forum-edition-card { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 24px rgba(var(--forum-ink-rgb), 0.08); }
+.theme-forum .forum-edition-cover { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+.theme-forum .forum-edition-body { padding-block: 16px; padding-inline: 18px; }
+.theme-forum .forum-edition-meta { color: var(--forum-gold-ink); font-weight: 800; font-size: .88rem; margin-block-end: 6px; }
+.theme-forum .forum-edition-year { color: var(--forum-primary-deep); }
+.theme-forum .forum-edition-card h3 { color: var(--forum-ink); font-size: 1.05rem; line-height: 1.6; }
+.theme-forum .forum-edition-place { color: var(--forum-text); font-size: .9rem; margin-block-start: 4px; }
+.theme-forum .forum-more { margin-block-start: 24px; text-align: center; }
+
+.theme-forum .forum-edition { padding-block: 28px; border-block-end: 1px solid rgba(var(--forum-gold-rgb), 0.45); }
+.theme-forum .forum-edition:first-child { padding-block-start: 0; }
+.theme-forum .forum-edition:last-child { border-block-end: 0; }
+.theme-forum .forum-edition-head h2 { color: var(--forum-primary); font-size: 1.45rem; line-height: 1.5; }
+.theme-forum .forum-edition-text { color: var(--forum-text); line-height: 1.9; margin-block-start: 10px; }
+.theme-forum .forum-gallery {
+  margin-block-start: 18px; display: grid; gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto;
+}
+.theme-forum .forum-gallery img,
+.theme-forum .forum-gallery-rest img {
+  display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 12px;
+  background: var(--forum-surface);
+}
+.theme-forum .forum-gallery .forum-gallery-main { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+.theme-forum .forum-gallery-more { margin-block-start: 12px; }
+.theme-forum .forum-gallery-more summary {
+  cursor: pointer; display: inline-block; padding-block: 8px; padding-inline: 18px; border-radius: 999px;
+  border: 2px solid var(--forum-gold); color: var(--forum-gold-ink); font-weight: 700;
+}
+.theme-forum .forum-gallery-more summary:focus-visible { outline: 3px solid var(--forum-primary); outline-offset: 2px; }
+.theme-forum .forum-gallery-rest { margin-block-start: 12px; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+
+/* Organising bodies strip. */
+.theme-forum .forum-patronage-groups { display: grid; gap: 24px; }
+.theme-forum .forum-patronage-name {
+  color: var(--forum-gold-ink); font-size: 1rem; font-weight: 800; margin-block-end: 12px;
+  padding-inline-start: 12px; border-inline-start: 4px solid var(--forum-gold);
+}
+
+/* Contact details. */
+.theme-forum .forum-facts { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.theme-forum .forum-fact {
+  display: flex; align-items: flex-start; gap: 14px; padding-block: 16px; padding-inline: 18px;
+  background: var(--forum-surface); border-radius: 14px; min-width: 0;
+}
+.theme-forum .forum-fact-icon {
+  width: 40px; height: 40px; flex-shrink: 0; padding: 9px; border-radius: 50%;
+  background: var(--forum-primary); color: var(--forum-on-primary);
+}
+.theme-forum .forum-fact-text { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; color: var(--forum-ink); }
+.theme-forum .forum-fact-label { color: var(--forum-gold-ink); font-weight: 700; font-size: .88rem; }
+.theme-forum .forum-fact a { color: var(--forum-link); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 640px) {
+  .theme-forum .forum-figure-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .theme-forum .forum-figure-value { font-size: 1.5rem; }
+  .theme-forum .forum-card-grid,
+  .theme-forum .forum-edition-cards,
+  .theme-forum .forum-facts { grid-template-columns: minmax(0, 1fr); }
+  .theme-forum .forum-band { padding-inline: 18px; }
+  .theme-forum .forum-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .theme-forum .forum-number { width: 40px; height: 40px; }
+}

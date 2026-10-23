@@ -18,7 +18,7 @@
                      && (string.IsNullOrWhiteSpace(item.DescriptionAr) || !string.IsNullOrWhiteSpace(item.DescriptionEn));
             <tr>
                 <td><strong>@item.TitleAr</strong></td>
-                <td>@item.EventDay @item.EventMonthAr</td>
+                <td>@if (item.DateIsMonth) { @item.EventMonthAr <span dir="ltr">@item.StartsAt?.Year</span> <span class="field-hint">(الشهر فقط)</span> } else { @item.EventDay @item.EventMonthAr }</td>
                 <td>@item.LocationAr</td>
                 <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="en" /></td>
                 <td>@if (item.IsActive) { <span class="badge-active">مفعّل</span> } else { <span class="badge-inactive">معطّل</span> }</td>

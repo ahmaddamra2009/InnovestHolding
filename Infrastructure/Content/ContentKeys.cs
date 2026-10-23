@@ -95,6 +95,36 @@ public static class ContentKeys
     public const string HomeEventsLimit = "home_events_limit";
     public const string ForumEventsLimit = "forum_events_limit";
 
+    /// <summary>F10: how many past editions the Forum page's teaser shows (default 3, max 12).</summary>
+    public const string ForumEditionsLimit = "forum_editions_limit";
+
+    /// <summary>F10: the admin card «صفحات المنتدى» (the forum's texts and its lists' headings).</summary>
+    public const string ForumGroup = "forum";
+
+    /// <summary>F10 forum texts (AddForumContent inserts every one; values from FORUM-CONTENT.md).</summary>
+    public static class Forum
+    {
+        public const string Tagline = "forum_tagline";
+        public const string EditionLabel = "forum_edition_label";
+        public const string AboutLead = "forum_about_lead";
+        public const string AboutText = "forum_about_text";
+        public const string PositioningTitle = "forum_positioning_title";
+        public const string PositioningText = "forum_positioning_text";
+        public const string StrategicLinkTitle = "forum_strategic_link_title";
+        public const string StrategicLinkText = "forum_strategic_link_text";
+        public const string EditionsTitle = "forum_editions_title";
+        public const string EditionsMoreLabel = "forum_editions_more_label";
+        public const string PatronageTitle = "forum_patronage_title";
+        public const string ContactTitle = "forum_contact_title";
+        public const string ContactPhoneLabel = "forum_contact_phone_label";
+        public const string ContactPhone = "forum_contact_phone";
+        public const string ContactSocialLabel = "forum_contact_social_label";
+        public const string ContactSocial = "forum_contact_social";
+        public const string ContactWebsiteLabel = "forum_contact_website_label";
+        public const string ContactWebsite = "forum_contact_website";
+        public const string ContactAddress = "forum_contact_address";
+    }
+
     /// <summary>Upper bound of the section counts above (Dana US-03).</summary>
     public const int SectionCountMax = 12;
 
@@ -159,6 +189,7 @@ public static class ContentKeys
         ("sections", "عناوين أقسام الصفحة الرئيسية"),
         ("icons", "الأيقونات"),
         ("pages", "عناوين أقسام الصفحات"),
+        (ForumGroup, "صفحات المنتدى"),
         ("founder", "كلمة المؤسس (تُخفى ما دام نص الكلمة فارغاً)"),
         ("register", "قسم التسجيل"),
         ("forms", "نماذج الطلبات (الانضمام، الرعاية، الاهتمام بالفرص)"),
@@ -221,6 +252,7 @@ public static class ContentKeys
         new(HeroStatsLimit, "sections", "عدد الأرقام في واجهة الصفحة الرئيسية (1–12)", 2, Rule: ContentRule.Count, Neutral: true, CountMax: SectionCountMax, Default: "4"),
         new(HomeEventsLimit, "sections", "الفعاليات — عدد الفعاليات في الصفحة الرئيسية (1–12)", 2, Rule: ContentRule.Count, Neutral: true, CountMax: SectionCountMax, Default: "3"),
         new(ForumEventsLimit, "sections", "عدد الفعاليات في صفحة المنتدى (1–12)", 2, Rule: ContentRule.Count, Neutral: true, CountMax: SectionCountMax, Default: "3"),
+        new(ForumEditionsLimit, "sections", "عدد النسخ السابقة في صفحة المنتدى (1–12)", 2, Rule: ContentRule.Count, Neutral: true, CountMax: SectionCountMax, Default: "3"),
 
         // C5 buttons: a text (empty = the target page's title in the page language) and a target (a page, or an https link).
         new("hero_cta_main_label", "links", "زر الواجهة الرئيسي — النص (فارغ = نص زر الهيدر، أو عنوان الصفحة المختارة)", 100, AllowEmpty: true),
@@ -297,11 +329,35 @@ public static class ContentKeys
         new("founder_title", "founder", "الصفة", 200),
         new("founder_message", "founder", "نص الكلمة (فارغ = القسم مخفي)", Multiline: true, AllowEmpty: true),
 
-        // Headings of the lists (ContentItems) on the pages: one title + optional lead sentence per group.
+        // F10 — the forum pages (FORUM-CONTENT.md). A contact row whose value is empty is not shown.
+        new(Forum.Tagline, ForumGroup, "شعار المنتدى (يظهر عنواناً لقسم «عن المنتدى»)", 300),
+        new(Forum.EditionLabel, ForumGroup, "النسخة الحالية (مثال: النسخة الخامسة)", 100),
+        new(Forum.AboutLead, ForumGroup, "عن المنتدى — سطر الإطلاق", 300),
+        new(Forum.AboutText, ForumGroup, "عن المنتدى — النص (سطر فارغ يبدأ فقرة جديدة)", ContentKeys.DefaultMax, ContentFormat.Lines, Multiline: true),
+        new(Forum.PositioningTitle, ForumGroup, "التعريف بالمنتدى — العنوان", 200),
+        new(Forum.PositioningText, ForumGroup, "التعريف بالمنتدى — النص (سطر فارغ يبدأ فقرة جديدة)", 2000, ContentFormat.Lines, Multiline: true),
+        new(Forum.StrategicLinkTitle, ForumGroup, "الربط الاستراتيجي — العنوان", 200),
+        new(Forum.StrategicLinkText, ForumGroup, "الربط الاستراتيجي — النص (سطر لكل نقطة)", 1000, ContentFormat.Lines, Multiline: true),
+        new(Forum.EditionsTitle, ForumGroup, "النسخ السابقة — عنوان القسم في صفحة المنتدى", 200),
+        new(Forum.EditionsMoreLabel, ForumGroup, "النسخ السابقة — نص رابط «كل النسخ»", 100),
+        new(Forum.PatronageTitle, ForumGroup, "الجهات المنظمة — عنوان القسم في صفحة المنتدى", 200),
+        new(Forum.ContactTitle, ForumGroup, "طرق التواصل — العنوان", 200),
+        new(Forum.ContactPhoneLabel, ForumGroup, "طرق التواصل — عنوان الهاتف", 100),
+        new(Forum.ContactPhone, ForumGroup, "طرق التواصل — الهاتف (مثال: ‎+20 15 1520 4475؛ فارغ = لا يظهر)", 50, Rule: ContentRule.Phone, Neutral: true, AllowEmpty: true),
+        new(Forum.ContactSocialLabel, ForumGroup, "طرق التواصل — عنوان حسابات التواصل الاجتماعي", 100),
+        new(Forum.ContactSocial, ForumGroup, "طرق التواصل — اسم الحساب (نص فقط، ليس رابطاً؛ فارغ = لا يظهر)", 100, Neutral: true, AllowEmpty: true),
+        new(Forum.ContactWebsiteLabel, ForumGroup, "طرق التواصل — عنوان الموقع الإلكتروني", 100),
+        new(Forum.ContactWebsite, ForumGroup, "طرق التواصل — الموقع الإلكتروني (https؛ فارغ = لا يظهر)", 200, Rule: ContentRule.HttpsUrl, Neutral: true, AllowEmpty: true),
+        new(Forum.ContactAddress, ForumGroup, "طرق التواصل — العنوان البريدي (فارغ = لا يظهر)", 300, AllowEmpty: true),
+
+        // Headings of the lists (ContentItems) on the pages: one title + optional lead sentence per group (+ an optional
+        // closing paragraph for the F10 groups that have one). Forum lists sit in the «صفحات المنتدى» card.
         .. ContentItemGroups.All.Where(g => !g.FormOptions && g.TitleKey != "values_title").Select(g =>
-            new ContentKey(g.TitleKey, "pages", $"{g.Label} — العنوان (المميز بين {{ }})", 200, ContentFormat.Highlight)),
+            new ContentKey(g.TitleKey, g.ContentGroup, $"{g.Label} — العنوان (المميز بين {{ }})", 200, ContentFormat.Highlight)),
         .. ContentItemGroups.All.Where(g => !g.FormOptions).Select(g =>
-            new ContentKey(g.IntroKey!, "pages", $"{g.Label} — النص التمهيدي (اختياري)", 500, AllowEmpty: true)),
+            new ContentKey(g.IntroKey!, g.ContentGroup, $"{g.Label} — النص التمهيدي (اختياري)", 500, AllowEmpty: true)),
+        .. ContentItemGroups.All.Where(g => g.NoteKey is not null).Select(g =>
+            new ContentKey(g.NoteKey!, g.ContentGroup, $"{g.Label} — الفقرة الختامية (اختيارية)", 1000, ContentFormat.Lines, AllowEmpty: true, Multiline: true)),
 
         // The lead forms (Forum registration, Join the Network, sponsorship, opportunity interest): AddLeadForms inserts them.
         new(FormsConsent, "forms", "نص الموافقة بجانب مربع الاختيار (إلزامي في نماذج الطلبات)", 500, Multiline: true),

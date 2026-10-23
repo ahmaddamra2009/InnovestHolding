@@ -1,0 +1,28 @@
+@model PatronageBlock
+@using InnovestHolding.Infrastructure.Content
+@* F10: the organising bodies on the forum hub — the partner groups flagged ShowOnForumHub, with their active
+   partners (logo or name tile: _PartnerMark). *@
+<section class="page-section forum-patronage" aria-labelledby="@(Model.Title.IsEmpty ? null : "sec-forum-patronage")">
+  <div class="container">
+    @if (!Model.Title.IsEmpty)
+    {
+      <div class="block-head">
+        <h2 class="block-title" id="sec-forum-patronage" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+      </div>
+    }
+    <div class="forum-patronage-groups">
+      @foreach (var group in Model.Groups)
+      {
+        <div class="forum-patronage-group">
+          <h3 class="forum-patronage-name" lang="@group.Name.Lang" dir="@group.Name.Dir">@group.Name</h3>
+          <ul class="partner-grid">
+            @foreach (var partner in group.Partners)
+            {
+              <li class="partner-tile"><partial name="Blocks/_PartnerMark" model="partner" /></li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </div>
+</section>

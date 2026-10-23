@@ -1,0 +1,49 @@
+@model FactsBlock
+@using InnovestHolding.Infrastructure.Content
+@* F10: the forum's contact details (forum hub and forum registration page). Labels are content keys; a row without a
+   label (the address) is announced with the shared Ui_ContactAddress text. The phone and the website are links; the social handle
+   is plain text (no profile URL is known). Language-neutral values are isolated with <bdi dir="ltr">. *@
+@{
+    const string PhoneSvg = "<path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"/>";
+}
+<section class="page-section forum-contact" aria-labelledby="@(Model.Title.IsEmpty ? null : "sec-forum-contact")">
+  <div class="container">
+    @if (!Model.Title.IsEmpty)
+    {
+      <div class="block-head">
+        <h2 class="block-title" id="sec-forum-contact" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+      </div>
+    }
+    <ul class="forum-facts">
+      @foreach (var fact in Model.Facts)
+      {
+        var neutral = fact.Icon is "phone" or "users" or "globe";
+        <li class="forum-fact">
+          <svg class="forum-fact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(fact.Icon == "phone" ? PhoneSvg : Icons.Svg(fact.Icon))</svg>
+          <span class="forum-fact-text">
+            @if (!fact.Label.IsEmpty)
+            {
+              <span class="forum-fact-label" lang="@fact.Label.Lang" dir="@fact.Label.Dir">@fact.Label</span>
+            }
+            else
+            {
+              <span class="visually-hidden">@L[K.Ui.ContactAddress]</span>
+            }
+            @if (fact.Href is not null)
+            {
+              <a href="@fact.Href" rel="@SafeHrefAttribute.RelFor(fact.Href)"><bdi dir="ltr">@fact.Text</bdi></a>
+            }
+            else if (neutral)
+            {
+              <span><bdi dir="ltr">@fact.Text</bdi></span>
+            }
+            else
+            {
+              <span lang="@fact.Text.Lang" dir="@fact.Text.Dir">@fact.Text</span>
+            }
+          </span>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
