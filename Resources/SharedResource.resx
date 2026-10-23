@@ -177,6 +177,8 @@
   <data name="Msg_SlugInvalid" xml:space="preserve"><value>الرابط المختصر: أحرف إنجليزية صغيرة وأرقام وشرطات بين الكلمات فقط (مثال: forum-2026)</value></data>
   <data name="Msg_SlugTaken" xml:space="preserve"><value>الرابط المختصر مستخدم (أو كان مستخدماً) لعنصر آخر — اختر غيره</value></data>
   <data name="Msg_UtcOffset" xml:space="preserve"><value>فرق التوقيت يجب أن يكون بالشكل ‎+02:00 أو ‎-05:30</value></data>
+  <data name="Msg_ContentPhone" xml:space="preserve"><value>حقل {0}: رقم هاتف غير صالح — أرقام ومسافات وشرطات فقط، مع «+» اختيارية في البداية، ومن 7 إلى 15 رقماً</value></data>
+  <data name="Msg_ContentCountryCode" xml:space="preserve"><value>حقل {0}: رمز الدولة يجب أن يكون حرفين لاتينيين وفق ISO 3166 (مثل EG)</value></data>
   <data name="Msg_DateRequired" xml:space="preserve"><value>أدخل تاريخ البدء، أو اليوم والشهر كنص</value></data>
   <data name="Msg_EndBeforeStart" xml:space="preserve"><value>وقت الانتهاء يجب أن يكون بعد وقت البدء</value></data>
   <data name="Field_Slug" xml:space="preserve"><value>الرابط المختصر</value></data>
@@ -260,6 +262,7 @@
   <data name="Msg_SlugReserved" xml:space="preserve"><value>الشكل «{0}-رقم» محجوز للروابط التلقائية — اختر رابطاً مختصراً آخر.</value></data>
   <data name="Ui_WatchOnYouTube" xml:space="preserve"><value>المشاهدة على يوتيوب</value></data>
   <data name="Ui_ExternalLink" xml:space="preserve"><value>(يفتح موقعاً آخر)</value></data>
+  <data name="Ui_OpensInNewTab" xml:space="preserve"><value>(يفتح في نافذة جديدة)</value></data>
   <data name="Msg_ForumRegistrationSuccess" xml:space="preserve"><value>تم استلام تسجيلك في المنتدى! سنتواصل معك بتفاصيل الفعاليات</value></data>
   <data name="Msg_JoinSuccess" xml:space="preserve"><value>تم استلام طلب الانضمام! سيراجعه فريقنا ويتواصل معك</value></data>
   <data name="Msg_SponsorshipSuccess" xml:space="preserve"><value>تم استلام استفسار الرعاية! سيتواصل معك فريقنا بالتفاصيل</value></data>

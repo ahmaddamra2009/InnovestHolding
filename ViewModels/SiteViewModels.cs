@@ -9,8 +9,9 @@ namespace InnovestHolding.ViewModels;
 /// <param name="External">An admin-chosen https address of another site (C5 links): rendered with <see cref="Rel"/>.</param>
 public sealed record LinkVm(string Href, LText Title, bool Active = false, bool External = false)
 {
-    /// <summary>"noopener noreferrer" for an external link, else null (Razor then omits the attribute).</summary>
-    public string? Rel => External ? "noopener noreferrer" : null;
+    /// <summary>"noopener noreferrer" for an external link — flagged, or any absolute http(s) address such as an admin's
+    /// Nav extra link (SEO-C5 §4) — else null (Razor then omits the attribute).</summary>
+    public string? Rel => External ? "noopener noreferrer" : Infrastructure.SafeHrefAttribute.RelFor(Href);
 }
 
 /// <summary>A menu entry (the header, the drawer and the footer read the same tree).</summary>
@@ -137,7 +138,11 @@ public sealed record VisionBlock(IReadOnlyList<(LText Title, LText Text, string 
 
 public sealed record ServicesBlock(SectionHeaderVm Header, IReadOnlyList<ServiceVm> Services, LText ReadMore) : BlockVm;
 /// <param name="IconSvg">From the IconKey (whitelist), else the migration-owned markup; null = the brand bullet.</param>
-public sealed record ServiceVm(LText Title, IReadOnlyList<LText> Lines, string? IconSvg, string? LinkUrl);
+public sealed record ServiceVm(LText Title, IReadOnlyList<LText> Lines, string? IconSvg, string? LinkUrl)
+{
+    /// <summary>"noopener noreferrer" when «learn more» goes to another site, else null.</summary>
+    public string? LinkRel => Infrastructure.SafeHrefAttribute.RelFor(LinkUrl);
+}
 
 public sealed record StatsBlock(LText Title, LText Intro, IReadOnlyList<StatVm> Stats) : BlockVm;
 

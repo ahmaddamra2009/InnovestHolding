@@ -65,7 +65,7 @@ public static class PublicTexts
             M.ValueRequired, M.InvalidValueNoField, M.ValueRequiredNoField, M.InterestInvalid, M.OptionInvalid, M.ConsentRequired),
         .. In("details",
             U.EventDate, U.EventTime, U.EventVenue, U.EventOnline, U.EventJoinOnline, U.EventEndedNotice, U.PublishedOn,
-            U.NewsSource, U.ArabicOnlyNotice, U.PlayVideo, U.VideoNotice, U.WatchVideo, U.WatchOnYouTube, U.ExternalLink,
+            U.NewsSource, U.ArabicOnlyNotice, U.PlayVideo, U.VideoNotice, U.WatchVideo, U.WatchOnYouTube, U.ExternalLink, U.OpensInNewTab,
             U.SeasonEpisode, U.EpisodeNumber, U.SeasonNumber, U.AiredOn, U.JobTitle, U.Organization, U.Sector, U.Stage, U.Ask,
             U.ContactAddress, U.ContactPhone, U.ContactEmail, U.ContactHours, U.ContactWhatsApp, U.ContactWebsite, U.ContactSocial),
         .. In("badges", U.EventCancelled, U.EventPostponed, U.EventPast, U.OpportunityOpen, U.OpportunityClosed),

@@ -61,7 +61,8 @@ public class OverPostingTests(TestAppFactory f)
     {
         var (c, t) = await AdminAsync("/Admin/Content/Edit");
         var evilKey = Unique("evil")[..30];
-        var value = Unique("years")[..30];
+        // A unique value that passes contact_phone's rule (C5 final: 7–15 digits, optional +, spaces, dashes).
+        var value = "+20 1" + Random.Shared.NextInt64(100_000_000, 999_999_999).ToString(System.Globalization.CultureInfo.InvariantCulture);
         var original = await f.DbAsync(db => db.SiteContents.Where(s => s.SectionKey == "contact_phone").Select(s => s.ContentAr).SingleAsync());
         try
         {

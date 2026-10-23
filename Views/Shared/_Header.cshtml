@@ -73,7 +73,7 @@
       }
       @foreach (var link in Model.HeaderLinks)
       {
-        <a href="@link.Href" class="nav-link" lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</a>
+        <a href="@link.Href" class="nav-link" rel="@link.Rel" lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</a>
       }
     </nav>
 
@@ -142,7 +142,7 @@
     }
     @foreach (var link in Model.HeaderLinks)
     {
-      <a href="@link.Href" class="nav-link" lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</a>
+      <a href="@link.Href" class="nav-link" rel="@link.Rel" lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</a>
     }
   </nav>
   @if (Model.HeaderCta is { } mobileCta)

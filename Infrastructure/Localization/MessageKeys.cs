@@ -46,6 +46,9 @@ public static class MessageKeys
     public const string EndBeforeStart = "Msg_EndBeforeStart";
     public const string DateRequired = "Msg_DateRequired";
     public const string UtcOffset = "Msg_UtcOffset";
+    /// <summary>Content editor: contact_phone / org_address_country (C5 final, SEO-C5 §7).</summary>
+    public const string ContentPhone = "Msg_ContentPhone";
+    public const string ContentCountryCode = "Msg_ContentCountryCode";
     public const string SlugTaken = "Msg_SlugTaken";
     public const string SlugReserved = "Msg_SlugReserved";
     public const string SlugInvalid = "Msg_SlugInvalid";
@@ -357,6 +360,8 @@ public static class MessageKeys
         public const string ProfilesAria = "Ui_ProfilesAria";
         public const string WatchOnYouTube = "Ui_WatchOnYouTube";
         public const string ExternalLink = "Ui_ExternalLink";
+        /// <summary>Visually hidden after the privacy link of a consent box (it opens in a new tab).</summary>
+        public const string OpensInNewTab = "Ui_OpensInNewTab";
     }
 
     /// <summary>C5 list screens (Nav/footer, services, social links): admin messages, Arabic admin.</summary>
