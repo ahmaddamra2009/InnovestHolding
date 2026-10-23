@@ -1,0 +1,10 @@
+﻿@model HomeViewModel
+@{ var c = Model.Content; }
+    <!-- 7. NEWS -->
+    <section class="news-section" id="news">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("news_badge"), c.Text("news_title"), c.Text("news_subtitle"), Model.Icon("news")))" />
+        <partial name="Blocks/_NewsGrid" model="@(new NewsBlock(Model.News, null, c.Text("news_read_more")))" />
+        @Model.ViewAllLink("news", L[K.Ui.ViewAll].Value)
+      </div>
+    </section>

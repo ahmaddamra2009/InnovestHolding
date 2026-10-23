@@ -69,22 +69,27 @@ public abstract partial class PublicControllerBase
     }
 
     /// <summary>
-    /// A list page of the ecosystem: the requested page of <paramref name="rows"/> (ordered, published) as cards, the
-    /// pager, and the admin's empty text with <paramref name="emptyAction"/> while there is none; then the optional
-    /// <paramref name="after"/> block (e.g. a lead form).
+    /// A list page of the ecosystem: the requested page of <paramref name="rows"/> (ordered, published) as cards (section
+    /// "list"), the pager, and the admin's empty text with <paramref name="emptyAction"/> while there is none; then the
+    /// optional <paramref name="after"/> block (e.g. a lead form) under its section key. An unpublished page is the 404
+    /// before any list query.
     /// </summary>
     protected async Task<IActionResult> EntityListAsync<T>(string key, IQueryable<T> rows, Func<SiteViews, T, EntityCardVm> card,
-        bool people, Func<SiteViews, LinkVm> emptyAction, Func<SiteViews, BlockVm?>? after = null)
+        bool people, Func<SiteViews, LinkVm?> emptyAction, (string Key, Func<SiteViews, BlockVm?> Block)? after = null)
     {
         var v = await ViewsAsync();
+        if (Unpublished(v, key)) return NotFoundPage(v);
         var size = ContentKeys.PageSize(v.Snapshot.Content);
         var total = SeoPolicy.ListCountOf(key, v.Snapshot).Total;
-        if (PageNumber(total, size, out var redirect) is not { } n) return redirect ?? await NotFoundPageAsync();
+        if (PageNumber(total, size, out var redirect) is not { } n) return redirect ?? NotFoundPage(v);
         var page = await rows.Skip((n - 1) * size).Take(size).ToListAsync(HttpContext.RequestAborted);
         var cards = page.Select(r => card(v, r)).ToList();
-        return Page(key, v,
-            [cards.Count == 0 ? null : new EntityGridBlock(key, cards, ForumController.Pager(total, size, n, v.Url(key)), people), after?.Invoke(v)],
-            emptyAction(v));
+        var blocks = new List<(string, BlockVm?)>
+        {
+            ("list", cards.Count == 0 ? null : new EntityGridBlock(key, cards, ForumController.Pager(total, size, n, v.Url(key)), people)),
+        };
+        if (after is { } a) blocks.Add((a.Key, a.Block(v)));
+        return Page(key, v, blocks, emptyAction(v));
     }
 
     /// <summary>

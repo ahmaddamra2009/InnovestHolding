@@ -6,27 +6,15 @@
     ViewData["Seo"] = Model.Seo;
     ViewData["Shell"] = Model.Shell;
     var c = Model.Content;
-    var siteName = c.Text("site_name");
     var inv = System.Globalization.CultureInfo.InvariantCulture;
-    bool Show(string section) => Model.VisibleSections.Contains(section);
-    const string arrow = "<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"/><polyline points=\"12 19 5 12 12 5\"/>";
-    LinkVm Page(string key) => Model.Pages[key];
-}
-@functions {
-    // "View all" link under a teaser section (the label is a UI string, the target a page of the route table).
-    private Microsoft.AspNetCore.Html.IHtmlContent ViewAll(LinkVm link) =>
-        new Microsoft.AspNetCore.Html.HtmlString(
-            $"<div class=\"section-more\"><a class=\"btn btn-outline\" href=\"{System.Net.WebUtility.HtmlEncode(link.Href)}\">{System.Net.WebUtility.HtmlEncode(L[K.Ui.ViewAll].Value)}</a></div>");
 }
 
-  <!-- 1. HERO -->
+  <!-- 1. HERO (fixed: the page's only h1; its figures row is the hide-only section "hero_stats") -->
   @{
     var kicker = c.Optional("hero_kicker");
     var heroTitle = c.Text("hero_title");
     var heroBadge = c.Text("hero_badge");
     var heroSubtitle = c.Text("hero_subtitle");
-    var heroCta = c.Text("hero_cta_primary");
-    var cta = Model.Shell.Cta;
   }
   <section class="hero-section" id="hero">
     <div class="hero-pattern" aria-hidden="true"></div>
@@ -48,20 +36,29 @@
 
         <p class="hero-subtitle reveal reveal-delay-2" lang="@heroSubtitle.Lang" dir="@heroSubtitle.Dir">@heroSubtitle</p>
 
+        @if (Model.HeroMain is not null || Model.HeroSecondary is not null)
+        {
         <div class="hero-buttons reveal reveal-delay-3">
-          <a href="@cta.Href" class="btn btn-accent">
-            <span lang="@cta.Title.Lang" dir="@cta.Title.Dir">@cta.Title</span>
-            <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(arrow)</svg>
+          @if (Model.HeroMain is { } main)
+          {
+          <a href="@main.Href" class="btn btn-accent" rel="@HomeViewModel.Rel(main)">
+            <span lang="@main.Title.Lang" dir="@main.Title.Dir">@main.Title</span>
+            <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(HomeViewModel.Arrow)</svg>
           </a>
-          <a href="@Page(PageKeys.Ecosystem).Href" class="btn btn-outline-light">
-            <span lang="@heroCta.Lang" dir="@heroCta.Dir">@heroCta</span>
+          }
+          @if (Model.HeroSecondary is { } second)
+          {
+          <a href="@second.Href" class="btn btn-outline-light" rel="@HomeViewModel.Rel(second)">
+            <span lang="@second.Title.Lang" dir="@second.Title.Dir">@second.Title</span>
           </a>
+          }
         </div>
+        }
 
-        @if (Model.Stats.Count > 0)
+        @if (Model.HeroStats.Count > 0)
         {
           <div class="hero-stats reveal reveal-delay-4">
-            @foreach (var stat in Model.Stats.Take(4))
+            @foreach (var stat in Model.HeroStats)
             {
               <div class="hero-stat">
                 <div class="hero-stat-number" data-counter="@stat.Value.ToString(inv)" data-suffix="@stat.Suffix">@stat.Value.ToString("N0", inv)@stat.Suffix</div>
@@ -100,234 +97,30 @@
     </div>
   </section>
 
-  <!-- 2. ABOUT -->
-  @{
-    var aboutBadge = c.Text("about_badge");
-    var aboutTitle = c.Text("about_title");
-    var about1 = c.Text("about_text_1");
-    var about2 = c.Text("about_text_2");
-    var tagline = c.Text("tagline");
-    (string Icon, string TitleKey, string TextKey, bool AsList)[] values =
-    [
-      (Icons.Svg("eye")!, "vision_title", "vision_text", false),
-      (Icons.Svg("target")!, "mission_title", "mission_text", false),
-      (Icons.Svg("handshake")!, "values_title", "values_text", true),
-    ];
-  }
-  <section class="about-section" id="about">
-    <div class="container">
-      <div class="about-grid">
-        <div class="about-image-wrap reveal-start">
-          <div class="about-brand-panel">
-            @if (Model.Shell.Brand.LogoOnDark is { } logo)
-            {
-              <img src="@logo.Url" alt="@siteName" width="@logo.Width" height="@logo.Height" loading="lazy">
-            }
-            else
-            {
-              <picture>
-                <source type="image/webp" srcset="@Context.Versioned(BrandAssets.LogoOnDark2x)">
-                <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="320" height="81" loading="lazy">
-              </picture>
-            }
-            <p lang="@tagline.Lang" dir="@tagline.Dir">@tagline</p>
-          </div>
-          <div class="about-image-accent" aria-hidden="true"></div>
-        </div>
-
-        <div class="about-content reveal-end">
-          <span class="section-badge">
-            <span class="tri-bullet" aria-hidden="true"></span>
-            <span lang="@aboutBadge.Lang" dir="@aboutBadge.Dir">@aboutBadge</span>
-          </span>
-          <h2 class="section-title" lang="@aboutTitle.Lang" dir="@aboutTitle.Dir">@ContentText.Highlight(aboutTitle)</h2>
-          <p class="about-text" lang="@about1.Lang" dir="@about1.Dir">@about1</p>
-          <p class="about-text" lang="@about2.Lang" dir="@about2.Dir">@about2</p>
-          <a href="@Page(PageKeys.About).Href" class="btn btn-outline about-more">
-            <span lang="@Page(PageKeys.About).Title.Lang" dir="@Page(PageKeys.About).Title.Dir">@Page(PageKeys.About).Title</span>
-            <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(arrow)</svg>
-          </a>
-        </div>
-      </div>
-
-      @* Vision / mission / values: a full-width row under the about grid. A text written as a list (items separated by
-         the Arabic or the Latin comma) is shown as chips; any other text as a paragraph. *@
-      <div class="about-values">
-        @for (var i = 0; i < values.Length; i++)
-        {
-          var vt = c.Text(values[i].TitleKey);
-          var vx = c.Text(values[i].TextKey);
-          var items = values[i].AsList ? ContentText.ListItems(vx.Value) : [];
-          <div class="value-card reveal@(HomeViewModel.Delay(i + 1))">
-            <div class="value-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(values[i].Icon)</svg></div>
-            <h3 lang="@vt.Lang" dir="@vt.Dir">@vt</h3>
-            @if (items.Count > 0)
-            {
-              <ul class="value-chips" lang="@vx.Lang" dir="@vx.Dir">
-                @foreach (var item in items)
-                {
-                  <li>@item</li>
-                }
-              </ul>
-            }
-            else
-            {
-              <p lang="@vx.Lang" dir="@vx.Dir">@vx</p>
-            }
-          </div>
-        }
-      </div>
-    </div>
-  </section>
-
-  @if (Show("ecosystem"))
+  @* The other sections in the admin's order (Admin › PageSections, page "home"). A hidden or empty section leaves only its
+     anchor, so old /#news links still land; nothing on the page links to it. *@
+  @foreach (var part in Model.Sections)
   {
-    <!-- 3. ECOSYSTEM: the three units -->
-    <section class="ecosystem-section" id="ecosystem">
-      <div class="container">
-        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("ecosystem_badge"), c.Text("ecosystem_title"), c.Text("ecosystem_subtitle"), Icons.Svg("layers")!))" />
-      </div>
-      <partial name="Blocks/_Cards" model="@(new CardsBlock(LText.Empty, LText.Empty, Model.Units, true))" />
-    </section>
+    if (!part.Render)
+    {
+      if (part.Anchor is not null)
+      {
+        <span id="@part.Anchor" class="section-anchor"></span>
+      }
+      continue;
+    }
+    switch (part.Key)
+    {
+      case "about": <partial name="Sections/_About" model="Model" /> break;
+      case "ecosystem": <partial name="Sections/_Ecosystem" model="Model" /> break;
+      case "platforms": <partial name="Sections/_Platforms" model="Model" /> break;
+      case "stats": <partial name="Sections/_Stats" model="Model" /> break;
+      case "events": <partial name="Sections/_Events" model="Model" /> break;
+      case "news": <partial name="Sections/_News" model="Model" /> break;
+      case "partners": <partial name="Sections/_Partners" model="Model" /> break;
+      case "faq": <partial name="Sections/_Faq" model="Model" /> break;
+      case "register": <partial name="Sections/_Register" model="Model" /> break;
+      case "contact": <partial name="Sections/_Contact" model="Model" /> break;
+      case "cta_band": <partial name="Blocks/_Misc" model="Model.CtaBand" /> break;
+    }
   }
-  else
-  {
-    @* The section is hidden while it has no rows; its anchor stays so links to #ecosystem still land. *@
-    <span id="ecosystem" class="section-anchor"></span>
-  }
-
-  @if (Show("platforms"))
-  {
-    <!-- 4. SERVICES (the table is still called Platforms) -->
-    <section class="platforms-section" id="platforms">
-      <div class="container">
-        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("platforms_badge"), c.Text("platforms_title"), c.Text("platforms_subtitle"), SiteViews.BadgeGrid))" />
-        <partial name="Blocks/_ServiceGrid" model="@(new ServicesBlock(new SectionHeaderVm(LText.Empty, LText.Empty, LText.Empty, ""), Model.Services, c.Text("platforms_read_more")))" />
-      </div>
-    </section>
-  }
-  else
-  {
-    @* The section is hidden while it has no rows; its anchor stays so links to #platforms still land. *@
-    <span id="platforms" class="section-anchor"></span>
-  }
-
-  @if (Show("stats"))
-  {
-    <!-- 5. IMPACT -->
-    <section class="stats-section" id="stats">
-      <div class="container">
-        <div class="impact-grid">
-          @for (var i = 0; i < Model.Stats.Count; i++)
-          {
-            var s = Model.Stats[i];
-            <div class="impact-card reveal@(HomeViewModel.Delay(i + 1))">
-              <div class="impact-number" data-counter="@s.Value.ToString(inv)" data-suffix="@s.Suffix">@s.Value.ToString("N0", inv)@s.Suffix</div>
-              <div class="impact-label" lang="@s.Label.Lang" dir="@s.Label.Dir">@s.Label</div>
-            </div>
-          }
-        </div>
-      </div>
-    </section>
-  }
-  else
-  {
-    @* The section is hidden while it has no rows; its anchor stays so links to #stats still land. *@
-    <span id="stats" class="section-anchor"></span>
-  }
-
-  @if (Show("events"))
-  {
-    <!-- 6. EVENTS -->
-    <section class="events-section" id="events">
-      <div class="container">
-        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("events_badge"), c.Text("events_title"), c.Text("events_subtitle"), Icons.Svg("calendar")!))" />
-        <partial name="Blocks/_EventList" model="@(new EventsBlock(Model.Events, null, Page(PageKeys.ForumRegistration)))" />
-        @ViewAll(Page(PageKeys.ForumEvents))
-      </div>
-    </section>
-  }
-  else
-  {
-    @* The section is hidden while it has no rows; its anchor stays so links to #events still land. *@
-    <span id="events" class="section-anchor"></span>
-  }
-
-  @if (Show("news"))
-  {
-    <!-- 7. NEWS -->
-    <section class="news-section" id="news">
-      <div class="container">
-        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("news_badge"), c.Text("news_title"), c.Text("news_subtitle"), Icons.Svg("book")!))" />
-        <partial name="Blocks/_NewsGrid" model="@(new NewsBlock(Model.News, null, c.Text("news_read_more")))" />
-        @ViewAll(Page(PageKeys.News))
-      </div>
-    </section>
-  }
-  else
-  {
-    @* The section is hidden while it has no rows; its anchor stays so links to #news still land. *@
-    <span id="news" class="section-anchor"></span>
-  }
-
-  @if (Show("partners"))
-  {
-    <!-- 8. PARTNERS -->
-    <section class="partners-section" id="partners">
-      <div class="container">
-        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("partners_badge"), c.Text("partners_title"), c.Text("partners_subtitle"), Icons.Svg("handshake")!))" />
-      </div>
-      <div class="partners-marquee">
-        <div class="marquee-track">
-          @foreach (var partner in Model.Partners)
-          {
-            <div class="partner-logo"><partial name="Blocks/_PartnerMark" model="partner" /></div>
-          }
-          @* Second copy for the seamless loop — hidden from assistive technology (and from the tab order). *@
-          @foreach (var partner in Model.Partners)
-          {
-            <div class="partner-logo" aria-hidden="true" inert><partial name="Blocks/_PartnerMark" model="partner" /></div>
-          }
-        </div>
-      </div>
-      <div class="container">@ViewAll(Page(PageKeys.ForumPartners))</div>
-    </section>
-  }
-  else
-  {
-    @* The section is hidden while it has no rows; its anchor stays so links to #partners still land. *@
-    <span id="partners" class="section-anchor"></span>
-  }
-
-  @if (Show("faq"))
-  {
-    <!-- 9. FAQ -->
-    <section class="faq-section" id="faq">
-      <div class="container">
-        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("faq_badge"), c.Text("faq_title"), c.Text("faq_subtitle"), SiteViews.BadgeQuestion))" />
-        <partial name="Blocks/_Faq" model="Model.Faqs" />
-      </div>
-    </section>
-  }
-  else
-  {
-    @* The section is hidden while it has no rows; its anchor stays so links to #faq still land. *@
-    <span id="faq" class="section-anchor"></span>
-  }
-
-  <!-- 10. QUICK REGISTRATION -->
-  <section class="registration-section" id="register">
-    <div class="container">
-      <partial name="Blocks/_RegisterForm" model="Model.Register" />
-    </div>
-  </section>
-
-  <!-- 11. CONTACT -->
-  <section class="contact-section" id="contact">
-    <div class="container">
-      <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("contact_badge"), c.Text("contact_title"), c.Text("contact_subtitle"), Icons.Svg("mic")!))" />
-      <partial name="Blocks/_ContactBlock" model="Model.Contact" />
-    </div>
-  </section>
-
-  <partial name="Blocks/_Misc" model="Model.CtaBand" />

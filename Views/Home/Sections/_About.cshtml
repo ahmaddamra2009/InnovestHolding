@@ -1,0 +1,91 @@
+@model HomeViewModel
+@using InnovestHolding.Infrastructure.Content
+@using InnovestHolding.Infrastructure.Site
+@{
+    var c = Model.Content;
+    var siteName = c.Text("site_name");
+    var aboutBadge = c.Text("about_badge");
+    var aboutTitle = c.Text("about_title");
+    var about1 = c.Text("about_text_1");
+    var about2 = c.Text("about_text_2");
+    var tagline = c.Text("tagline");
+    (string Icon, string TitleKey, string TextKey, bool AsList)[] values =
+    [
+      (Model.Icon("vision"), "vision_title", "vision_text", false),
+      (Model.Icon("mission"), "mission_title", "mission_text", false),
+      (Model.Icon("values"), "values_title", "values_text", true),
+    ];
+}
+  <!-- 2. ABOUT -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image-wrap reveal-start">
+          <div class="about-brand-panel">
+            @if (Model.Shell.Brand.LogoOnDark is { } logo)
+            {
+              <img src="@logo.Url" alt="@siteName" width="@logo.Width" height="@logo.Height" loading="lazy">
+            }
+            else
+            {
+              <picture>
+                <source type="image/webp" srcset="@Context.Versioned(BrandAssets.LogoOnDark2x)">
+                <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="320" height="81" loading="lazy">
+              </picture>
+            }
+            <p lang="@tagline.Lang" dir="@tagline.Dir">@tagline</p>
+          </div>
+          <div class="about-image-accent" aria-hidden="true"></div>
+        </div>
+
+        <div class="about-content reveal-end">
+          <span class="section-badge">
+            <span class="tri-bullet" aria-hidden="true"></span>
+            <span lang="@aboutBadge.Lang" dir="@aboutBadge.Dir">@aboutBadge</span>
+          </span>
+          <h2 class="section-title" lang="@aboutTitle.Lang" dir="@aboutTitle.Dir">@ContentText.Highlight(aboutTitle)</h2>
+          <p class="about-text" lang="@about1.Lang" dir="@about1.Dir">@about1</p>
+          <p class="about-text" lang="@about2.Lang" dir="@about2.Dir">@about2</p>
+          @if (Model.AboutMore is { } more)
+          {
+          <a href="@more.Href" class="btn btn-outline about-more" rel="@HomeViewModel.Rel(more)">
+            <span lang="@more.Title.Lang" dir="@more.Title.Dir">@more.Title</span>
+            <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(HomeViewModel.Arrow)</svg>
+          </a>
+          }
+        </div>
+      </div>
+
+      @if (Model.ShowValues)
+      {
+      @* Vision / mission / values: a full-width row under the about grid (hide-only section "about_values"). A text
+         written as a list (items separated by the Arabic or the Latin comma) is shown as chips; any other text as a
+         paragraph. *@
+      <div class="about-values">
+        @for (var i = 0; i < values.Length; i++)
+        {
+          var vt = c.Text(values[i].TitleKey);
+          var vx = c.Text(values[i].TextKey);
+          var items = values[i].AsList ? ContentText.ListItems(vx.Value) : [];
+          <div class="value-card reveal@(HomeViewModel.Delay(i + 1))">
+            <div class="value-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(values[i].Icon)</svg></div>
+            <h3 lang="@vt.Lang" dir="@vt.Dir">@vt</h3>
+            @if (items.Count > 0)
+            {
+              <ul class="value-chips" lang="@vx.Lang" dir="@vx.Dir">
+                @foreach (var item in items)
+                {
+                  <li>@item</li>
+                }
+              </ul>
+            }
+            else
+            {
+              <p lang="@vx.Lang" dir="@vx.Dir">@vx</p>
+            }
+          </div>
+        }
+      </div>
+      }
+    </div>
+  </section>
