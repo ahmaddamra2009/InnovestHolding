@@ -4,7 +4,6 @@
 @using InnovestHolding.Infrastructure.Seo
 @{
     var c = Model.Content;
-    var siteName = c.Text("site_name");
     var footerDesc = c.Text("footer_description");
     var contactTitle = c.Text("footer_contact_title");
     var copyright = c.Text("footer_copyright");
@@ -26,11 +25,11 @@
         <div class="footer-logo">
           @if (Model.Brand.LogoOnDark is { } logo)
           {
-            <img src="@logo.Url" alt="@siteName" width="@logo.Width" height="@logo.Height" loading="lazy">
+            <img src="@logo.Url" alt="@Model.Brand.LogoAlt" width="@logo.Width" height="@logo.Height" loading="lazy">
           }
           else
           {
-            <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="200" height="51" loading="lazy">
+            <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@Model.Brand.LogoAlt" width="200" height="51" loading="lazy">
           }
         </div>
         <p class="footer-desc" lang="@footerDesc.Lang" dir="@footerDesc.Dir">@footerDesc</p>

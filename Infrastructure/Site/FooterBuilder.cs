@@ -104,8 +104,5 @@ public static class FooterBuilder
         column.Links.Count > 0 && column.Links[0].Title.Value == column.Title.Value ? column.Links[0] : null;
 
     /// <summary>The privacy policy link: only while the policy has an Arabic body and the page is published (Rami Q6).</summary>
-    public static LinkVm? Privacy(SiteViews v) =>
-        v.Snapshot.Page(PageKeys.Privacy) is { } page && !string.IsNullOrWhiteSpace(page.BodyAr) && v.Snapshot.IsPublished(PageKeys.Privacy)
-            ? new LinkVm(v.Url(PageKeys.Privacy), v.Title(PageKeys.Privacy))
-            : null;
+    public static LinkVm? Privacy(SiteViews v) => v.PrivacyLink();
 }
