@@ -312,7 +312,7 @@ public class AdminControlSiteTests(TestAppFactory f)
         await upgraded.Database.MigrateAsync();
 
         var fresh = await f.DbAsync(State);
-        Assert.True(fresh.Count >= 95, $"{fresh.Count} rows compared"); // 58 sections + 27 keys + 2 pages + 7 networks + footer
+        Assert.True(fresh.Count >= 95, $"{fresh.Count} rows compared"); // 58 sections + 28 keys + 2 pages + 7 networks + footer
         var up = await State(upgraded);
         Assert.True(fresh.SequenceEqual(up), "fresh only: " + string.Join(" ‖ ", fresh.Except(up)) + " — upgraded only: " + string.Join(" ‖ ", up.Except(fresh)));
     }
