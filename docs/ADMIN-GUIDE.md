@@ -450,12 +450,12 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 **«النسخ السابقة»** يعرض أوائل النسخ بترتيبها (العدد من «أقسام الصفحات»، الافتراضي 3، من 1 إلى 12) بصورة الغلاف فقط ورابط «كل النسخ» (نصه وعنوان القسم من «صفحات المنتدى»).
 - **إضافة نسخة:** السنة (2000–2100)، وتسمية النسخة (اختياري، حتى 60 حرفاً، مثل «النسخة الرابعة»)، والعنوان (مطلوب بالعربية). بعد الإضافة تنتقلون إلى صفحة النسخة.
 - **تعديل النسخة:** السنة، التسمية، العنوان، المكان (اختياري)، النص (اختياري؛ سطر فارغ = فقرة)، وخانة «ظاهرة في الموقع»؛ كلها بالعربية والإنجليزية. في القائمة: الغلاف، السنة، العنوان، عدد الصور من 12، شارة EN
-  (تكتمل بالعنوان والنص الإنجليزيين)، مفتاح الظهور، الترتيب ▲▼، تعديل والصور، حذف.
+  (تكتمل بالعنوان الإنجليزي، وبالنص الإنجليزي فقط حيث يوجد نص عربي)، مفتاح الظهور، الترتيب ▲▼، تعديل والصور، حذف.
 - **الصور:** حتى **12 صورة** لكل نسخة، **صورة واحدة في كل رفع**، بقواعد «رفع الصور» (القسم 9) نفسها. **الصورة الأولى هي غلاف النسخة**؛ ▲▼ تغيّر الترتيب. لكل صورة نص بديل بالعربية والإنجليزية (فارغ = عنوان النسخة)
   وزر «حفظ الوصف». عند بلوغ 12 يختفي نموذج الرفع ويظهر تنبيه؛ احذفوا صورة لإضافة غيرها (ويرفض الخادم الصورة الثالثة عشرة كذلك).
 - **الحذف:** حذف النسخة يحذف صورها وملفاتها. إخفاء النسخة يخفيها من الصفحتين دون حذف.
 - **الصفحة الفارغة:** إن لم توجد نسخة ظاهرة تعرض `/forum/editions` النص الذي تكتبونه في «تعديل صفحة»، وتصبح `noindex` وخارج خريطة الموقع، ويُخفى قسم صفحة المنتدى.
-  **الصفحة الإنجليزية** تبقى `noindex` وخارج الخريطة إلى أن يكون لنسخة ظاهرة واحدة على الأقل عنوان ونص بالإنجليزية.
+  **الصفحة الإنجليزية** تبقى `noindex` وخارج الخريطة إلى أن تكتمل إنجليزية نسخة ظاهرة واحدة على الأقل (عنوان إنجليزي، ونص إنجليزي حيث يوجد نص عربي). النسخ المدرجة مسبقاً لها عناوين إنجليزية بلا نصوص، فالصفحة الإنجليزية تظهر في الفهرسة من البداية.
 - **ما يأتي مع الموقع:** في أول تشغيل بعد النشر تُنسخ إلى مجلد الرفع 31 صورة لست نسخ و8 شعارات للجهات المنظمة، **مرة واحدة** (يُسجَّل ذلك فلا تتكرر).
   لا تُعاد صورة حذفتموها ولا شعار أزلتموه، ولا يُستبدل شيء وضعتموه بأنفسكم.
 
@@ -467,7 +467,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
   و**طرق التواصل**: العنوان، والهاتف (7–15 رقماً، ويصير رابط اتصال `tel:`)، واسم حساب التواصل الاجتماعي (**نص فقط وليس رابطاً**)، والموقع الإلكتروني (`https://` فقط، رابط)، والعنوان البريدي. القيمة الفارغة لا تظهر، وإن فرغت كلها يختفي القسم.
   تظهر طرق التواصل في صفحة المنتدى وأسفل نموذج «التسجيل».
 - **القوائم الخمس** (القسم 4)، لكل منها عنوان وتمهيد (وفقرة ختامية حيث ذُكر) من البطاقة نفسها، وعلى شاشة القائمة رابط إليها:
-  - **المنتدى — الأرقام:** «الرقم كما يظهر» بالعربية والإنجليزية كما سيُعرض تماماً (مثل «+2000» وفي الإنجليزية 2000+؛ «420 مليون» / 420 million)، و«الوصف (ما يعنيه الرقم)». بلا أيقونة.
+  - **المنتدى — الأرقام:** «الرقم كما يظهر» بالعربية والإنجليزية كما سيُعرض تماماً (مثل «2000+» وفي الإنجليزية 2000+؛ «420 مليون» / 420 million)، و«الوصف (ما يعنيه الرقم)». بلا أيقونة.
   - **المنتدى — التأثير على الأطراف الرئيسية** و**القطاعات الرئيسية (الركائز):** بطاقات؛ «عنوان البطاقة» و«النقاط — سطر لكل نقطة» (5 أسطر في الحقل)، وأيقونة.
   - **المنتدى — أهداف النسخة** و**المحاور والقطاعات:** نص لكل عنصر، **مرقّمة في الصفحة 01 و02… بترتيبها في القائمة**، ولكل منها فقرة ختامية اختيارية.
   - **مكونات المنتدى:** سبعة مكونات ليوم المنتدى (عنوان القسم «مكونات اليوم»)، لكل مكوّن وصف بفقرة، وفي بند الجوائز **جائزة في كل سطر**، وفقرة ختامية. حلّت محل البنود الثمانية القديمة **فقط إذا كانت باقية كما هي دون أي تعديل منكم**؛ وإن كنتم عدّلتم القائمة تُركت كما هي.
@@ -1030,12 +1030,12 @@ packages). These screens fill the former «coming soon» pages `/forum/speakers`
 **«Past editions»** section, which shows the first editions in their order (how many: «أقسام الصفحات», default 3, from 1 to 12) with the cover photo only and a «view all editions» link (its text and the section heading come from «صفحات المنتدى»).
 - **Add an edition:** year (2000–2100), edition label (optional, up to 60 characters, e.g. «النسخة الرابعة») and title (required in Arabic). After adding you land on the edition's page.
 - **Edit an edition:** year, label, title, place (optional), text (optional; a blank line = a new paragraph) and the «ظاهرة في الموقع» box; all in Arabic and English. The list shows: cover, year, title, photo count out of 12, an EN chip
-  (complete when the English title and text are filled), the visibility switch, ▲▼ order, edit and photos, delete.
+  (complete when the English title is filled, and the English text wherever there is Arabic text), the visibility switch, ▲▼ order, edit and photos, delete.
 - **Photos:** up to **12 per edition**, **one photo per upload**, under the same rules as «Uploading images» (section 9). **The first photo is the edition's cover**; ▲▼ change the order. Each photo has alt text in Arabic and English (empty = the edition title)
   and a «حفظ الوصف» button. At 12 the upload form disappears and a notice shows; delete a photo to add another (the server refuses a thirteenth too).
 - **Delete:** deleting an edition deletes its photos and their files. Hiding an edition hides it from both pages without deleting.
 - **Empty page:** with no visible edition `/forum/editions` shows the text you write in «edit page», becomes `noindex` and leaves the sitemap, and the Forum page section is hidden.
-  **The English page** stays `noindex` and out of the sitemap until at least one visible edition has an English title and text.
+  **The English page** stays `noindex` and out of the sitemap until at least one visible edition is English-complete (English title, and English text wherever there is Arabic text). The editions inserted by the update have English titles and no text, so the English page is indexable from the start.
 - **What ships with the site:** on the first start after the deploy, 31 photos for six editions and 8 logos of the organising bodies are copied into the uploads folder, **once** (it is recorded, so it does not repeat).
   A photo you deleted or a logo you removed is not put back, and nothing you set yourself is replaced.
 
@@ -1047,7 +1047,7 @@ packages). These screens fill the former «coming soon» pages `/forum/speakers`
   and the **contact details**: title, phone (7–15 digits, becomes a `tel:` link), social account name (**text only, not a link**), website (`https://` only, a link) and postal address. An empty value is not shown, and when all are empty the section disappears.
   The contact details appear on the Forum page and below the «registration» form.
 - **The five lists** (section 4); each has its heading, lead (and a closing paragraph where noted) in that card, and its screen links there:
-  - **Forum — figures:** «the figure as displayed» in Arabic and English exactly as it will show (e.g. «+2000» and, in English, 2000+; «420 مليون» / 420 million) and «the description (what the figure means)». No icon.
+  - **Forum — figures:** «the figure as displayed» in Arabic and English exactly as it will show (e.g. «2000+» and, in English, 2000+; «420 مليون» / 420 million) and «the description (what the figure means)». No icon.
   - **Forum — multi-stakeholder impact** and **core pillars:** cards; «card title» and «points, a line per point» (a 5-row field), and an icon.
   - **Forum — goals of the edition** and **focus areas and sectors:** one text per item, **numbered 01, 02… on the page in the list's order**, each with an optional closing paragraph.
   - **Forum components:** seven components of the forum day (section heading «مكونات اليوم»), each with a one-paragraph description, with **one award per line** in the awards item, and a closing paragraph. They replaced the eight old items **only if those were still exactly as shipped, untouched by you**; if you had edited the list it was left as it is.

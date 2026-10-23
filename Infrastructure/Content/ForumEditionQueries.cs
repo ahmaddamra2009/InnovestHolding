@@ -6,8 +6,8 @@ namespace InnovestHolding.Infrastructure.Content;
 /// <summary>
 /// F10: the shared definitions of the past editions. ONE rule decides that an edition's English content is complete
 /// (<see cref="IsEnglishComplete"/>): the admin's EN chip, the snapshot's <c>EditionsCount.English</c> (which makes
-/// /en/forum/editions indexable, listed in the sitemap and hreflang-paired) and any SQL query (<see cref="HasEnglish"/>)
-/// all use it, so they cannot disagree (Hassan F10 🟡1/🔵2).
+/// /en/forum/editions indexable, listed in the sitemap and hreflang-paired) both use it, so they cannot disagree
+/// (Hassan F10 🟡1/🔵2). <see cref="HasEnglish"/> is the same rule as an expression for queries; only a test uses it today.
 /// </summary>
 public static class ForumEditionQueries
 {
