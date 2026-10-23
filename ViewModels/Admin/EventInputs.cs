@@ -79,10 +79,30 @@ public class EventInput : ImageFieldsInput, IValidatableObject
     [StringLength(300, ErrorMessage = K.MaxLength)]
     public string? MetaDescriptionEn { get; set; }
 
-    /// <summary>The start with its offset, or null when no date was entered (or the offset is invalid).</summary>
-    public DateTimeOffset? StartsAt() => Combine(StartsAtLocal);
+    /// <summary>
+    /// F10 «الشهر فقط»: the event is known to the month only (Event.DateIsMonth). Then <see cref="Month"/> (yyyy-MM, from
+    /// <c>&lt;input type="month"&gt;</c>) gives the dates: the 1st of the month 00:00 to its last day 23:59 at
+    /// <see cref="UtcOffset"/>, and the exact start/end and the free-text day/month are ignored.
+    /// </summary>
+    public bool DateIsMonth { get; set; }
 
-    public DateTimeOffset? EndsAt() => Combine(EndsAtLocal);
+    [Display(Name = K.AdminForumEditions.Month)]
+    [StringLength(7, ErrorMessage = K.MaxLength)]
+    public string? Month { get; set; }
+
+    /// <summary>The first day of <see cref="Month"/> when it is a yyyy-MM month from 2000 to 2100, else null.</summary>
+    public DateTime? MonthStart() =>
+        DateTime.TryParseExact(Month?.Trim(), "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out var d) && d.Year is >= 2000 and <= 2100
+            ? d
+            : null;
+
+    /// <summary>The start with its offset, or null when no date was entered (or the offset is invalid).</summary>
+    public DateTimeOffset? StartsAt() => DateIsMonth ? Combine(MonthStart()) : Combine(StartsAtLocal);
+
+    /// <summary>The end with its offset; month-only: the last day of the month at 23:59.</summary>
+    public DateTimeOffset? EndsAt() =>
+        DateIsMonth ? Combine(MonthStart() is { } m ? m.AddMonths(1).AddDays(-1).AddHours(23).AddMinutes(59) : null) : Combine(EndsAtLocal);
 
     private DateTimeOffset? Combine(DateTime? local) =>
         local is { } l && Infrastructure.Site.EventDates.TryParseOffset(UtcOffset, out var offset)
@@ -94,6 +114,17 @@ public class EventInput : ImageFieldsInput, IValidatableObject
         var l = context.GetService(typeof(Microsoft.Extensions.Localization.IStringLocalizer<SharedResource>))
             as Microsoft.Extensions.Localization.IStringLocalizer<SharedResource>;
         string M(string key) => l?[key].Value ?? key;
+        if (DateIsMonth)
+        {
+            // Month-only: the month and the offset decide; the exact start/end and the free-text day/month are ignored.
+            if (MonthStart() is null)
+                yield return new ValidationResult(M(K.AdminForumEditions.MonthRequired), [nameof(Month)]);
+            if (!Infrastructure.Site.EventDates.TryParseOffset(UtcOffset, out _))
+                yield return new ValidationResult(M(K.UtcOffset), [nameof(UtcOffset)]);
+            if (!Enum.IsDefined(Status) || !Enum.IsDefined(AttendanceMode))
+                yield return new ValidationResult(M(K.InvalidValueNoField), [nameof(Status)]);
+            yield break;
+        }
         if (StartsAtLocal is null && (EventDay is null || string.IsNullOrWhiteSpace(EventMonthAr)))
             yield return new ValidationResult(M(K.DateRequired), [nameof(StartsAtLocal)]);
         if ((StartsAtLocal is not null || EndsAtLocal is not null) && !Infrastructure.Site.EventDates.TryParseOffset(UtcOffset, out _))

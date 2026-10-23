@@ -79,6 +79,8 @@
     <div class="admin-card-header"><span class="admin-card-title">مجموعات الشركاء (عناوين صفحة شركاء المنتدى: الفئات أو مستويات الرعاية)</span></div>
     <form method="post" asp-action="Create" asp-controller="PartnerGroups">
         <lang-pair label="اسم المجموعة" name-ar="NameAr" name-en="NameEn" max="100" required="true" id-prefix="g-new-" />
+        <div class="form-check" style="margin-bottom:12px;"><input type="checkbox" id="g-new-hub" name="ShowOnForumHub" value="true"> <label for="g-new-hub">يظهر في شريط المنتدى</label><input type="hidden" name="ShowOnForumHub" value="false"></div>
+        <p class="form-hint">«يظهر في شريط المنتدى»: تُعرض المجموعة وشعارات شركائها الظاهرين في شريط الرعاية بصفحة المنتدى الرئيسية (مثل: برعاية، تنظيم). تبقى في صفحة شركاء المنتدى في كل الأحوال.</p>
         <button type="submit" class="btn-admin btn-primary">إضافة مجموعة</button>
     </form>
     @if (groups.Count > 0)
@@ -92,10 +94,12 @@
                     <td>
                         <form method="post" asp-action="Update" asp-controller="PartnerGroups" class="edit-form">
                             <input type="hidden" name="Id" value="@g.Id">
+                            @if (g.ShowOnForumHub) { <span class="badge-active">في شريط المنتدى</span> }
                             <lang-pair label="الاسم" name-ar="NameAr" name-en="NameEn" value-ar="@g.NameAr" value-en="@g.NameEn" max="100" required="true" id-prefix="g@(g.Id)-" />
                             <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
                                 <label>الترتيب <input type="number" name="SortOrder" value="@g.SortOrder" min="0" max="100000" class="form-control" style="max-width:110px;display:inline-block;"></label>
                                 <label class="form-check"><input type="checkbox" name="IsActive" value="true" @(g.IsActive ? "checked" : "")> ظاهرة<input type="hidden" name="IsActive" value="false"></label>
+                                <label class="form-check"><input type="checkbox" name="ShowOnForumHub" value="true" @(g.ShowOnForumHub ? "checked" : "")> يظهر في شريط المنتدى<input type="hidden" name="ShowOnForumHub" value="false"></label>
                                 <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
                             </div>
                         </form>

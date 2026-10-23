@@ -17,6 +17,25 @@
         }
         return new Microsoft.AspNetCore.Html.HtmlString(sb.Append("</select>").ToString());
     }
+
+    // F10: the fields are named after what the rows of the group hold (ContentItemGroup.Kind).
+    private static string TextLabel(ContentItemGroup g) => g.Kind switch
+    {
+        ContentItemKind.Figures => "الرقم كما يظهر (بالعربية: «+2000»، بالإنجليزية: 2000+)",
+        ContentItemKind.Bullets => "عنوان البطاقة",
+        _ => "النص",
+    };
+
+    private static string DescriptionLabel(ContentItemGroup g) => g.Kind switch
+    {
+        ContentItemKind.Figures => "الوصف (ما يعنيه الرقم)",
+        ContentItemKind.Bullets => "النقاط — سطر لكل نقطة",
+        _ when g.Key == ContentItemGroups.ForumComponents => "الوصف (فقرة؛ في بند الجوائز: جائزة في كل سطر — اختياري)",
+        _ => "الوصف (اختياري)",
+    };
+
+    private static int DescriptionRows(ContentItemGroup g) =>
+        g.Kind == ContentItemKind.Bullets || g.Key == ContentItemGroups.ForumComponents ? 5 : 2;
 }
 <nav class="group-tabs" aria-label="القوائم">
     @foreach (var group in ContentItemGroups.All)
@@ -24,16 +43,23 @@
         <a href="/Admin/ContentItems?group=@group.Key" class="@(group.Key == g.Key ? "active" : null)">@group.Label (@(Model.Counts.GetValueOrDefault(group.Key)))</a>
     }
 </nav>
-<p class="form-hint" style="margin-bottom:12px;">عنوان كل قائمة ونصها التمهيدي يُعدّلان من «النصوص العامة» ← «عناوين أقسام الصفحات».</p>
+@if (g.ContentGroup == ContentKeys.ForumGroup)
+{
+    <p class="form-hint" style="margin-bottom:12px;">عنوان هذه القائمة ونصها التمهيدي@(g.NoteKey is null ? "" : " وملاحظتها الختامية") تُعدّل من <a href="/Admin/Content/Edit#group-@ContentKeys.ForumGroup">«النصوص العامة» ← «صفحات المنتدى»</a>.@(g.Numbered ? " تُرقَّم العناصر في الصفحة 01، 02… بترتيبها هنا." : "")</p>
+}
+else
+{
+    <p class="form-hint" style="margin-bottom:12px;">عنوان كل قائمة ونصها التمهيدي يُعدّلان من «النصوص العامة» ← «عناوين أقسام الصفحات».</p>
+}
 
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">إضافة عنصر إلى: @g.Label</span></div>
     <form method="post" asp-action="Create" asp-controller="ContentItems">
         <input type="hidden" name="Group" value="@g.Key">
-        <lang-pair label="النص" name-ar="TextAr" name-en="TextEn" max="300" required="true" id-prefix="new-" />
+        <lang-pair label="@TextLabel(g)" name-ar="TextAr" name-en="TextEn" max="300" required="true" id-prefix="new-" />
         @if (g.UsesDescription)
         {
-            <lang-pair label="الوصف (اختياري)" name-ar="DescriptionAr" name-en="DescriptionEn" max="2000" rows="2" id-prefix="new-" />
+            <lang-pair label="@DescriptionLabel(g)" name-ar="DescriptionAr" name-en="DescriptionEn" max="2000" rows="@DescriptionRows(g)" id-prefix="new-" />
         }
         @if (g.UsesIcon)
         {
@@ -60,10 +86,10 @@
                 <partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TextEn))" />
                 @if (item.IsActive) { <span class="badge-active">ظاهر</span> } else { <span class="badge-inactive">مخفي</span> }
             </div>
-            <lang-pair label="النص" name-ar="TextAr" name-en="TextEn" value-ar="@item.TextAr" value-en="@item.TextEn" max="300" required="true" id-prefix="@prefix" />
+            <lang-pair label="@TextLabel(g)" name-ar="TextAr" name-en="TextEn" value-ar="@item.TextAr" value-en="@item.TextEn" max="300" required="true" id-prefix="@prefix" />
             @if (g.UsesDescription)
             {
-                <lang-pair label="الوصف (اختياري)" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@item.DescriptionAr" value-en="@item.DescriptionEn" max="2000" rows="2" id-prefix="@prefix" />
+                <lang-pair label="@DescriptionLabel(g)" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@item.DescriptionAr" value-en="@item.DescriptionEn" max="2000" rows="@DescriptionRows(g)" id-prefix="@prefix" />
             }
             <div class="inline-form">
                 @if (g.UsesIcon)
