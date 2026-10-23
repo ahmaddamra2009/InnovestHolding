@@ -56,6 +56,19 @@
     <input type="hidden" name="RegistrationOpen" value="false">
 </fieldset>
 
+<fieldset class="image-field">
+    <legend>متحدثو الفعالية (يظهرون في صفحتها بترتيب قائمة «المتحدثون»)</legend>
+    @if (Model.SpeakerChoices.Count == 0)
+    {
+        <p class="field-hint">لا يوجد متحدثون بعد — أضفهم من «المتحدثون» ثم اربطهم هنا.</p>
+    }
+    @foreach (var s in Model.SpeakerChoices)
+    {
+        <label class="form-check" style="display:block;"><input type="checkbox" name="SpeakerIds" value="@s.Id" @(Model.SpeakerIds.Contains(s.Id) ? "checked" : null)> @s.Label @if (!s.Active) { <span class="badge-inactive">مخفي</span> }</label>
+    }
+    <span asp-validation-for="SpeakerIds" class="field-error"></span>
+</fieldset>
+
 @{ ViewData["ImageLabel"] = "صورة الفعالية"; }
 <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="Model" view-data="ViewData" />
 <details class="row-editor" style="margin-bottom:16px;">

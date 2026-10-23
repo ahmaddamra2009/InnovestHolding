@@ -153,13 +153,20 @@ public abstract class AdminControllerBase : Controller
             for (var n = 1; n < 100; n++)
             {
                 var candidate = n == 1 ? baseSlug : (baseSlug.Length > Slugs.MaxLength - 4 ? baseSlug[..(Slugs.MaxLength - 4)] : baseSlug) + "-" + n;
-                if (await IsFreeAsync(candidate)) return candidate;
+                if (!Slugs.IsAutomatic(entityType, candidate) && await IsFreeAsync(candidate)) return candidate;
             }
             return "";
         }
         if (!Slugs.IsValid(typed))
         {
             ModelState.AddModelError("Slug", L(MessageKeys.SlugInvalid));
+            return null;
+        }
+        // {type}-{number} is the address an item gets when it has no English title: a typed one could take the
+        // address of a later item and make its insert fail. An item keeps its own (e.g. news-12).
+        if (typed != current && Slugs.IsAutomatic(entityType, typed))
+        {
+            ModelState.AddModelError("Slug", L(MessageKeys.SlugReserved, entityType));
             return null;
         }
         if (typed != current && !await IsFreeAsync(typed))
@@ -189,6 +196,36 @@ public abstract class AdminControllerBase : Controller
         db.SlugRedirects.RemoveRange(own);
         if (!await db.SlugRedirects.AnyAsync(r => r.EntityType == entityType && r.OldSlug == oldSlug))
             db.SlugRedirects.Add(new SlugRedirect { EntityType = entityType, OldSlug = oldSlug, EntityId = id, CreatedAt = DateTime.UtcNow });
+    }
+
+    // ── Links of a detail item (an event's speakers, an episode's guests) ──
+
+    /// <summary>
+    /// Ids posted by a checkbox list: duplicates dropped, order kept. Every id must be in <paramref name="known"/>,
+    /// otherwise a ModelState error on <paramref name="field"/> and null.
+    /// </summary>
+    protected List<int>? CheckLinks(IEnumerable<int> posted, IReadOnlySet<int> known, string field)
+    {
+        var ids = posted.Distinct().ToList();
+        if (ids.All(known.Contains)) return ids;
+        ModelState.AddModelError(field, L(MessageKeys.InvalidValueNoField));
+        return null;
+    }
+
+    /// <summary>
+    /// Replaces an item's link rows with <paramref name="ids"/> (in that order): rows not posted are removed, new ones
+    /// added, kept ones re-ordered. The caller saves.
+    /// </summary>
+    protected static void ReplaceLinks<TLink>(DbSet<TLink> set, IReadOnlyList<TLink> current, IReadOnlyList<int> ids,
+        Func<TLink, int> otherId, Func<int, int, TLink> create, Action<TLink, int> setOrder) where TLink : class
+    {
+        set.RemoveRange(current.Where(c => !ids.Contains(otherId(c))));
+        for (var i = 0; i < ids.Count; i++)
+        {
+            var row = current.FirstOrDefault(c => otherId(c) == ids[i]);
+            if (row is null) set.Add(create(ids[i], i));
+            else setOrder(row, i);
+        }
     }
 
     /// <summary>The item's redirects leave with it (its old URLs then answer 404).</summary>

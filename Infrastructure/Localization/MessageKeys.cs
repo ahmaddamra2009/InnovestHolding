@@ -39,6 +39,7 @@ public static class MessageKeys
     public const string DateRequired = "Msg_DateRequired";
     public const string UtcOffset = "Msg_UtcOffset";
     public const string SlugTaken = "Msg_SlugTaken";
+    public const string SlugReserved = "Msg_SlugReserved";
     public const string SlugInvalid = "Msg_SlugInvalid";
     public const string ImageStorage = "Msg_ImageStorage";
     public const string ImageSize = "Msg_ImageSize";
@@ -119,6 +120,24 @@ public static class MessageKeys
         public const string UtcOffset = "Field_UtcOffset";
         public const string ImageAlt = "Field_ImageAlt";
         public const string ImageAltEn = "Field_ImageAltEn";
+        public const string JobTitle = "Field_JobTitle";
+        public const string JobTitleEn = "Field_JobTitleEn";
+        public const string Organization = "Field_Organization";
+        public const string OrganizationEn = "Field_OrganizationEn";
+        public const string LinkedInUrl = "Field_LinkedInUrl";
+        public const string XUrl = "Field_XUrl";
+        public const string Season = "Field_Season";
+        public const string EpisodeNumber = "Field_EpisodeNumber";
+        public const string AiredOn = "Field_AiredOn";
+        public const string VideoUrl = "Field_VideoUrl";
+        public const string Stage = "Field_Stage";
+        public const string StageEn = "Field_StageEn";
+        public const string Ask = "Field_Ask";
+        public const string AskEn = "Field_AskEn";
+        public const string Price = "Field_Price";
+        public const string PriceEn = "Field_PriceEn";
+        public const string Benefits = "Field_Benefits";
+        public const string BenefitsEn = "Field_BenefitsEn";
     }
 
     public static class Admin
@@ -170,6 +189,7 @@ public static class MessageKeys
         public const string PhotoSaved = "Admin_PhotoSaved";
         public const string ImageHintGeneral = "Admin_ImageHintGeneral";
         public const string ImageHintLogo = "Admin_ImageHintLogo";
+        public const string SectorInUse = "Admin_SectorInUse";
     }
 
     public static class Ui
@@ -228,5 +248,24 @@ public static class MessageKeys
         public const string NewsSource = "Ui_NewsSource";
         public const string ArabicOnlyNotice = "Ui_ArabicOnlyNotice";
         public const string ViewDetails = "Ui_ViewDetails";
+        public const string PlayVideo = "Ui_PlayVideo";
+        public const string VideoNotice = "Ui_VideoNotice";
+        public const string WatchVideo = "Ui_WatchVideo";
+        public const string SeasonEpisode = "Ui_SeasonEpisode";
+        public const string EpisodeNumber = "Ui_EpisodeNumber";
+        public const string SeasonNumber = "Ui_SeasonNumber";
+        public const string AiredOn = "Ui_AiredOn";
+        public const string JobTitle = "Ui_JobTitle";
+        public const string Organization = "Ui_Organization";
+        public const string Sector = "Ui_Sector";
+        public const string Stage = "Ui_Stage";
+        public const string Ask = "Ui_Ask";
+        public const string OpportunityOpen = "Ui_OpportunityOpen";
+        public const string OpportunityClosed = "Ui_OpportunityClosed";
+        public const string ExpressInterest = "Ui_ExpressInterest";
+        public const string SponsorshipPackages = "Ui_SponsorshipPackages";
+        public const string ProfilesAria = "Ui_ProfilesAria";
+        public const string WatchOnYouTube = "Ui_WatchOnYouTube";
+        public const string ExternalLink = "Ui_ExternalLink";
     }
 }

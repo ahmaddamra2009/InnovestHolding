@@ -9,10 +9,18 @@
 <header id="main-header" class="@(Model.OverHero ? "is-over-hero" : "is-solid")">
   <div class="container nav-container">
     <a href="@Model.HomeUrl" class="logo-area" aria-label="@siteName">
-      <picture>
-        <source type="image/webp" srcset="@Context.Versioned(BrandAssets.LogoOnDarkWebp) 1x, @Context.Versioned(BrandAssets.LogoOnDark2x) 2x">
-        <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" class="logo-img" width="240" height="61" fetchpriority="high">
-      </picture>
+      @if (Model.Brand.LogoOnDark is { } logo)
+      {
+        @* The logo the admin uploaded (Content editor); otherwise the bundled files. *@
+        <img src="@logo.Url" alt="@siteName" class="logo-img" width="@logo.Width" height="@logo.Height" fetchpriority="high">
+      }
+      else
+      {
+        <picture>
+          <source type="image/webp" srcset="@Context.Versioned(BrandAssets.LogoOnDarkWebp) 1x, @Context.Versioned(BrandAssets.LogoOnDark2x) 2x">
+          <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" class="logo-img" width="240" height="61" fetchpriority="high">
+        </picture>
+      }
     </a>
 
     <nav class="nav-links" aria-label="@L[K.Ui.NavAria]">

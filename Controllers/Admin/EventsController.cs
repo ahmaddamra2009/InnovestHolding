@@ -29,18 +29,39 @@ public class EventsController : AdminControllerBase
         return EventDates.TryParseOffset(stored, out _) ? stored! : ContentKeys.DefaultUtcOffsetFallback;
     }
 
-    public async Task<IActionResult> Create() => View(CreateView, new EventInput { UtcOffset = await DefaultOffsetAsync() });
+    /// <summary>The form with its speaker list (every speaker; inactive ones marked).</summary>
+    private async Task<IActionResult> FormAsync(string view, EventInput input)
+    {
+        input.SpeakerChoices = await _db.Speakers.AsNoTracking().OrderBy(s => s.SortOrder).ThenBy(s => s.Id)
+            .Select(s => new PickVm(s.Id, s.NameAr, s.IsActive)).ToListAsync();
+        return View(view, input);
+    }
+
+    /// <summary>The posted speaker ids: distinct, in order, all existing; otherwise a ModelState error and null.</summary>
+    private async Task<List<int>?> CheckSpeakersAsync(EventInput input)
+    {
+        var known = (await _db.Speakers.AsNoTracking().Where(s => input.SpeakerIds.Contains(s.Id)).Select(s => s.Id).ToListAsync()).ToHashSet();
+        return CheckLinks(input.SpeakerIds, known, nameof(input.SpeakerIds));
+    }
+
+    /// <summary>Replaces the event's speakers with <paramref name="ids"/>, in that order.</summary>
+    private async Task LinkSpeakersAsync(int eventId, IReadOnlyList<int> ids) =>
+        ReplaceLinks(_db.EventSpeakers, await _db.EventSpeakers.Where(es => es.EventId == eventId).ToListAsync(), ids,
+            es => es.SpeakerId, (id, i) => new EventSpeaker { EventId = eventId, SpeakerId = id, SortOrder = i }, (es, i) => es.SortOrder = i);
+
+    public async Task<IActionResult> Create() => await FormAsync(CreateView, new EventInput { UtcOffset = await DefaultOffsetAsync() });
 
     [HttpPost]
     public async Task<IActionResult> Create(EventInput input)
     {
-        if (!ModelState.IsValid)
-            return View(CreateView, input);
+        var speakers = await CheckSpeakersAsync(input);
+        if (!ModelState.IsValid || speakers is null)
+            return await FormAsync(CreateView, input);
         var slug = await CheckSlugAsync(_db, SlugTypes.Event, input.Slug, input.TitleEn, null, null,
             s => _db.Events.AnyAsync(e => e.Slug == s));
-        if (slug is null) return View(CreateView, input);
+        if (slug is null) return await FormAsync(CreateView, input);
         var uploaded = await UploadImageAsync(input);
-        if (!ModelState.IsValid) return View(CreateView, input);
+        if (!ModelState.IsValid) return await FormAsync(CreateView, input);
 
         await using var tx = await _db.Database.BeginTransactionAsync();
         var item = new Event
@@ -55,17 +76,16 @@ public class EventsController : AdminControllerBase
         {
             await SaveWithImageAsync(_db, uploaded);
             if (slug.Length == 0)
-            {
                 item.Slug = "event-" + item.Id.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                await SaveWithImageAsync(_db, uploaded); // the row rolls back on failure: its file goes too
-            }
+            await LinkSpeakersAsync(item.Id, speakers);
+            await SaveWithImageAsync(_db, uploaded); // the row rolls back on failure: its file goes too
             await tx.CommitAsync();
         }
         catch (DbUpdateException ex) when (IsUniqueViolation(ex))
         {
             // Another save took the same slug between the check and this insert (the unique index decided).
             ModelState.AddModelError("Slug", L(MessageKeys.SlugTaken));
-            return View(CreateView, input);
+            return await FormAsync(CreateView, input);
         }
         TempData["Success"] = L(MessageKeys.Admin.EventAdded);
         return RedirectToAction(nameof(Index));
@@ -76,8 +96,11 @@ public class EventsController : AdminControllerBase
         var item = await _db.Events.AsNoTracking().Include(e => e.Image).FirstOrDefaultAsync(e => e.Id == id);
         if (item == null) return NotFound();
         var offset = item.StartsAt is { } s ? EventDates.Offset(s.Offset)[3..] : await DefaultOffsetAsync();
-        return View(EditView, new EventEditInput
+        var speakerIds = await _db.EventSpeakers.AsNoTracking().Where(es => es.EventId == id).OrderBy(es => es.SortOrder)
+            .Select(es => es.SpeakerId).ToListAsync();
+        return await FormAsync(EditView, new EventEditInput
         {
+            SpeakerIds = speakerIds,
             Id = item.Id,
             Slug = item.Slug,
             TitleAr = item.TitleAr,
@@ -122,19 +145,21 @@ public class EventsController : AdminControllerBase
         var item = await _db.Events.Include(e => e.Image).FirstOrDefaultAsync(e => e.Id == input.Id);
         if (item == null) return NotFound();
         input.Current = MediaRefs.Of(item.Image);
-        if (!ModelState.IsValid)
-            return View(EditView, input);
+        var speakers = await CheckSpeakersAsync(input);
+        if (!ModelState.IsValid || speakers is null)
+            return await FormAsync(EditView, input);
         var slug = await CheckSlugAsync(_db, SlugTypes.Event, input.Slug, input.TitleEn, item.Id, item.Slug,
             s => _db.Events.AnyAsync(e => e.Slug == s && e.Id != item.Id));
-        if (slug is null) return View(EditView, input);
+        if (slug is null) return await FormAsync(EditView, input);
         var uploaded = await UploadImageAsync(input);
-        if (!ModelState.IsValid) return View(EditView, input);
+        if (!ModelState.IsValid) return await FormAsync(EditView, input);
 
         await RecordSlugChangeAsync(_db, SlugTypes.Event, item.Id, item.Slug, slug);
         item.Slug = slug;
         Map(input, item);
         item.SortOrder = input.SortOrder;
         var leaving = ApplyImage(_db, item.Image, uploaded, input, m => item.Image = m);
+        await LinkSpeakersAsync(item.Id, speakers);
 
         try
         {
@@ -143,7 +168,7 @@ public class EventsController : AdminControllerBase
         catch (DbUpdateException ex) when (IsUniqueViolation(ex))
         {
             ModelState.AddModelError("Slug", L(MessageKeys.SlugTaken));
-            return View(EditView, input);
+            return await FormAsync(EditView, input);
         }
         TempData["Success"] = L(MessageKeys.Admin.EventUpdated);
         return RedirectToAction(nameof(Index));

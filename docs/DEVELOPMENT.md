@@ -93,8 +93,8 @@ No native code and no re-encode (shared hosting): the file is validated and rebu
 - Resx keys for the messages are in both resx files (parity and "every key used" tests).
 
 ### Detail pages and slugs
-`SiteRoutes.Details` holds the two detail routes (`news.item` -> `/news/{slug}`, `forum.event` -> `/forum/events/{slug}`, and
-`/en/...`); the slug is a route constraint (`Slugs.RouteRegex` `^[a-z0-9]+(-[a-z0-9]+)*\z`, max 100, `Slugs.Reserved` words
+`SiteRoutes.Details` holds the detail routes (`news.item` -> `/news/{slug}`, `forum.event` -> `/forum/events/{slug}`, the four
+PR-C3 routes below, and `/en/...`); old slugs resolve through `DetailSlugs` (one switch per slug type); the slug is a route constraint (`Slugs.RouteRegex` `^[a-z0-9]+(-[a-z0-9]+)*\z`, max 100, `Slugs.Reserved` words
 refused) and the normaliser 301s other spellings. `SlugRedirects` stores the old slugs: an old slug answers 301 to the
 current one (same language); another item cannot reuse it, the owner can take it back; the redirects go with the item.
 A new slug comes from the English title (`-2`, `-3` on a clash) or `news-{id}` / `event-{id}`; the migration backfilled the
@@ -103,6 +103,51 @@ same form for existing rows. Events carry `StartsAt`/`EndsAt` (UTC) plus their o
 SEO: `NewsArticle` / `Event` JSON-LD (Event only with a real start date, ISO dates with offset), the breadcrumb ends with the
 item, `og:image` item -> page -> default. An English detail page without an English title and summary renders the Arabic text,
 is `noindex, follow` (meta and header), canonical -> the Arabic URL, no hreflang and out of the sitemap.
+## Ecosystem entities (PR-C3)
+
+Speakers, TV guests, TV episodes, investment opportunities and sponsorship packages (`Models/Ecosystem.cs`): `PersonProfile` is a
+plain base class (not an EF hierarchy) for `Speaker` and `TvGuest`; links are `EventSpeaker` (event <-> speaker, ordered) and
+`TvEpisodeGuest` (episode <-> guest, ordered); `InvestmentOpportunity` is a draft by default (`IsActive` = published, `IsOpen` =
+accepts interest) with a sector FK to `ContentItems` (NO ACTION; the admin refuses to delete a used sector); `SponsorshipPackage` has
+`Unit` forum|tv and one benefit per line. All carry Ar/En pairs, slug, Meta*, SortOrder, timestamps.
+
+### Adding an ecosystem entity
+1. Model + `DbSet` + indexes (unique slug, `(IsActive, SortOrder)`), migration with `dotnet ef migrations add`; read the script (0 DROP).
+2. Slug type: add a value to `SlugTypes` (the C2 `SlugRedirects` table is reused: rename -> 301, an old slug is never reused).
+3. Routes: add the list page to `SiteRoutes.All` if new, and a `DetailRoute` to `SiteRoutes.Details` (`Key`, parent, prefix, controller,
+   action, entity type); the slug route constraint and the normaliser pick it up.
+4. Public: list action with paging (`list_page_size`), cards through `Views/Shared/Blocks/_EntityGrid`, a detail action with the English
+   fallback rule (no English text: Arabic, `noindex, follow`, canonical -> Arabic, no hreflang, out of the sitemap). Add its count to the
+   snapshot and to `SeoPolicy.ListCountOf` (otherwise the list stays `noindex` forever). `EcosystemQueries` holds the ordering and
+   the SQL-vs-code English rules (a test compares them).
+5. Admin: a controller in `Controllers/Admin/EcosystemAdminControllers.cs` (input models only, never an entity; `CheckLinks` for
+   checkbox links; images through `UploadImageAsync`/`ApplyImage`, slugs through `AdminControllerBase`), views under
+   `Views/Admin/Ecosystem/`, a sidebar link in `_AdminLayout`, resx keys in both languages. Every save invalidates the site snapshot
+   through the existing interceptor (no raw SQL in the app).
+6. SEO: JSON-LD in `SeoBuilder` (Person, TVEpisode + TVSeries on the TV hub, Event `performer`, opportunity = WebPage), `og:type`.
+7. Tests: admin both ways (anonymous/token), lifecycle with image + rename 301 + delete, invalid input, hidden/draft items, list
+   indexability, migration (only adds tables).
+
+### Shared admin base and caches (PR-C3 review round)
+`Controllers/Admin/EcosystemAdminControllers.cs`: `EcosystemAdminBase` (list paging, temporary/id slugs, `CheckLinks` and `ReplaceLinks<TLink>`
+for ordered checkbox links, shared with the Events form) and `DetailAdminController<TEntity, TInput>`, the one create/edit/delete flow
+(slug check and redirects, image, `{type}-{id}` fallback, link hooks) that People, Episodes and Opportunities derive from; their entities
+implement `IDetailEntity`. News and Events (C2) keep their own flow. `AdminControllerBase.CheckSlugAsync` refuses a typed slug of the automatic
+form `{type}-{digits}` (message `Msg_SlugReserved`) and skips a title-derived candidate in that form (`speaker-987654-2`); an item keeps its own.
+Linked people are shown in the people-list order. Site images: `Infrastructure/Content/SiteImages` is the registry (`logo_on_dark`,
+`logo_on_light`, `hero_image`, `founder_photo`), written by `/Admin/Content/SiteImage` (registry keys only, C2 upload pipeline) and read in one
+query into the snapshot; an empty value falls back to the bundled files. The sitemap is built once per snapshot and base URL (a
+`ConditionalWeakTable` keyed by the snapshot), so any content save, which drops the snapshot, rebuilds it on the next request; rows inserted by raw
+SQL do not appear until the snapshot is invalidated. A test for this exists (`Sitemap_is_cached_until_content_changes`).
+
+### The YouTube facade (click-to-load)
+The page HTML never contains an iframe or a request to YouTube. `Infrastructure/Content/EcosystemQueries.cs` (`YouTube.VideoId`) accepts
+only https URLs on the default port whose host is `youtube.com`, `www.youtube.com`, `m.youtube.com`, `youtube-nocookie.com`,
+`www.youtube-nocookie.com` or `youtu.be`, in the shapes `watch?v=`, `youtu.be/<id>`, `/embed/<id>`, `/shorts/<id>`, `/live/<id>`, and the
+id must match `^[A-Za-z0-9_-]{11}$`. The view writes only `data-video-id` (with the thumbnail as poster); `wwwroot/js/main.js` builds the
+iframe `https://www.youtube-nocookie.com/embed/<id>` on click and focuses it. Any other https URL is rendered as a plain "watch" link, and
+`VideoObject` JSON-LD is written only for a stored URL. The iframe carries `sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"`, and the global CSP allows exactly one frame origin (`frame-src https://www.youtube-nocookie.com`, `Infrastructure/SecurityMiddleware.cs`); a non-YouTube video link is a plain link with `rel="noopener noreferrer"`. Do not add an `<iframe>` or a YouTube script to a view: a test fails if the page
+HTML contains an iframe before the click.
 
 ## Never run as Production locally
 The LocalDB guard only covers `Development` and `Testing`. Running the app (`dotnet run` or the dll) with
@@ -327,3 +372,4 @@ The app and the tests were not run for this note.
 - `ContentText.ListItems` splits a content text on the Arabic comma and the Latin comma into chips (fewer than 2 items: no list); the home values card uses it, vision and mission never do.
 
 Verified on 2026-10-22 (PR-C2 sections) by reading the code in the `InnovestHolding-c2` worktree (branch `feature/4-media-detail-pages`, base C1, RE-RUN 1 uncommitted). The app and the tests were not run for this note.
+Verified on 2026-10-22 (PR-C3 sections) by reading the code at commit `705152e` in the `InnovestHolding-c3` worktree and grepping `migration-C3*.sql`. The app, the build and the tests were not run for this note.

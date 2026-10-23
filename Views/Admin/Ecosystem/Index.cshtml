@@ -1,0 +1,44 @@
+@model AdminListVm
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var l = Model.Labels;
+    var p = Model.Page;
+    ViewData["Title"] = l.Title;
+    var pager = (p.Page, p.TotalPages, "/Admin/" + l.Controller);
+}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <span class="admin-card-title">@l.Title (@p.TotalCount) — بترتيب الظهور</span>
+        <a href="/Admin/@l.Controller/Create" class="btn-admin btn-primary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> @l.AddLabel</a>
+    </div>
+    @if (p.Items.Count == 0)
+    {
+        <p class="field-hint" style="padding:16px 0;">لا توجد عناصر بعد. تعرض الصفحة العامة نص «قريباً» المُدار من «صفحات الموقع» حتى يُنشر أول عنصر.</p>
+    }
+    else
+    {
+        <table class="admin-table">
+            <thead><tr><th>العنوان</th><th>@l.SubHeader</th><th>EN</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody>
+            @foreach (var item in p.Items)
+            {
+                <tr>
+                    <td><strong>@item.Title</strong></td>
+                    <td>@item.Sub</td>
+                    <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="item.HasEnglish" /></td>
+                    <td>@if (item.IsActive) { <span class="badge-active">@l.ActiveLabel</span> } else { <span class="badge-inactive">@l.InactiveLabel</span> }</td>
+                    <td class="actions">
+                        <a href="/Admin/@l.Controller/Edit/@item.Id" class="btn-admin btn-secondary btn-sm">تعديل</a>
+                        @if (item.IsActive) { <a href="@(l.PublicPrefix + item.Slug)" target="_blank" rel="noopener" class="btn-admin btn-secondary btn-sm" title="@item.Slug">عرض</a> }
+                        <form method="post" asp-controller="@l.Controller" asp-action="Delete" style="display:inline;">
+                            <input type="hidden" name="id" value="@item.Id">
+                            <button type="submit" class="btn-admin btn-danger btn-sm" data-confirm="@l.DeleteConfirm" onclick="return confirm(this.dataset.confirm)">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+    <partial name="~/Views/Admin/Shared/_Pager.cshtml" model="pager" />
+</div>

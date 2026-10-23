@@ -1,0 +1,30 @@
+@model OpportunityInput
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var l = (AdminListLabels)ViewData["Labels"]!;
+    ViewData["Title"] = (Model.Id > 0 ? "تعديل — " : "إضافة — ") + l.Title;
+}
+<div class="admin-card">
+    <form method="post" asp-controller="@l.Controller" asp-action="@(Model.Id > 0 ? "Edit" : "Create")" enctype="multipart/form-data">
+        @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
+        <p class="field-hint">تُحفظ الفرصة الجديدة مسودة ولا تظهر في الموقع حتى تُفعّل «منشورة». لا يظهر أي رقم لم تكتبه بنفسك.</p>
+        <lang-pair label="عنوان الفرصة" name-ar="TitleAr" name-en="TitleEn" value-ar="@Model.TitleAr" value-en="@Model.TitleEn" max="200" required="true" />
+        <lang-pair label="الملخص (البطاقة وأول فقرة)" name-ar="SummaryAr" name-en="SummaryEn" value-ar="@Model.SummaryAr" value-en="@Model.SummaryEn" max="500" rows="3" required="true" />
+        <lang-pair label="التفاصيل (سطر فارغ = فقرة جديدة)" name-ar="BodyAr" name-en="BodyEn" value-ar="@Model.BodyAr" value-en="@Model.BodyEn" max="20000" rows="6" />
+        <div class="form-group" style="max-width:360px;">
+            <label for="SectorItemId">القطاع (من قائمة «القطاعات التي نخدمها»)</label>
+            <select id="SectorItemId" name="SectorItemId" class="form-control">
+                <option value="">— بدون —</option>
+                @foreach (var s in Model.SectorChoices)
+                {
+                    <option value="@s.Id" selected="@(Model.SectorItemId == s.Id)">@s.Label@(s.Active ? "" : " (معطّل)")</option>
+                }
+            </select>
+            <span asp-validation-for="SectorItemId" class="field-error"></span>
+        </div>
+        <lang-pair label="المرحلة (نص حر، مثل: تأسيس، نمو)" name-ar="StageTextAr" name-en="StageTextEn" value-ar="@Model.StageTextAr" value-en="@Model.StageTextEn" max="100" />
+        <lang-pair label="التمويل المطلوب (نص حر، مثل: عند الطلب)" name-ar="AskTextAr" name-en="AskTextEn" value-ar="@Model.AskTextAr" value-en="@Model.AskTextEn" max="100" />
+        <div class="form-check" style="margin-bottom:16px;"><input type="checkbox" id="IsOpen" name="IsOpen" value="true" @(Model.IsOpen ? "checked" : null)><input type="hidden" name="IsOpen" value="false"> <label for="IsOpen">متاحة لاستقبال الاهتمام (وإلا تظهر «مغلقة»)</label></div>
+        <partial name="~/Views/Admin/Ecosystem/_Common.cshtml" model="Model" view-data="ViewData" />
+    </form>
+</div>

@@ -1,0 +1,11 @@
+@model EntityGridBlock
+<div class="entity-grid@(Model.People ? " is-people" : "")" data-kind="@Model.Kind">
+  @for (var i = 0; i < Model.Cards.Count; i++)
+  {
+    <partial name="Blocks/_EntityCard" model="(Model.Cards[i], Model.People, i)" />
+  }
+</div>
+@if (Model.Pager is not null)
+{
+  <partial name="Blocks/_Pager" model="Model.Pager" />
+}

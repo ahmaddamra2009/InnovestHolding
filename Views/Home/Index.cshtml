@@ -71,6 +71,16 @@
           </div>
         }
       </div>
+      @if (Model.Shell.Brand.Hero is { } hero)
+      {
+        @* The hero image the admin uploaded (Content editor); its alt text is the admin's, else decorative. *@
+        var heroAlt = Bilingual.Optional(hero.AltAr, hero.AltEn, Model.Shell.IsEnglish);
+        <div class="hero-art">
+          <img src="@hero.Url" width="@hero.Width" height="@hero.Height" alt="@heroAlt" class="hero-triangle hero-image" fetchpriority="high" decoding="async">
+        </div>
+      }
+      else
+      {
       <div class="hero-art" aria-hidden="true">
         <svg viewBox="0 0 400 360" class="hero-triangle">
           <defs>
@@ -86,6 +96,7 @@
           <polygon points="200,140 360,40 200,320" fill="#000" opacity=".12"/>
         </svg>
       </div>
+      }
     </div>
   </section>
 
@@ -108,10 +119,17 @@
       <div class="about-grid">
         <div class="about-image-wrap reveal-start">
           <div class="about-brand-panel">
-            <picture>
-              <source type="image/webp" srcset="@Context.Versioned(BrandAssets.LogoOnDark2x)">
-              <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="320" height="81" loading="lazy">
-            </picture>
+            @if (Model.Shell.Brand.LogoOnDark is { } logo)
+            {
+              <img src="@logo.Url" alt="@siteName" width="@logo.Width" height="@logo.Height" loading="lazy">
+            }
+            else
+            {
+              <picture>
+                <source type="image/webp" srcset="@Context.Versioned(BrandAssets.LogoOnDark2x)">
+                <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="320" height="81" loading="lazy">
+              </picture>
+            }
             <p lang="@tagline.Lang" dir="@tagline.Dir">@tagline</p>
           </div>
           <div class="about-image-accent" aria-hidden="true"></div>

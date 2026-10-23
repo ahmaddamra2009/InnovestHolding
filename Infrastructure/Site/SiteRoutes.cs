@@ -29,6 +29,10 @@ public static class DetailKeys
 {
     public const string NewsItem = "news.item";
     public const string ForumEvent = "forum.event";
+    public const string ForumSpeaker = "forum.speaker";
+    public const string NetworkOpportunity = "network.opportunity";
+    public const string TvEpisode = "tv.episode";
+    public const string TvGuest = "tv.guest";
 }
 
 /// <summary>Page keys (code constants: the structure of the site is code, its texts are data).</summary>
@@ -91,6 +95,10 @@ public static class SiteRoutes
     [
         new(DetailKeys.NewsItem, PageKeys.News, "/news/", "Newsroom", "Item", Models.SlugTypes.News),
         new(DetailKeys.ForumEvent, PageKeys.ForumEvents, "/forum/events/", "Forum", "Event", Models.SlugTypes.Event),
+        new(DetailKeys.ForumSpeaker, PageKeys.ForumSpeakers, "/forum/speakers/", "Forum", "Speaker", Models.SlugTypes.Speaker),
+        new(DetailKeys.NetworkOpportunity, PageKeys.NetworkOpportunities, "/angel-network/opportunities/", "Network", "Opportunity", Models.SlugTypes.Opportunity),
+        new(DetailKeys.TvEpisode, PageKeys.TvEpisodes, "/tv/episodes/", "Tv", "Episode", Models.SlugTypes.Episode),
+        new(DetailKeys.TvGuest, PageKeys.TvGuests, "/tv/guests/", "Tv", "Guest", Models.SlugTypes.Guest),
     ];
 
     public static DetailRoute Detail(string key) => Details.Single(d => d.Key == key);

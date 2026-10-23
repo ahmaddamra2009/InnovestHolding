@@ -13,7 +13,7 @@ namespace InnovestHolding.Controllers;
 /// Views/Site/Page.cshtml, the robots decision and the branded 404. Public controllers never share a name with an
 /// admin controller (test PublicAndAdminControllerNamesDiffer).
 /// </summary>
-public abstract class PublicControllerBase : Controller
+public abstract partial class PublicControllerBase : Controller
 {
     protected bool English => Cultures.IsEnglishRequest;
 
@@ -60,6 +60,8 @@ public abstract class PublicControllerBase : Controller
                 paged.Events.Select(e => (e.Title.Value, (string?)e.Href)).ToList(),
             PageKeys.News when list.OfType<NewsBlock>().FirstOrDefault() is { } news =>
                 news.News.Select(n => (n.Title.Value, (string?)n.Href)).ToList(),
+            _ when page.Kind == PageKind.List && list.OfType<EntityGridBlock>().FirstOrDefault() is { } grid =>
+                grid.Cards.Select(c => (c.Title.Value, (string?)c.Href)).ToList(),
             _ => null,
         };
         var seo = SeoBuilder.Build(page, v, baseUrl, listedNames: listed);
@@ -81,6 +83,10 @@ public abstract class PublicControllerBase : Controller
     /// <summary>A static UI string (resx) in the page language.</summary>
     protected LText Ui(string key) =>
         new(HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Localization.IStringLocalizer<SharedResource>>()[key].Value, false);
+
+    /// <summary>A static UI string with arguments (numbers are passed already formatted).</summary>
+    protected LText Ui(string key, params object[] args) =>
+        new(HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Localization.IStringLocalizer<SharedResource>>()[key, args].Value, false);
 
     /// <summary>
     /// Renders a detail page (Views/Site/Detail.cshtml): the shell has the list page active and the item as the last

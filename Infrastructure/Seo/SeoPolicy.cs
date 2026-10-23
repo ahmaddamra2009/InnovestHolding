@@ -23,12 +23,16 @@ public static class SeoPolicy
 
     private static bool Has(string? value) => !string.IsNullOrWhiteSpace(value);
 
-    /// <summary>The active list count of a list page (pages whose entity arrives in a later phase have none).</summary>
+    /// <summary>The active list count of a list page.</summary>
     public static ListCount ListCountOf(string key, SiteSnapshot s) => key switch
     {
         PageKeys.ForumEvents => s.EventsCount,
         PageKeys.News => s.NewsCount,
         PageKeys.ForumPartners => s.PartnersCount,
+        PageKeys.ForumSpeakers => s.Ecosystem.Speakers,
+        PageKeys.TvGuests => s.Ecosystem.Guests,
+        PageKeys.TvEpisodes => s.Ecosystem.Episodes,
+        PageKeys.NetworkOpportunities => s.Ecosystem.Opportunities,
         _ => new ListCount(0, 0),
     };
 

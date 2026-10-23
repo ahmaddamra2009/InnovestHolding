@@ -16,6 +16,9 @@ public static class EventDates
 
     public static string Month(DateTimeOffset at, bool english) => at.ToString("MMMM", Culture(english));
 
+    /// <summary>A calendar date without a time: "15 يوليو 2026" / "15 July 2026".</summary>
+    public static string Date(DateOnly date, bool english) => date.ToString("d MMMM yyyy", Culture(english));
+
     /// <summary>"الخميس 15 يوليو 2026" / "Thursday 15 July 2026"; a range when the end is on another day.</summary>
     public static string DateLine(DateTimeOffset start, DateTimeOffset? end, bool english)
     {

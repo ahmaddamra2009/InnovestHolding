@@ -35,6 +35,15 @@ public sealed record SocialRow(string Network, string Url);
 /// <summary>How many active rows a list page has, overall and with the English text its cards need.</summary>
 public sealed record ListCount(int Total, int English);
 
+/// <summary>The published speakers, guests, episodes and opportunities (counted, never loaded) and the active packages.</summary>
+public sealed record EcosystemData(ListCount Speakers, ListCount Guests, ListCount Episodes, ListCount Opportunities,
+    IReadOnlyList<PackageRow> Packages)
+{
+    public static readonly EcosystemData None = new(new(0, 0), new(0, 0), new(0, 0), new(0, 0), []);
+
+    public IReadOnlyList<PackageRow> PackagesOf(string unit) => Packages.Where(p => p.Unit == unit).ToList();
+}
+
 public sealed record SiteSnapshot(
     IReadOnlyDictionary<string, TextPair> Content,
     IReadOnlyDictionary<string, PageRow> Pages,
@@ -53,8 +62,16 @@ public sealed record SiteSnapshot(
     ListCount EventsCount,
     ListCount PartnersCount,
     IReadOnlyList<PartnerGroupRow> PartnerGroups,
-    MediaRef? FounderPhoto = null)
+    MediaRef? FounderPhoto = null,
+    EcosystemData? EcosystemData = null,
+    IReadOnlyDictionary<string, MediaRef>? Images = null)
 {
+    /// <summary>Counts of the ecosystem lists and the sponsorship packages (empty when not loaded).</summary>
+    public EcosystemData Ecosystem => EcosystemData ?? EcosystemData.None;
+
+    /// <summary>An uploaded site image (<see cref="SiteImages"/>), or null while none is uploaded (the caller falls back).</summary>
+    public MediaRef? Image(string key) => Images?.GetValueOrDefault(key);
+
     public IReadOnlyList<ItemRow> ItemsOf(string group) => Items.GetValueOrDefault(group) ?? [];
 
     public PageRow? Page(string key) => Pages.GetValueOrDefault(key);
@@ -189,12 +206,20 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
                 p.Url, p.PartnerGroupId, p.ShowOnHome))
             .ToListAsync(ct);
 
-        // The founder's photo: the key holds the FileKey of an uploaded image (one small read when it is set).
-        var founderKey = content.GetValueOrDefault(ContentKeys.FounderPhoto)?.Ar;
-        var founderPhoto = string.IsNullOrEmpty(founderKey)
-            ? null
-            : await db.MediaFiles.AsNoTracking().Where(m => m.FileKey == founderKey)
-                .Select(m => new MediaRef(m.FileKey, m.Format, m.Width, m.Height, m.AltAr, m.AltEn)).FirstOrDefaultAsync(ct);
+        // The site images (logos, hero, founder photo): each key holds the FileKey of an uploaded image; one small read
+        // for those that are set, none when no image is uploaded.
+        var imageKeys = SiteImages.All
+            .Select(i => (i.Key, FileKey: content.GetValueOrDefault(i.Key)?.Ar))
+            .Where(x => !string.IsNullOrEmpty(x.FileKey)).ToList();
+        var fileKeys = imageKeys.Select(x => x.FileKey!).Distinct().ToList();
+        var files = fileKeys.Count == 0
+            ? new Dictionary<string, MediaRef>()
+            : await db.MediaFiles.AsNoTracking().Where(m => fileKeys.Contains(m.FileKey))
+                .Select(m => new MediaRef(m.FileKey, m.Format, m.Width, m.Height, m.AltAr, m.AltEn))
+                .ToDictionaryAsync(m => m.FileKey, StringComparer.Ordinal, ct);
+        var images = imageKeys.Where(x => files.ContainsKey(x.FileKey!))
+            .ToDictionary(x => x.Key, x => files[x.FileKey!], StringComparer.Ordinal);
+        var founderPhoto = images.GetValueOrDefault(ContentKeys.FounderPhoto);
 
         var partnerGroups = await db.PartnerGroups.AsNoTracking()
             .Where(g => g.IsActive)
@@ -226,11 +251,36 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
             .Select(s => new SocialRow(s.Network, s.Url!))
             .ToListAsync(ct);
 
+        var ecosystem = await LoadEcosystemAsync(db, ct);
+
         return new SiteSnapshot(content, pages, items, nav, platforms, stats, news, events, partners, faqs, interests, benefits, socials,
             new ListCount(newsTotal, newsEnglish),
             new ListCount(events.Count, events.Count(e => EventQueries.HasEnglish(e.TitleEn, e.SummaryEn, e.DescriptionEn))),
             new ListCount(partners.Count, partners.Count(p => Has(p.NameEn))),
             partnerGroups,
-            founderPhoto);
+            founderPhoto,
+            ecosystem,
+            images);
+    }
+
+    /// <summary>
+    /// The four ecosystem lists can grow: they are counted in the database (published rows, and those whose English page
+    /// is complete — <see cref="EcosystemQueries"/>), never loaded. The packages are a short admin list, loaded.
+    /// </summary>
+    private static async Task<EcosystemData> LoadEcosystemAsync(AppDbContext db, CancellationToken ct)
+    {
+        async Task<ListCount> CountAsync<T>(IQueryable<T> published, System.Linq.Expressions.Expression<Func<T, bool>> english) =>
+            new(await published.CountAsync(ct), await published.CountAsync(english, ct));
+
+        var speakers = await CountAsync(db.Speakers.Where(p => p.IsActive), EcosystemQueries.PersonEnglish<Models.Speaker>());
+        var guests = await CountAsync(db.TvGuests.Where(p => p.IsActive), EcosystemQueries.PersonEnglish<Models.TvGuest>());
+        var episodes = await CountAsync(db.TvEpisodes.Where(e => e.IsActive), EcosystemQueries.EpisodeEnglish);
+        var opportunities = await CountAsync(db.InvestmentOpportunities.Where(o => o.IsActive), EcosystemQueries.OpportunityEnglish);
+        var packages = await db.SponsorshipPackages.AsNoTracking()
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
+            .Select(p => new PackageRow(p.Unit, p.TitleAr, p.TitleEn, p.PriceTextAr, p.PriceTextEn, p.BenefitsAr, p.BenefitsEn))
+            .ToListAsync(ct);
+        return new EcosystemData(speakers, guests, episodes, opportunities, packages);
     }
 }

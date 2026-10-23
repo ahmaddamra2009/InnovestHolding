@@ -75,6 +75,12 @@ public class ContentItemsController(AppDbContext db) : AdminControllerBase
     {
         var item = await db.ContentItems.FindAsync(id);
         if (item is null) return RedirectToAction(nameof(Index));
+        // A sector that an investment opportunity points to stays (the FK refuses it too): deactivate it instead.
+        if (await db.InvestmentOpportunities.AnyAsync(o => o.SectorItemId == id))
+        {
+            TempData["Error"] = L(MessageKeys.Admin.SectorInUse);
+            return Back(ContentItemGroups.Find(item.Group));
+        }
         db.ContentItems.Remove(item);
         await db.SaveChangesAsync();
         TempData["Success"] = L(MessageKeys.Admin.ItemDeleted);

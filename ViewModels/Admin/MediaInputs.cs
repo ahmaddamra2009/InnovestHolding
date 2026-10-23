@@ -35,3 +35,10 @@ public abstract class ImageFieldsInput
 
 /// <summary>The founder block's photo (Content editor).</summary>
 public sealed class FounderPhotoInput : ImageFieldsInput;
+
+/// <summary>A site image of the Content editor (Infrastructure/Content/SiteImages): which one, and the image fields.</summary>
+public sealed class SiteImageInput : ImageFieldsInput
+{
+    [StringLength(40, ErrorMessage = K.MaxLength)]
+    public string? Key { get; set; }
+}

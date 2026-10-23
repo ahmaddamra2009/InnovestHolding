@@ -116,7 +116,7 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
                 Row = new EventRow(x.TitleAr, x.TitleEn, x.DescriptionAr, x.DescriptionEn, x.EventDay, x.EventMonthAr, x.EventMonthEn,
                     x.LocationAr, x.LocationEn, x.TimeAr, x.TimeEn, x.Slug, x.SummaryAr, x.SummaryEn, x.StartsAt, x.EndsAt, x.Status,
                     x.Image == null ? null : new MediaRef(x.Image.FileKey, x.Image.Format, x.Image.Width, x.Image.Height, x.Image.AltAr, x.Image.AltEn)),
-                x.AttendanceMode, x.CityAr, x.CityEn, x.AddressAr, x.AddressEn, x.OnlineUrl, x.RegistrationOpen,
+                x.Id, x.AttendanceMode, x.CityAr, x.CityEn, x.AddressAr, x.AddressEn, x.OnlineUrl, x.RegistrationOpen,
                 x.MetaTitleAr, x.MetaTitleEn, x.MetaDescriptionAr, x.MetaDescriptionEn,
             })
             .FirstOrDefaultAsync(HttpContext.RequestAborted);
@@ -211,6 +211,16 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
             else if (locations.Count > 1) node["location"] = locations;
             SeoBuilder.Set(node, "organizer", SeoBuilder.OrganizationRef(baseUrl));
         }
+
+        // The event's published speakers, in the order of the speakers list (the admin's picker shows that order).
+        var speakers = (await db.EventSpeakers.AsNoTracking()
+                .Where(es => es.EventId == e.Id && es.Speaker!.IsActive)
+                .OrderBy(es => es.Speaker!.SortOrder).ThenBy(es => es.SpeakerId)
+                .Select(es => es.Speaker!)
+                .Select(EcosystemQueries.PersonCard<Speaker>())
+                .ToListAsync(HttpContext.RequestAborted))
+            .Select(s => PersonCard(v, s, DetailKeys.ForumSpeaker)).ToList();
+        if (r.StartsAt is not null && speakers.Count > 0) node["performer"] = PersonRefs(baseUrl, speakers);
         var seo = SeoBuilder.BuildDetail(route, r.Slug, v, baseUrl, available, title, v.P(e.MetaTitleAr, e.MetaTitleEn).Value,
             metaDescription.IsEmpty ? lead.Value : metaDescription.Value, r.Image, "website", node);
         return Detail(v, route, r.Slug, seo, new DetailPageVm
@@ -227,14 +237,29 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
             Notice = past && r.Status != EventStatus.Cancelled ? Ui(MessageKeys.Ui.EventEndedNotice) : LText.Empty,
             ArabicOnly = english && !available,
             Back = new LinkVm(v.Url(PageKeys.ForumEvents), v.Title(PageKeys.ForumEvents)),
+            Related = speakers.Count == 0 ? [] : [new RelatedVm(v.Title(PageKeys.ForumSpeakers), speakers, true)],
         });
     }
 
     [AcceptVerbs("GET", "HEAD")]
-    public async Task<IActionResult> Speakers()
+    public Task<IActionResult> Speakers() =>
+        EntityListAsync(PageKeys.ForumSpeakers,
+            EcosystemQueries.PeopleOrdered(db.Speakers.AsNoTracking().Where(s => s.IsActive)).Select(EcosystemQueries.PersonCard<Speaker>()),
+            (v, s) => PersonCard(v, s, DetailKeys.ForumSpeaker), true,
+            v => new LinkVm(v.Url(PageKeys.ForumRegistration), v.Title(PageKeys.ForumRegistration)));
+
+    /// <summary>GET /forum/speakers/{slug} (and /en/…): a published speaker and the published events they speak at.</summary>
+    [AcceptVerbs("GET", "HEAD")]
+    public async Task<IActionResult> Speaker(string slug)
     {
-        var v = await ViewsAsync();
-        return Page(PageKeys.ForumSpeakers, v, [], new LinkVm(v.Url(PageKeys.ForumRegistration), v.Title(PageKeys.ForumRegistration)));
+        var now = time.GetUtcNow();
+        return await PersonPageAsync<Speaker>(db, DetailKeys.ForumSpeaker, slug, async (v, id) =>
+        {
+            var events = await EventQueries.Ordered(
+                    db.Events.AsNoTracking().Where(e => e.IsActive && db.EventSpeakers.Any(es => es.EventId == e.Id && es.SpeakerId == id)), now)
+                .Select(EventQueries.Row).ToListAsync(HttpContext.RequestAborted);
+            return events.Count == 0 ? null : new RelatedVm(v.Title(PageKeys.ForumEvents), EventCards(v, events, now), false);
+        }, v => [new LinkVm(v.Url(PageKeys.ForumRegistration), v.Title(PageKeys.ForumRegistration))]);
     }
 
     [AcceptVerbs("GET", "HEAD")]
@@ -248,6 +273,7 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
                 ? new EmptyBlock(v.P(v.Snapshot.Page(PageKeys.ForumPartners)?.EmptyTextAr, v.Snapshot.Page(PageKeys.ForumPartners)?.EmptyTextEn),
                     new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact)))
                 : new PartnersBlock(v.Content.Text("partners_title"), groups),
+            Packages(v, SponsorshipUnits.Forum),
             v.ItemsSection(C.PartnerTypes),
         ]);
     }
@@ -266,9 +292,16 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     }
 }
 
-public class NetworkController : PublicControllerBase
+public class NetworkController(AppDbContext db) : PublicControllerBase
 {
-    private LinkVm Join(SiteViews v) => new(v.Url(PageKeys.NetworkJoin), v.Title(PageKeys.NetworkJoin));
+    private static LinkVm Join(SiteViews v) => new(v.Url(PageKeys.NetworkJoin), v.Title(PageKeys.NetworkJoin));
+
+    /// <summary>
+    /// The "express interest" action of an opportunity page. There is no interest form yet, so it goes to the contact
+    /// page; this method is the one place to point it at that form (<paramref name="slug"/> is unused until then: the
+    /// form will pre-select the opportunity from it).
+    /// </summary>
+    private LinkVm InterestAction(SiteViews v, string slug) => new(v.Url(PageKeys.Contact), Ui(MessageKeys.Ui.ExpressInterest));
 
     [AcceptVerbs("GET", "HEAD")]
     public async Task<IActionResult> Index()
@@ -304,10 +337,70 @@ public class NetworkController : PublicControllerBase
     }
 
     [AcceptVerbs("GET", "HEAD")]
-    public async Task<IActionResult> Opportunities()
+    public Task<IActionResult> Opportunities() =>
+        EntityListAsync(PageKeys.NetworkOpportunities,
+            EcosystemQueries.OpportunitiesOrdered(db.InvestmentOpportunities.AsNoTracking().Where(o => o.IsActive)).Select(EcosystemQueries.OpportunityCard),
+            OpportunityCard, false, Join);
+
+    /// <summary>
+    /// GET /angel-network/opportunities/{slug} (and /en/…): a published opportunity (a draft is 404); an old slug 301s.
+    /// Only the figures the admin wrote are shown; schema.org WebPage (no offer or financial-product claim).
+    /// </summary>
+    [AcceptVerbs("GET", "HEAD")]
+    public async Task<IActionResult> Opportunity(string slug)
     {
+        var ct = HttpContext.RequestAborted;
+        var o = await db.InvestmentOpportunities.AsNoTracking().Where(x => x.Slug == slug && x.IsActive)
+            .Select(x => new
+            {
+                x.Slug, x.TitleAr, x.TitleEn, x.SummaryAr, x.SummaryEn, x.BodyAr, x.BodyEn, x.StageTextAr, x.StageTextEn,
+                x.AskTextAr, x.AskTextEn, x.IsOpen, x.MetaTitleAr, x.MetaTitleEn, x.MetaDescriptionAr, x.MetaDescriptionEn,
+                SectorAr = x.SectorItem == null ? null : x.SectorItem.TextAr,
+                SectorEn = x.SectorItem == null ? null : x.SectorItem.TextEn,
+                Image = x.Image == null ? null : new MediaRef(x.Image.FileKey, x.Image.Format, x.Image.Width, x.Image.Height, x.Image.AltAr, x.Image.AltEn),
+            })
+            .FirstOrDefaultAsync(ct);
+        if (o is null)
+            return await OldSlugAsync(db, DetailKeys.NetworkOpportunity, slug);
+
         var v = await ViewsAsync();
-        return Page(PageKeys.NetworkOpportunities, v, [], Join(v));
+        var title = v.P(o.TitleAr, o.TitleEn);
+        var summary = v.P(o.SummaryAr, o.SummaryEn);
+        var available = EcosystemQueries.OpportunityHasEnglish(o.TitleEn, o.SummaryEn);
+        var facts = new List<FactVm>();
+        var sector = v.P(o.SectorAr, o.SectorEn);
+        var stage = v.P(o.StageTextAr, o.StageTextEn);
+        var ask = v.P(o.AskTextAr, o.AskTextEn);
+        if (!sector.IsEmpty) facts.Add(new FactVm("layers", Ui(MessageKeys.Ui.Sector), sector));
+        if (!stage.IsEmpty) facts.Add(new FactVm("rocket", Ui(MessageKeys.Ui.Stage), stage));
+        if (!ask.IsEmpty) facts.Add(new FactVm("coins", Ui(MessageKeys.Ui.Ask), ask));
+
+        var actions = new List<LinkVm>();
+        if (o.IsOpen) actions.Add(InterestAction(v, o.Slug));
+        actions.Add(Join(v));
+
+        var route = SiteRoutes.Detail(DetailKeys.NetworkOpportunity);
+        var baseUrl = BaseUrl(v);
+        var node = new Dictionary<string, object> { ["@type"] = "WebPage" };
+        SeoBuilder.Set(node, "name", title.Value);
+        SeoBuilder.Set(node, "description", SeoBuilder.Shorten(summary.Value, 300));
+        var metaDescription = v.P(o.MetaDescriptionAr, o.MetaDescriptionEn);
+        var seo = SeoBuilder.BuildDetail(route, o.Slug, v, baseUrl, available, title, v.P(o.MetaTitleAr, o.MetaTitleEn).Value,
+            metaDescription.IsEmpty ? summary.Value : metaDescription.Value, o.Image, "website", node);
+        return Detail(v, route, o.Slug, seo, new DetailPageVm
+        {
+            Seo = seo,
+            Kind = "opportunity",
+            Title = title,
+            Lead = summary,
+            Body = SiteViews.Paragraphs(v.P(o.BodyAr, o.BodyEn)),
+            Image = v.Image(o.Image, title),
+            Badge = Ui(o.IsOpen ? MessageKeys.Ui.OpportunityOpen : MessageKeys.Ui.OpportunityClosed),
+            Facts = facts,
+            Actions = actions,
+            ArabicOnly = v.English && !available,
+            Back = new LinkVm(v.Url(PageKeys.NetworkOpportunities), v.Title(PageKeys.NetworkOpportunities)),
+        });
     }
 
     [AcceptVerbs("GET", "HEAD")]
@@ -320,7 +413,7 @@ public class NetworkController : PublicControllerBase
     }
 }
 
-public class TvController : PublicControllerBase
+public class TvController(AppDbContext db) : PublicControllerBase
 {
     private static LinkVm Sponsor(SiteViews v) => new(v.Url(PageKeys.TvSponsorship), v.Title(PageKeys.TvSponsorship));
 
@@ -332,24 +425,121 @@ public class TvController : PublicControllerBase
     }
 
     [AcceptVerbs("GET", "HEAD")]
-    public async Task<IActionResult> Episodes()
+    public Task<IActionResult> Episodes() =>
+        EntityListAsync(PageKeys.TvEpisodes,
+            EcosystemQueries.EpisodesOrdered(db.TvEpisodes.AsNoTracking().Where(e => e.IsActive)).Select(EcosystemQueries.EpisodeCard),
+            EpisodeCard, false, Sponsor);
+
+    /// <summary>
+    /// GET /tv/episodes/{slug} (and /en/…): a published episode, its video (click-to-load: no request to YouTube
+    /// before the click) and its published guests; schema.org TVEpisode (+ VideoObject only with a stored video URL).
+    /// </summary>
+    [AcceptVerbs("GET", "HEAD")]
+    public async Task<IActionResult> Episode(string slug)
     {
+        var ct = HttpContext.RequestAborted;
+        var e = await db.TvEpisodes.AsNoTracking().Where(x => x.Slug == slug && x.IsActive)
+            .Select(x => new
+            {
+                x.Id, x.Slug, x.Season, x.Number, x.TitleAr, x.TitleEn, x.SummaryAr, x.SummaryEn, x.BodyAr, x.BodyEn, x.AiredOn, x.VideoUrl,
+                x.MetaTitleAr, x.MetaTitleEn, x.MetaDescriptionAr, x.MetaDescriptionEn,
+                Thumbnail = x.Thumbnail == null ? null : new MediaRef(x.Thumbnail.FileKey, x.Thumbnail.Format, x.Thumbnail.Width, x.Thumbnail.Height, x.Thumbnail.AltAr, x.Thumbnail.AltEn),
+            })
+            .FirstOrDefaultAsync(ct);
+        if (e is null)
+            return await OldSlugAsync(db, DetailKeys.TvEpisode, slug);
+
         var v = await ViewsAsync();
-        return Page(PageKeys.TvEpisodes, v, [], Sponsor(v));
+        var title = v.P(e.TitleAr, e.TitleEn);
+        var summary = v.P(e.SummaryAr, e.SummaryEn);
+        var available = EcosystemQueries.EpisodeHasEnglish(e.TitleEn, e.SummaryEn);
+        var label = EpisodeLabel(e.Season, e.Number);
+        var aired = Aired(v, e.AiredOn);
+        var facts = new List<FactVm>();
+        if (!aired.IsEmpty) facts.Add(new FactVm("calendar", Ui(MessageKeys.Ui.AiredOn), aired));
+
+        var thumbnail = v.Image(e.Thumbnail, title);
+        var youTubeId = YouTube.VideoId(e.VideoUrl);
+        var video = youTubeId is not null
+            ? new VideoVm(youTubeId, e.VideoUrl!.Trim(), thumbnail, title)
+            : SiteUrl.IsHttpsUrl(e.VideoUrl) ? new VideoVm(null, e.VideoUrl!.Trim(), null, title) : null;
+
+        var guests = (await db.TvEpisodeGuests.AsNoTracking()
+                .Where(g => g.TvEpisodeId == e.Id && g.TvGuest!.IsActive)
+                .OrderBy(g => g.TvGuest!.SortOrder).ThenBy(g => g.TvGuestId)
+                .Select(g => g.TvGuest!)
+                .Select(EcosystemQueries.PersonCard<TvGuest>())
+                .ToListAsync(ct))
+            .Select(g => PersonCard(v, g, DetailKeys.TvGuest)).ToList();
+
+        var route = SiteRoutes.Detail(DetailKeys.TvEpisode);
+        var baseUrl = BaseUrl(v);
+        var node = new Dictionary<string, object> { ["@type"] = "TVEpisode" };
+        SeoBuilder.Set(node, "name", title.Value);
+        SeoBuilder.Set(node, "description", SeoBuilder.Shorten(summary.Value, 300));
+        if (e.Number is { } number) node["episodeNumber"] = number;
+        if (e.Season is { } season) node["partOfSeason"] = new Dictionary<string, object> { ["@type"] = "TVSeason", ["seasonNumber"] = season };
+        if (e.AiredOn is { } on) node["datePublished"] = on.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        SeoBuilder.Set(node, "partOfSeries", SeoBuilder.TvSeriesRef(baseUrl));
+        if (guests.Count > 0) node["actor"] = PersonRefs(baseUrl, guests);
+        if (video is not null)
+        {
+            var videoNode = new Dictionary<string, object> { ["@type"] = "VideoObject", ["name"] = title.Value };
+            SeoBuilder.Set(videoNode, "description", SeoBuilder.Shorten(summary.Value, 300));
+            if (youTubeId is not null) videoNode["embedUrl"] = YouTube.EmbedUrl(youTubeId);
+            else videoNode["url"] = video.LinkUrl!;
+            if (thumbnail is not null && baseUrl is not null) videoNode["thumbnailUrl"] = baseUrl + thumbnail.Src;
+            if (node.TryGetValue("datePublished", out var date)) videoNode["uploadDate"] = date;
+            node["video"] = videoNode;
+        }
+        var metaDescription = v.P(e.MetaDescriptionAr, e.MetaDescriptionEn);
+        var seo = SeoBuilder.BuildDetail(route, e.Slug, v, baseUrl, available, title, v.P(e.MetaTitleAr, e.MetaTitleEn).Value,
+            metaDescription.IsEmpty ? summary.Value : metaDescription.Value, e.Thumbnail, video is null ? "website" : "video.episode", node);
+        return Detail(v, route, e.Slug, seo, new DetailPageVm
+        {
+            Seo = seo,
+            Kind = "episode",
+            Title = title,
+            Lead = summary,
+            Body = SiteViews.Paragraphs(v.P(e.BodyAr, e.BodyEn)),
+            // The YouTube player shows the thumbnail as its poster: not twice.
+            Image = video?.YouTubeId is null ? thumbnail : null,
+            Video = video,
+            Badge = label,
+            Facts = facts,
+            Actions = [Sponsor(v)],
+            Related = guests.Count == 0 ? [] : [new RelatedVm(v.Title(PageKeys.TvGuests), guests, true)],
+            ArabicOnly = v.English && !available,
+            Back = new LinkVm(v.Url(PageKeys.TvEpisodes), v.Title(PageKeys.TvEpisodes)),
+        });
     }
 
     [AcceptVerbs("GET", "HEAD")]
-    public async Task<IActionResult> Guests()
-    {
-        var v = await ViewsAsync();
-        return Page(PageKeys.TvGuests, v, [], Sponsor(v));
-    }
+    public Task<IActionResult> Guests() =>
+        EntityListAsync(PageKeys.TvGuests,
+            EcosystemQueries.PeopleOrdered(db.TvGuests.AsNoTracking().Where(g => g.IsActive)).Select(EcosystemQueries.PersonCard<TvGuest>()),
+            (v, g) => PersonCard(v, g, DetailKeys.TvGuest), true, Sponsor);
+
+    /// <summary>GET /tv/guests/{slug} (and /en/…): a published guest and the published episodes they appear in.</summary>
+    [AcceptVerbs("GET", "HEAD")]
+    public Task<IActionResult> Guest(string slug) =>
+        PersonPageAsync<TvGuest>(db, DetailKeys.TvGuest, slug, async (v, id) =>
+        {
+            var episodes = await EcosystemQueries.EpisodesOrdered(
+                    db.TvEpisodes.AsNoTracking().Where(x => x.IsActive && db.TvEpisodeGuests.Any(g => g.TvEpisodeId == x.Id && g.TvGuestId == id)))
+                .Select(EcosystemQueries.EpisodeCard).ToListAsync(HttpContext.RequestAborted);
+            return episodes.Count == 0 ? null : new RelatedVm(v.Title(PageKeys.TvEpisodes), episodes.Select(x => EpisodeCard(v, x)).ToList(), false);
+        }, v => [Sponsor(v)]);
 
     [AcceptVerbs("GET", "HEAD")]
     public async Task<IActionResult> Sponsorship()
     {
         var v = await ViewsAsync();
-        return Page(PageKeys.TvSponsorship, v, [], new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact)));
+        var contact = new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact));
+        var packages = Packages(v, SponsorshipUnits.Tv);
+        return Page(PageKeys.TvSponsorship, v,
+            [packages, packages is null ? null : new CtaBlock(v.Title(PageKeys.Contact), v.Summary(PageKeys.Contact), [contact])],
+            contact);
     }
 }
 

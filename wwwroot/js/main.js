@@ -411,6 +411,30 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
+  // 9b. CLICK-TO-LOAD VIDEO (episode pages): the page carries only the video id; the privacy-enhanced YouTube
+  // player is created on the click, so the browser contacts YouTube only after the visitor asks for the video.
+  // ==========================================
+  document.querySelectorAll('.video-facade').forEach(facade => {
+    const id = facade.dataset.videoId || '';
+    const button = facade.querySelector('.video-play');
+    if (!/^[A-Za-z0-9_-]{11}$/.test(id) || !button) return;
+    button.addEventListener('click', () => {
+      const frame = document.createElement('iframe');
+      frame.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0';
+      frame.title = facade.dataset.videoTitle || '';
+      frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      frame.allowFullscreen = true;
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      // The player needs its own scripts and origin (it is cross-origin, so it cannot reach this page); no forms,
+      // no top navigation; "watch on YouTube" opens a new tab.
+      frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox');
+      facade.replaceChildren(frame);
+      facade.classList.add('is-playing');
+      frame.focus();
+    });
+  });
+
+  // ==========================================
   // 10. TYPING EFFECT FOR HERO (optional enhancement)
   // ==========================================
   // Not used by default, can be enabled if needed
