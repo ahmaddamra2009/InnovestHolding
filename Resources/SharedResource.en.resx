@@ -214,6 +214,8 @@
   <data name="Ui_NewsSource" xml:space="preserve"><value>Source</value></data>
   <data name="Ui_ArabicOnlyNotice" xml:space="preserve"><value>This content is currently available in Arabic only.</value></data>
   <data name="Ui_ViewDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="Ui_EditionMorePhotos" xml:space="preserve"><value>More photos ({0})</value></data>
+  <data name="Ui_EditionPhotosAria" xml:space="preserve"><value>Photos of {0}</value></data>
   <data name="Msg_LogoLimits" xml:space="preserve"><value>A logo must not exceed 1 MB and 1200 pixels on its longest side</value></data>
   <data name="Admin_ImageHintGeneral" xml:space="preserve"><value>JPG, PNG or WebP, up to 5 MB, 8000 pixels per side and 25 million pixels. Suggested size 1200×630 (enough for the share image), ideally under 500 KB: the picture is served as uploaded. Location and camera data are removed on upload.</value></data>
   <data name="Admin_ImageHintLogo" xml:space="preserve"><value>Logo: JPG, PNG or WebP, up to 1 MB and 1200 pixels on the longest side. It is shown about 70 pixels high, so 400 pixels wide on a transparent background (PNG or WebP) and under 100 KB is enough.</value></data>

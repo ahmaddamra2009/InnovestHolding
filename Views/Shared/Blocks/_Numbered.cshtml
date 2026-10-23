@@ -1,0 +1,37 @@
+@model NumberedItemsBlock
+@using InnovestHolding.Infrastructure.Content
+@* F10: a numbered list (01, 02, … in list order, Latin digits) with an optional closing paragraph (goals, sectors). *@
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+<section class="page-section forum-numbered" aria-labelledby="sec-@Model.Group">
+  <div class="container">
+    <div class="block-head">
+      <h2 class="block-title" id="sec-@Model.Group" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+      @if (!Model.Intro.IsEmpty)
+      {
+        <p class="block-intro" lang="@Model.Intro.Lang" dir="@Model.Intro.Dir">@Model.Intro</p>
+      }
+    </div>
+    <ol class="forum-numbered-list">
+      @for (var i = 0; i < Model.Items.Count; i++)
+      {
+        var item = Model.Items[i];
+        <li>
+          <span class="forum-number" aria-hidden="true">@((i + 1).ToString("00", inv))</span>
+          <span class="forum-numbered-text">
+            <span lang="@item.Text.Lang" dir="@item.Text.Dir">@item.Text</span>
+            @if (!item.Description.IsEmpty)
+            {
+              <span class="forum-numbered-desc" lang="@item.Description.Lang" dir="@item.Description.Dir">@ContentText.Lines(item.Description)</span>
+            }
+          </span>
+        </li>
+      }
+    </ol>
+    @if (!Model.Note.IsEmpty)
+    {
+      <p class="forum-note" lang="@Model.Note.Lang" dir="@Model.Note.Dir">@Model.Note</p>
+    }
+  </div>
+</section>

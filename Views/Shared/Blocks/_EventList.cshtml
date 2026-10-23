@@ -18,9 +18,9 @@
       {
         <img class="event-thumb" src="@img.Src" width="@img.Width" height="@img.Height" alt="" loading="lazy" decoding="async">
       }
-      <div class="event-date-box">
-        <div class="event-date-day">@e.Day.ToString(inv)</div>
-        <div class="event-date-month" lang="@e.Month.Lang" dir="@e.Month.Dir">@e.Month</div>
+      <div class="event-date-box@(e.MonthOnly ? " is-month" : "")">
+        <div class="event-date-day" lang="@(e.MonthOnly ? e.Month.Lang : null)" dir="@(e.MonthOnly ? e.Month.Dir : null)">@(e.MonthOnly ? e.Month.Value : e.Day.ToString(inv))</div>
+        <div class="event-date-month" lang="@(e.MonthOnly ? null : e.Month.Lang)" dir="@(e.MonthOnly ? null : e.Month.Dir)">@(e.MonthOnly ? e.Year.ToString(inv) : e.Month.Value)</div>
       </div>
       <div class="event-info">
         <h3><a href="@e.Href" lang="@e.Title.Lang" dir="@e.Title.Dir">@e.Title</a>@if (state is not null) {<span class="event-state">@state</span>}</h3>

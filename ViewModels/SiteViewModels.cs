@@ -138,8 +138,39 @@ public sealed record BrandImagesVm(Infrastructure.Content.MediaRef? LogoOnDark, 
 public abstract record BlockVm;
 
 /// <summary>A titled section of ContentItems (cards with an icon, or a check list).</summary>
-public sealed record ItemsBlock(string Group, LText Title, LText Intro, IReadOnlyList<ItemVm> Items, bool Compact, bool Dark = false) : BlockVm;
+/// <param name="Note">F10: an optional closing paragraph under the list (the group's <c>section_{group}_note</c> key).</param>
+public sealed record ItemsBlock(string Group, LText Title, LText Intro, IReadOnlyList<ItemVm> Items, bool Compact, bool Dark = false,
+    LText Note = default) : BlockVm;
 public sealed record ItemVm(LText Text, LText Description, string? IconSvg);
+
+// ── F10: the forum hub's blocks (every text from SiteContents / ContentItems / ForumEditions / PartnerGroups) ──
+
+/// <summary>«عن المنتدى»: the edition label as eyebrow, the tagline as heading, the launch line, the paragraphs, then the
+/// positioning band (title + paragraphs).</summary>
+public sealed record ForumAboutBlock(LText Eyebrow, LText Tagline, LText Lead, IReadOnlyList<LText> Paragraphs,
+    LText PositioningTitle, IReadOnlyList<LText> Positioning) : BlockVm;
+
+/// <summary>The forum's figures: each figure as displayed in the page language (digits as stored) and its label.</summary>
+public sealed record FiguresBlock(string Group, LText Title, LText Intro, IReadOnlyList<FigureVm> Figures) : BlockVm;
+public sealed record FigureVm(LText Figure, LText Label);
+
+/// <summary>Cards with a title and bullets (audiences, pillars); an optional highlighted band at the end (Strategic Link).</summary>
+public sealed record BulletCardsBlock(string Group, LText Title, LText Intro, IReadOnlyList<BulletCardVm> Cards,
+    LText BandTitle, IReadOnlyList<LText> BandLines) : BlockVm;
+public sealed record BulletCardVm(LText Title, IReadOnlyList<LText> Bullets, string? IconSvg);
+
+/// <summary>A numbered list (01, 02, …: goals, sectors) with an optional closing paragraph.</summary>
+public sealed record NumberedItemsBlock(string Group, LText Title, LText Intro, IReadOnlyList<ItemVm> Items, LText Note) : BlockVm;
+
+/// <summary>Past editions: on the hub a teaser (cover photo only, a link to the page); on /forum/editions the gallery.</summary>
+public sealed record EditionsBlock(LText Title, IReadOnlyList<EditionVm> Editions, LinkVm? More, bool Teaser) : BlockVm;
+public sealed record EditionVm(LText Label, int Year, LText Title, LText Place, IReadOnlyList<LText> Paragraphs, IReadOnlyList<ImageVm> Photos);
+
+/// <summary>The forum hub's strip of the organising bodies (partner groups flagged ShowOnForumHub).</summary>
+public sealed record PatronageBlock(LText Title, IReadOnlyList<PartnerGroupVm> Groups) : BlockVm;
+
+/// <summary>A titled list of facts (the forum's contact details): label, value, optional link.</summary>
+public sealed record FactsBlock(LText Title, IReadOnlyList<FactVm> Facts) : BlockVm;
 
 /// <summary>Links to pages: the three units (with their sub-pages as chips) or a hub's sub-pages.</summary>
 public sealed record CardsBlock(LText Title, LText Intro, IReadOnlyList<CardVm> Cards, bool Dark) : BlockVm;
@@ -213,8 +244,18 @@ public sealed record NotFoundVm(ShellVm Shell, SeoVm Seo, IReadOnlyList<LinkVm> 
 // Records shared with the home page.
 public sealed record StatVm(int Value, string Suffix, LText Label, LText ShortLabel, string IconSvg);
 public sealed record NewsCardVm(LText Title, LText Summary, LText Category, LText Date, string Href, ImageVm? Image);
+/// <param name="Day">The day of the month; 0 for an event known to the month only (F10: <see cref="Year"/> is then set).</param>
 public sealed record EventCardVm(int Day, LText Month, LText Title, LText Description, LText Location, LText Time,
-    string Href, ImageVm? Image, bool Past, Models.EventStatus Status);
+    string Href, ImageVm? Image, bool Past, Models.EventStatus Status, int Year = 0)
+{
+    /// <summary>F10: month precision (DateIsMonth): the card shows the month and the year, no day.</summary>
+    public bool MonthOnly => Day == 0 && Year > 0;
+
+    /// <summary>"15 يونيو" / "June 2026" (month-only) as one line, Latin digits.</summary>
+    public LText DateText => new(
+        MonthOnly ? Month.Value + " " + Year.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                  : Day.ToString(System.Globalization.CultureInfo.InvariantCulture) + " " + Month.Value, Month.IsFallback);
+}
 
 /// <summary>An uploaded image, ready for an &lt;img&gt; (src, intrinsic size, alt in the page language).</summary>
 public sealed record ImageVm(string Src, int Width, int Height, LText Alt);

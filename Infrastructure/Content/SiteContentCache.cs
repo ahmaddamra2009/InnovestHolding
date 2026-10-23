@@ -26,9 +26,14 @@ public sealed record NewsRow(string TitleAr, string? TitleEn, string SummaryAr, 
     string NewsDateAr, string? NewsDateEn, string? LinkUrl, string Slug, MediaRef? Image);
 public sealed record EventRow(string TitleAr, string? TitleEn, string DescriptionAr, string? DescriptionEn, int EventDay,
     string EventMonthAr, string? EventMonthEn, string LocationAr, string? LocationEn, string TimeAr, string? TimeEn,
-    string Slug, string SummaryAr, string? SummaryEn, DateTimeOffset? StartsAt, DateTimeOffset? EndsAt, Models.EventStatus Status, MediaRef? Image);
+    string Slug, string SummaryAr, string? SummaryEn, DateTimeOffset? StartsAt, DateTimeOffset? EndsAt, Models.EventStatus Status, MediaRef? Image,
+    bool DateIsMonth);
 public sealed record PartnerRow(string NameAr, string? NameEn, MediaRef? Logo, string? Url, int? GroupId, bool ShowOnHome);
-public sealed record PartnerGroupRow(int Id, string NameAr, string? NameEn);
+/// <param name="ShowOnForumHub">F10: the group is listed in the forum hub's patronage strip.</param>
+public sealed record PartnerGroupRow(int Id, string NameAr, string? NameEn, bool ShowOnForumHub = false);
+/// <summary>F10: an active past edition of the forum with its photos in order (the first is the cover).</summary>
+public sealed record EditionRow(int Id, short Year, string LabelAr, string? LabelEn, string TitleAr, string? TitleEn, string PlaceAr,
+    string? PlaceEn, string TextAr, string? TextEn, DateTime UpdatedAt, IReadOnlyList<MediaRef> Photos);
 public sealed record FaqRow(string QuestionAr, string? QuestionEn, string AnswerAr, string? AnswerEn);
 public sealed record InterestRow(int Id, string NameAr, string? NameEn);
 /// <summary>An active link with a URL. <see cref="Label"/>/<see cref="IconKey"/> are set on "custom" rows only.</summary>
@@ -84,8 +89,16 @@ public sealed record SiteSnapshot(
     EcosystemData? EcosystemData = null,
     IReadOnlyDictionary<string, MediaRef>? Images = null,
     IReadOnlyDictionary<string, IReadOnlyList<SectionRow>>? SectionData = null,
-    IReadOnlyList<FooterColumnRow>? FooterData = null)
+    IReadOnlyList<FooterColumnRow>? FooterData = null,
+    IReadOnlyList<EditionRow>? EditionData = null,
+    ListCount? EditionsCountData = null)
 {
+    /// <summary>F10: the active past editions in public order, with their photos.</summary>
+    public IReadOnlyList<EditionRow> Editions => EditionData ?? [];
+
+    /// <summary>F10: active editions, and those whose English content exists (<see cref="ForumEditionQueries.HasEnglish"/>).</summary>
+    public ListCount EditionsCount => EditionsCountData ?? new ListCount(0, 0);
+
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<SectionRow>> NoSections =
         new Dictionary<string, IReadOnlyList<SectionRow>>(StringComparer.Ordinal);
 
@@ -266,7 +279,7 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
         var partnerGroups = await db.PartnerGroups.AsNoTracking()
             .Where(g => g.IsActive)
             .OrderBy(g => g.SortOrder).ThenBy(g => g.Id)
-            .Select(g => new PartnerGroupRow(g.Id, g.NameAr, g.NameEn))
+            .Select(g => new PartnerGroupRow(g.Id, g.NameAr, g.NameEn, g.ShowOnForumHub))
             .ToListAsync(ct);
 
         var faqs = await db.Faqs.AsNoTracking()
@@ -323,6 +336,15 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
 
         var ecosystem = await LoadEcosystemAsync(db, ct);
 
+        // F10: the past editions (a short admin list, ~6 rows and their photos): one query; the cover is the first photo.
+        var editions = await ForumEditionQueries.Ordered(db.ForumEditions.AsNoTracking().Where(e => e.IsActive))
+            .Select(e => new EditionRow(e.Id, e.Year, e.EditionLabelAr, e.EditionLabelEn, e.TitleAr, e.TitleEn, e.PlaceAr, e.PlaceEn,
+                e.TextAr, e.TextEn, e.UpdatedAt,
+                e.Photos.OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
+                    .Select(p => new MediaRef(p.Image!.FileKey, p.Image.Format, p.Image.Width, p.Image.Height, p.Image.AltAr, p.Image.AltEn))
+                    .ToList()))
+            .ToListAsync(ct);
+
         return new SiteSnapshot(content, pages, items, nav, platforms, stats, news, events, partners, faqs, interests, benefits, socials,
             new ListCount(newsTotal, newsEnglish),
             new ListCount(events.Count, events.Count(e => EventQueries.HasEnglish(e.TitleEn, e.SummaryEn, e.DescriptionEn))),
@@ -332,7 +354,10 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
             ecosystem,
             images,
             sections,
-            footer);
+            footer,
+            editions,
+            // English = ForumEditionQueries.HasEnglish (an English title AND an English text), on the loaded rows.
+            new ListCount(editions.Count, editions.Count(e => !string.IsNullOrEmpty(e.TitleEn) && !string.IsNullOrEmpty(e.TextEn))));
     }
 
     /// <summary>

@@ -75,6 +75,9 @@ public abstract partial class PublicControllerBase : Controller
                 paged.Events.Select(e => (e.Title.Value, (string?)e.Href)).ToList(),
             PageKeys.News when list.OfType<NewsBlock>().FirstOrDefault() is { } news =>
                 news.News.Select(n => (n.Title.Value, (string?)n.Href)).ToList(),
+            // F10: the editions (no detail pages: names only).
+            PageKeys.ForumEditions when list.OfType<EditionsBlock>().FirstOrDefault() is { } editions =>
+                editions.Editions.Select(e => (e.Title.Value, (string?)null)).ToList(),
             _ when page.Kind == PageKind.List && list.OfType<EntityGridBlock>().FirstOrDefault() is { } grid =>
                 grid.Cards.Select(c => (c.Title.Value, (string?)c.Href)).ToList(),
             _ => null,

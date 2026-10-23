@@ -39,11 +39,13 @@ public sealed record LeadFormChoices(
             Of(ContentItemGroups.Sectors), Of(ContentItemGroups.StartupStages), Of(ContentItemGroups.FundingRanges));
     }
 
-    /// <summary>The active events (the Forum registration form needs only these: one query).</summary>
-    public static async Task<IReadOnlyList<FormChoice>> EventsAsync(AppDbContext db, CancellationToken ct) =>
-        await db.Events.AsNoTracking()
-            .Where(e => e.IsActive)
-            .OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
+    /// <summary>
+    /// The active events that have not passed (F10, Rami: a past event is not a registration choice), in the public
+    /// events order (upcoming by date, undated first). The Forum registration GET offers this list and its POST
+    /// validates against it: one query each.
+    /// </summary>
+    public static async Task<IReadOnlyList<FormChoice>> EventsAsync(AppDbContext db, DateTimeOffset now, CancellationToken ct) =>
+        await EventQueries.Ordered(EventQueries.NotPast(db.Events.AsNoTracking().Where(e => e.IsActive), now), now)
             .Select(e => new FormChoice(e.Id, e.TitleAr, e.TitleEn))
             .ToListAsync(ct);
 

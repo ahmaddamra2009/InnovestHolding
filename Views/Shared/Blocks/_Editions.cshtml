@@ -1,0 +1,93 @@
+@model EditionsBlock
+@using InnovestHolding.Infrastructure.Content
+@* F10 past editions (ForumEditions, admin screen "past editions"). Teaser (/forum): cover photo, label · year, title, place, and
+   the link to the editions page. Page (/forum/editions): each edition with its text and its photo gallery — the first
+   photo large and three small, the rest inside <details>. Every <img> carries its stored width/height and is lazy, except
+   the first edition's large photo on the editions page (likely the LCP). Alt = the photo's alt, else the edition title. *@
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+@if (Model.Teaser)
+{
+  <section class="page-section is-cream forum-editions" aria-labelledby="sec-forum-editions">
+    <div class="container">
+      <div class="block-head">
+        <h2 class="block-title" id="sec-forum-editions" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+      </div>
+      <ul class="forum-edition-cards">
+        @foreach (var e in Model.Editions)
+        {
+          <li class="forum-edition-card">
+            @if (e.Photos.Count > 0)
+            {
+              var cover = e.Photos[0];
+              <img class="forum-edition-cover" src="@cover.Src" width="@cover.Width" height="@cover.Height" alt="@cover.Alt" lang="@cover.Alt.Lang" loading="lazy" decoding="async">
+            }
+            <div class="forum-edition-body">
+              <p class="forum-edition-meta"><span lang="@e.Label.Lang" dir="@e.Label.Dir">@e.Label</span> <span class="forum-edition-year">@e.Year.ToString(inv)</span></p>
+              <h3 lang="@e.Title.Lang" dir="@e.Title.Dir">@e.Title</h3>
+              @if (!e.Place.IsEmpty)
+              {
+                <p class="forum-edition-place" lang="@e.Place.Lang" dir="@e.Place.Dir">@e.Place</p>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+      @if (Model.More is { } more)
+      {
+        <p class="forum-more"><a href="@more.Href" class="btn btn-outline" rel="@more.Rel" lang="@more.Title.Lang" dir="@more.Title.Dir">@more.Title</a></p>
+      }
+    </div>
+  </section>
+}
+else
+{
+  <section class="page-section forum-editions-page">
+    <div class="container">
+      @for (var n = 0; n < Model.Editions.Count; n++)
+      {
+        var e = Model.Editions[n];
+        var id = "edition-" + (n + 1).ToString(inv);
+        <article class="forum-edition" aria-labelledby="@id">
+          <header class="forum-edition-head">
+            <p class="forum-edition-meta"><span lang="@e.Label.Lang" dir="@e.Label.Dir">@e.Label</span> <span class="forum-edition-year">@e.Year.ToString(inv)</span></p>
+            <h2 id="@id" lang="@e.Title.Lang" dir="@e.Title.Dir">@e.Title</h2>
+            @if (!e.Place.IsEmpty)
+            {
+              <p class="forum-edition-place" lang="@e.Place.Lang" dir="@e.Place.Dir">@e.Place</p>
+            }
+          </header>
+          @foreach (var p in e.Paragraphs)
+          {
+            <p class="forum-edition-text" lang="@p.Lang" dir="@p.Dir">@p</p>
+          }
+          @if (e.Photos.Count > 0)
+          {
+            <div class="forum-gallery" role="group" aria-label="@L[K.Ui.EditionPhotosAria, e.Title.Value]">
+              @for (var i = 0; i < Math.Min(4, e.Photos.Count); i++)
+              {
+                var photo = e.Photos[i];
+                var eager = n == 0 && i == 0;
+                <img class="@(i == 0 ? "forum-gallery-main" : "forum-gallery-thumb")" src="@photo.Src" width="@photo.Width" height="@photo.Height" alt="@photo.Alt" lang="@photo.Alt.Lang"
+                     loading="@(eager ? null : "lazy")" fetchpriority="@(eager ? "high" : null)" decoding="async">
+              }
+            </div>
+            @if (e.Photos.Count > 4)
+            {
+              <details class="forum-gallery-more">
+                <summary>@L[K.Ui.EditionMorePhotos, (e.Photos.Count - 4).ToString(inv)]</summary>
+                <div class="forum-gallery-rest">
+                  @foreach (var photo in e.Photos.Skip(4))
+                  {
+                    <img src="@photo.Src" width="@photo.Width" height="@photo.Height" alt="@photo.Alt" lang="@photo.Alt.Lang" loading="lazy" decoding="async">
+                  }
+                </div>
+              </details>
+            }
+          }
+        </article>
+      }
+    </div>
+  </section>
+}

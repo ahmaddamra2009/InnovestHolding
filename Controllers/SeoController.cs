@@ -62,8 +62,11 @@ public class SeoController(ISiteContentCache cache, IWebHostEnvironment environm
         var news = (await db.News.AsNoTracking().Where(n => n.IsActive).OrderBy(n => n.SortOrder).ThenBy(n => n.Id)
                 .Select(n => new { n.Slug, n.UpdatedAt, n.TitleEn, n.SummaryEn }).ToListAsync(ct))
             .Select(n => (Key: DetailKeys.NewsItem, n.Slug, n.UpdatedAt, En: EventQueries.NewsHasEnglish(n.TitleEn, n.SummaryEn)));
+        // F10: an event without an Arabic summary or description is thin (noindex,follow: EventQueries.HasText) and left
+        // out — the page's own rule, applied in memory (the same function, so the two cannot disagree).
         var events = (await db.Events.AsNoTracking().Where(e => e.IsActive).OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
-                .Select(e => new { e.Slug, e.UpdatedAt, e.TitleEn, e.SummaryEn, e.DescriptionEn }).ToListAsync(ct))
+                .Select(e => new { e.Slug, e.UpdatedAt, e.TitleEn, e.SummaryEn, e.DescriptionEn, e.SummaryAr, e.DescriptionAr }).ToListAsync(ct))
+            .Where(e => EventQueries.HasText(e.SummaryAr, e.DescriptionAr))
             .Select(e => (Key: DetailKeys.ForumEvent, e.Slug, e.UpdatedAt, En: EventQueries.HasEnglish(e.TitleEn, e.SummaryEn, e.DescriptionEn)));
         // Profiles: only those with a description (EcosystemQueries.PersonHasDescription, the rule of the page itself).
         var speakers = (await db.Speakers.AsNoTracking().Where(p => p.IsActive && (p.BioAr != "" || p.MetaDescriptionAr != ""))
