@@ -1,0 +1,13 @@
+@model VisibleSwitchVm
+@* «ظاهر / مخفي» of one admin list row (UX-C5 §1.2): posts the toggle; the word, not only the colour, says the state. *@
+<form method="post" asp-controller="@Model.Controller" asp-action="@Model.Action" asp-route-id="@Model.Id" class="visible-switch">
+    @if (Model.Extra is not null)
+    {
+        foreach (var (name, value) in Model.Extra)
+        {
+            <input type="hidden" name="@name" value="@value">
+        }
+    }
+    <button type="submit" class="@(Model.Visible ? "badge-active" : "badge-inactive")" aria-pressed="@(Model.Visible ? "true" : "false")"
+            title="تبديل ظهور «@Model.Name»" disabled="@Model.Disabled">@(Model.Visible ? "ظاهر" : "مخفي")</button>
+</form>

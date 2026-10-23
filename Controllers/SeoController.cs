@@ -124,6 +124,8 @@ public class SeoController(ISiteContentCache cache, IWebHostEnvironment environm
                 }
                 foreach (var d in details)
                 {
+                    // The detail pages of an unpublished list page are 404 too.
+                    if (!snapshot.IsPublished(SiteRoutes.Detail(d.Key).Parent)) continue;
                     if (SeoPolicy.DecideDetail(english, d.En) != RobotsDecision.Index) continue;
                     w.WriteStartElement("url", ns);
                     w.WriteElementString("loc", ns, baseUrl + CultureUrls.Detail(d.Key, d.Slug, english));

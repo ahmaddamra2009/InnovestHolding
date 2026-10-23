@@ -15,14 +15,25 @@ namespace InnovestHolding.Migrations
     {
         private const string Bin = "COLLATE Latin1_General_100_BIN2";
 
-        /// <summary>N'…' with quotes doubled; NULL for null.</summary>
-        private static string L(string value) => value is null ? "NULL" : "N'" + value.Replace("'", "''") + "'";
+        /// <summary>
+        /// N'…' with quotes doubled; NULL for null. A multi-line value is built with NCHAR(10) between its lines, as
+        /// nvarchar(max): the SQL generator re-joins a statement's lines with the machine's line end, which would turn
+        /// an LF inside a literal into CRLF (and a long literal would be cut at 4000 characters by a plain + chain).
+        /// </summary>
+        private static string L(string value)
+        {
+            if (value is null) return "NULL";
+            var lines = value.Split('\n').Select(line => "N'" + line.Replace("'", "''") + "'");
+            return value.Contains('\n')
+                ? "(CAST(N'' AS nvarchar(max)) + " + string.Join(" + NCHAR(10) + ", lines) + ")"
+                : "N'" + value.Replace("'", "''") + "'";
+        }
 
         /// <summary>
         /// The sections of each page in the order the C4 code renders them (PageSections: SortOrder 10, 20, …, all
         /// visible). The home hero is not a section; its figures row is the hide-only "hero_stats".
         /// </summary>
-        internal static readonly (string Page, string[] Sections)[] SectionRows =
+        public static readonly (string Page, string[] Sections)[] SectionRows =
         [
             ("home", ["hero_stats", "about", "about_values", "ecosystem", "platforms", "stats", "events", "news", "partners", "faq", "register", "contact", "cta_band"]),
             ("about", ["vision", "values", "why", "stats", "sectors", "partners_in_success", "founder", "cta_band"]),
@@ -50,7 +61,7 @@ namespace InnovestHolding.Migrations
         /// link keys hold the page each button opens today, labels are empty (= the target page's title, as today),
         /// counts are today's fixed numbers, icon keys are today's icons, the 404 links today's three pages.
         /// </summary>
-        internal static readonly string[][] NewKeys =
+        public static readonly string[][] NewKeys =
         [
             // Buttons and links (rule Link: a page key or an https URL; "" = the default).
             ["hero_cta_main_label", "", null],
@@ -88,7 +99,7 @@ namespace InnovestHolding.Migrations
         // ── Texts of CONTENT-C5.md (Mona; approved FINAL by Anas, 2026-10-23), copied word for word. Plain text: a blank
         //    line starts a new paragraph (LF line ends, as the admin editor stores them). ──
 
-        internal const string PrivacyBodyAr =
+        public const string PrivacyBodyAr =
             "تشرح هذه السياسة، بلغة واضحة، ما الذي يجمعه موقع إنوفست هولدينغ (www.innovest-holding.com) من بياناتك، ولماذا، ومن يطّلع عليها، وما الذي لا نجمعه.\n" +
             "\n" +
             "1. متى نجمع بياناتك\n" +
@@ -159,7 +170,7 @@ namespace InnovestHolding.Migrations
             "\n" +
             "قد نعدّل هذه السياسة عند تغيّر ما يفعله الموقع. سيظهر النص المحدَّث على هذه الصفحة، وبه نعتمد في التعامل مع الطلبات المرسلة بعد نشره.";
 
-        internal const string PrivacyBodyEn =
+        public const string PrivacyBodyEn =
             "This policy explains, in plain language, what the Innovest Holding website (www.innovest-holding.com) collects about you, why, who can see it, and what it does not collect.\n" +
             "\n" +
             "1. When we collect your data\n" +
@@ -230,17 +241,17 @@ namespace InnovestHolding.Migrations
             "\n" +
             "We may update this policy when what the site does changes. The updated text will appear on this page and applies to requests sent after it is published.";
 
-        internal const string TvIntroAr =
+        public const string TvIntroAr =
             "البرنامج التلفزيوني لإنوفست هولدينغ: تعرّف هنا على حلقات البرنامج وضيوفه وفرص رعايته، ضمن رسالة الشركة في ربط رواد الأعمال بالمستثمرين ودعم الابتكار.";
 
-        internal const string TvIntroEn =
+        public const string TvIntroEn =
             "The Innovest Holding TV program: find its episodes, guests and sponsorship opportunities here, in line with the company's mission of connecting entrepreneurs with investors and supporting innovation.";
 
         /// <summary>
         /// The privacy page row (Anas, 2026-10-23: shipped with its text, CONTENT-C5.md): column → value. Not in the
         /// header menu nor the footer columns (its link sits in the footer's bottom bar and next to each consent box).
         /// </summary>
-        internal static readonly (string Column, string Value)[] PrivacyRow =
+        public static readonly (string Column, string Value)[] PrivacyRow =
         [
             ("TitleAr", "سياسة الخصوصية"),
             ("TitleEn", "Privacy policy"),
@@ -259,15 +270,21 @@ namespace InnovestHolding.Migrations
         ];
 
         /// <summary>The TV hub intro: column → text (IntroAr is NOT NULL: its empty value is ''; IntroEn's is NULL).</summary>
-        internal static readonly (string Column, string Text)[] TvIntro = [("IntroAr", TvIntroAr), ("IntroEn", TvIntroEn)];
+        public static readonly (string Column, string Text)[] TvIntro = [("IntroAr", TvIntroAr), ("IntroEn", TvIntroEn)];
 
         /// <summary>The pages under the home page (the privacy page's siblings): it is ordered after them.</summary>
         private const string HomeChildren = "'about', 'ecosystem', 'news', 'contact'";
 
+        /// <summary>
+        /// A statement that names a column ADDED by this migration runs through EXEC: a generated script is one batch,
+        /// and SQL Server compiles a batch before the ALTER TABLE has run ("Invalid column name").
+        /// </summary>
+        private static string Exec(string sql) => "EXEC(N'" + sql.Replace("'", "''") + "');";
+
         private static void UpData(MigrationBuilder mb)
         {
             // 1. Footer membership of a page = its menu membership today (a column created above, not an admin value).
-            mb.Sql("UPDATE Pages SET ShowInFooter = ShowInMenu;");
+            mb.Sql(Exec("UPDATE Pages SET ShowInFooter = ShowInMenu;"));
 
             // 2. One section row per (page, section), only where missing (IX_PageSections_PageKey_SectionKey is unique).
             var sections = string.Join(",\n", SectionRows.SelectMany(p => p.Sections.Select((s, i) => $"({L(p.Page)}, {L(s)}, {(i + 1) * 10})")));
@@ -290,11 +307,11 @@ namespace InnovestHolding.Migrations
                 """);
 
             // 5. The privacy page, only when it has no row.
-            mb.Sql("INSERT INTO Pages ([Key], " + string.Join(", ", PrivacyRow.Select(c => "[" + c.Column + "]")) +
+            mb.Sql(Exec("INSERT INTO Pages ([Key], " + string.Join(", ", PrivacyRow.Select(c => "[" + c.Column + "]")) +
                    ", ShowInMenu, ShowInFooter, IsPublished, SortOrder, UpdatedAt)\n" +
                    "SELECT 'privacy', " + string.Join(", ", PrivacyRow.Select(c => L(c.Value))) +
                    $", 0, 0, 1, ISNULL((SELECT MAX(SortOrder) FROM Pages WHERE [Key] IN ({HomeChildren})), 0) + 1, SYSUTCDATETIME()\n" +
-                   "WHERE NOT EXISTS (SELECT 1 FROM Pages WHERE [Key] = 'privacy');");
+                   "WHERE NOT EXISTS (SELECT 1 FROM Pages WHERE [Key] = 'privacy');"));
 
             // 6. The TV hub intro, each language only where it is EMPTY (NULL-safe) — an admin's intro is never replaced.
             foreach (var (column, text) in TvIntro)

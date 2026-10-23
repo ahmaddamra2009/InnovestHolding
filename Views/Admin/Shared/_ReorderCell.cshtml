@@ -1,0 +1,20 @@
+@model ReorderCellVm
+@* ▲▼ of one admin list row (UX-C5 §1.1): two POST forms (antiforgery from the form tag helper), PRG on the server.
+   The first row's ▲ and the last row's ▼ are disabled, not hidden, so the columns stay aligned. *@
+<div class="reorder-cell">
+    <span class="reorder-pos" aria-hidden="true">@Model.Position</span>
+    @foreach (var (direction, glyph, word, disabled) in new[] { (-1, "▲", "للأعلى", Model.IsFirst), (1, "▼", "للأسفل", Model.IsLast) })
+    {
+        <form method="post" asp-controller="@Model.Controller" asp-action="@Model.Action" asp-route-id="@Model.Id">
+            @if (Model.Extra is not null)
+            {
+                foreach (var (name, value) in Model.Extra)
+                {
+                    <input type="hidden" name="@name" value="@value">
+                }
+            }
+            <input type="hidden" name="direction" value="@direction">
+            <button type="submit" class="btn-admin btn-secondary btn-sm" aria-label="تحريك «@Model.Name» @word" disabled="@disabled">@glyph</button>
+        </form>
+    }
+</div>

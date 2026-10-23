@@ -282,3 +282,23 @@ select.form-control { cursor: pointer; }
 .lead-detail dd { margin: 0; color: var(--admin-text); overflow-wrap: anywhere; }
 .lead-detail .lead-value { white-space: pre-line; }
 @media (max-width: 640px) { .lead-detail { grid-template-columns: 1fr; gap: 4px; } .lead-detail dd { margin-bottom: 10px; } }
+
+/* ── C5 shared list patterns (Views/Admin/Shared/_ReorderCell, _VisibleSwitch, _IconPicker) ── */
+.reorder-cell { display: inline-flex; align-items: center; gap: 6px; }
+.reorder-cell form { margin: 0; }
+.reorder-cell .btn-sm { min-width: 40px; min-height: 40px; padding: 0; }
+.reorder-cell .btn-sm:disabled { opacity: .35; cursor: default; }
+.reorder-pos { min-width: 1.5em; text-align: center; color: var(--admin-text-muted); font-size: 0.8rem; }
+.visible-switch { margin: 0; }
+.visible-switch button { border: 0; cursor: pointer; }
+.visible-switch button:disabled { cursor: default; opacity: .7; }
+.row-hidden > td { opacity: .6; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.icon-picker { border: 0; padding: 0; margin: 0 0 12px; }
+.icon-picker legend { font-weight: 700; margin-bottom: 8px; }
+.icon-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.icon-picker-option { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border: 1px solid var(--admin-border); border-radius: 10px; cursor: pointer; text-align: center; }
+.icon-picker-option:has(input:checked) { border-color: var(--admin-navy); box-shadow: 0 0 0 2px var(--admin-navy) inset; }
+.icon-picker-option:has(input:focus-visible) { outline: 2px solid var(--admin-navy); outline-offset: 2px; }
+.icon-picker-none { font-size: 1.2rem; line-height: 24px; }
+.icon-picker-label { font-size: 0.75rem; color: var(--admin-text-muted); }

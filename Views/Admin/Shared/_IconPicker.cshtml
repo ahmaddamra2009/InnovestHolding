@@ -1,0 +1,24 @@
+@model IconPickerVm
+@using InnovestHolding.Infrastructure.Content
+@* A radio grid over the icon whitelist (UX-C5 §13): the admin picks a KEY; the SVG comes from code (Icons). *@
+<fieldset class="icon-picker">
+    <legend>@Model.Legend</legend>
+    <div class="icon-picker-grid">
+        @if (Model.AllowNone)
+        {
+            <label class="icon-picker-option">
+                <input type="radio" class="sr-only" name="@Model.Field" value="" checked="@string.IsNullOrEmpty(Model.Selected)">
+                <span class="icon-picker-none" aria-hidden="true">—</span>
+                <span class="icon-picker-label">@(Model.NoneLabel ?? "بدون أيقونة")</span>
+            </label>
+        }
+        @foreach (var (key, icon) in Icons.All)
+        {
+            <label class="icon-picker-option" title="@icon.Label">
+                <input type="radio" class="sr-only" name="@Model.Field" value="@key" checked="@(Model.Selected == key)">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(icon.Svg)</svg>
+                <span class="icon-picker-label">@icon.Label</span>
+            </label>
+        }
+    </div>
+</fieldset>
