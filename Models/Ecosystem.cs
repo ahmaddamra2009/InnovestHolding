@@ -79,7 +79,7 @@ public abstract class PersonProfile : IDetailEntity
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
-/// <summary>A speaker of the Innovest Arab Forum (/forum/speakers/{slug}).</summary>
+/// <summary>A speaker of the Innovest Forum (/forum/speakers/{slug}).</summary>
 public class Speaker : PersonProfile;
 
 /// <summary>A guest of the TV programme (/tv/guests/{slug}).</summary>

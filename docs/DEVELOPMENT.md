@@ -379,6 +379,20 @@ Verified on 2026-10-22 for `AddBilingualContent` by running `dotnet build Innove
 `dotnet ef migrations script 20260601163804_InitialCreate AddBilingualContent --no-build`
 (17 `sp_rename`, 0 `DROP COLUMN`). The `migrations add` and `database update` commands were not re-run for this note.
 
+### Brand rename and its log table (`RenameHoldingAndForum`, N8)
+`Migrations/20261023141145_RenameHoldingAndForum.cs` renames brand text in content tables: «الهولدينغ»/«هولدينغ» →
+«القابضة», «منتدى إنوفست العربي» → «منتدى إنوفست», "Innovest Arab Forum" → "Innovest Forum". Only these brand phrases are
+renamed: generic «المنتدى العربي» / "Arab Forum" also name other organisations and stay. It uses a frozen list of
+(table, column) pairs, binary-collation `REPLACE`, and a `LIKE` guard (a second run changes nothing). Lead tables, `Users`,
+`SlugRedirects`, slugs, links and non-text `SiteContents` keys are never touched. `UpdatedAt` is not changed.
+- **`__RenameHoldingAndForumLog`** (created by Up, not part of the EF model): one row per value Up changed —
+  `TableName`, `ColumnName`, `RowId`, `OldValue`, `NewValue`. It holds copies of public content text only.
+- **Down** restores `OldValue` only where the column still equals `NewValue` (binary), so a later admin edit and text that
+  already said «القابضة» stay; then it drops the table. Without the table there is no row-exact rollback (restore a backup).
+- **Keep it.** It is safe to leave in place; no later migration drops it yet (a future cleanup migration may, once a
+  rollback past N8 is no longer wanted). Schema comparisons must ignore it (`MigrationTests.The_model_and_the_migrated_schema_agree` does).
+- Review what changed (read-only): `SELECT TableName, ColumnName, RowId, OldValue, NewValue FROM __RenameHoldingAndForumLog ORDER BY TableName, ColumnName, RowId;`
+
 ### Static assets: compression and caching
 `Infrastructure/StaticAssets.cs`: Brotli/Gzip only for requests under `/css`, `/js`, `/assets`, `/lib` and only for
 css, js, svg and json; HTML pages and form JSON are never compressed. `Cache-Control: public, max-age=31536000,

@@ -28,7 +28,7 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 - **الروابط:** روابط التواصل الاجتماعي ورابط الجهة المطوّرة يجب أن تبدأ بـ `https://`. روابط القائمة والخدمات
   والأخبار تقبل `#قسم` أو `/مسار` أو `https://…`، وتُرفض `javascript:` وما شابهه. اتركوا الحقل فارغاً إن لم يوجد رابط.
 - لا تكتبوا كلمات مرور أو بيانات سرية في أي حقل: كل ما يُكتب في المحتوى يظهر للعامة.
-- **القائمة الجانبية مجمّعة:** «نظرة عامة»، «الموقع»، «منتدى إنوفست العربي»، «شبكة المستثمرين الملائكيين»، «البرنامج
+- **القائمة الجانبية مجمّعة:** «نظرة عامة»، «الموقع»، «منتدى إنوفست»، «شبكة المستثمرين الملائكيين»، «البرنامج
   التلفزيوني»، «الأخبار»، «الوارد». اضغطوا عنوان المجموعة لطيّها أو فتحها؛ يتذكر المتصفح اختياركم. مجموعة «الموقع» تضم:
   صفحات الموقع، النصوص العامة، القوائم، الخدمات، أرقام الأثر، الأسئلة الشائعة، روابط التواصل الاجتماعي، أقسام الصفحات،
   رسائل وأزرار الموقع، القائمة والفوتر، الهوية البصرية، الإعدادات.
@@ -43,7 +43,7 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 | الرئيسية | `/` | `/en` |
 | من نحن | `/about` | `/en/about` |
 | منظومتنا | `/ecosystem` | `/en/ecosystem` |
-| منتدى إنوفست العربي | `/forum` | `/en/forum` |
+| منتدى إنوفست | `/forum` | `/en/forum` |
 | ↳ الفعاليات | `/forum/events` | `/en/forum/events` |
 | ↳ المتحدثون | `/forum/speakers` | `/en/forum/speakers` |
 | ↳ الشركاء والرعاة | `/forum/partners` | `/en/forum/partners` |
@@ -319,7 +319,7 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
   في صفحة الخبر)، **صورة الخبر**، وعنوان ووصف محركات البحث. «الترتيب»: الرقم الأصغر أولاً. «مفعّل» يخفي الخبر دون حذفه.
   الخبر الجديد يظهر أولاً. تظهر الأخبار في `/news` مرقّمة، وفي الرئيسية أول **عدد الأخبار المعروضة في الصفحة الرئيسية** (النصوص
   العامة ← «عناوين أقسام الصفحة الرئيسية»، رقم من 1 إلى 50، الافتراضي 6).
-- **«الفعاليات»** (ضمن «منتدى إنوفست العربي»): العنوان، **الرابط المختصر**، الملخص، **الوصف** (نص صفحة الفعالية)، **الموعد**:
+- **«الفعاليات»** (ضمن «منتدى إنوفست»): العنوان، **الرابط المختصر**، الملخص، **الوصف** (نص صفحة الفعالية)، **الموعد**:
   البدء (بتوقيت مكان الفعالية) والانتهاء (اختياري) و**فرق التوقيت عن UTC** (الافتراضي `+02:00`)، **الحالة** (في موعدها / مؤجلة
   / ملغاة)، **طريقة الحضور** (حضوري / عن بُعد / حضوري وعن بُعد)، اسم المكان والمدينة والعنوان، **رابط الحضور عن بُعد**
   (`https://`)، **«التسجيل مفتوح»**، **صورة الفعالية**، ومحركات البحث. اليوم والشهر والوقت النصية حقول بديلة للفعاليات القديمة
@@ -358,7 +358,7 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 
 ## 9ب. المتحدثون وضيوف البرنامج والحلقات والفرص وباقات الرعاية
 
-في القائمة الجانبية: مجموعة «منتدى إنوفست العربي» ← **المتحدثون**؛ مجموعة «شبكة المستثمرين الملائكيين» ← **الفرص الاستثمارية**؛ مجموعة
+في القائمة الجانبية: مجموعة «منتدى إنوفست» ← **المتحدثون**؛ مجموعة «شبكة المستثمرين الملائكيين» ← **الفرص الاستثمارية**؛ مجموعة
 «البرنامج التلفزيوني» ← **الحلقات** و**الضيوف** و**باقات الرعاية**. تحل هذه الشاشات محل نص «قريباً» في صفحات `/forum/speakers`
 و`/tv/episodes` و`/tv/guests` و`/angel-network/opportunities` (وتحت `/en`)، ولكل عنصر صفحة خاصة بالرابط المختصر.
 
@@ -442,7 +442,7 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
     زر «أبدِ اهتمامك» في صفحة الفرصة يختارها تلقائياً)، والاسم والبريد والهاتف ورسالة.
   - **التسجيل السريع** في الصفحة الرئيسية كما كان (الاسم والبريد والهاتف ومجال الاهتمام).
   يُحفظ مع كل طلب: وقت الموافقة ولغة الصفحة ووقت الإرسال. القوائم المنسدلة تُحفَظ بنصها العربي وقت الإرسال، فلا يتغير طلب قديم إن
-  عدّلتم الخيارات لاحقاً.
+  عدّلتم الخيارات لاحقاً. وكذلك عناوين الفعالية والباقة والفرصة المحفوظة مع الطلب: الطلبات التي وصلت قبل تغيير الاسم (أكتوبر 2026) تبقى بالاسم القديم «منتدى إنوفست العربي» أو «إنوفست هولدينغ» لأنها سجلّ لما رآه الزائر.
 - **تعديل نصوص النماذج وخياراتها:** «النصوص العامة» ← بطاقة «نماذج الطلبات» (نص الموافقة، وعناوين ونصوص أعمدة الانضمام والرعاية
   والاهتمام)؛ و«القوائم» ← أربع قوائم: أنواع المستثمرين، حجم الاستثمار، مراحل الشركة الناشئة، التمويل المطلوب (القطاعات من قائمة
   «القطاعات التي نخدمها»). الخيار المخفي لا يظهر في النموذج.
@@ -496,7 +496,7 @@ which language you are typing.
   links accept `#section`, `/path` or `https://…`; `javascript:` and similar are refused. Leave the field empty when
   there is no link.
 - Never type passwords or secrets into any field: whatever is entered as content is public.
-- **The sidebar is grouped:** «نظرة عامة», «الموقع», «منتدى إنوفست العربي», «شبكة المستثمرين الملائكيين», «البرنامج
+- **The sidebar is grouped:** «نظرة عامة», «الموقع», «منتدى إنوفست», «شبكة المستثمرين الملائكيين», «البرنامج
   التلفزيوني», «الأخبار», «الوارد». Click a group title to collapse or open it; the browser remembers your choice. The
   «الموقع» group holds: site pages, general texts, lists, services, impact figures, FAQ, social links, page sections («أقسام الصفحات»),
   site messages and buttons, menu and footer, brand identity, settings.
@@ -802,7 +802,7 @@ cards in the lists and on the home page link to these pages.
   «Order»: lower number first. «Active» hides an item without deleting it. A new item appears first. News is listed on
   `/news` with paging, and the home page shows the first **number of news items on the home page** (General texts →
   «عناوين أقسام الصفحة الرئيسية», a whole number from 1 to 50, default 6).
-- **«الفعاليات»** (under «منتدى إنوفست العربي»): title, **slug**, summary, **description** (the event page text), **date and
+- **«الفعاليات»** (under «منتدى إنوفست»): title, **slug**, summary, **description** (the event page text), **date and
   time**: start (in the event's local time), optional end and the **UTC offset** (default `+02:00`), **status** (scheduled /
   postponed / cancelled), **attendance mode** (in person / online / mixed), venue name, city and address, **online link**
   (`https://`), **«registration open»**, **event image**, and search engines. The day, month and time text fields remain
@@ -845,7 +845,7 @@ founder's photo (General texts).
 
 ## 9b. Speakers, TV guests, episodes, opportunities and sponsorship packages
 
-In the sidebar: group «منتدى إنوفست العربي» → **المتحدثون** (speakers); group «شبكة المستثمرين الملائكيين» → **الفرص الاستثمارية**
+In the sidebar: group «منتدى إنوفست» → **المتحدثون** (speakers); group «شبكة المستثمرين الملائكيين» → **الفرص الاستثمارية**
 (opportunities); group «البرنامج التلفزيوني» → **الحلقات** (episodes), **الضيوف** (guests) and **باقات الرعاية** (sponsorship
 packages). These screens fill the former «coming soon» pages `/forum/speakers`, `/tv/episodes`, `/tv/guests` and
 `/angel-network/opportunities` (and the `/en` twins); every item also has its own page at its slug.
@@ -942,7 +942,7 @@ per page** with paging. A badge with the **unread** count sits beside «الطل
     e-mail, phone, message.
   - **Quick registration** on the home page is as before (name, e-mail, phone, area of interest).
   Each lead also stores the consent time, the page language and the submission time. Choice lists are stored with their Arabic
-  text at submission time, so an old lead does not change if you later edit the options.
+  text at submission time, so an old lead does not change if you later edit the options. The same holds for the event, package and opportunity titles stored with a lead: leads received before the rename (October 2026) keep the old name «منتدى إنوفست العربي» / "Innovest Arab Forum" or «إنوفست هولدينغ», as a record of what the visitor saw.
 - **Editing the form texts and options:** «النصوص العامة» → card «نماذج الطلبات» (the consent text and the side headings and
   texts of the join, sponsorship and interest forms); «القوائم» → four lists: investor types, ticket sizes, startup stages,
   funding sought (sectors come from the «sectors we serve» list). A hidden option is not offered in the form.
