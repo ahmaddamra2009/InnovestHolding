@@ -3,7 +3,7 @@
 @using InnovestHolding.Infrastructure.Site
 @{
     var c = Model.Content;
-    var siteName = c.Text("site_name");
+    var logoAlt = Model.Shell.Brand.LogoAlt; // the uploaded logo's alt, else the site name
     var aboutBadge = c.Text("about_badge");
     var aboutTitle = c.Text("about_title");
     var about1 = c.Text("about_text_1");
@@ -24,13 +24,13 @@
           <div class="about-brand-panel">
             @if (Model.Shell.Brand.LogoOnDark is { } logo)
             {
-              <img src="@logo.Url" alt="@siteName" width="@logo.Width" height="@logo.Height" loading="lazy">
+              <img src="@logo.Url" alt="@logoAlt" width="@logo.Width" height="@logo.Height" loading="lazy">
             }
             else
             {
               <picture>
                 <source type="image/webp" srcset="@Context.Versioned(BrandAssets.LogoOnDark2x)">
-                <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="320" height="81" loading="lazy">
+                <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@logoAlt" width="320" height="81" loading="lazy">
               </picture>
             }
             <p lang="@tagline.Lang" dir="@tagline.Dir">@tagline</p>
@@ -48,7 +48,7 @@
           <p class="about-text" lang="@about2.Lang" dir="@about2.Dir">@about2</p>
           @if (Model.AboutMore is { } more)
           {
-          <a href="@more.Href" class="btn btn-outline about-more" rel="@HomeViewModel.Rel(more)">
+          <a href="@more.Href" class="btn btn-outline about-more" rel="@more.Rel">
             <span lang="@more.Title.Lang" dir="@more.Title.Dir">@more.Title</span>
             <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(HomeViewModel.Arrow)</svg>
           </a>

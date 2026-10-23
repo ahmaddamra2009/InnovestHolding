@@ -118,31 +118,29 @@ public static class PageSectionRegistry
         return result;
     }
 
-    /// <summary>
-    /// A section's badge/card icon: the admin's choice (Content key <paramref name="key"/>, a key of
-    /// Infrastructure/Content/Icons) or, when empty or unknown, <paramref name="fallbackSvg"/> (the C4 icon).
-    /// </summary>
-    public static string Icon(SiteSnapshot s, string key, string fallbackSvg) =>
-        Icons.Svg(s.Content.GetValueOrDefault(key)?.Ar?.Trim()) ?? fallbackSvg;
+    // ── Counts (Content keys of ContentKeys, group "sections"; edited inline on the sections screen) ──
 
-    // ── Counts (Content keys, group "sections"; edited inline on the sections screen) ──
-
-    /// <param name="Key">SiteContents.SectionKey (a neutral number stored in ContentAr).</param>
+    /// <param name="Key">A Count key of Infrastructure/Content/ContentKeys (its rule, max and default live there).</param>
     /// <param name="Page">The page whose sections screen edits it.</param>
-    /// <param name="Default">Used while the stored value is missing or invalid (= the C4 number).</param>
-    /// <param name="Max">The largest accepted value.</param>
-    public sealed record SectionLimit(string Key, string Page, string Section, string Label, int Default, int Max);
+    /// <param name="Section">The row of that page it is shown on.</param>
+    public sealed record SectionLimit(string Key, string Page, string Section, string Label)
+    {
+        private ContentKey Def => ContentKeys.Find(Key)!;
 
-    /// <summary>
-    /// The counts an admin sets from the sections screen. The three new ones are capped at 12 (Dana US-03 AC3);
-    /// home_news_limit keeps its existing 1–50 rule (its stored value must stay valid).
-    /// </summary>
+        /// <summary>The largest accepted value (12 for the C5 counts, 50 for home_news_limit).</summary>
+        public int Max => Def.CountMax;
+
+        /// <summary>The value used while the stored one is missing or invalid (= the C4 number).</summary>
+        public int Default => ContentKeys.ParseCount(Def.Default, ContentKeys.HomeNewsLimitFallback, Max);
+    }
+
+    /// <summary>The counts an admin sets from the sections screen.</summary>
     public static readonly IReadOnlyList<SectionLimit> Limits =
     [
-        new("hero_stats_limit", PageKeys.Home, "hero_stats", "عدد الأرقام في الواجهة", 4, 12),
-        new("home_events_limit", PageKeys.Home, "events", "عدد الفعاليات على الصفحة الرئيسية", 3, 12),
-        new(ContentKeys.HomeNewsLimit, PageKeys.Home, "news", "عدد الأخبار على الصفحة الرئيسية", ContentKeys.HomeNewsLimitFallback, ContentKeys.MaxCount),
-        new("forum_events_limit", PageKeys.Forum, "events", "عدد الفعاليات في صفحة المنتدى", 3, 12),
+        new(ContentKeys.HeroStatsLimit, PageKeys.Home, "hero_stats", "عدد الأرقام في الواجهة"),
+        new(ContentKeys.HomeEventsLimit, PageKeys.Home, "events", "عدد الفعاليات على الصفحة الرئيسية"),
+        new(ContentKeys.HomeNewsLimit, PageKeys.Home, "news", "عدد الأخبار على الصفحة الرئيسية"),
+        new(ContentKeys.ForumEventsLimit, PageKeys.Forum, "events", "عدد الفعاليات في صفحة المنتدى"),
     ];
 
     public static SectionLimit? FindLimit(string? key) => Limits.FirstOrDefault(l => l.Key == key);
@@ -151,11 +149,4 @@ public static class PageSectionRegistry
     public static int? ParseLimit(SectionLimit limit, string? value) =>
         int.TryParse(value?.Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var n)
         && n >= 1 && n <= limit.Max ? n : null;
-
-    /// <summary>The stored count when valid, else the default (the C4 number).</summary>
-    public static int Limit(SiteSnapshot s, string key)
-    {
-        var limit = FindLimit(key) ?? throw new ArgumentException("Unknown section limit: " + key, nameof(key));
-        return ParseLimit(limit, s.Content.GetValueOrDefault(key)?.Ar) ?? limit.Default;
-    }
 }

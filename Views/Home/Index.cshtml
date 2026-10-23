@@ -41,14 +41,14 @@
         <div class="hero-buttons reveal reveal-delay-3">
           @if (Model.HeroMain is { } main)
           {
-          <a href="@main.Href" class="btn btn-accent" rel="@HomeViewModel.Rel(main)">
+          <a href="@main.Href" class="btn btn-accent" rel="@main.Rel">
             <span lang="@main.Title.Lang" dir="@main.Title.Dir">@main.Title</span>
             <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(HomeViewModel.Arrow)</svg>
           </a>
           }
           @if (Model.HeroSecondary is { } second)
           {
-          <a href="@second.Href" class="btn btn-outline-light" rel="@HomeViewModel.Rel(second)">
+          <a href="@second.Href" class="btn btn-outline-light" rel="@second.Rel">
             <span lang="@second.Title.Lang" dir="@second.Title.Dir">@second.Title</span>
           </a>
           }

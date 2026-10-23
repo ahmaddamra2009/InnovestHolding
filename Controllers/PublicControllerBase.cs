@@ -59,7 +59,7 @@ public abstract partial class PublicControllerBase : Controller
         var hasContent = list.Any(b => b is not (CtaBlock or CardsBlock or LeadFormBlock { IsContent: false }))
                          || (!hub && (!intro.IsEmpty || body.Count > 0));
         if (!hasContent && row is not null)
-            list.Insert(0, new EmptyBlock(v.P(row.EmptyTextAr, row.EmptyTextEn), SiteLinks.EmptyAction(v, key, emptyAction)));
+            list.Insert(0, new EmptyBlock(v.P(row.EmptyTextAr, row.EmptyTextEn), v.EmptyAction(key, emptyAction)));
 
         // The unit (Forum / Network / TV) the page belongs to: its tab bar.
         var unit = SiteRoutes.Chain(key).FirstOrDefault(p => p.Parent == PageKeys.Ecosystem);
@@ -175,7 +175,7 @@ public abstract partial class PublicControllerBase : Controller
         };
         Response.StatusCode = StatusCodes.Status404NotFound;
         SetRobots(RobotsDecision.NoIndexNoFollow);
-        var links = SiteLinks.NotFound(v);
+        var links = v.NotFoundLinks();
         // Not a page of the table: no breadcrumb, no active menu item; the language switch goes to the other home.
         return View("~/Views/Site/NotFound.cshtml", new NotFoundVm(v.Shell(NotFoundKey, baseUrl, CultureUrls.Home(!English)), seo, links));
     }

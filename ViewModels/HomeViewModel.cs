@@ -65,9 +65,6 @@ public sealed class HomeViewModel
     /// <summary>The arrow of the hero and About buttons (mirrored by the i-dir class in English).</summary>
     public const string Arrow = "<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"/><polyline points=\"12 19 5 12 12 5\"/>";
 
-    /// <summary>rel of a button: external links (https) only.</summary>
-    public static string? Rel(LinkVm link) => link.Href.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "noopener noreferrer" : null;
-
     /// <summary>"View all" link under a teaser section (the label is a UI string); nothing when the page is unpublished.</summary>
     public IHtmlContent ViewAllLink(string section, string label) =>
         ViewAll.TryGetValue(section, out var link)
@@ -90,7 +87,7 @@ public sealed class HomeViewModel
         var services = v.Services();
         var stats = v.Stats();
         var news = v.NewsCards(s.News);
-        var events = v.EventCards(s.Events.Take(PageSectionRegistry.Limit(s, "home_events_limit")), now);
+        var events = v.EventCards(s.Events.Take(v.Count(ContentKeys.HomeEventsLimit)), now);
         var partners = v.Partners(homeOnly: true);
         var faqs = v.Faqs();
         var units = v.Cards(PageKeys.Ecosystem, true);
@@ -112,18 +109,9 @@ public sealed class HomeViewModel
             .ToList();
         bool Visible(string key) => layout.Any(x => x.Def.Key == key && x.Visible);
 
-        // Hero buttons: the main one is the header button until the admin gives it its own label or target.
-        var mainLabel = c.Optional("hero_cta_main_label");
-        var heroMain = string.IsNullOrWhiteSpace(c.Neutral("hero_cta_main_link"))
-            ? mainLabel.IsEmpty ? shell.Cta : shell.Cta with { Title = mainLabel }
-            : SiteLinks.Resolve(v, "hero_cta_main_link", null, mainLabel);
-
         var viewAll = new Dictionary<string, LinkVm>(StringComparer.Ordinal);
         foreach (var (section, key) in new[] { ("events", PageKeys.ForumEvents), ("news", PageKeys.News), ("partners", PageKeys.ForumPartners) })
-            if (SiteLinks.Page(v, key) is { } link) viewAll[section] = link;
-
-        string Icon(string key, string fallback) => PageSectionRegistry.Icon(s, key, fallback);
-
+            if (v.PageLink(key) is { } link) viewAll[section] = link;
         return new HomeViewModel
         {
             IsEnglish = v.English,
@@ -141,25 +129,25 @@ public sealed class HomeViewModel
             Contact = v.ContactForm("contact"),
             CtaBand = v.CtaBand(),
             Sections = sections,
-            HeroStats = Visible("hero_stats") ? stats.Take(PageSectionRegistry.Limit(s, "hero_stats_limit")).ToList() : [],
+            HeroStats = Visible("hero_stats") ? stats.Take(v.Count(ContentKeys.HeroStatsLimit)).ToList() : [],
             ShowValues = Visible("about_values"),
-            HeroMain = heroMain,
-            HeroSecondary = SiteLinks.Resolve(v, "hero_cta_secondary_link", PageKeys.Ecosystem, c.Text("hero_cta_primary")),
-            AboutMore = SiteLinks.Resolve(v, "about_more_link", PageKeys.About, c.Optional("about_more_label")),
-            EventsAction = SiteLinks.EventsAction(v),
+            HeroMain = v.HeroMainCta(),
+            HeroSecondary = v.HeroSecondaryCta(),
+            AboutMore = v.AboutMore(),
+            EventsAction = v.EventsAction(),
             ViewAll = viewAll,
             Icons = new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["vision"] = Icon("vision_icon", Infrastructure.Content.Icons.Svg("eye")!),
-                ["mission"] = Icon("mission_icon", Infrastructure.Content.Icons.Svg("target")!),
-                ["values"] = Icon("values_icon", Infrastructure.Content.Icons.Svg("handshake")!),
-                ["ecosystem"] = Icon("ecosystem_icon", Infrastructure.Content.Icons.Svg("layers")!),
-                ["platforms"] = Icon("platforms_icon", SiteViews.BadgeGrid),
-                ["events"] = Icon("events_icon", Infrastructure.Content.Icons.Svg("calendar")!),
-                ["news"] = Icon("news_icon", Infrastructure.Content.Icons.Svg("book")!),
-                ["partners"] = Icon("partners_icon", Infrastructure.Content.Icons.Svg("handshake")!),
-                ["faq"] = Icon("faq_icon", SiteViews.BadgeQuestion),
-                ["contact"] = Icon("contact_icon", Infrastructure.Content.Icons.Svg("mic")!),
+                ["vision"] = v.Icon("vision_icon"),
+                ["mission"] = v.Icon("mission_icon"),
+                ["values"] = v.Icon("values_icon"),
+                ["ecosystem"] = v.Icon("ecosystem_icon"),
+                ["platforms"] = v.Icon("platforms_icon"),
+                ["events"] = v.Icon("events_icon"),
+                ["news"] = v.Icon("news_icon"),
+                ["partners"] = v.Icon("partners_icon"),
+                ["faq"] = v.Icon("faq_icon"),
+                ["contact"] = v.Icon("contact_icon"),
             },
         };
     }
