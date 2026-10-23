@@ -79,7 +79,7 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
     /// <summary>The forum sub-brand of the header (forum pages).</summary>
     public ForumBrandVm ForumBrand()
     {
-        var logo = s.Image(ForumIdentity.LogoOnDark);
+        var logo = ForumIdentity.Image(s, ForumIdentity.LogoOnDark);
         var name = Title(PageKeys.Forum);
         var alt = logo is null ? LText.Empty : Bilingual.Pick(logo.AltAr, logo.AltEn, english);
         return new ForumBrandVm(Url(PageKeys.Forum), name, logo, alt.IsEmpty ? name : alt);

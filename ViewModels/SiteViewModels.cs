@@ -57,8 +57,8 @@ public sealed class ShellVm
 }
 
 /// <summary>The forum sub-brand of the header on forum pages: a link to the forum hub with the uploaded forum logo, or
-/// (none uploaded) the bundled forum symbol followed by the forum's name.</summary>
-/// <param name="Name">The forum hub's page title in the page language (content, not code).</param>
+/// (none uploaded) the bundled forum symbol, in one bounded image slot (no text in the bar).</summary>
+/// <param name="Name">The forum hub's page title in the page language (content, not code): the symbol's alt.</param>
 /// <param name="Logo">The admin's forum logo for dark backgrounds, or null.</param>
 /// <param name="LogoAlt">The uploaded logo's alt in the page language (English falls back to Arabic), else <paramref name="Name"/>.</param>
 public sealed record ForumBrandVm(string Href, LText Name, Infrastructure.Content.MediaRef? Logo, LText LogoAlt);

@@ -88,7 +88,7 @@ public static class SeoBuilder
     private static Share ShareImage(SiteViews v, string? baseUrl, bool forum, params MediaRef?[] candidates)
     {
         if (baseUrl is null) return default;
-        var forumOg = forum ? v.Snapshot.Image(ForumIdentity.OgDefault) : null;
+        var forumOg = forum ? ForumIdentity.Image(v.Snapshot, ForumIdentity.OgDefault) : null;
         foreach (var m in candidates.Append(forumOg).Append(v.Snapshot.Image(BrandImages.OgDefault)))
         {
             if (m is null) continue;
@@ -187,7 +187,7 @@ public static class SeoBuilder
         Put(unit, "name", v.Title(PageKeys.Forum).Value);
         Put(unit, "url", forumUrl);
         Put(unit, "description", v.Summary(PageKeys.Forum).Value);
-        Put(unit, "logo", baseUrl + (v.Snapshot.Image(ForumIdentity.LogoOnLight)?.Url ?? ForumAssets.LogoOnLight));
+        Put(unit, "logo", baseUrl + (ForumIdentity.Image(v.Snapshot, ForumIdentity.LogoOnLight)?.Url ?? ForumAssets.LogoOnLight));
         unit["parentOrganization"] = new Dictionary<string, object> { ["@id"] = baseUrl + "/#organization" };
         return unit;
     }

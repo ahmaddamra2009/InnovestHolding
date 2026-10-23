@@ -17,12 +17,15 @@
     var slot = s.Slot;
     var current = s.Input.Current;
     var prefix = slot.Key + "-";
+    // The on-dark logo is previewed on the header's navy, the light one on white; the pictures as a share image.
+    var previewClass = slot.Key == ForumIdentity.LogoOnDark ? "brand-preview brand-preview--logo brand-preview--dark"
+        : slot.Key == ForumIdentity.LogoOnLight ? "brand-preview brand-preview--logo" : "brand-preview brand-preview--og";
     <form method="post" asp-controller="ForumIdentity" asp-action="Image" enctype="multipart/form-data" class="admin-card" id="forum-@slot.Key">
         <div class="admin-card-header"><span class="admin-card-title">@slot.Label</span></div>
         <input type="hidden" name="Key" value="@slot.Key">
         <p class="form-hint">@slot.Guidance</p>
         <div class="brand-row">
-            <figure class="brand-preview brand-preview--og">
+            <figure class="@previewClass">
                 @if (current is not null)
                 {
                     <img src="@current.Url" width="@current.Width" height="@current.Height" alt="" loading="lazy">

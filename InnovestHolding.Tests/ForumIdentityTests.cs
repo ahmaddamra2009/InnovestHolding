@@ -83,6 +83,85 @@ public class ForumIdentityUnitTests
         Assert.Null(ForumIdentity.FindFont("x;}body{background:url(https://evil/)}"));
     }
 
+    /// <summary>The declarations of the rule whose selector is exactly <paramref name="selector"/>: outside any @media when
+    /// <paramref name="media"/> is null, else inside the first "@media {media}" block.</summary>
+    private static string Rule(string css, string selector, string? media = null)
+    {
+        string scope;
+        if (media is null)
+        {
+            scope = Regex.Replace(css, @"@media[^{]*\{(?:[^{}]*\{[^{}]*\})*\s*\}", "");
+        }
+        else
+        {
+            var at = css.IndexOf("@media " + media + " {", StringComparison.Ordinal);
+            Assert.True(at >= 0, "no @media " + media);
+            var block = Regex.Match(css[at..], @"^@media[^{]*\{((?:[^{}]*\{[^{}]*\})*)\s*\}");
+            scope = block.Groups[1].Value;
+        }
+        var m = Regex.Match(scope, @"(?m)^\s*" + Regex.Escape(selector) + @"\s*\{([^}]*)\}");
+        Assert.True(m.Success, "no rule " + selector + " " + media);
+        return Regex.Replace(m.Groups[1].Value, @"\s+", " ");
+    }
+
+    [Fact] // B1: the header sub-brand is a bounded, shrinkable image slot with no text; the menu folds into the drawer ≤1200
+    public void Header_sub_brand_cannot_push_the_menu()
+    {
+        var css = File.ReadAllText(Path.Combine(ProjectDir(), "wwwroot", "css", "forum.css"));
+        var slot = Rule(css, ".forum-subbrand");
+        Assert.Contains("flex: 0 1 auto;", slot);   // may shrink…
+        Assert.Contains("min-width: 0;", slot);     // …down to nothing, so it never overflows into the menu
+        Assert.Contains("max-width: 110px;", slot); // and never grows past its slot
+        var img = Rule(css, ".forum-subbrand img");
+        Assert.Contains("max-width: 100%;", img);
+        Assert.Contains("max-height: 40px;", img);
+        Assert.Contains("min-width: 0;", img);
+        Assert.DoesNotContain("wordmark", css);
+        Assert.DoesNotContain("nowrap", slot);
+        Assert.Contains("display: none;", Rule(css, ".theme-forum header .nav-links", "(max-width: 1200px)"));
+        Assert.Contains("display: none;", Rule(css, ".theme-forum .nav-actions .nav-cta", "(max-width: 1200px)"));
+        Assert.Contains("display: flex;", Rule(css, ".theme-forum .hamburger", "(max-width: 1200px)"));
+        Assert.Contains("max-width: 64px;", Rule(css, ".forum-subbrand", "(max-width: 600px)"));
+        Assert.Contains("max-height: 28px;", Rule(css, ".forum-subbrand img", "(max-width: 600px)"));
+        Assert.Contains("max-width: 48px;", Rule(css, ".forum-subbrand", "(max-width: 380px)"));
+        Assert.Contains("max-height: 24px;", Rule(css, ".forum-subbrand img", "(max-width: 380px)"));
+        // The red buttons' keyboard focus: a 3 px white ring with an offset (Layla).
+        Assert.Contains("outline: 3px solid #ffffff; outline-offset: 2px;",
+            Rule(css, ".theme-forum :is(.btn-accent, .nav-cta, .form-submit-btn):focus-visible"));
+    }
+
+    [Fact] // REVIEW-F9 🟠1: the spots where re-pointed tokens put a red on a red get their own colours, and each pair is measured
+    public void Red_on_red_spots_are_overridden_and_measured()
+    {
+        var css = Regex.Replace(File.ReadAllText(Path.Combine(ProjectDir(), "wwwroot", "css", "forum.css")), @"\s+", " ");
+        // Light text on the dark-red surfaces.
+        foreach (var selector in new[] { ".theme-forum .event-date-day,", ".theme-forum .cta-title .gold,", ".theme-forum .detail-facts a," })
+            Assert.Contains(selector, css);
+        Assert.Contains(".theme-forum .detail-facts svg { color: var(--forum-on-primary); }", css);
+        // Pills on an accent fill: ink on gold.
+        Assert.Contains(".theme-forum :is(.detail-badge, .news-category-badge, .entity-badge, .video-play),", css);
+        Assert.Contains(".theme-forum .is-dark .unit-chips a:hover { background: var(--forum-gold); color: var(--forum-ink); }", css);
+        // Section eyebrow and card hover: no company orange.
+        Assert.Contains("color: var(--forum-link);", css);
+        Assert.Contains(".theme-forum :is(.item-card, .service-card, .unit-card):hover { border-color: rgba(var(--forum-gold-rgb), 0.6); }", css);
+        // The primary button on the red band: white fill, red text.
+        Assert.Contains(".theme-forum :is(.cta-band, .is-dark) .btn-accent { background: var(--forum-on-primary); color: var(--forum-primary);", css);
+
+        bool Has(string fg, string bg) => ForumIdentity.Pairs.Any(p => p.Foreground == fg && p.Background == bg && p.Min >= 4.5);
+        Assert.True(Has(ForumIdentity.OnPrimary, ForumIdentity.PrimaryDeep)); // date box, band, dark sections, hero facts
+        Assert.True(Has(ForumIdentity.OnPrimary, ForumIdentity.Link));        // date box gradient end
+        Assert.True(Has(ForumIdentity.OnPrimary, ForumIdentity.Primary));     // white button on the band (and red on white)
+        Assert.True(Has(ForumIdentity.Ink, ForumIdentity.Gold));              // pills
+        Assert.True(Has(ForumIdentity.PrimaryDeep, ForumIdentity.Surface));   // band button hover
+        Assert.True(Has(ForumIdentity.Link, ForumIdentity.Surface));          // eyebrow on cream
+    }
+
+    [Theory] // the new pairs refuse a theme that would make those spots unreadable
+    [InlineData(ForumIdentity.Link, "#e8a0a8")]        // light pink date-box end under white digits
+    [InlineData(ForumIdentity.PrimaryDeep, "#e86a78")] // light red under white text
+    public void New_pairs_refuse_unreadable_values(string key, string value) =>
+        Assert.NotEmpty(ForumIdentity.ContrastFailures(new Dictionary<string, string?> { [key] = value }));
+
     internal static string ProjectDir()
     {
         for (var d = new DirectoryInfo(AppContext.BaseDirectory); d is not null; d = d.Parent)
@@ -108,14 +187,18 @@ public class ForumIdentityTests(TestAppFactory f)
     private static IEnumerable<string> BothLanguages(IEnumerable<string> paths) =>
         paths.SelectMany(p => new[] { p, p == "/" ? "/en" : "/en" + p });
 
+    /// <summary>Back to no forum value: the rows, the MediaFiles rows and their files on disk (no orphan left behind).</summary>
     private Task ResetAsync() => f.DbAsync(async db =>
     {
         var keys = ForumIdentity.SettingKeys.Concat(ForumIdentity.Images.Select(i => i.Key)).ToList();
         var rows = await db.SiteContents.Where(c => keys.Contains(c.SectionKey)).ToListAsync();
         var fileKeys = rows.Select(r => r.ContentAr).ToList();
-        db.MediaFiles.RemoveRange(db.MediaFiles.Where(m => fileKeys.Contains(m.FileKey)));
+        var files = await db.MediaFiles.Where(m => fileKeys.Contains(m.FileKey)).ToListAsync();
+        db.MediaFiles.RemoveRange(files);
         db.SiteContents.RemoveRange(rows);
-        return await db.SaveChangesAsync();
+        var n = await db.SaveChangesAsync();
+        f.Services.GetRequiredService<InnovestHolding.Infrastructure.Media.MediaStore>().DeleteFiles(files);
+        return n;
     });
 
     private Task SetRowAsync(string key, string value) => f.DbAsync(async db =>
@@ -245,10 +328,14 @@ public class ForumIdentityTests(TestAppFactory f)
     public async Task Stylesheet_endpoint_headers_and_defaults()
     {
         await ResetAsync();
-        var r = await f.NewClient().GetAsync("/forum-theme.css");
+        var page = await f.NewClient().GetStringAsync("/forum");
+        var href = Regex.Match(page, "href=\"(/forum-theme\\.css\\?v=[0-9a-f]{16})\"").Groups[1].Value;
+        var r = await f.NewClient().GetAsync(href);
         Assert.Equal(HttpStatusCode.OK, r.StatusCode);
         Assert.Equal("text/css; charset=utf-8", r.Content.Headers.ContentType!.ToString());
-        Assert.Equal("public, max-age=31536000, immutable", r.Headers.CacheControl!.ToString());
+        Assert.Equal("public, max-age=31536000, immutable", r.Headers.CacheControl!.ToString()); // the linked version
+        foreach (var other in new[] { "/forum-theme.css", "/forum-theme.css?v=0000000000000000", "/forum-theme.css?v=a&v=b" })
+            Assert.Equal("no-cache", (await f.NewClient().GetAsync(other)).Headers.CacheControl!.ToString()); // never pinned
         Assert.Equal("nosniff", string.Join(",", r.Headers.GetValues("X-Content-Type-Options")));
         var css = await r.Content.ReadAsStringAsync();
         var file = await File.ReadAllTextAsync(Path.Combine(ForumIdentityUnitTests.ProjectDir(), "wwwroot", "css", "forum.css"));
@@ -380,7 +467,7 @@ public class ForumIdentityTests(TestAppFactory f)
         {
             var html = await f.NewClient().GetStringAsync("/forum");
             Assert.Matches("<img src=\"/assets/forum/forum-symbol-80h\\.png\\?v=[^\"]+\" alt=\"[^\"]+\" class=\"forum-symbol\" width=\"152\" height=\"80\">", Header(html));
-            Assert.Contains("class=\"forum-wordmark\"", Header(html));
+            Assert.DoesNotContain("forum-wordmark", html); // B1: no text in the bar, the name is the symbol's alt
 
             var r = await UploadAsync(c, ForumIdentity.LogoOnDark, ("l.png", PngBuilder.Png(240, 64, 6), "image/png"),
                 ("ImageAltAr", "شعار المنتدى"), ("ImageAltEn", "Forum logo"));
@@ -403,6 +490,39 @@ public class ForumIdentityTests(TestAppFactory f)
         finally
         {
             await ResetAsync();
+        }
+    }
+
+    [Fact] // SECURITY-F9 L2: a stored key that is not a media key (a row written behind the admin's back) is never drawn
+    public async Task Malformed_forum_media_key_is_not_rendered()
+    {
+        await ResetAsync();
+        const string bad = "x\"onerror=\"alert(1)\"0123456789ab"; // 32 characters: the column is char(32), no padding
+        try
+        {
+            await f.DbAsync(db =>
+            {
+                db.MediaFiles.Add(new MediaFile { FileKey = bad, Format = "png", Width = 240, Height = 64, Bytes = 10, AltAr = "x" });
+                db.SiteContents.Add(new SiteContent { SectionKey = ForumIdentity.LogoOnDark, ContentAr = bad, UpdatedAt = DateTime.UtcNow });
+                db.SiteContents.Add(new SiteContent { SectionKey = ForumIdentity.LogoOnLight, ContentAr = bad, UpdatedAt = DateTime.UtcNow });
+                return db.SaveChangesAsync();
+            });
+            f.Services.GetRequiredService<ISiteContentCache>().Invalidate();
+            var html = await f.NewClient().GetStringAsync("/forum");
+            Assert.DoesNotContain("onerror", html);
+            Assert.Contains("class=\"forum-symbol\"", Header(html)); // the bundled symbol instead
+            var org = Graph(html).EnumerateArray().Single(n => n.TryGetProperty("@id", out var id) && id.GetString() == Base + "/forum#organization");
+            Assert.Equal(Base + ForumAssets.LogoOnLight, org.GetProperty("logo").GetString());
+        }
+        finally
+        {
+            await f.DbAsync(async db =>
+            {
+                db.MediaFiles.RemoveRange(db.MediaFiles.Where(m => m.FileKey == bad));
+                db.SiteContents.RemoveRange(db.SiteContents.Where(c => c.ContentAr == bad));
+                return await db.SaveChangesAsync();
+            });
+            f.Services.GetRequiredService<ISiteContentCache>().Invalidate();
         }
     }
 

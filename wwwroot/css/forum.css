@@ -91,31 +91,75 @@
 .theme-forum main .btn-outline:hover { background: var(--forum-gold); color: var(--forum-ink); }
 .theme-forum main .btn-outline-light:hover { border-color: var(--forum-gold); }
 
+/* ---- Pairs the re-pointing would break (Hassan, REVIEW-F9 🟠1/🟡2/🟡3). The company draws some text in --accent on a
+   --navy-* surface and some --navy-deep text on an --accent fill; inside <main> both sides are now reds. Each spot gets a
+   pair the contrast check measures (ForumIdentity.Pairs): ---- */
+/* Text on the dark-red surfaces (event date box, CTA band, dark sections, title band): the light text colour
+   (on-primary on primary-deep / link / primary). */
+.theme-forum .event-date-day,
+.theme-forum .cta-title .gold,
+.theme-forum .is-dark .block-title .gold,
+.theme-forum .section-title.on-dark .gold,
+.theme-forum .is-dark .unit-num,
+.theme-forum .is-dark .unit-link,
+.theme-forum .detail-facts a,
+.theme-forum .detail-facts svg { color: var(--forum-on-primary); }
+.theme-forum .is-dark .item-icon { background: rgba(var(--forum-on-primary-rgb), 0.12); color: var(--forum-on-primary); }
+.theme-forum main .section-badge.on-dark { background: rgba(var(--forum-on-primary-rgb), 0.12); border-color: rgba(var(--forum-on-primary-rgb), 0.3); color: var(--forum-on-primary); }
+/* Small pills on an accent fill (event status, news category, people badge, video play, profile links on hover):
+   gold fill with dark ink (ink on gold), never red on red. */
+.theme-forum :is(.detail-badge, .news-category-badge, .entity-badge, .video-play),
+.theme-forum .detail-profiles a:is(:hover, :focus-visible),
+.theme-forum .is-dark .unit-chips a:hover { background: var(--forum-gold); color: var(--forum-ink); }
+/* Section eyebrow: the company's orange tint becomes a gold tint, its text the link red (link on white / surface). */
+.theme-forum main .section-badge:not(.on-dark) {
+  background: rgba(var(--forum-gold-rgb), 0.10); border-color: rgba(var(--forum-gold-rgb), 0.35); color: var(--forum-link);
+}
+/* Card hover borders: gold instead of the company orange. */
+.theme-forum :is(.item-card, .service-card, .unit-card):hover { border-color: rgba(var(--forum-gold-rgb), 0.6); }
+/* A primary button on a red surface (CTA band, dark sections): white fill, red text (Layla §4); hover cream + deep red. */
+.theme-forum :is(.cta-band, .is-dark) .btn-accent { background: var(--forum-on-primary); color: var(--forum-primary); box-shadow: none; }
+.theme-forum :is(.cta-band, .is-dark) .btn-accent:hover { background: var(--forum-surface); color: var(--forum-primary-deep); }
+
+/* Keyboard focus on the red buttons (Layla): a 3 px white ring with an offset (reads on red and dark surfaces) and a
+   dark halo outside it (reads on white and cream). */
+.theme-forum :is(.btn-accent, .nav-cta, .form-submit-btn):focus-visible {
+  outline: 3px solid #ffffff; outline-offset: 2px; box-shadow: 0 0 0 8px var(--forum-ink);
+}
+
 /* ---- Header: the company bar, with a red accent and the forum sub-brand ---- */
 .theme-forum #main-header { --accent: var(--forum-primary); --accent-rgb: var(--forum-primary-rgb); border-bottom-color: rgba(var(--forum-primary-rgb), 0.35); }
+
+/* The sub-brand is one bounded image slot (the forum symbol, or the uploaded logo) — never text in the bar (the
+   forum's name is the page's H1 and the image's alt). It may SHRINK (min-width: 0, image max-width: 100%) but never
+   grow past its slot, so it can never push the menu or the language button over anything: when the bar is short of
+   room the image gets smaller instead. */
 .forum-subbrand {
-  display: inline-flex; align-items: center; gap: 10px; flex-shrink: 1; min-width: 0;
-  margin-inline-start: 32px; margin-inline-end: auto;
-  color: var(--text-light); font-weight: 800; font-size: 1rem; line-height: 1.25;
+  display: flex; align-items: center; flex: 0 1 auto; min-width: 0; max-width: 110px; height: 40px;
+  margin-inline-start: 24px; margin-inline-end: auto;
 }
-.forum-subbrand:hover { color: var(--forum-surface); }
+.forum-subbrand img { display: block; flex: 0 1 auto; min-width: 0; width: auto; height: auto; max-width: 100%; max-height: 40px; object-fit: contain; }
 /* The free space is shared by the sub-brand and the menu, so the menu stays centred as on the company pages. */
 .theme-forum .nav-container > .nav-links { margin-inline-end: auto; }
-.forum-symbol { height: 34px; width: auto; flex-shrink: 0; }
-.forum-logo-img { height: 44px; width: auto; max-width: 220px; object-fit: contain; }
-.forum-wordmark { white-space: nowrap; }
 
-@media (max-width: 1100px) {
-  .forum-wordmark { white-space: normal; max-width: 9em; font-size: .9rem; }
+/* The full menu needs the whole bar: on forum pages it folds into the drawer up to 1200 px in both languages (the
+   company pages already do so in English), leaving room for the slot. */
+@media (max-width: 1200px) {
+  .theme-forum header .nav-links { display: none; }
+  .theme-forum .nav-actions .nav-cta { display: none; }
+  .theme-forum .hamburger { display: flex; }
 }
 @media (max-width: 600px) {
   .theme-forum .logo-img { height: 32px; }
-  .forum-subbrand { margin-inline-start: 24px; gap: 6px; }
-  .forum-symbol { height: 26px; }
-  .forum-logo-img { height: 32px; max-width: 34vw; }
-  .forum-wordmark { font-size: .78rem; max-width: 7.5em; }
-  .theme-forum .page-hero::after { width: 200px; height: 200px; border-width: 18px; top: -110px; inset-inline-end: -90px; opacity: .45; }
+  .forum-subbrand { margin-inline-start: 16px; max-width: 64px; height: 28px; }
+  .forum-subbrand img { max-height: 28px; }
 }
 @media (max-width: 380px) {
-  .forum-wordmark { display: none; }
+  .theme-forum .logo-img { height: 28px; }
+  .forum-subbrand { margin-inline-start: 12px; max-width: 48px; height: 24px; }
+  .forum-subbrand img { max-height: 24px; }
+}
+
+@media (max-width: 600px) {
+  .theme-forum .page-hero::after { width: 200px; height: 200px; border-width: 18px; top: -110px; inset-inline-end: -90px; opacity: .45; }
 }

@@ -16,8 +16,8 @@ public sealed record ForumColor(string Key, string Label, string Hint, string De
 /// <summary>The bundled forum files (from the event profile PDF, FORUM-IDENTITY.md): used while nothing is uploaded.</summary>
 public static class ForumAssets
 {
-    /// <summary>The forum symbol (∞ arrows), trimmed, 80 px high (2× of the 40 px header size). Header fallback, followed by
-    /// the forum name as text: the stacked logo's lines are unreadable at header height (Layla §1).</summary>
+    /// <summary>The forum symbol (∞ arrows), trimmed, 80 px high (2× of the 40 px header slot). The header's fallback: the
+    /// stacked logo's lines are unreadable at header height (Layla §1); the forum's name is its alt (and the page's H1).</summary>
     public const string Symbol = "/assets/forum/forum-symbol-80h.png";
     public const int SymbolWidth = 152;
     public const int SymbolHeight = 80;
@@ -86,16 +86,18 @@ public static class ForumIdentity
     /// </summary>
     public static readonly IReadOnlyList<ContrastPair> Pairs =
     [
-        new(OnPrimary, Primary, "نص الأزرار الرئيسية وزر الرأس على الأحمر"),
-        new(OnPrimary, PrimaryDeep, "نص الأزرار عند التمرير ونهاية شريط العنوان"),
+        new(OnPrimary, Primary, "نص الأزرار الرئيسية وزر الرأس على الأحمر، والزر الأبيض بنص أحمر على شريط الدعوة"),
+        new(OnPrimary, PrimaryDeep, "النص الفاتح على الأحمر الداكن: الأزرار عند التمرير، شريط العنوان، شريط الدعوة، مربع تاريخ الفعالية، الأقسام الداكنة"),
+        new(OnPrimary, Link, "رقم اليوم على مربع تاريخ الفعالية (تدرّج الأحمر الداكن ← لون الروابط)"),
+        new(PrimaryDeep, Surface, "نص الزر الأبيض على شريط الدعوة عند التمرير (أحمر داكن على الكريمي)"),
         new(OnPrimary, HeroStart, "عنوان الصفحة على بداية تدرّج شريط العنوان"),
         new(Primary, White, "العناوين الحمراء على الخلفية البيضاء (نص كبير)", 3.0),
         new(Primary, Surface, "العناوين الحمراء على الأقسام الفاتحة (نص كبير)", 3.0),
         new(Primary, HeaderNavy, "خط القائمة النشطة الأحمر على الرأس الكحلي (عنصر رسومي)", 3.0),
         new(GoldInk, White, "النص الذهبي على الخلفية البيضاء"),
-        new(Ink, Gold, "النص الداكن على الذهبي (الزر الثانوي عند التمرير)"),
+        new(Ink, Gold, "النص الداكن على الذهبي: الزر الثانوي عند التمرير، شارة حالة الفعالية والتصنيف والشارات الصغيرة"),
         new(Link, White, "الروابط على الخلفية البيضاء"),
-        new(Link, Surface, "الروابط على الأقسام الفاتحة"),
+        new(Link, Surface, "الروابط وعناوين الأقسام الصغيرة (الشارة) على الأقسام الفاتحة"),
         new(Ink, White, "النصوص الداكنة على الخلفية البيضاء"),
         new(Ink, Surface, "النصوص الداكنة على الأقسام الفاتحة"),
         new(Text, White, "نص الفقرات على الخلفية البيضاء"),
@@ -123,9 +125,9 @@ public static class ForumIdentity
     public static readonly IReadOnlyList<BrandImage> Images =
     [
         new(LogoOnDark, "شعار المنتدى على خلفية داكنة",
-            "يظهر في رأس صفحات المنتدى بجانب شعار إنوفست. PNG أو WebP بخلفية شفافة، من 120×32 بكسل حتى 1200 بكسل لأطول ضلع، حتى 1 MB. فارغ = رمز المنتدى المرفق مع اسم المنتدى نصاً (من عنوان صفحة المنتدى).",
+            "يظهر في رأس صفحات المنتدى بجانب شعار إنوفست. PNG أو WebP بخلفية شفافة، من 120×32 بكسل حتى 1200 بكسل لأطول ضلع، حتى 1 MB. فارغ = رمز المنتدى المرفق. يظهر في مساحة محدودة (حتى 110×40 بكسل) فيُفضَّل شعار أفقي مختصر.",
             [ImageFormat.Png, ImageFormat.WebP], 120, 32, 1200, Square: false, RejectAlpha: false, MaxBytes: 1024 * BrandImages.KB,
-            DefaultPath: ForumAssets.Symbol, DefaultSize: "152×80 + اسم المنتدى", HasAlt: true),
+            DefaultPath: ForumAssets.Symbol, DefaultSize: "152×80", HasAlt: true),
         new(LogoOnLight, "شعار المنتدى على خلفية فاتحة",
             "شعار المنتدى الذي تقرؤه محركات البحث (بيانات المنتدى المنظَّمة). PNG أو WebP، مربع أو شبه مربع، من 112×112 بكسل حتى 1200 بكسل، حتى 1 MB. فارغ = شعار المنتدى المرفق. لا يُعرض في الصفحات، لذلك لا نص بديل له.",
             [ImageFormat.Png, ImageFormat.WebP], 112, 112, 1200, Square: false, RejectAlpha: false, MaxBytes: 1024 * BrandImages.KB,
@@ -244,8 +246,11 @@ public static class ForumIdentity
         return css.ToString();
     }
 
+    /// <summary>A forum image of the snapshot, only when its stored key matches the media key pattern and its format is
+    /// a known one (re-checked on read, like the colours: a bad row never reaches a page); else null.</summary>
+    public static MediaRef? Image(SiteSnapshot s, string key) =>
+        s.Image(key) is { } m && MediaStore.KeyPattern().IsMatch(m.FileKey) && ImageInspector.FromName(m.Format) is not null ? m : null;
+
     /// <summary>The hero image's /media URL when its stored key and format are valid, else null.</summary>
-    private static string? HeroUrl(SiteSnapshot s) =>
-        s.Image(HeroImage) is { } m && MediaStore.KeyPattern().IsMatch(m.FileKey) && ImageInspector.FromName(m.Format) is not null
-            ? m.Url : null;
+    private static string? HeroUrl(SiteSnapshot s) => Image(s, HeroImage)?.Url;
 }
