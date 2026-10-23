@@ -2,8 +2,8 @@
 
 العربية أولاً، ثم English. / Arabic first, then English.
 
-يصف هذا الدليل الموقع حتى المرحلة C5 (التحكم الكامل من لوحة التحكم، فرع `c5/main` بعد دمج فروع الإصلاح) قبل دمجه في `master`.
-This guide describes the site up to phase C5 (full admin control; branch `c5/main` after the fix branches were merged) before it is merged into `master`.
+يصف هذا الدليل الموقع حتى فرع `feature/10-forum-content` (الأسماء الجديدة N8، وهوية المنتدى F9، ومحتوى المنتدى F10 فوق المرحلة C5) قبل دمجه في `master`.
+This guide describes the site up to branch `feature/10-forum-content` (the new names N8, the forum identity F9 and the forum content F10, on top of phase C5) before it is merged into `master`.
 
 ---
 
@@ -28,8 +28,14 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 - **الروابط:** روابط التواصل الاجتماعي ورابط الجهة المطوّرة يجب أن تبدأ بـ `https://`. روابط القائمة والخدمات
   والأخبار تقبل `#قسم` أو `/مسار` أو `https://…`، وتُرفض `javascript:` وما شابهه. اتركوا الحقل فارغاً إن لم يوجد رابط.
 - لا تكتبوا كلمات مرور أو بيانات سرية في أي حقل: كل ما يُكتب في المحتوى يظهر للعامة.
+- **الأسماء الجديدة:** الاسم العربي للشركة صار **«إنوفست القابضة»** (بدل «إنوفست هولدينغ»)، واسم المنتدى **«منتدى إنوفست»** / "Innovest Forum"
+  (بدل «منتدى إنوفست العربي» / "Innovest Arab Forum"). الاسم الإنجليزي للشركة "Innovest Holding" لم يتغير. استبدل الترحيل `RenameHoldingAndForum` الاسمين القديمين
+  في نصوص الموقع المحفوظة (الصفحات والنصوص العامة والأخبار والفعاليات والشركاء والأسئلة الشائعة وغيرها)، بما فيها ما عدّلتموه يدوياً إن احتوى العبارة القديمة نفسها. لا يغيّر الروابط
+  ولا النطاق ولا الطلبات المستلمة. **نص تكتبونه بعد ذلك بالاسم القديم لا يُصحَّح تلقائياً**: استعملوا الأسماء الجديدة.
 - **القائمة الجانبية مجمّعة:** «نظرة عامة»، «الموقع»، «منتدى إنوفست»، «شبكة المستثمرين الملائكيين»، «البرنامج
-  التلفزيوني»، «الأخبار»، «الوارد». اضغطوا عنوان المجموعة لطيّها أو فتحها؛ يتذكر المتصفح اختياركم. مجموعة «الموقع» تضم:
+  التلفزيوني»، «الأخبار»، «الوارد». اضغطوا عنوان المجموعة لطيّها أو فتحها؛ يتذكر المتصفح اختياركم. مجموعة «منتدى إنوفست» تضم:
+  الفعاليات، المتحدثون، الشركاء والرعاة، التسجيلات، خيارات مجال الاهتمام، مزايا التسجيل، **هوية المنتدى**، **النسخ السابقة**، **محتوى صفحة المنتدى**
+  (اختصار إلى بطاقة «صفحات المنتدى» في «النصوص العامة»). مجموعة «الموقع» تضم:
   صفحات الموقع، النصوص العامة، القوائم، الخدمات، أرقام الأثر، الأسئلة الشائعة، روابط التواصل الاجتماعي، أقسام الصفحات،
   رسائل وأزرار الموقع، القائمة والفوتر، الهوية البصرية، الإعدادات.
 
@@ -48,6 +54,7 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 | ↳ المتحدثون | `/forum/speakers` | `/en/forum/speakers` |
 | ↳ الشركاء والرعاة | `/forum/partners` | `/en/forum/partners` |
 | ↳ التسجيل | `/forum/registration` | `/en/forum/registration` |
+| ↳ النسخ السابقة | `/forum/editions` | `/en/forum/editions` |
 | شبكة المستثمرين الملائكة | `/angel-network` | `/en/angel-network` |
 | ↳ للمستثمرين | `/angel-network/investors` | `/en/angel-network/investors` |
 | ↳ للشركات الناشئة | `/angel-network/startups` | `/en/angel-network/startups` |
@@ -61,13 +68,13 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 | تواصل معنا | `/contact` | `/en/contact` |
 | سياسة الخصوصية | `/privacy` | `/en/privacy` |
 
-(أسماء الصفحات في الموقع تأتي من حقل «عنوان الصفحة» وقد تختلف عن العمود الأول.) المجموع **20 صفحة**. تتفرع الصفحات هكذا:
+(أسماء الصفحات في الموقع تأتي من حقل «عنوان الصفحة» وقد تختلف عن العمود الأول.) المجموع **21 صفحة**. تتفرع الصفحات هكذا:
 الرئيسية ← من نحن، منظومتنا، الأخبار، تواصل معنا، سياسة الخصوصية؛ منظومتنا ← المنتدى، شبكة المستثمرين الملائكة، التلفزيون؛ ولكل منها صفحاته الفرعية أعلاه.
 الصفحة الرئيسية تحتفظ بمعرّفات الأقسام (`#about` وغيرها) فتعمل الروابط القديمة المنتهية بها.
 
 ## 3. صفحات الموقع (`/Admin/Pages`)
 
-القائمة الجانبية ← «الموقع» ← «صفحات الموقع». شجرة بكل الصفحات (20، وعددها في العنوان) مع: الاسم، الرابط (يفتح الصفحة في
+القائمة الجانبية ← «الموقع» ← «صفحات الموقع». شجرة بكل الصفحات (21، وعددها في العنوان) مع: الاسم، الرابط (يفتح الصفحة في
 نافذة جديدة)، «النشر»، «في القائمة»، شارة «EN» (مكتملة حين يوجد عنوان الصفحة وعنوان ووصف محركات البحث بالإنجليزية)، الترتيب،
 وزر «تعديل».
 
@@ -119,7 +126,8 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 | الرئيسية | «النصوص العامة» (Hero، من نحن، عناوين الأقسام، التسجيل، التواصل…) + «الخدمات» + «أرقام الأثر» + الأخبار + الفعاليات + «الشركاء والرعاة» + «الأسئلة الشائعة» |
 | من نحن | «النصوص العامة» (الرؤية والرسالة وكلمة المؤسس) + قوائم: القيم، لماذا إنوفست، القطاعات، شركاء النجاح + «أرقام الأثر» |
 | منظومتنا | «الخدمات» + قوائم: ماذا نقدم، برامجنا، خدمات الجهات الحكومية، خدمات الجامعات |
-| المنتدى | قائمة «مكونات المنتدى» + أحدث الفعاليات (عددها من «أقسام الصفحات»، الافتراضي 3) |
+| المنتدى | بطاقة «صفحات المنتدى» (القسم 9د) + قوائم المنتدى الخمس + «مكونات المنتدى» + الفعاليات والنسخ السابقة (عددها من «أقسام الصفحات»، الافتراضي 3 لكل منهما) + مجموعات الشركاء المعلَّمة «يظهر في شريط المنتدى» |
+| النسخ السابقة (المنتدى) | «النسخ السابقة» (القسم 9ج) |
 | الفعاليات | «الفعاليات» (القسم 9) |
 | الشركاء والرعاة (المنتدى) | «الشركاء والرعاة» + قائمة «الجهات التي نعمل معها» |
 | شبكة المستثمرين | قوائم: خدمات المستثمرين، خطوات الانضمام (مع وصف)، خدمات الشركات الناشئة، القطاعات |
@@ -131,7 +139,7 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 ## 3ب. أقسام الصفحات (`/Admin/PageSections`)
 
 «الموقع» ← «أقسام الصفحات» (عنوان الشاشة «أقسام الصفحات: اسم الصفحة المعروضة»). تحدّدون **أي أقسام تظهر في كل صفحة وبأي ترتيب**. تفتح الشاشة على الصفحة الرئيسية، وقائمة
-«صفحة أخرى» تعرض أي من الصفحات التسع عشرة التي لها أقسام (كل الصفحات عدا «سياسة الخصوصية»). البطاقة نفسها تظهر أيضاً أسفل
+«صفحة أخرى» تعرض أي من الصفحات العشرين التي لها أقسام (كل الصفحات عدا «سياسة الخصوصية»). البطاقة نفسها تظهر أيضاً أسفل
 «تعديل صفحة» لكل صفحة لها أقسام، وأزرارها هناك تعيدكم إلى «تعديل صفحة». زر «معاينة الصفحة» يفتح الصفحة. يظهر التغيير في الموقع عند الطلب التالي.
 
 الجدول: # · القسم · المحتوى · الحالة · الترتيب.
@@ -149,16 +157,20 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
   (يمكن إخفاؤها لكن لا تتحرك)؛ و«قيمنا» داخل «من نحن».
 - **الأعداد:** في الجدول مربعات أرقام مع زر «حفظ»: عدد الأرقام في واجهة الرئيسية (1–12، الافتراضي 4)، وعدد الفعاليات على
   الرئيسية (1–12، الافتراضي 3)، وعدد الأخبار على الرئيسية (1–50، الافتراضي 6)، وعدد الفعاليات في صفحة المنتدى (1–12،
-  الافتراضي 3). قيمة خارج المدى تُرفض برسالة ولا يتغير شيء. هذه القيم نفسها في «النصوص العامة» ← «عناوين أقسام الصفحة
+  الافتراضي 3)، وعدد النسخ السابقة في صفحة المنتدى (1–12، الافتراضي 3). قيمة خارج المدى تُرفض برسالة ولا يتغير شيء. هذه القيم نفسها في «النصوص العامة» ← «عناوين أقسام الصفحة
   الرئيسية».
+- **أقسام صفحة المنتدى (`/forum`)** ثلاثة عشر: عن المنتدى، الوحدات، الأرقام، التأثير على الأطراف الرئيسية، القطاعات الرئيسية (الركائز)، أهداف النسخة،
+  المحاور والقطاعات، مكونات المنتدى، الفعاليات، النسخ السابقة، الجهات المنظمة، طرق التواصل، شريط الدعوة. كلها تُخفى وتُحرَّك من هذه الشاشة، والقسم بلا محتوى يُخفى تلقائياً
+  (مثل «النسخ السابقة» حين لا نسخة ظاهرة، و«طرق التواصل» حين تكون قيمها كلها فارغة). في صفحة «التسجيل» قسم «طرق التواصل» بعد النموذج (النموذج ثابت). صفحة «النسخ السابقة» (`/forum/editions`)
+  قسمها الوحيد «القائمة» ثابت.
 - الأقسام وأسماؤها ثابتة في الكود: لا تُضاف ولا تُحذف من اللوحة.
 
 ## 4. القوائم (`/Admin/ContentItems`)
 
-«الموقع» ← «القوائم (القيم، القطاعات…)». قوائم نصية قصيرة تُعرض في الصفحات، **13 قائمة**: القيم الأساسية (من نحن)،
+«الموقع» ← «القوائم (القيم، القطاعات…)». قوائم نصية قصيرة تُعرض في الصفحات، **18 قائمة**: القيم الأساسية (من نحن)،
 لماذا إنوفست (من نحن)، القطاعات التي نخدمها، ماذا نقدم (المنظومة)، برامجنا، مكونات المنتدى، خدمات المستثمرين، خدمات
 الشركات الناشئة، خدمات الجهات الحكومية، خدمات الجامعات، الجهات التي نعمل معها، شركاء النجاح، خطوات الانضمام إلى
-الشبكة. اختاروا القائمة من أعلى الشاشة، ثم:
+الشبكة، **وخمس قوائم لصفحة المنتدى** (القسم 9د): المنتدى — الأرقام، التأثير على الأطراف الرئيسية، القطاعات الرئيسية (الركائز)، أهداف النسخة، المحاور والقطاعات. اختاروا القائمة من أعلى الشاشة، ثم:
 - **إضافة:** النص بالعربية وبالإنجليزية (الإنجليزي اختياري)، وأيقونة من قائمة مغلقة (أو «بلا أيقونة»)، وفي «خطوات
   الانضمام» وصف إضافي أيضاً. العنصر الجديد يُضاف في آخر القائمة.
 - **تعديل** (النص، الأيقونة، الترتيب، وخانة «ظاهر» التي تخفي العنصر دون حذفه)، **حذف** (نهائي).
@@ -197,7 +209,7 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 - **حقوق النشر:** اكتبوا `{year}` ليُستبدل بالسنة الحالية.
 - **رابط الجهة المطوّرة** (الفوتر): `https://` أو فارغ.
 - **السطر العلوي في Hero:** اختياري، ولا يظهر في الصفحة الإنجليزية إن تُرك حقله الإنجليزي فارغاً.
-- **زر الهيدر:** «نص زر الهيدر» و«الصفحة التي يفتحها زر الهيدر» (قائمة منسدلة بالصفحات العشرين بعناوينها ومساراتها، مع
+- **زر الهيدر:** «نص زر الهيدر» و«الصفحة التي يفتحها زر الهيدر» (قائمة منسدلة بالصفحات الـ21 بعناوينها ومساراتها، مع
   علامة «— غير منشورة» لما لم يُنشر، وخيار «رابط خارجي… (https)»؛ وإن كانت القيمة المحفوظة غير صالحة يُستعمل `network.join`).
 - **الأزرار والروابط (بطاقة «الأزرار والروابط»):** لكل زر **نص** و**وجهة**. الوجهة تُختار من قائمة الصفحات (العنوان
   والمسار) أو «رابط خارجي… (https)» فيُكتب العنوان في المربع المجاور (`https://` فقط؛ **الرابط الخارجي يلزمه نص بالعربية**
@@ -266,6 +278,43 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 - **لون شريط المتصفح على الجوال (theme-color):** بصيغة `#RRGGBB` (ستة خانات سداسية عشرية) وإلا يُرفض؛ **فارغ = اللون
   الافتراضي `#111145`**. تظهر معاينة اللون الحالي.
 
+## 6هـ. هوية المنتدى (`/Admin/ForumIdentity`)
+
+«منتدى إنوفست» ← «هوية المنتدى». تغيّر شكل **صفحة المنتدى وكل الصفحات تحتها** (الفعاليات، المتحدثون، الشركاء، التسجيل، النسخ السابقة، وصفحات تفاصيل الفعالية والمتحدث)
+بالعربية والإنجليزية؛ بقية الموقع تبقى بهوية إنوفست، ورأس الصفحة (كحلي) وتذييلها يبقيان بألوان إنوفست. صفحة «غير موجودة» ليست منها. الحقل الفارغ = القيمة الافتراضية المرفقة. هوية إنوفست نفسها في «الهوية البصرية» (القسم 6د).
+يظهر التغيير في الطلب التالي. تُقدَّم الأنماط من العنوان `/forum-theme.css`، ورقم نسخته في الرابط يتغير عند كل حفظ فلا يبقى في المتصفحات شكل قديم.
+
+**الصور** (أربع بطاقات، لكل منها معاينة للصورة الحالية أو للملف المرفق؛ تُفحص الامتدادات والنوع والمحتوى معاً، والملف المرفوض تظهر رسالته ولا يُحفظ شيء؛ لا SVG):
+- **شعار المنتدى على خلفية داكنة:** يظهر في رأس صفحات المنتدى بجانب شعار إنوفست. PNG أو WebP، من 120×32 بكسل، أطول ضلع حتى 1200، حتى 1 MB. له نص بديل بالعربية والإنجليزية
+  (فارغ = اسم المنتدى). المساحة محدودة (حتى 110×40 بكسل على الحاسوب) فيُفضَّل شعار أفقي مختصر. فارغ = رمز المنتدى المرفق.
+- **شعار المنتدى على خلفية فاتحة:** تقرؤه محركات البحث فقط (بيانات المنتدى المنظَّمة) ولا يُعرض في الصفحات، فلا نص بديل له. PNG أو WebP، مربع أو شبه مربع، من 112×112 حتى 1200 بكسل، حتى 1 MB. فارغ = شعار المنتدى المرفق.
+- **صورة خلفية شريط العنوان:** تظهر خلف عنوان كل صفحة من صفحات المنتدى تحت طبقة من اللون الأساسي الداكن. صورة زخرفية بلا نص بديل. JPG أو PNG أو WebP، من 1200×400، أطول ضلع حتى 4000 بكسل وحتى 12 ميغابكسل، حتى 5 MB. فارغ = بلا صورة.
+- **صورة مشاركة المنتدى (og:image):** تُستعمل عند مشاركة صفحات المنتدى التي ليست لها صورة خاصة بها، **قبل** صورة المشاركة العامة للموقع (صورة الفعالية أو المتحدث تسبقها). JPG أو PNG، من 1200×630، أطول ضلع حتى 4000 بكسل وحتى 12 ميغابكسل، حتى 5 MB (يُفضَّل أقل من 300 KB). لها نص بديل بالعربية والإنجليزية (فارغ = اسم المنتدى).
+- للاستبدال: اختاروا ملفاً جديداً ثم «حفظ». للإزالة والعودة إلى الافتراضي: علّموا «حذف والعودة إلى الافتراضي» ثم «حفظ».
+
+**الألوان** (عشرة ألوان بالصيغة `#RRGGBB`؛ الافتراضي ظاهر في الحقل الفارغ، وبجانب كل لون مربع معاينة):
+
+| اللون | الافتراضي | يُستعمل في |
+|---|---|---|
+| الأحمر الأساسي | `#d21e33` | العناوين، الأزرار الرئيسية، زر الرأس، خط التبويب والقائمة النشطة |
+| الأحمر الداكن | `#a11c34` | الأزرار عند التمرير، نهاية تدرّج شريط العنوان |
+| بداية تدرّج شريط العنوان | `#d51d33` | بداية تدرّج شريط عنوان الصفحة |
+| الذهبي | `#bd932e` | الحلقة الذهبية وإطار الأزرار الثانوية (زخرفة) |
+| الذهبي للنصوص | `#8c6510` | النصوص الذهبية على الأبيض |
+| لون الروابط | `#a11c34` | الروابط والنصوص المميَّزة على الخلفيات الفاتحة |
+| لون الأقسام الفاتحة | `#f1e8d2` | خلفية الأقسام الكريمية |
+| اللون الداكن | `#252626` | النصوص الداكنة والنص فوق الذهبي |
+| لون نص الفقرات | `#4b4c4c` | نص الفقرات |
+| النص على الأحمر | `#ffffff` | نص الأزرار الرئيسية وشريط العنوان |
+
+- **فحص التباين عند الحفظ:** تُقاس نسبة التباين لكل زوج نص/خلفية كما سيظهر (اللون المكتوب أو الافتراضي)؛ الحد **4.5:1** للنص و**3:1** للعناوين الكبيرة والعناصر الرسومية.
+  إن لم يحقق أي زوج حدّه **يُرفض الحفظ كله ولا يُكتب شيء** (حتى الحقول الصحيحة في النموذج نفسه)، وتُعرض قائمة بالزوج الفاشل وقيمتي اللونين والنسبة والحد المطلوب؛ غيّروا أحد اللونين. صيغة اللون الخاطئة تُرفض كذلك.
+- جدول **«التباين الحالي»** أسفل الشاشة يعرض كل زوج مع النسبة وعلامة ✓ أو ✗.
+
+**الخطوط:** قائمة للصفحات العربية وأخرى للإنجليزية: «الافتراضي (خط الموقع)» أو Cairo أو Montserrat (لاتيني، مع Cairo للعربي). هذه الخطوط محمَّلة في الموقع أصلاً فلا يُضاف طلب جديد، ولا يمكن كتابة اسم خط آخر.
+
+**استعادة الافتراضي:** يحذف كل الألوان والخطوط المحفوظة (بعد تأكيد) فتعود صفحات المنتدى إلى ألوانها الافتراضية؛ **الصور لا تُحذف** (لكل صورة زر حذف في بطاقتها). العودة إلى ألوان المنتدى الافتراضية لا إلى ألوان بقية الموقع.
+
 ## 7. القائمة والفوتر (`/Admin/Nav`)
 
 «الموقع» ← «القائمة والفوتر». تبويبان:
@@ -323,12 +372,16 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
   البدء (بتوقيت مكان الفعالية) والانتهاء (اختياري) و**فرق التوقيت عن UTC** (الافتراضي `+02:00`)، **الحالة** (في موعدها / مؤجلة
   / ملغاة)، **طريقة الحضور** (حضوري / عن بُعد / حضوري وعن بُعد)، اسم المكان والمدينة والعنوان، **رابط الحضور عن بُعد**
   (`https://`)، **«التسجيل مفتوح»**، **صورة الفعالية**، ومحركات البحث. اليوم والشهر والوقت النصية حقول بديلة للفعاليات القديمة
-  غير المؤرَّخة. في القوائم تظهر الفعاليات القادمة أولاً (الفعاليات القديمة غير المؤرَّخة قبلها) ثم المنتهية، وتحمل المنتهية
+  غير المؤرَّخة. **«الشهر فقط (اليوم غير معروف بعد)»:** علّموا الخانة واختاروا الشهر والسنة (حقل الشهر)؛ يُخزَّن الموعد من أول الشهر 00:00 إلى آخر يوم فيه 23:59 بفرق التوقيت المكتوب،
+  ويُتجاهل البدء والانتهاء واليوم النصي. تعرض البطاقة اسم الشهر والسنة بلا يوم ولا ساعة، وتعرض صفحة الفعالية «يونيو 2026» / "June 2026"، وتُعدّ الفعالية منتهية بعد آخر يوم في الشهر. في قائمة اللوحة
+  تظهر «الشهر + السنة (الشهر فقط)». لتحديد اليوم لاحقاً أزيلوا العلامة واكتبوا البدء. **الفعالية بلا ملخص ووصف بالعربية** صفحتها `noindex` وخارج خريطة الموقع إلى أن يُكتب أحدهما.
+  **نموذج التسجيل في المنتدى** يعرض الفعاليات الظاهرة غير المنتهية فقط، ويرفض الخادم اختيار فعالية منتهية. في القوائم تظهر الفعاليات القادمة أولاً (الفعاليات القديمة غير المؤرَّخة قبلها) ثم المنتهية، وتحمل المنتهية
   والملغاة شارة، ويختفي زر التسجيل تلقائياً بعد الانتهاء أو الإلغاء أو إغلاق التسجيل. تظهر الفعاليات في `/forum/events`، وأولها في
   صفحة المنتدى والرئيسية بالعدد المحدد في «أقسام الصفحات» (القسم 3ب؛ الافتراضي 3 لكل منهما).
 - **«الشركاء والرعاة»**: الاسم بالعربية والإنجليزية، **شعار الشريك** (صورة)، **موقع الشريك** (`https://` اختياري؛ يُفتح برابط
   `rel="sponsored noopener"`)، **المجموعة**، و**«يظهر في شريط الشركاء في الصفحة الرئيسية»**. **المجموعات** (بطاقة في أسفل
-  الشاشة): عناوين تُرتَّب بها صفحة `/forum/partners` (مثل «الرعاة الرئيسيون»)؛ حذف مجموعة **لا يحذف شركاءها** بل يُعرضون بعد
+  الشاشة): عناوين تُرتَّب بها صفحة `/forum/partners` (مثل «الرعاة الرئيسيون»)، ولكل مجموعة خانة **«يظهر في شريط المنتدى»** (وشارة «في شريط المنتدى» في القائمة): المجموعة المعلَّمة تُعرض
+  هي وشعارات شركائها **الظاهرين** في قسم «الجهات المنظمة» بصفحة المنتدى الرئيسية (المجموعة التي لا شريك ظاهراً فيها تُهمَل، وعنوان القسم من «صفحات المنتدى»)، وتبقى في `/forum/partners` في كل الأحوال؛ حذف مجموعة **لا يحذف شركاءها** بل يُعرضون بعد
   المجموعات. إخفاء شريك دون حذفه بشارة «ظاهر/مخفي». **الترتيب** بالسهمين ▲▼ داخل مجموعة الشريك (ترتيب واحد يحكم شريط الرئيسية وصفحة الشركاء). **النص البديل للشعار** الذي تكتبه يُقرأ في الموقع بلغة الصفحة، وإن تُرك فارغاً يُستعمل اسم الشريك.
 - **الرابط المختصر:** أحرف إنجليزية صغيرة وأرقام وشرطات فقط (`innovest-forum-2026`)، حتى 100 حرف، وبعض الكلمات محجوزة (مثل
   `admin` و`media` و`en`). إن تُرك فارغاً عند الإضافة يُبنى من العنوان الإنجليزي (ويُضاف `-2` عند التكرار)، وإلا `news-<رقم>` أو
@@ -390,6 +443,36 @@ This guide describes the site up to phase C5 (full admin control; branch `c5/mai
 - **صفحة المركز وإخفاؤها:** إخفاء صفحة (مثل «الحلقات») من القائمة يتم من «صفحات الموقع» ← «في القائمة» (القسم 3)؛ وتبقى الصفحة متاحة برابطها.
   صفحتا `/tv` و`/tv/sponsorship` تبقيان `noindex` ما دام نصهما التمهيدي والرئيسي فارغين.
 - **الصور:** كل ما سبق يستعمل أداة الرفع نفسها وقيودها (JPG وPNG وWebP حتى 5 ميغابايت، القسم «رفع الصور»)؛ الصورة تُحذف مع العنصر.
+
+## 9ج. النسخ السابقة (`/Admin/ForumEditions`)
+
+«منتدى إنوفست» ← «النسخ السابقة». سجلّ نسخ المنتدى السابقة بصورها. تظهر في صفحة **«النسخ السابقة»** (`/forum/editions`، كل النسخ الظاهرة بكل صورها)، وفي صفحة المنتدى قسم
+**«النسخ السابقة»** يعرض أوائل النسخ بترتيبها (العدد من «أقسام الصفحات»، الافتراضي 3، من 1 إلى 12) بصورة الغلاف فقط ورابط «كل النسخ» (نصه وعنوان القسم من «صفحات المنتدى»).
+- **إضافة نسخة:** السنة (2000–2100)، وتسمية النسخة (اختياري، حتى 60 حرفاً، مثل «النسخة الرابعة»)، والعنوان (مطلوب بالعربية). بعد الإضافة تنتقلون إلى صفحة النسخة.
+- **تعديل النسخة:** السنة، التسمية، العنوان، المكان (اختياري)، النص (اختياري؛ سطر فارغ = فقرة)، وخانة «ظاهرة في الموقع»؛ كلها بالعربية والإنجليزية. في القائمة: الغلاف، السنة، العنوان، عدد الصور من 12، شارة EN
+  (تكتمل بالعنوان والنص الإنجليزيين)، مفتاح الظهور، الترتيب ▲▼، تعديل والصور، حذف.
+- **الصور:** حتى **12 صورة** لكل نسخة، **صورة واحدة في كل رفع**، بقواعد «رفع الصور» (القسم 9) نفسها. **الصورة الأولى هي غلاف النسخة**؛ ▲▼ تغيّر الترتيب. لكل صورة نص بديل بالعربية والإنجليزية (فارغ = عنوان النسخة)
+  وزر «حفظ الوصف». عند بلوغ 12 يختفي نموذج الرفع ويظهر تنبيه؛ احذفوا صورة لإضافة غيرها (ويرفض الخادم الصورة الثالثة عشرة كذلك).
+- **الحذف:** حذف النسخة يحذف صورها وملفاتها. إخفاء النسخة يخفيها من الصفحتين دون حذف.
+- **الصفحة الفارغة:** إن لم توجد نسخة ظاهرة تعرض `/forum/editions` النص الذي تكتبونه في «تعديل صفحة»، وتصبح `noindex` وخارج خريطة الموقع، ويُخفى قسم صفحة المنتدى.
+  **الصفحة الإنجليزية** تبقى `noindex` وخارج الخريطة إلى أن يكون لنسخة ظاهرة واحدة على الأقل عنوان ونص بالإنجليزية.
+- **ما يأتي مع الموقع:** في أول تشغيل بعد النشر تُنسخ إلى مجلد الرفع 31 صورة لست نسخ و8 شعارات للجهات المنظمة، **مرة واحدة** (يُسجَّل ذلك فلا تتكرر).
+  لا تُعاد صورة حذفتموها ولا شعار أزلتموه، ولا يُستبدل شيء وضعتموه بأنفسكم.
+
+## 9د. محتوى صفحة المنتدى (النصوص والقوائم)
+
+«منتدى إنوفست» ← «محتوى صفحة المنتدى» يفتح بطاقة **«صفحات المنتدى»** في «النصوص العامة» (القسم 6)؛ والقوائم من «القوائم» (القسم 4). كل ما يظهر في `/forum` ثنائي اللغة، والقسم الذي لا محتوى له يُخفى.
+- **بطاقة «صفحات المنتدى»:** شعار المنتدى (عنوان «عن المنتدى»)، والنسخة الحالية (مثل «النسخة الخامسة»)، وسطر الإطلاق، ونص «عن المنتدى» (سطر فارغ يبدأ فقرة)، وعنوان ونص «التعريف بالمنتدى»،
+  وعنوان ونص «الربط الاستراتيجي» (سطر لكل نقطة)، وعنوان قسم «النسخ السابقة» ونص رابط «كل النسخ»، وعنوان «الجهات المنظمة»، وعناوين القوائم وتمهيدها وفقراتها الختامية،
+  و**طرق التواصل**: العنوان، والهاتف (7–15 رقماً، ويصير رابط اتصال `tel:`)، واسم حساب التواصل الاجتماعي (**نص فقط وليس رابطاً**)، والموقع الإلكتروني (`https://` فقط، رابط)، والعنوان البريدي. القيمة الفارغة لا تظهر، وإن فرغت كلها يختفي القسم.
+  تظهر طرق التواصل في صفحة المنتدى وأسفل نموذج «التسجيل».
+- **القوائم الخمس** (القسم 4)، لكل منها عنوان وتمهيد (وفقرة ختامية حيث ذُكر) من البطاقة نفسها، وعلى شاشة القائمة رابط إليها:
+  - **المنتدى — الأرقام:** «الرقم كما يظهر» بالعربية والإنجليزية كما سيُعرض تماماً (مثل «+2000» وفي الإنجليزية 2000+؛ «420 مليون» / 420 million)، و«الوصف (ما يعنيه الرقم)». بلا أيقونة.
+  - **المنتدى — التأثير على الأطراف الرئيسية** و**القطاعات الرئيسية (الركائز):** بطاقات؛ «عنوان البطاقة» و«النقاط — سطر لكل نقطة» (5 أسطر في الحقل)، وأيقونة.
+  - **المنتدى — أهداف النسخة** و**المحاور والقطاعات:** نص لكل عنصر، **مرقّمة في الصفحة 01 و02… بترتيبها في القائمة**، ولكل منها فقرة ختامية اختيارية.
+  - **مكونات المنتدى:** سبعة مكونات ليوم المنتدى (عنوان القسم «مكونات اليوم»)، لكل مكوّن وصف بفقرة، وفي بند الجوائز **جائزة في كل سطر**، وفقرة ختامية. حلّت محل البنود الثمانية القديمة **فقط إذا كانت باقية كما هي دون أي تعديل منكم**؛ وإن كنتم عدّلتم القائمة تُركت كما هي.
+- **الفعاليات:** تسع فعاليات لعام 2026 بالشهر فقط (القسم 9). **الجهات المنظمة:** مجموعات الشركاء وشعاراتها (القسم 9)؛
+  وزارات البرنامج الأربع أُضيفت **مخفية** وتُظهرونها من «الشركاء والرعاة».
 
 ## 10. الأسئلة الشائعة
 
@@ -496,8 +579,14 @@ which language you are typing.
   links accept `#section`, `/path` or `https://…`; `javascript:` and similar are refused. Leave the field empty when
   there is no link.
 - Never type passwords or secrets into any field: whatever is entered as content is public.
+- **The new names:** the company's Arabic name is now **«إنوفست القابضة»** (instead of «إنوفست هولدينغ»), and the forum is **«منتدى إنوفست»** / "Innovest Forum"
+  (instead of «منتدى إنوفست العربي» / "Innovest Arab Forum"). The English company name "Innovest Holding" did not change. The migration `RenameHoldingAndForum` replaced the two old names
+  in the saved site texts (pages, general texts, news, events, partners, FAQ and so on), including text you edited by hand when it contained the same old phrase. It does not touch links,
+  the domain or the requests already received. **Text you type afterwards with an old name is not corrected automatically:** use the new names.
 - **The sidebar is grouped:** «نظرة عامة», «الموقع», «منتدى إنوفست», «شبكة المستثمرين الملائكيين», «البرنامج
   التلفزيوني», «الأخبار», «الوارد». Click a group title to collapse or open it; the browser remembers your choice. The
+  «منتدى إنوفست» group holds: events, speakers, partners and sponsors, registrations, interest options, register benefits, **forum identity** («هوية المنتدى»), **past editions** («النسخ السابقة»)
+  and **forum page content** («محتوى صفحة المنتدى», a shortcut to the «صفحات المنتدى» card of the general texts). The
   «الموقع» group holds: site pages, general texts, lists, services, impact figures, FAQ, social links, page sections («أقسام الصفحات»),
   site messages and buttons, menu and footer, brand identity, settings.
 
@@ -517,6 +606,7 @@ the same path after `/en`.
 | ↳ Speakers | `/forum/speakers` | `/en/forum/speakers` |
 | ↳ Partners and sponsors | `/forum/partners` | `/en/forum/partners` |
 | ↳ Registration | `/forum/registration` | `/en/forum/registration` |
+| ↳ Past editions | `/forum/editions` | `/en/forum/editions` |
 | Angel network | `/angel-network` | `/en/angel-network` |
 | ↳ Investors | `/angel-network/investors` | `/en/angel-network/investors` |
 | ↳ Startups | `/angel-network/startups` | `/en/angel-network/startups` |
@@ -530,13 +620,13 @@ the same path after `/en`.
 | Contact | `/contact` | `/en/contact` |
 | Privacy policy | `/privacy` | `/en/privacy` |
 
-(The name shown on the site comes from the «page title» field and may differ from the first column.) **20 pages** in all.
+(The name shown on the site comes from the «page title» field and may differ from the first column.) **21 pages** in all.
 The tree: Home → About, Ecosystem, News, Contact, Privacy policy; Ecosystem → Forum, Angel network, TV; each with the sub-pages above. The home page
 keeps its section ids (`#about` etc.), so old links ending in them still work.
 
 ## 3. Site pages (`/Admin/Pages`)
 
-Sidebar → «الموقع» → «صفحات الموقع». A tree of all pages (20; the count is in the heading) showing: name, URL (opens the
+Sidebar → «الموقع» → «صفحات الموقع». A tree of all pages (21; the count is in the heading) showing: name, URL (opens the
 page in a new tab), «publication», «in menu», an «EN» chip (complete when the page title and the English search title and
 description exist), the order, and an «edit» button.
 
@@ -592,7 +682,8 @@ Where is the rest of each page's content edited?
 | Home | «النصوص العامة» (Hero, About, section headings, register, contact…) + «الخدمات» + «أرقام الأثر» + News + Events + «الشركاء والرعاة» + «الأسئلة الشائعة» |
 | About | «النصوص العامة» (vision, mission, founder's message) + lists: values, why Innovest, sectors, partners in success + «أرقام الأثر» |
 | Ecosystem | «الخدمات» + lists: what we offer, programs, government services, university services |
-| Forum | list «مكونات المنتدى» + the first events (how many: «أقسام الصفحات», default 3) |
+| Forum | the «صفحات المنتدى» card (section 9d) + the five forum lists + «مكونات المنتدى» + events and past editions (how many: «أقسام الصفحات», default 3 each) + partner groups ticked «يظهر في شريط المنتدى» |
+| Past editions (Forum) | «النسخ السابقة» (section 9c) |
 | Events | «الفعاليات» (section 9) |
 | Partners (forum) | «الشركاء والرعاة» + list «الجهات التي نعمل معها» |
 | Angel network | lists: investor services, join steps (with description), startup services, sectors |
@@ -604,7 +695,7 @@ Where is the rest of each page's content edited?
 ## 3b. Page sections (`/Admin/PageSections`)
 
 «الموقع» → «أقسام الصفحات» (the screen title reads «أقسام الصفحات: <the page in view>»). You decide **which sections each page shows and in what order**. The screen opens on the
-home page; the «صفحة أخرى» list offers any of the 19 pages that have sections (every page except «Privacy policy»). The same
+home page; the «صفحة أخرى» list offers any of the 20 pages that have sections (every page except «Privacy policy»). The same
 card also appears at the bottom of «edit page» for every page that has sections, and its buttons there return you to «edit page». «معاينة الصفحة» opens the page. A change
 shows on the site on the next request.
 
@@ -617,17 +708,21 @@ The table: # · section · content · status · order.
 - **Order:** ▲▼ move the section among the page's movable sections. Sections that **do not move** (listed first, with «ثابت» in the order column): the home page's main heading (Hero) is not a row in the table and always stays on top; the «hero figures» inside the
   Hero (can be hidden, cannot move); and «our values» inside «About».
 - **Counts:** number boxes with a «حفظ» button in the table: how many figures in the home hero (1–12, default 4), how many
-  events on the home page (1–12, default 3), how many news items on the home page (1–50, default 6), and how many events on the
-  Forum page (1–12, default 3). A value out of range is refused with a message and nothing changes. The same values are in
+  events on the home page (1–12, default 3), how many news items on the home page (1–50, default 6), how many events on the
+  Forum page (1–12, default 3), and how many past editions on the Forum page (1–12, default 3). A value out of range is refused with a message and nothing changes. The same values are in
   «النصوص العامة» → «عناوين أقسام الصفحة الرئيسية».
+- **The Forum page (`/forum`) has thirteen sections:** about the forum, units, figures, multi-stakeholder impact, core pillars, goals of the edition, focus areas and sectors, forum components, events,
+  past editions, organising bodies, contact details, call-to-action band. All can be hidden and moved from this screen, and a section with no content is hidden automatically
+  (e.g. «past editions» when no edition is visible, «contact details» when all its values are empty). The «Registration» page has a «contact details» section after the form (the form itself is fixed). The
+  «Past editions» page (`/forum/editions`) has one fixed section, the list.
 - The sections and their names are fixed in code: they cannot be added or removed from the panel.
 
 ## 4. Lists (`/Admin/ContentItems`)
 
-«الموقع» → «القوائم (القيم، القطاعات…)». Short text lists shown on the pages, **13 lists**: core values (About), why
+«الموقع» → «القوائم (القيم، القطاعات…)». Short text lists shown on the pages, **18 lists**: core values (About), why
 Innovest (About), sectors we serve, what we offer (ecosystem), our programs, forum components, investor services, startup
 services, government services, university services, organisations we work with, partners in success, steps to join the
-network. Pick the list at the top, then:
+network, **and five lists for the Forum page** (section 9d): Forum — figures, multi-stakeholder impact, core pillars, goals of the edition, focus areas and sectors. Pick the list at the top, then:
 - **Add:** text in Arabic and English (English optional), an icon from a fixed list (or «no icon»), and, for «join
   steps», an extra description. A new item goes to the end of the list.
 - **Edit** (text, icon, order, and the «ظاهر» checkbox, which hides an item without deleting it), **delete** (permanent).
@@ -669,7 +764,7 @@ details, footer, SEO and site data. Each text has an Arabic and an English field
 - **Copyright:** type `{year}` to insert the current year.
 - **Developer credit link** (footer): `https://` or empty.
 - **Hero kicker:** optional; hidden on the English page when its English field is empty.
-- **Header button:** «نص زر الهيدر» and «الصفحة التي يفتحها زر الهيدر» (a drop-down of the 20 pages with their Arabic titles and
+- **Header button:** «نص زر الهيدر» and «الصفحة التي يفتحها زر الهيدر» (a drop-down of the 21 pages with their Arabic titles and
   paths, marked «— غير منشورة» when unpublished, plus «رابط خارجي… (https)»; an invalid stored value falls back to
   `network.join`).
 - **Buttons and links («الأزرار والروابط» card):** every button has a **text** and a **destination**. The destination is
@@ -747,6 +842,43 @@ and content are checked together, as in «Uploading images»).
 - **Mobile browser-bar colour (theme-color):** `#RRGGBB` (six hex digits) or it is refused; **empty = the default `#111145`**. A
   preview of the current colour is shown.
 
+## 6e. Forum identity (`/Admin/ForumIdentity`)
+
+«منتدى إنوفست» → «هوية المنتدى». It changes the look of **the Forum page and every page under it** (events, speakers, partners, registration, past editions, and the event and speaker detail pages)
+in both languages. The rest of the site keeps the Innovest identity, and the page header (navy) and footer keep Innovest colours. The "page not found" page is not part of it. An empty field = the bundled default. Innovest's own identity is in «الهوية البصرية» (section 6d).
+A change shows on the next request. The styles are served from `/forum-theme.css`, and the version number in its link changes on every save, so browsers never keep an old look.
+
+**Images** (four cards, each with a preview of the current image or of the bundled file; extension, type and content are checked together, a refused file shows its message and nothing is saved; no SVG):
+- **Forum logo on a dark background:** shown in the header of forum pages next to the Innovest logo. PNG or WebP, at least 120×32 px, longest side up to 1200, up to 1 MB. It has alt text in Arabic and English
+  (empty = the forum name). Space is limited (up to 110×40 px on desktop), so a short horizontal logo works best. Empty = the bundled forum symbol.
+- **Forum logo on a light background:** read by search engines only (the forum's structured data); it is not shown on the pages, so it has no alt text. PNG or WebP, square or nearly square, from 112×112 up to 1200 px, up to 1 MB. Empty = the bundled forum logo.
+- **Title band background image:** shown behind the title of every forum page, under a layer of the dark primary colour. Decorative, no alt text. JPG, PNG or WebP, at least 1200×400, longest side up to 4000 px and up to 12 megapixels, up to 5 MB. Empty = no image.
+- **Forum share image (og:image):** used when forum pages with no image of their own are shared, **before** the site's general share image (an event or speaker photo comes first). JPG or PNG, at least 1200×630, longest side up to 4000 px and up to 12 megapixels, up to 5 MB (under 300 KB is best). It has alt text in Arabic and English (empty = the forum name).
+- To replace: choose a new file and «حفظ». To remove and go back to the default: tick «حذف والعودة إلى الافتراضي» and «حفظ».
+
+**Colours** (ten colours in `#RRGGBB`; the default shows in the empty field, with a swatch next to each colour):
+
+| Colour | Default | Used for |
+|---|---|---|
+| Primary red | `#d21e33` | headings, primary buttons, header button, tab and active-menu underline |
+| Dark red | `#a11c34` | button hover, end of the title band gradient |
+| Title band gradient start | `#d51d33` | start of the page title band gradient |
+| Gold | `#bd932e` | the gold ring and the secondary button border (decoration) |
+| Gold for text | `#8c6510` | gold text on white |
+| Link colour | `#a11c34` | links and highlighted text on light backgrounds |
+| Light section colour | `#f1e8d2` | cream section backgrounds |
+| Dark colour | `#252626` | dark text and text on gold |
+| Paragraph text colour | `#4b4c4c` | paragraph text |
+| Text on red | `#ffffff` | text of primary buttons and the title band |
+
+- **Contrast check on save:** the contrast ratio of every text/background pair is measured as it will render (the typed colour, or the default); the minimum is **4.5:1** for text and **3:1** for large headings and graphic elements.
+  If any pair misses its minimum, **the whole save is refused and nothing is written** (not even the valid fields of the same form), and a list shows the failing pair, the two colours, the ratio and the required minimum; change one of the two colours. A wrongly formatted colour is refused too.
+- The **«التباين الحالي»** (current contrast) table at the bottom shows every pair with its ratio and a ✓ or ✗.
+
+**Fonts:** one list for the Arabic pages and one for the English pages: «الافتراضي (خط الموقع)», Cairo, or Montserrat (Latin, with Cairo for Arabic). These fonts are already loaded by the site, so no extra request is added, and no other font name can be typed.
+
+**Restore defaults:** deletes every saved colour and font (after a confirmation), so the forum pages return to their default colours; **images are not deleted** (each image has its own remove box). It returns to the forum's default colours, not to the colours of the rest of the site.
+
 ## 7. Menu and footer (`/Admin/Nav`)
 
 «الموقع» → «القائمة والفوتر». Two tabs:
@@ -806,12 +938,16 @@ cards in the lists and on the home page link to these pages.
   time**: start (in the event's local time), optional end and the **UTC offset** (default `+02:00`), **status** (scheduled /
   postponed / cancelled), **attendance mode** (in person / online / mixed), venue name, city and address, **online link**
   (`https://`), **«registration open»**, **event image**, and search engines. The day, month and time text fields remain
-  as a fallback for old events without a date. Lists show upcoming events first (old undated ones before them), then past
+  as a fallback for old events without a date. **«الشهر فقط (اليوم غير معروف بعد)» (month only):** tick the box and pick the month and year (the month field); the date is stored from the 1st at 00:00 to the last day at 23:59 using the UTC offset typed,
+  and the start, end and text day are ignored. The card shows the month name and year with no day or hour, the event page shows «يونيو 2026» / "June 2026", and the event counts as past after the last day of the month. In the panel list it
+  shows «month + year (month only)». To set the day later, untick the box and type the start. **An event with no Arabic summary and no Arabic description** has a `noindex` page and stays out of the sitemap until one is written.
+  **The forum registration form** offers only visible events that are not past, and the server refuses a past event. Lists show upcoming events first (old undated ones before them), then past
   ones; past and cancelled events carry a badge, and the register button disappears automatically after the event ends, when
   it is cancelled, or when registration is closed. Events are listed on `/forum/events`; the first ones also on the Forum page and the home page, as many as set in «أقسام الصفحات» (section 3b; default 3 each).
 - **«الشركاء والرعاة»**: name in both languages, **partner logo** (image), **partner website** (`https://`, optional; opens
   with `rel="sponsored noopener"`), **group**, and **«shown in the home page partner strip»**. **Groups** (the card at the
-  bottom of the screen) are the headings that organise `/forum/partners` (e.g. «main sponsors»); deleting a group **does
+  bottom of the screen) are the headings that organise `/forum/partners` (e.g. «main sponsors»). Each group has a **«يظهر في شريط المنتدى»** (shown in the forum strip) box (and a «في شريط المنتدى» badge in the list): a ticked group is shown
+  with the logos of its **visible** partners in the «الجهات المنظمة» (organising bodies) section of the Forum page (a group with no visible partner is left out; the section heading comes from «صفحات المنتدى»), and it stays on `/forum/partners` either way; deleting a group **does
   not delete its partners**: they are listed after the groups. Hide a partner without deleting it with the «ظاهر/مخفي» badge. **Order** with ▲▼ within the partner's group (one order drives the home strip and the partners page). The logo's **alt text** you write is used on the site in the page language; when empty, the partner's name is used.
 - **Slug:** lower-case English letters, digits and hyphens only (`innovest-forum-2026`), up to 100 characters; some words
   are reserved (e.g. `admin`, `media`, `en`). Left empty when adding, it is built from the English title (`-2` is added on a
@@ -887,6 +1023,36 @@ packages). These screens fill the former «coming soon» pages `/forum/speakers`
   reachable by its URL. `/tv` and `/tv/sponsorship` stay `noindex` while their intro and main text are empty.
 - **Images:** all of the above use the same upload tool and limits (JPG, PNG or WebP up to 5 MB, see «Uploading images»); an image is
   deleted with its item.
+
+## 9c. Past editions (`/Admin/ForumEditions`)
+
+«منتدى إنوفست» → «النسخ السابقة». The register of the forum's past editions with their photos. They appear on the **«Past editions»** page (`/forum/editions`: every visible edition with all its photos) and, on the Forum page, in the
+**«Past editions»** section, which shows the first editions in their order (how many: «أقسام الصفحات», default 3, from 1 to 12) with the cover photo only and a «view all editions» link (its text and the section heading come from «صفحات المنتدى»).
+- **Add an edition:** year (2000–2100), edition label (optional, up to 60 characters, e.g. «النسخة الرابعة») and title (required in Arabic). After adding you land on the edition's page.
+- **Edit an edition:** year, label, title, place (optional), text (optional; a blank line = a new paragraph) and the «ظاهرة في الموقع» box; all in Arabic and English. The list shows: cover, year, title, photo count out of 12, an EN chip
+  (complete when the English title and text are filled), the visibility switch, ▲▼ order, edit and photos, delete.
+- **Photos:** up to **12 per edition**, **one photo per upload**, under the same rules as «Uploading images» (section 9). **The first photo is the edition's cover**; ▲▼ change the order. Each photo has alt text in Arabic and English (empty = the edition title)
+  and a «حفظ الوصف» button. At 12 the upload form disappears and a notice shows; delete a photo to add another (the server refuses a thirteenth too).
+- **Delete:** deleting an edition deletes its photos and their files. Hiding an edition hides it from both pages without deleting.
+- **Empty page:** with no visible edition `/forum/editions` shows the text you write in «edit page», becomes `noindex` and leaves the sitemap, and the Forum page section is hidden.
+  **The English page** stays `noindex` and out of the sitemap until at least one visible edition has an English title and text.
+- **What ships with the site:** on the first start after the deploy, 31 photos for six editions and 8 logos of the organising bodies are copied into the uploads folder, **once** (it is recorded, so it does not repeat).
+  A photo you deleted or a logo you removed is not put back, and nothing you set yourself is replaced.
+
+## 9d. Forum page content (texts and lists)
+
+«منتدى إنوفست» → «محتوى صفحة المنتدى» opens the **«صفحات المنتدى»** card in the general texts (section 6); the lists are under «القوائم» (section 4). Everything on `/forum` is bilingual, and a section with no content is hidden.
+- **The «صفحات المنتدى» card:** forum tagline (the heading of «about the forum»), current edition (e.g. «النسخة الخامسة»), launch line, «about the forum» text (a blank line starts a paragraph), title and text of «introducing the forum»,
+  title and text of the «strategic link» (a line per point), the heading of the «past editions» section and the text of its «all editions» link, the heading «الجهات المنظمة», the headings, leads and closing paragraphs of the lists,
+  and the **contact details**: title, phone (7–15 digits, becomes a `tel:` link), social account name (**text only, not a link**), website (`https://` only, a link) and postal address. An empty value is not shown, and when all are empty the section disappears.
+  The contact details appear on the Forum page and below the «registration» form.
+- **The five lists** (section 4); each has its heading, lead (and a closing paragraph where noted) in that card, and its screen links there:
+  - **Forum — figures:** «the figure as displayed» in Arabic and English exactly as it will show (e.g. «+2000» and, in English, 2000+; «420 مليون» / 420 million) and «the description (what the figure means)». No icon.
+  - **Forum — multi-stakeholder impact** and **core pillars:** cards; «card title» and «points, a line per point» (a 5-row field), and an icon.
+  - **Forum — goals of the edition** and **focus areas and sectors:** one text per item, **numbered 01, 02… on the page in the list's order**, each with an optional closing paragraph.
+  - **Forum components:** seven components of the forum day (section heading «مكونات اليوم»), each with a one-paragraph description, with **one award per line** in the awards item, and a closing paragraph. They replaced the eight old items **only if those were still exactly as shipped, untouched by you**; if you had edited the list it was left as it is.
+- **Events:** nine 2026 events, month only (section 9). **Organising bodies:** partner groups and their logos (section 9);
+  the four programme ministries were added **hidden**, and you show them from «الشركاء والرعاة».
 
 ## 10. FAQ
 
