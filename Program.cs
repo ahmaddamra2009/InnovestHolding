@@ -39,6 +39,11 @@ builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
 builder.Services.Configure<RequestLocalizationOptions>(Cultures.Configure);
 // Framework model-binding messages from the resx, in the request's language.
 builder.Services.AddSingleton<IConfigureOptions<MvcOptions>, ModelBindingMessagesSetup>();
+// The admin's overrides of the public interface texts (Admin › رسائل وأزرار الموقع): every localizer reads them on a
+// public request (PublicTexts), the resx otherwise.
+builder.Services.AddHttpContextAccessor();
+builder.Services.TryAddSingleton<Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory>();
+builder.Services.Replace(ServiceDescriptor.Singleton<Microsoft.Extensions.Localization.IStringLocalizerFactory, PublicTextLocalizerFactory>());
 
 // Razor writes Arabic (and every other non-ASCII letter) as is instead of &#x…; entities. HTML-sensitive characters
 // (< > & " ') are still encoded — the allowed ranges never include them.
@@ -191,6 +196,7 @@ app.UseStaticAssets();   // compression for static paths only; immutable caching
 app.UseCultureUrlNormalizer();
 app.UseRouting();
 app.UseRequestLocalization();   // after routing (route values exist), before the limiter (its messages are localized)
+app.UseMiddleware<PublicTextsMiddleware>(); // the admin's public-text overrides for this request (before the limiter's 429)
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

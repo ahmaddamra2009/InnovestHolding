@@ -233,6 +233,11 @@
   <data name="Ui_SponsorshipPackages" xml:space="preserve"><value>باقات الرعاية</value></data>
   <data name="Ui_ProfilesAria" xml:space="preserve"><value>حسابات {0}</value></data>
   <data name="Admin_SectorInUse" xml:space="preserve"><value>هذا القطاع مستخدم في فرصة استثمارية — عطّله بدلاً من حذفه.</value></data>
+  <data name="Admin_SiteTextsSaved" xml:space="preserve"><value>تم حفظ نصوص الموقع</value></data>
+  <data name="Admin_SiteTextReset" xml:space="preserve"><value>أُعيد النص إلى الافتراضي</value></data>
+  <data name="Admin_SiteTextGroupReset" xml:space="preserve"><value>أُعيدت نصوص المجموعة كلها إلى الافتراضي</value></data>
+  <data name="Admin_SiteTextPlaceholders" xml:space="preserve"><value>«{0}» ({1}): يجب أن يحتوي النص على {2} كما في النص الافتراضي، ولا شيء غيرها بين {{ }}</value></data>
+  <data name="Admin_SiteTextMarkup" xml:space="preserve"><value>«{0}» ({1}): لا يُسمح بالروابط أو الوسوم في هذا الحقل</value></data>
   <data name="Field_JobTitle" xml:space="preserve"><value>المنصب</value></data>
   <data name="Field_JobTitleEn" xml:space="preserve"><value>المنصب (بالإنجليزية)</value></data>
   <data name="Field_Organization" xml:space="preserve"><value>الجهة</value></data>

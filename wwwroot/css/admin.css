@@ -282,3 +282,11 @@ select.form-control { cursor: pointer; }
 .lead-detail dd { margin: 0; color: var(--admin-text); overflow-wrap: anywhere; }
 .lead-detail .lead-value { white-space: pre-line; }
 @media (max-width: 640px) { .lead-detail { grid-template-columns: 1fr; gap: 4px; } .lead-detail dd { margin-bottom: 10px; } }
+
+/* Admin › رسائل وأزرار الموقع (SiteTexts) */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.site-text { padding-block: 12px; border-block-end: 1px solid var(--admin-border); }
+.site-text:last-child { border-block-end: 0; }
+.site-text-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 8px; }
+.site-text-head code { font-size: 0.72rem; }
+@media (max-width: 768px) { .site-text .btn-sm { width: 100%; } }
