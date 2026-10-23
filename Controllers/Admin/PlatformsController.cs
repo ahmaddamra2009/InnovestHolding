@@ -31,10 +31,23 @@ public class PlatformsController : AdminControllerBase
         item.ShortTitleAr = Optional(input.ShortTitleAr);
         item.ShortTitleEn = Optional(input.ShortTitleEn);
         item.LinkUrl = Optional(input.LinkUrl);
-        item.ShowInFooter = input.ShowInFooter;
+        // ShowInFooter is no longer edited here: the footer lists the pages of the site, not the services.
 
         await _db.SaveChangesAsync();
         TempData["Success"] = L(MessageKeys.Admin.PlatformUpdated);
         return RedirectToAction(nameof(Index));
     }
+
+    /// <summary>Shows or hides the row on the public site (a separate action: a form that omits the flag never flips it).</summary>
+    [HttpPost]
+    public async Task<IActionResult> Toggle(int id)
+    {
+        var item = await _db.Platforms.FindAsync(id);
+        if (item == null) return NotFound();
+        item.IsActive = !item.IsActive;
+        await _db.SaveChangesAsync();
+        TempData["Success"] = L(MessageKeys.Admin.StatusToggled);
+        return RedirectToAction(nameof(Index));
+    }
+
 }

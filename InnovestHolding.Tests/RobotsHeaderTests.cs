@@ -9,12 +9,13 @@ using Microsoft.Extensions.Hosting;
 namespace InnovestHolding.Tests;
 
 /// <summary>
-/// The X-Robots-Tag rule on its own pipeline: an indexable path (/ or /en) is noindex unless the response is 200, so an
-/// error page served under the home URL can never be indexed; static types never get the header.
+/// The X-Robots-Tag rule on its own pipeline: the header follows the decision the page put in
+/// HttpContext.Items[SeoPolicy.ItemKey]; no decision, or a status other than 200, is noindex, nofollow (fail-closed);
+/// static types never get the header.
 /// </summary>
 public class RobotsHeaderTests
 {
-    private static async Task<HttpResponseMessage> SendAsync(string path, int status, string contentType)
+    private static async Task<HttpResponseMessage> SendAsync(string path, int status, string contentType, RobotsDecision? decision = null)
     {
         using var host = await new HostBuilder()
             .ConfigureWebHost(w => w.UseTestServer().Configure(app =>
@@ -22,6 +23,7 @@ public class RobotsHeaderTests
                 app.UseRobotsHeader();
                 app.Run(async ctx =>
                 {
+                    if (decision is { } d) ctx.Items[SeoPolicy.ItemKey] = d;
                     ctx.Response.StatusCode = status;
                     ctx.Response.ContentType = contentType;
                     await ctx.Response.WriteAsync("x");
@@ -41,19 +43,24 @@ public class RobotsHeaderTests
     [InlineData("/", 500, "text/html; charset=utf-8")]
     [InlineData("/en", 400, "application/json; charset=utf-8")]
     [InlineData("/en", 429, "application/json")]
-    public async Task Non_200_html_or_json_on_an_indexable_path_is_noindex(string path, int status, string type) =>
-        Assert.Equal(RobotsHeader.Value, Robots(await SendAsync(path, status, type)));
+    public async Task Non_200_html_or_json_is_noindex_even_with_an_index_decision(string path, int status, string type) =>
+        Assert.Equal(RobotsHeader.Value, Robots(await SendAsync(path, status, type, RobotsDecision.Index)));
 
     [Theory]
-    [InlineData("/", 200, "text/html; charset=utf-8")]
-    [InlineData("/en", 200, "text/html; charset=utf-8")]
-    [InlineData("/x", 404, "text/css")]
-    public async Task Indexable_200_and_non_page_types_have_no_header(string path, int status, string type) =>
-        Assert.Null(Robots(await SendAsync(path, status, type)));
+    [InlineData("/", 200, "text/html; charset=utf-8", RobotsDecision.Index)]
+    [InlineData("/x", 404, "text/css", null)]
+    public async Task Indexable_200_and_non_page_types_have_no_header(string path, int status, string type, RobotsDecision? decision) =>
+        Assert.Null(Robots(await SendAsync(path, status, type, decision)));
 
     [Fact]
-    public async Task Other_html_paths_are_noindex_even_with_200() =>
-        Assert.Equal(RobotsHeader.Value, Robots(await SendAsync("/Account/Login", 200, "text/html")));
+    public async Task A_thin_page_is_noindex_follow() =>
+        Assert.Equal(RobotsHeader.FollowValue, Robots(await SendAsync("/forum/speakers", 200, "text/html", RobotsDecision.NoIndexFollow)));
+
+    [Theory] // no decision = a page someone forgot, the login page, the admin: fail-closed
+    [InlineData("/Account/Login")]
+    [InlineData("/")]
+    public async Task A_page_without_a_decision_is_noindex_nofollow(string path) =>
+        Assert.Equal(RobotsHeader.Value, Robots(await SendAsync(path, 200, "text/html")));
 }
 
 [Collection("App")]

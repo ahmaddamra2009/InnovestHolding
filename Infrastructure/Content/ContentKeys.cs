@@ -1,3 +1,5 @@
+using InnovestHolding.Infrastructure.Localization;
+
 namespace InnovestHolding.Infrastructure.Content;
 
 /// <summary>How a key's text is turned into markup on the public page.</summary>
@@ -25,6 +27,10 @@ public enum ContentRule
     SitePath,
     /// <summary>A whole number from 1 to <see cref="ContentKeys.MaxCount"/> (ASCII digits).</summary>
     Count,
+    /// <summary>A key of the route table (Infrastructure/Site/SiteRoutes), e.g. network.join.</summary>
+    PageKey,
+    /// <summary>An international phone number as digits only (8–15), e.g. 201141410808 — used in https://wa.me/….</summary>
+    Digits,
 }
 
 /// <param name="Key">SiteContents.SectionKey.</param>
@@ -36,11 +42,13 @@ public enum ContentRule
 public sealed record ContentKey(
     string Key, string Group, string Label, int MaxLength = ContentKeys.DefaultMax,
     ContentFormat Format = ContentFormat.Plain, ContentRule Rule = ContentRule.None,
-    bool Neutral = false, bool Optional = false, bool AllowEmpty = false, bool Multiline = false);
+    bool Neutral = false, bool Optional = false, bool AllowEmpty = false, bool Multiline = false, string? HintKey = null);
 
 /// <summary>
 /// Registry of every SiteContents key the site reads. The admin editor is generated from it (only these keys can be
-/// saved — no over-posting), and the migration AddBilingualContent inserts every one of them.
+/// saved — no over-posting); the migrations AddBilingualContent and ApplyCompanyProfile insert every one of them.
+/// Rows that are no longer read (seo_title, seo_description — the home page's SEO is in Pages since the multi-page
+/// site; footer_platforms_title) stay in the database untouched but are not listed here.
 /// </summary>
 public static class ContentKeys
 {
@@ -60,15 +68,23 @@ public static class ContentKeys
         int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var n)
         && n is >= 1 and <= MaxCount ? n : fallback;
 
+    /// <summary>Items per page of the public list pages (news, events…).</summary>
+    public const string ListPageSize = "list_page_size";
+
+    public const int ListPageSizeFallback = 12;
+
     /// <summary>Internal marker of the one-time timestamp conversion — never shown in the admin.</summary>
     public const string TimestampsUtcMarker = "sys_timestamps_utc";
 
     public static readonly IReadOnlyList<(string Id, string Title)> Groups =
     [
-        ("header", "الهيدر وزر التسجيل"),
+        ("header", "الهيدر والأزرار"),
+        ("brand", "الهوية"),
         ("hero", "قسم Hero - الصفحة الرئيسية"),
         ("about", "قسم من نحن"),
-        ("sections", "عناوين الأقسام"),
+        ("sections", "عناوين أقسام الصفحة الرئيسية"),
+        ("pages", "عناوين أقسام الصفحات"),
+        ("founder", "كلمة المؤسس (تُخفى ما دام نص الكلمة فارغاً)"),
         ("register", "قسم التسجيل"),
         ("contact", "معلومات التواصل"),
         ("footer", "الفوتر"),
@@ -78,6 +94,10 @@ public static class ContentKeys
     public static readonly IReadOnlyList<ContentKey> All =
     [
         new("cta_register", "header", "نص زر «سجّل الآن»", 100),
+        new("header_cta_label", "header", "نص زر الهيدر", 100),
+        new("header_cta_page", "header", "الصفحة التي يفتحها زر الهيدر", 60, Rule: ContentRule.PageKey, Neutral: true),
+
+        new("brand_positioning", "brand", "الشعار الرئيسي (Positioning)", 500, Multiline: true),
 
         new("hero_badge", "hero", "شارة الترحيب", 200),
         new("hero_kicker", "hero", "السطر العلوي (اختياري — لا يظهر في الصفحة الإنجليزية إن تُرك فارغاً)", 100, Optional: true, AllowEmpty: true),
@@ -97,7 +117,7 @@ public static class ContentKeys
         new("mission_title", "about", "عنوان الرسالة", 100),
         new("mission_text", "about", "نص الرسالة", 1000, Multiline: true),
         new("values_title", "about", "عنوان القيم", 100),
-        new("values_text", "about", "نص القيم", 1000, Multiline: true),
+        new("values_text", "about", "نص القيم", 1000, Multiline: true, HintKey: MessageKeys.Admin.ListHint),
 
         new("platforms_badge", "sections", "المنصات — الشارة", 100),
         new("platforms_title", "sections", "المنصات — العنوان (المميز بين { })", 200, ContentFormat.Highlight),
@@ -117,6 +137,15 @@ public static class ContentKeys
         new("faq_badge", "sections", "الأسئلة الشائعة — الشارة", 100),
         new("faq_title", "sections", "الأسئلة الشائعة — العنوان (المميز بين { })", 200, ContentFormat.Highlight),
         new("faq_subtitle", "sections", "الأسئلة الشائعة — الوصف", 1000, Multiline: true),
+        new("ecosystem_badge", "sections", "المنظومة — الشارة", 100),
+        new("ecosystem_title", "sections", "المنظومة — العنوان (المميز بين { })", 200, ContentFormat.Highlight),
+        new("ecosystem_subtitle", "sections", "المنظومة — الوصف", 1000, Multiline: true),
+        new("cta_band_title", "sections", "شريط الدعوة في أسفل الصفحات — العنوان (المميز بين { })", 200, ContentFormat.Highlight),
+        new("cta_band_text", "sections", "شريط الدعوة — النص", 500, Multiline: true),
+        new(ListPageSize, "sections", "عدد العناصر في كل صفحة من القوائم (الأخبار، الفعاليات…) (1–50)", 2, Rule: ContentRule.Count, Neutral: true),
+
+        new("impact_title", "pages", "الأثر المتوقع — العنوان (المميز بين { })", 200, ContentFormat.Highlight),
+        new("impact_intro", "pages", "الأثر المتوقع — النص التمهيدي (اختياري)", 500, AllowEmpty: true),
 
         new("register_badge", "register", "الشارة", 100),
         new("register_title", "register", "العنوان (المميز بين { })", 200, ContentFormat.Highlight),
@@ -129,11 +158,12 @@ public static class ContentKeys
         new("contact_address", "contact", "العنوان", 300),
         new("contact_phone", "contact", "الهاتف", 50, Neutral: true),
         new("contact_email", "contact", "البريد الإلكتروني", 200, Neutral: true),
+        new("contact_whatsapp", "contact", "رقم واتساب بالصيغة الدولية — أرقام فقط (اختياري)", 15, Rule: ContentRule.Digits, Neutral: true, AllowEmpty: true),
+        new("contact_website", "contact", "الموقع الإلكتروني (https — اختياري)", 200, Rule: ContentRule.HttpsUrl, Neutral: true, AllowEmpty: true),
         new("contact_hours", "contact", "ساعات العمل", 200),
 
         new("footer_description", "footer", "وصف الفوتر", 1000, Multiline: true),
         new("footer_quicklinks_title", "footer", "عنوان «روابط سريعة»", 100),
-        new("footer_platforms_title", "footer", "عنوان «منصاتنا»", 100),
         new("footer_contact_title", "footer", "عنوان «تواصل معنا»", 100),
         new("footer_copyright", "footer", "حقوق النشر ({year} = السنة الحالية)", 300, ContentFormat.Year),
         new("footer_credit_text", "footer", "نص «تصميم وتطوير بواسطة»", 200),
@@ -141,16 +171,29 @@ public static class ContentKeys
         new("footer_credit_url", "footer", "رابط الجهة المطوّرة (https)", 500, Rule: ContentRule.HttpsUrl, Neutral: true, AllowEmpty: true),
 
         new("site_name", "seo", "اسم الموقع (العنوان، نص الشعار البديل، og:site_name)", 100),
-        new("seo_title", "seo", "عنوان الصفحة في محركات البحث", 200),
-        new("seo_description", "seo", "وصف الصفحة في محركات البحث", 300, Multiline: true),
         new("seo_og_image", "seo", "صورة المشاركة (مسار داخل الموقع يبدأ بـ /)", 300, Rule: ContentRule.SitePath, Neutral: true, AllowEmpty: true),
         new("seo_og_image_alt", "seo", "النص البديل لصورة المشاركة", 200),
         new("site_base_url", "seo", "رابط الموقع الأساسي (https://النطاق — مطلوب للـ canonical وخريطة الموقع)", 200, Rule: ContentRule.BaseUrl, Neutral: true, AllowEmpty: true),
         new("org_address_locality", "seo", "المدينة (للبيانات المنظمة — اختياري)", 100, Neutral: true, AllowEmpty: true),
         new("org_address_country", "seo", "رمز الدولة (للبيانات المنظمة — اختياري، مثل EG)", 10, Neutral: true, AllowEmpty: true),
+
+        new("founder_heading", "founder", "عنوان القسم (المميز بين { })", 200, ContentFormat.Highlight),
+        new("founder_name", "founder", "الاسم", 200),
+        new("founder_title", "founder", "الصفة", 200),
+        new("founder_message", "founder", "نص الكلمة (فارغ = القسم مخفي)", Multiline: true, AllowEmpty: true),
+
+        // Headings of the lists (ContentItems) on the pages: one title + optional lead sentence per group.
+        .. ContentItemGroups.All.Where(g => g.TitleKey != "values_title").Select(g =>
+            new ContentKey(g.TitleKey, "pages", $"{g.Label} — العنوان (المميز بين {{ }})", 200, ContentFormat.Highlight)),
+        .. ContentItemGroups.All.Select(g =>
+            new ContentKey(g.IntroKey!, "pages", $"{g.Label} — النص التمهيدي (اختياري)", 500, AllowEmpty: true)),
     ];
 
     private static readonly Dictionary<string, ContentKey> ByKey = All.ToDictionary(k => k.Key);
+
+    /// <summary>The stored list page size when valid, else <see cref="ListPageSizeFallback"/>.</summary>
+    public static int PageSize(IReadOnlyDictionary<string, TextPair> content) =>
+        ParseCount(content.GetValueOrDefault(ListPageSize)?.Ar, ListPageSizeFallback);
 
     public static ContentKey? Find(string key) => ByKey.GetValueOrDefault(key);
 }

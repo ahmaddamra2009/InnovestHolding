@@ -1,0 +1,128 @@
+@model BlockVm
+@using InnovestHolding.Infrastructure.Content
+@* The small blocks of a page, one switch: vision/mission, stats, services, partners, empty state, founder, call to action. *@
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+@switch (Model)
+{
+  case VisionBlock vision:
+    <section class="page-section">
+      <div class="container">
+        <div class="vision-grid">
+          @foreach (var card in vision.Cards)
+          {
+            <article class="vision-card reveal">
+              <span class="card-corner" aria-hidden="true"></span>
+              <div class="item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(card.IconSvg)</svg></div>
+              <h2 lang="@card.Title.Lang" dir="@card.Title.Dir">@card.Title</h2>
+              <p lang="@card.Text.Lang" dir="@card.Text.Dir">@card.Text</p>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+    break;
+
+  case StatsBlock stats:
+    <section class="page-section is-dark">
+      <div class="container">
+        @if (!stats.Title.IsEmpty)
+        {
+          <div class="block-head">
+            <h2 class="block-title" lang="@stats.Title.Lang" dir="@stats.Title.Dir">@ContentText.Highlight(stats.Title)</h2>
+            @if (!stats.Intro.IsEmpty)
+            {
+              <p class="block-intro" lang="@stats.Intro.Lang" dir="@stats.Intro.Dir">@stats.Intro</p>
+            }
+          </div>
+        }
+        <div class="impact-grid">
+          @foreach (var s in stats.Stats)
+          {
+            <div class="impact-card reveal">
+              <div class="impact-number" data-counter="@s.Value.ToString(inv)" data-suffix="@s.Suffix">@s.Value.ToString("N0", inv)@s.Suffix</div>
+              <div class="impact-label" lang="@s.Label.Lang" dir="@s.Label.Dir">@s.Label</div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+    break;
+
+  case ServicesBlock services:
+    <section class="page-section is-cream">
+      <div class="container">
+        <partial name="_SectionHeader" model="services.Header" />
+        <partial name="Blocks/_ServiceGrid" model="services" />
+      </div>
+    </section>
+    break;
+
+  case PartnersBlock partners:
+    <section class="page-section">
+      <div class="container">
+        <div class="block-head">
+          <h2 class="block-title" lang="@partners.Title.Lang" dir="@partners.Title.Dir">@ContentText.Highlight(partners.Title)</h2>
+        </div>
+        <ul class="partner-grid">
+          @foreach (var partner in partners.Partners)
+          {
+            <li class="partner-tile"><span lang="@partner.Lang" dir="@partner.Dir">@partner</span></li>
+          }
+        </ul>
+      </div>
+    </section>
+    break;
+
+  case EmptyBlock empty:
+    <section class="page-section">
+      <div class="container">
+        <div class="empty-state">
+          <svg class="empty-art" viewBox="0 0 96 96" aria-hidden="true"><polygon points="12,20 84,20 48,80" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><polygon points="38,32 58,32 48,50" class="empty-art-fill"/></svg>
+          <p class="empty-text" lang="@empty.Text.Lang" dir="@empty.Text.Dir">@empty.Text</p>
+          @if (empty.Action is { } action)
+          {
+            <a href="@action.Href" class="btn btn-accent" lang="@action.Title.Lang" dir="@action.Title.Dir">@action.Title</a>
+          }
+        </div>
+      </div>
+    </section>
+    break;
+
+  case FounderBlock founder:
+    <section class="page-section is-cream">
+      <div class="container">
+        <div class="founder">
+          <h2 class="block-title" lang="@founder.Heading.Lang" dir="@founder.Heading.Dir">@ContentText.Highlight(founder.Heading)</h2>
+          <blockquote class="founder-message" lang="@founder.Message.Lang" dir="@founder.Message.Dir">@ContentText.Lines(founder.Message)</blockquote>
+          <p class="founder-name"><strong lang="@founder.Name.Lang" dir="@founder.Name.Dir">@founder.Name</strong>
+            <span lang="@founder.Title.Lang" dir="@founder.Title.Dir">@founder.Title</span></p>
+        </div>
+      </div>
+    </section>
+    break;
+
+  case CtaBlock cta:
+    <section class="cta-band">
+      <div class="container">
+        <div class="cta-band-inner">
+          <div>
+            <h2 class="cta-title" lang="@cta.Title.Lang" dir="@cta.Title.Dir">@ContentText.Highlight(cta.Title)</h2>
+            @if (!cta.Text.IsEmpty)
+            {
+              <p lang="@cta.Text.Lang" dir="@cta.Text.Dir">@cta.Text</p>
+            }
+          </div>
+          <div class="cta-actions">
+            @for (var i = 0; i < cta.Buttons.Count; i++)
+            {
+              var b = cta.Buttons[i];
+              <a href="@b.Href" class="btn @(i == 0 ? "btn-accent" : "btn-outline-light")" lang="@b.Title.Lang" dir="@b.Title.Dir">@b.Title</a>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+    break;
+}

@@ -22,6 +22,8 @@ public class AppDbContext : DbContext
     public DbSet<InterestOption> InterestOptions => Set<InterestOption>();
     public DbSet<RegisterBenefit> RegisterBenefits => Set<RegisterBenefit>();
     public DbSet<SocialLink> SocialLinks => Set<SocialLink>();
+    public DbSet<Page> Pages => Set<Page>();
+    public DbSet<ContentItem> ContentItems => Set<ContentItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,14 +42,17 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<NavItem>()
             .HasIndex(n => n.SortOrder);
 
+        // Public lists filter on IsActive and order by SortOrder.
         modelBuilder.Entity<Event>()
-            .HasIndex(e => e.SortOrder);
-
-        modelBuilder.Entity<Platform>()
-            .HasIndex(p => p.SortOrder);
+            .HasIndex(e => new { e.IsActive, e.SortOrder });
 
         modelBuilder.Entity<News>()
-            .HasIndex(n => n.SortOrder);
+            .HasIndex(n => new { n.IsActive, n.SortOrder });
+
+        // Bool flags have no model default (EF would skip an explicit false on insert); the migration gives existing
+        // rows 1 through the column default.
+        modelBuilder.Entity<Platform>().HasIndex(p => new { p.IsActive, p.SortOrder });
+        modelBuilder.Entity<Partner>().HasIndex(p => new { p.IsActive, p.SortOrder });
 
         // Deleting an option keeps the registrations (their Interest text is a snapshot).
         modelBuilder.Entity<Registration>()
@@ -67,5 +72,20 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<InterestOption>().HasIndex(o => new { o.IsActive, o.SortOrder });
         modelBuilder.Entity<RegisterBenefit>().HasIndex(b => new { b.IsActive, b.SortOrder });
         modelBuilder.Entity<SocialLink>().HasIndex(s => s.Network).IsUnique();
+
+        modelBuilder.Entity<Page>(e =>
+        {
+            e.HasIndex(p => p.Key).IsUnique();
+            e.Property(p => p.Key).IsUnicode(false);
+            e.Property(p => p.UpdatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
+
+        modelBuilder.Entity<ContentItem>(e =>
+        {
+            e.HasIndex(i => new { i.Group, i.IsActive, i.SortOrder });
+            e.Property(i => i.Group).IsUnicode(false);
+            e.Property(i => i.IconKey).IsUnicode(false);
+            e.Property(i => i.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
     }
 }

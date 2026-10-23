@@ -47,6 +47,17 @@ public static class ContentText
     public static IHtmlContent Lines(LText text) =>
         new HtmlString(string.Join("<br>", text.Value.Replace("\r\n", "\n").Split('\n').Select(Encoder.Encode)));
 
+    /// <summary>
+    /// A list written as one line ("الابتكار، الشراكة، …" or "Innovation, partnership, …") → its trimmed items, split on
+    /// the Arabic comma «،» and the Latin comma. Fewer than two items → empty: the text is not a list and is shown as
+    /// written. Items stay plain text (encoded by Razor where they are rendered).
+    /// </summary>
+    public static IReadOnlyList<string> ListItems(string? text)
+    {
+        var items = (text ?? "").Split(['،', ','], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return items.Length >= 2 ? items : [];
+    }
+
     /// <summary>"{year}" → the current UTC year (invariant digits).</summary>
     public static string WithYear(string value, DateTime utcNow) =>
         value.Replace("{year}", utcNow.Year.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal);

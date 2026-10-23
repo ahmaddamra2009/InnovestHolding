@@ -1,17 +1,25 @@
 @model SeoVm
-@* One partial renders the whole alternate set, so the two pages cannot diverge. Absolute URLs are omitted when no
-   base URL is known (Infrastructure/Seo/SiteUrl). Every value is attribute-encoded by Razor; the JSON-LD is the only
-   raw output and it is serialised by System.Text.Json with HTML-sensitive characters escaped. *@
+@* One partial renders the whole head set, so the two languages cannot diverge. Absolute URLs are omitted when no
+   base URL is known (Infrastructure/Seo/SiteUrl); hreflang only when both languages of the page are indexable
+   (Infrastructure/Seo/SeoPolicy). Every value is attribute-encoded by Razor; the JSON-LD is the only raw output and
+   it is serialised by System.Text.Json with HTML-sensitive characters escaped. *@
 <title>@Model.Title</title>
 <meta name="description" content="@Model.Description">
+@if (Model.RobotsMeta is not null)
+{
+    <meta name="robots" content="@Model.RobotsMeta">
+}
 @if (Model.Canonical is not null)
 {
     <link rel="canonical" href="@Model.Canonical">
+}
+@if (Model.AlternateAr is not null && Model.AlternateEn is not null)
+{
     <link rel="alternate" hreflang="ar" href="@Model.AlternateAr">
     <link rel="alternate" hreflang="en" href="@Model.AlternateEn">
     <link rel="alternate" hreflang="x-default" href="@Model.AlternateAr">
 }
-<meta property="og:type" content="website">
+<meta property="og:type" content="@Model.OgType">
 <meta property="og:site_name" content="@Model.SiteName">
 <meta property="og:title" content="@Model.Title">
 <meta property="og:description" content="@Model.Description">
@@ -20,13 +28,21 @@
     <meta property="og:url" content="@Model.Canonical">
 }
 <meta property="og:locale" content="@Model.OgLocale">
-<meta property="og:locale:alternate" content="@Model.OgLocaleAlternate">
+@if (Model.OgLocaleAlternate is not null)
+{
+    <meta property="og:locale:alternate" content="@Model.OgLocaleAlternate">
+}
 @if (Model.OgImage is not null)
 {
     <meta property="og:image" content="@Model.OgImage">
+    @if (Model.OgImageWidth is { } w && Model.OgImageHeight is { } h)
+    {
+        <meta property="og:image:width" content="@w">
+        <meta property="og:image:height" content="@h">
+    }
     <meta property="og:image:alt" content="@Model.OgImageAlt">
 }
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="@Model.TwitterCard">
 @if (!string.IsNullOrEmpty(Model.JsonLd))
 {
     @* <!script> opts this element out of tag-helper processing (which would entity-encode the "+" of the type). *@

@@ -166,11 +166,20 @@ public class BilingualUnitTests
         System.Xml.Linq.XDocument.Load(file).Root!.Elements("data")
             .ToDictionary(d => (string)d.Attribute("name")!, d => (string?)d.Element("value") ?? "");
 
-    public static string RepoRoot()
+    /// <summary>
+    /// The repository root: searched upwards from the test binaries, then from the calling test's source file (a build with
+    /// <c>--artifacts-path</c> puts the binaries outside the repository).
+    /// </summary>
+    public static string RepoRoot([System.Runtime.CompilerServices.CallerFilePath] string sourceFile = "")
     {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "InnovestHolding.csproj"))) dir = dir.Parent;
-        return dir?.FullName ?? throw new InvalidOperationException("Repository root not found.");
+        static DirectoryInfo? Up(string? start)
+        {
+            var dir = string.IsNullOrEmpty(start) ? null : new DirectoryInfo(start);
+            while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "InnovestHolding.csproj"))) dir = dir.Parent;
+            return dir;
+        }
+        return (Up(AppContext.BaseDirectory) ?? Up(Path.GetDirectoryName(sourceFile)))?.FullName
+               ?? throw new InvalidOperationException("Repository root not found.");
     }
 
     private static IEnumerable<string> AllMessageKeys() =>
@@ -210,10 +219,12 @@ public class BilingualUnitTests
     {
         var root = RepoRoot();
         var files = Directory.GetFiles(Path.Combine(root, "Views", "Home"), "*.cshtml")
-            .Concat([Path.Combine(root, "Views", "Shared", "_Layout.cshtml"), Path.Combine(root, "Views", "Shared", "_SeoHead.cshtml"),
-                     Path.Combine(root, "Views", "Shared", "Error.cshtml")])
+            .Concat(Directory.GetFiles(Path.Combine(root, "Views", "Site"), "*.cshtml"))
+            .Concat(Directory.GetFiles(Path.Combine(root, "Views", "Shared", "Blocks"), "*.cshtml"))
+            .Concat(new[] { "_Layout", "_SeoHead", "Error", "_Header", "_Footer", "_SectionHeader" }
+                .Select(n => Path.Combine(root, "Views", "Shared", n + ".cshtml")))
             .ToList();
-        Assert.True(files.Count >= 6, $"scanned {files.Count} files");
+        Assert.True(files.Count >= 20, $"scanned {files.Count} files");
         var hits = files.SelectMany(f => File.ReadAllLines(f).Select((line, i) => (f, i, line)))
             .Where(x => Regex.IsMatch(x.line, "[؀-ۿ]"))
             .Select(x => $"{Path.GetFileName(x.f)}:{x.i + 1}")

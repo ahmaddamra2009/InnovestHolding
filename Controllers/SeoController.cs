@@ -3,44 +3,43 @@ using System.Xml;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Infrastructure.Seo;
+using InnovestHolding.Infrastructure.Site;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InnovestHolding.Controllers;
 
-/// <summary>robots.txt and sitemap.xml, generated because both depend on the stored base URL.</summary>
-public class SeoController(IHomeContentCache cache, IWebHostEnvironment environment) : Controller
+/// <summary>robots.txt and sitemap.xml, generated because both depend on the stored base URL and on the content.</summary>
+public class SeoController(ISiteContentCache cache, IWebHostEnvironment environment) : Controller
 {
-    private async Task<string?> BaseUrlAsync()
-    {
-        var snapshot = await cache.GetAsync(HttpContext.RequestAborted);
-        return SiteUrl.Resolve(snapshot.Content.GetValueOrDefault(SiteUrl.ContentKey)?.Ar, environment, Request);
-    }
-
     [HttpGet("/robots.txt")]
     public async Task<IActionResult> Robots()
     {
-        var baseUrl = await BaseUrlAsync();
+        var snapshot = await cache.GetAsync(HttpContext.RequestAborted);
+        var baseUrl = SiteUrl.Resolve(snapshot.Content.GetValueOrDefault(SiteUrl.ContentKey)?.Ar, environment, Request);
         var text = new StringBuilder()
             .Append("User-agent: *\n")
             .Append("Disallow: /Admin\n")
             .Append("Disallow: /admin\n")
+            .Append("Disallow: /forms\n")
+            .Append("Disallow: /en/forms\n")
             .Append("Allow: /\n");
         if (baseUrl is not null) text.Append("Sitemap: ").Append(baseUrl).Append("/sitemap.xml\n");
         return Content(text.ToString(), "text/plain; charset=utf-8");
     }
 
+    /// <summary>
+    /// Every page URL whose robots decision is Index (<see cref="SeoPolicy.Decide"/> — the same function the pages use),
+    /// each with its hreflang pair only when both languages are indexable.
+    /// </summary>
     [HttpGet("/sitemap.xml")]
     public async Task<IActionResult> Sitemap()
     {
-        var baseUrl = await BaseUrlAsync();
+        var snapshot = await cache.GetAsync(HttpContext.RequestAborted);
+        var baseUrl = SiteUrl.Resolve(snapshot.Content.GetValueOrDefault(SiteUrl.ContentKey)?.Ar, environment, Request);
         if (baseUrl is null) return NotFound();
 
         const string ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
         const string xhtml = "http://www.w3.org/1999/xhtml";
-        var alternates = new (string Lang, string Href)[]
-        {
-            ("ar", baseUrl + CultureUrls.ArabicHome), ("en", baseUrl + CultureUrls.EnglishHome), ("x-default", baseUrl + CultureUrls.ArabicHome)
-        };
 
         var sb = new StringBuilder();
         using (var w = XmlWriter.Create(sb, new XmlWriterSettings { Indent = true, Encoding = Encoding.UTF8 }))
@@ -48,19 +47,33 @@ public class SeoController(IHomeContentCache cache, IWebHostEnvironment environm
             w.WriteStartDocument();
             w.WriteStartElement("urlset", ns);
             w.WriteAttributeString("xmlns", "xhtml", null, xhtml);
-            foreach (var path in CultureUrls.Indexable)
+            foreach (var english in new[] { false, true })
             {
-                w.WriteStartElement("url", ns);
-                w.WriteElementString("loc", ns, baseUrl + path);
-                foreach (var (lang, href) in alternates)
+                foreach (var page in SiteRoutes.All)
                 {
-                    w.WriteStartElement("xhtml", "link", xhtml);
-                    w.WriteAttributeString("rel", "alternate");
-                    w.WriteAttributeString("hreflang", lang);
-                    w.WriteAttributeString("href", href);
+                    if (SeoPolicy.Decide(page, english, snapshot) != RobotsDecision.Index) continue;
+                    w.WriteStartElement("url", ns);
+                    w.WriteElementString("loc", ns, baseUrl + CultureUrls.Page(page.Key, english));
+                    // A list page's date would be its items'; only text pages carry their own date.
+                    if (page.Kind != PageKind.List && snapshot.Page(page.Key) is { } row)
+                        w.WriteElementString("lastmod", ns, row.UpdatedAt.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+                    if (SeoPolicy.HasAlternates(page, snapshot))
+                    {
+                        foreach (var (lang, href) in new[]
+                                 {
+                                     ("ar", CultureUrls.Page(page.Key, false)), ("en", CultureUrls.Page(page.Key, true)),
+                                     ("x-default", CultureUrls.Page(page.Key, false)),
+                                 })
+                        {
+                            w.WriteStartElement("xhtml", "link", xhtml);
+                            w.WriteAttributeString("rel", "alternate");
+                            w.WriteAttributeString("hreflang", lang);
+                            w.WriteAttributeString("href", baseUrl + href);
+                            w.WriteEndElement();
+                        }
+                    }
                     w.WriteEndElement();
                 }
-                w.WriteEndElement();
             }
             w.WriteEndElement();
             w.WriteEndDocument();

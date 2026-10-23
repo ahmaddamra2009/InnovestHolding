@@ -33,4 +33,7 @@ public class Platform
     public string IconSvg { get; set; } = string.Empty;
 
     public int SortOrder { get; set; }
+
+    /// <summary>Shown on the public site (the «Our services» cards).</summary>
+    public bool IsActive { get; set; } = true;
 }

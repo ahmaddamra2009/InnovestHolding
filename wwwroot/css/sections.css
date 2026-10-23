@@ -27,12 +27,12 @@
   height: 100%;
   opacity: 0.04;
   background-image: 
-    linear-gradient(30deg, var(--gold) 12%, transparent 12.5%, transparent 87%, var(--gold) 87.5%, var(--gold)),
-    linear-gradient(150deg, var(--gold) 12%, transparent 12.5%, transparent 87%, var(--gold) 87.5%, var(--gold)),
-    linear-gradient(30deg, var(--gold) 12%, transparent 12.5%, transparent 87%, var(--gold) 87.5%, var(--gold)),
-    linear-gradient(150deg, var(--gold) 12%, transparent 12.5%, transparent 87%, var(--gold) 87.5%, var(--gold)),
-    linear-gradient(60deg, rgba(184, 115, 50, 0.3) 25%, transparent 25.5%, transparent 75%, rgba(184, 115, 50, 0.3) 75%, rgba(184, 115, 50, 0.3)),
-    linear-gradient(60deg, rgba(184, 115, 50, 0.3) 25%, transparent 25.5%, transparent 75%, rgba(184, 115, 50, 0.3) 75%, rgba(184, 115, 50, 0.3));
+    linear-gradient(30deg, var(--accent) 12%, transparent 12.5%, transparent 87%, var(--accent) 87.5%, var(--accent)),
+    linear-gradient(150deg, var(--accent) 12%, transparent 12.5%, transparent 87%, var(--accent) 87.5%, var(--accent)),
+    linear-gradient(30deg, var(--accent) 12%, transparent 12.5%, transparent 87%, var(--accent) 87.5%, var(--accent)),
+    linear-gradient(150deg, var(--accent) 12%, transparent 12.5%, transparent 87%, var(--accent) 87.5%, var(--accent)),
+    linear-gradient(60deg, rgba(247, 134, 16, 0.3) 25%, transparent 25.5%, transparent 75%, rgba(247, 134, 16, 0.3) 75%, rgba(247, 134, 16, 0.3)),
+    linear-gradient(60deg, rgba(247, 134, 16, 0.3) 25%, transparent 25.5%, transparent 75%, rgba(247, 134, 16, 0.3) 75%, rgba(247, 134, 16, 0.3));
   background-size: 80px 140px;
   background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
   pointer-events: none;
@@ -45,7 +45,7 @@
   inset-inline-start: 15%;
   width: 2px;
   height: 600px;
-  background: linear-gradient(180deg, transparent, rgba(184, 115, 50, 0.3), transparent);
+  background: linear-gradient(180deg, transparent, rgba(247, 134, 16, 0.3), transparent);
   transform: rotate(calc(25deg * var(--dir)));
   pointer-events: none;
 }
@@ -63,7 +63,7 @@
   width: 500px;
   height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(184, 115, 50, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(247, 134, 16, 0.12) 0%, transparent 70%);
   top: 20%;
   inset-inline-end: -10%;
   pointer-events: none;
@@ -90,7 +90,7 @@
   gap: 14px;
   padding-block: 10px; padding-inline: 28px 10px;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(184, 115, 50, 0.25);
+  border: 1px solid rgba(247, 134, 16, 0.25);
   border-radius: var(--radius-full);
   margin-bottom: 36px;
   backdrop-filter: blur(10px);
@@ -103,7 +103,7 @@
 }
 
 .hero-logo-badge span {
-  color: var(--gold-light);
+  color: var(--accent-light);
   font-size: 0.95rem;
   font-weight: 700;
 }
@@ -121,7 +121,7 @@
   display: block;
   font-size: clamp(1.2rem, 2.5vw, 1.8rem);
   font-weight: 700;
-  color: var(--gold);
+  color: var(--accent);
   letter-spacing: 4px;
   margin-bottom: 8px;
   font-family: 'Cairo', sans-serif;
@@ -176,7 +176,7 @@
 .hero-stat-number {
   font-size: 2.2rem;
   font-weight: 900;
-  color: var(--gold);
+  color: var(--accent);
   line-height: 1;
   margin-bottom: 4px;
 }
@@ -243,7 +243,7 @@
   inset-inline-start: -12px;
   width: 100%;
   height: 100%;
-  border: 2px solid rgba(184, 115, 50, 0.2);
+  border: 2px solid rgba(var(--accent-rgb), 0.2);
   border-radius: var(--radius-xl);
   z-index: -1;
 }
@@ -266,7 +266,7 @@
 .about-experience-badge .badge-number {
   font-size: 2rem;
   font-weight: 900;
-  color: var(--gold);
+  color: var(--accent);
   line-height: 1;
 }
 
@@ -309,7 +309,7 @@
 }
 
 .value-card:hover {
-  border-color: rgba(184, 115, 50, 0.3);
+  border-color: rgba(247, 134, 16, 0.3);
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
 }
@@ -321,9 +321,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(184, 115, 50, 0.1), rgba(184, 115, 50, 0.05));
+  background: linear-gradient(135deg, rgba(247, 134, 16, 0.1), rgba(247, 134, 16, 0.05));
   border-radius: var(--radius-md);
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .value-card h3 {
@@ -374,13 +374,13 @@
   inset-inline-start: 0;
   width: 4px;
   height: 0;
-  background: linear-gradient(180deg, var(--gold), var(--gold-light));
+  background: linear-gradient(180deg, var(--accent), var(--accent-light));
   transition: height var(--transition-slow);
   border-radius: 0; border-end-end-radius: var(--radius-sm);
 }
 
 .platform-card:hover {
-  border-color: rgba(184, 115, 50, 0.25);
+  border-color: rgba(247, 134, 16, 0.25);
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
 }
@@ -396,14 +396,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(21, 24, 63, 0.05), rgba(21, 24, 63, 0.02));
+  background: linear-gradient(135deg, rgba(17, 17, 69, 0.05), rgba(17, 17, 69, 0.02));
   color: var(--navy);
   transition: var(--transition-normal);
 }
 
 .platform-card:hover .platform-icon {
   background: linear-gradient(135deg, var(--navy), var(--navy-light));
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .platform-icon svg {
@@ -428,7 +428,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--gold);
+  color: var(--accent);
   font-weight: 700;
   font-size: 0.88rem;
   transition: var(--transition-fast);
@@ -436,7 +436,7 @@
 }
 
 .platform-link:hover {
-  color: var(--gold-dark);
+  color: var(--accent-dark);
   gap: 12px;
 }
 
@@ -469,8 +469,8 @@
   width: 100%;
   height: 100%;
   background-image: 
-    radial-gradient(circle at 20% 50%, rgba(184, 115, 50, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(184, 115, 50, 0.06) 0%, transparent 50%);
+    radial-gradient(circle at 20% 50%, rgba(247, 134, 16, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(247, 134, 16, 0.06) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -509,10 +509,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(184, 115, 50, 0.1);
-  border: 1px solid rgba(184, 115, 50, 0.2);
+  background: rgba(247, 134, 16, 0.1);
+  border: 1px solid rgba(247, 134, 16, 0.2);
   border-radius: var(--radius-md);
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .stat-icon svg {
@@ -523,7 +523,7 @@
 .stat-number {
   font-size: 2.8rem;
   font-weight: 900;
-  color: var(--gold);
+  color: var(--accent);
   line-height: 1;
   margin-bottom: 8px;
   direction: ltr;
@@ -562,7 +562,7 @@
 .news-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
-  border-color: rgba(184, 115, 50, 0.2);
+  border-color: rgba(247, 134, 16, 0.2);
 }
 
 .news-card-img {
@@ -585,9 +585,9 @@
   position: absolute;
   top: 14px;
   inset-inline-start: 14px;
-  background: rgba(21, 24, 63, 0.85);
+  background: rgba(17, 17, 69, 0.85);
   backdrop-filter: blur(8px);
-  color: var(--gold-light);
+  color: var(--accent-light);
   font-size: 0.75rem;
   font-weight: 700;
   padding: 5px 14px;
@@ -614,7 +614,7 @@
 .news-date svg {
   width: 14px;
   height: 14px;
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .news-card h3 {
@@ -637,7 +637,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--gold);
+  color: var(--accent);
   font-weight: 700;
   font-size: 0.88rem;
   transition: var(--transition-fast);
@@ -645,7 +645,7 @@
 }
 
 .news-read-more:hover {
-  color: var(--gold-dark);
+  color: var(--accent-dark);
   gap: 12px;
 }
 
@@ -676,7 +676,7 @@
   top: 0;
   width: 3px;
   height: 100%;
-  background: linear-gradient(180deg, var(--gold), var(--gold-light), rgba(184, 115, 50, 0.1));
+  background: linear-gradient(180deg, var(--accent), var(--accent-light), rgba(247, 134, 16, 0.1));
   border-radius: var(--radius-full);
 }
 
@@ -697,9 +697,9 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--accent);
   border: 3px solid var(--off-white);
-  box-shadow: 0 0 0 3px rgba(184, 115, 50, 0.2);
+  box-shadow: 0 0 0 3px rgba(247, 134, 16, 0.2);
   z-index: 2;
 }
 
@@ -715,7 +715,7 @@
 }
 
 .event-card:hover {
-  border-color: rgba(184, 115, 50, 0.25);
+  border-color: rgba(247, 134, 16, 0.25);
   box-shadow: var(--shadow-md);
   transform: translateX(calc(6px * var(--dir)));
 }
@@ -733,7 +733,7 @@
 .event-date-day {
   font-size: 1.6rem;
   font-weight: 900;
-  color: var(--gold);
+  color: var(--accent);
   line-height: 1;
 }
 
@@ -779,7 +779,7 @@
 .event-meta-item svg {
   width: 14px;
   height: 14px;
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .event-register-btn {
@@ -787,9 +787,9 @@
   align-items: center;
   gap: 8px;
   padding: 8px 20px;
-  background: rgba(184, 115, 50, 0.08);
-  color: var(--gold-dark);
-  border: 1px solid rgba(184, 115, 50, 0.2);
+  background: rgba(247, 134, 16, 0.08);
+  color: var(--accent-dark);
+  border: 1px solid rgba(247, 134, 16, 0.2);
   border-radius: var(--radius-sm);
   font-weight: 700;
   font-size: 0.82rem;
@@ -798,9 +798,9 @@
 }
 
 .event-register-btn:hover {
-  background: var(--gold);
+  background: var(--accent);
   color: var(--white);
-  border-color: var(--gold);
+  border-color: var(--accent);
 }
 
 /* ==========================================
@@ -868,7 +868,7 @@
 }
 
 .partner-logo:hover {
-  border-color: rgba(184, 115, 50, 0.3);
+  border-color: rgba(247, 134, 16, 0.3);
   box-shadow: var(--shadow-sm);
 }
 
@@ -904,11 +904,11 @@
 }
 
 .faq-item:hover {
-  border-color: rgba(184, 115, 50, 0.2);
+  border-color: rgba(247, 134, 16, 0.2);
 }
 
-.faq-item.active {
-  border-color: rgba(184, 115, 50, 0.3);
+.faq-item.is-open {
+  border-color: rgba(247, 134, 16, 0.3);
   box-shadow: var(--shadow-md);
 }
 
@@ -925,7 +925,7 @@
 }
 
 .faq-question:hover {
-  background: rgba(184, 115, 50, 0.03);
+  background: rgba(247, 134, 16, 0.03);
 }
 
 .faq-question h3 {
@@ -935,15 +935,15 @@
   flex: 1;
 }
 
-.faq-item.active .faq-question h3 {
-  color: var(--gold-dark);
+.faq-item.is-open .faq-question h3 {
+  color: var(--accent-dark);
 }
 
 .faq-toggle {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(21, 24, 63, 0.05);
+  background: rgba(17, 17, 69, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -951,8 +951,8 @@
   transition: var(--transition-normal);
 }
 
-.faq-item.active .faq-toggle {
-  background: var(--gold);
+.faq-item.is-open .faq-toggle {
+  background: var(--accent);
   color: var(--white);
   transform: rotate(45deg);
 }
@@ -994,7 +994,7 @@
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(184, 115, 50, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(247, 134, 16, 0.1) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -1038,7 +1038,7 @@
 .registration-feature svg {
   width: 20px;
   height: 20px;
-  color: var(--gold);
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -1083,9 +1083,9 @@
 }
 
 .form-control:focus {
-  border-color: var(--gold);
+  border-color: var(--accent);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(184, 115, 50, 0.1);
+  box-shadow: 0 0 0 3px rgba(247, 134, 16, 0.1);
 }
 
 .form-control option {
@@ -1096,7 +1096,7 @@
 .form-submit-btn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: var(--text-light);
   border: none;
   border-radius: var(--radius-sm);
@@ -1112,9 +1112,9 @@
 }
 
 .form-submit-btn:hover {
-  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  background: linear-gradient(135deg, var(--accent-light), var(--accent));
   transform: translateY(-2px);
-  box-shadow: var(--shadow-gold);
+  box-shadow: var(--shadow-accent);
 }
 
 /* ==========================================
@@ -1165,11 +1165,11 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-md);
-  background: rgba(184, 115, 50, 0.08);
+  background: rgba(247, 134, 16, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gold);
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -1214,8 +1214,8 @@
 }
 
 .contact-form .form-control:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(184, 115, 50, 0.08);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(247, 134, 16, 0.08);
 }
 
 .contact-form textarea.form-control {

@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace InnovestHolding.Infrastructure.Content;
 
 /// <summary>
-/// Every SaveChanges that adds, changes or deletes a content row drops the home-page snapshot — controllers cannot
+/// Every SaveChanges that adds, changes or deletes a content row drops the site snapshot — controllers cannot
 /// forget it. Users, registrations and contact messages are not page content and do not invalidate.
-/// Reviewer rule: ExecuteUpdate / ExecuteDelete / raw SQL bypass interceptors — call IHomeContentCache.Invalidate()
+/// Reviewer rule: ExecuteUpdate / ExecuteDelete / raw SQL bypass interceptors — call ISiteContentCache.Invalidate()
 /// next to any such statement on a content table.
 /// </summary>
-public sealed class ContentCacheInvalidationInterceptor(IHomeContentCache cache) : SaveChangesInterceptor
+public sealed class ContentCacheInvalidationInterceptor(ISiteContentCache cache) : SaveChangesInterceptor
 {
     private static readonly HashSet<Type> NotContent = [typeof(AppUser), typeof(Registration), typeof(ContactMessage)];
 

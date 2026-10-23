@@ -32,20 +32,22 @@ public class RequestSizeLimitTests(TestAppFactory f)
         public long? MaxRequestBodySize { get; set; } = 30_000_000; // Kestrel's default
     }
 
-    /// <summary>Every POST endpoint of the action (Register/Contact have two: /Home/… and /en/…).</summary>
+    /// <summary>Every POST endpoint of the action (Register/Contact have three: /forms/…, /en/forms/… and /Home/…).</summary>
     private List<Endpoint> EndpointsOf(string controller, string action) =>
         f.Services.GetRequiredService<EndpointDataSource>().Endpoints.Where(e =>
             e.Metadata.GetMetadata<ControllerActionDescriptor>() is { } a
             && a.ControllerName == controller && a.ActionName == action
-            && e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods.Contains("POST") == true).ToList();
+            && e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods.Contains("POST") == true
+            // Routable endpoints only: MapFallbackToController adds an inert, non-route copy of every action.
+            && e is RouteEndpoint).ToList();
 
     [Theory]
     [InlineData("Contact")]
     [InlineData("Register")]
     public void Public_form_endpoint_carries_a_32768_size_limit(string action)
     {
-        var endpoints = EndpointsOf("Home", action);
-        Assert.Equal(2, endpoints.Count); // /Home/{action} and /en/{action}
+        var endpoints = EndpointsOf("Forms", action);
+        Assert.Equal(3, endpoints.Count); // /forms/{name}, /en/forms/{name} and the /Home/{action} alias
         foreach (var endpoint in endpoints)
         {
             var limit = endpoint.Metadata.GetMetadata<IRequestSizeLimitMetadata>();

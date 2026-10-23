@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace InnovestHolding.Tests;
 
 /// <summary>
-/// AddBilingualContent on a database in the shape before the bilingual change (what production has). Own LocalDB database
+/// AddBilingualContent on a database in the shape before the bilingual change (what production had before the bilingual release). Own LocalDB database
 /// <see cref="Database"/>, recreated per test; the server and name are asserted before anything is dropped.
 /// The old-shape rows are <see cref="PreBilingualSeed"/> — frozen literals of the seeder as it was before the change,
 /// never taken from current code — so the migration is checked against what existing databases really contain.
@@ -20,10 +20,11 @@ public class MigrationTests(TestAppFactory f)
 {
     public const string Database = "InnovestHolding_MigrationTests";
     private const string Initial = "20260601163804_InitialCreate";
+    public const string Bilingual = "20261022120642_AddBilingualContent";
     private static readonly string Cs =
         $@"Server=(localdb)\InnovestLocal;Database={Database};Trusted_Connection=True;TrustServerCertificate=True";
 
-    private static AppDbContext NewContext()
+    internal static AppDbContext NewContext()
     {
         var b = new SqlConnectionStringBuilder(Cs);
         if (!b.DataSource.StartsWith(@"(localdb)\", StringComparison.OrdinalIgnoreCase) || b.InitialCatalog != Database)
@@ -31,7 +32,7 @@ public class MigrationTests(TestAppFactory f)
         return new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(Cs).Options);
     }
 
-    private static async Task<AppDbContext> AtInitialCreateAsync()
+    internal static async Task<AppDbContext> AtInitialCreateAsync()
     {
         var db = NewContext();
         await db.Database.EnsureDeletedAsync();
@@ -41,25 +42,29 @@ public class MigrationTests(TestAppFactory f)
 
     private static string N(string? s) => s is null ? "NULL" : "N'" + s.Replace("'", "''") + "'";
 
-    private static Task<List<string>> Rows(AppDbContext db, string sql) => db.Database.SqlQueryRaw<string>(sql).ToListAsync();
+    internal static Task<List<string>> Rows(AppDbContext db, string sql) => db.Database.SqlQueryRaw<string>(sql).ToListAsync();
 
     /// <summary>Every entity row (Arabic, English and new fields) as text, ordered by id — the comparison unit of the fresh-vs-upgraded test.</summary>
-    private static async Task<List<string>> SnapshotAsync(AppDbContext db, int maxNav = 8)
+    internal static async Task<List<string>> SnapshotAsync(AppDbContext db, int maxNav = 8)
     {
         var all = new List<string>();
-        all.AddRange((await db.NavItems.AsNoTracking().Where(n => n.Id <= maxNav).OrderBy(n => n.Id).ToListAsync()).Select(n => $"Nav|{n.TitleAr}|{n.TitleEn}|{n.Href}|{n.ShowInFooter}|{n.HasDropdown}"));
-        all.AddRange((await db.NavSubItems.AsNoTracking().Where(s => s.NavItemId <= maxNav).OrderBy(n => n.Id).ToListAsync()).Select(n => $"Sub|{n.TitleAr}|{n.TitleEn}|{n.IconSvg}"));
-        all.AddRange((await db.Platforms.AsNoTracking().OrderBy(n => n.Id).ToListAsync()).Select(p => $"Pl|{p.TitleAr}|{p.TitleEn}|{p.DescriptionAr}|{p.DescriptionEn}|{p.ShortTitleAr}|{p.ShortTitleEn}|{p.ShowInFooter}|{p.LinkUrl}"));
-        all.AddRange((await db.Stats.AsNoTracking().OrderBy(n => n.Id).ToListAsync()).Select(s => $"St|{s.LabelAr}|{s.LabelEn}|{s.ShortLabelAr}|{s.ShortLabelEn}|{s.Value}"));
+        // NavItems are not compared: since the multi-page site the menu comes from the route table; the one-page anchor
+        // items exist (deactivated) only on upgraded databases, and other tests add and remove items on the fixture.
+        all.AddRange((await db.Platforms.AsNoTracking().OrderBy(n => n.Id).ToListAsync()).Select(p => $"Pl|{p.TitleAr}|{p.TitleEn}|{p.DescriptionAr}|{p.DescriptionEn}|{p.ShortTitleAr}|{p.ShortTitleEn}|{p.ShowInFooter}|{p.LinkUrl}|{p.IsActive}|{p.IconSvg}"));
+        all.AddRange((await db.Stats.AsNoTracking().OrderBy(n => n.Id).ToListAsync()).Select(s => $"St|{s.LabelAr}|{s.LabelEn}|{s.ShortLabelAr}|{s.ShortLabelEn}|{s.Value}|{s.Suffix}|{s.SortOrder}|{s.IconSvg}"));
         all.AddRange((await db.News.AsNoTracking().Where(n => n.Id <= 3).OrderBy(n => n.Id).ToListAsync()).Select(n => $"Nw|{n.TitleAr}|{n.TitleEn}|{n.SummaryAr}|{n.SummaryEn}|{n.CategoryAr}|{n.CategoryEn}|{n.NewsDateAr}|{n.NewsDateEn}|{n.SortOrder}"));
         all.AddRange((await db.Events.AsNoTracking().Where(n => n.Id <= 3).OrderBy(n => n.Id).ToListAsync()).Select(e => $"Ev|{e.TitleAr}|{e.TitleEn}|{e.DescriptionAr}|{e.DescriptionEn}|{e.EventMonthAr}|{e.EventMonthEn}|{e.LocationAr}|{e.LocationEn}|{e.TimeAr}|{e.TimeEn}"));
-        all.AddRange((await db.Partners.AsNoTracking().Where(n => n.Id <= 10).OrderBy(n => n.Id).ToListAsync()).Select(p => $"Pa|{p.NameAr}|{p.NameEn}"));
+        all.AddRange((await db.Partners.AsNoTracking().Where(n => n.Id <= 10).OrderBy(n => n.Id).ToListAsync()).Select(p => $"Pa|{p.NameAr}|{p.NameEn}|{p.IsActive}"));
         all.AddRange((await db.Faqs.AsNoTracking().Where(n => n.Id <= 6).OrderBy(n => n.Id).ToListAsync()).Select(q => $"Fq|{q.QuestionAr}|{q.QuestionEn}|{q.AnswerAr}|{q.AnswerEn}"));
         all.AddRange((await db.SiteContents.AsNoTracking().Where(c => c.SectionKey != ContentKeys.TimestampsUtcMarker).OrderBy(c => c.SectionKey).ToListAsync())
             .Select(c => $"Sc|{c.SectionKey}|{c.ContentAr}|{c.ContentEn}"));
         all.AddRange((await db.InterestOptions.AsNoTracking().Where(o => o.Id <= 6).OrderBy(o => o.Id).ToListAsync()).Select(o => $"Io|{o.NameAr}|{o.NameEn}|{o.SortOrder}"));
         all.AddRange((await db.RegisterBenefits.AsNoTracking().OrderBy(o => o.Id).ToListAsync()).Select(o => $"Rb|{o.TextAr}|{o.TextEn}"));
         all.AddRange((await db.SocialLinks.AsNoTracking().OrderBy(o => o.Id).ToListAsync()).Select(o => $"So|{o.Network}|{o.Url}"));
+        all.AddRange((await db.Pages.AsNoTracking().OrderBy(o => o.Key).ToListAsync()).Select(p =>
+            $"Pg|{p.Key}|{p.TitleAr}|{p.TitleEn}|{p.SummaryAr}|{p.SummaryEn}|{p.IntroAr}|{p.IntroEn}|{p.BodyAr}|{p.BodyEn}|{p.EmptyTextAr}|{p.EmptyTextEn}|{p.MetaTitleAr}|{p.MetaTitleEn}|{p.MetaDescriptionAr}|{p.MetaDescriptionEn}|{p.ShowInMenu}|{p.SortOrder}"));
+        all.AddRange((await db.ContentItems.AsNoTracking().OrderBy(o => o.Id).ToListAsync()).Select(i =>
+            $"Ci|{i.Group}|{i.TextAr}|{i.TextEn}|{i.DescriptionAr}|{i.DescriptionEn}|{i.IconKey}|{i.SortOrder}|{i.IsActive}"));
         return all;
     }
 
@@ -83,7 +88,7 @@ public class MigrationTests(TestAppFactory f)
             UNION ALL SELECT CONCAT(N'Pa|', Name) FROM Partners UNION ALL SELECT CONCAT(N'Fq|', Question, N'|', Answer) FROM Faqs
             """);
 
-        await db.Database.MigrateAsync();
+        await db.GetService<IMigrator>().MigrateAsync(Bilingual);
 
         var arabicAfter = await Rows(db, """
             SELECT CONCAT(N'Nav|', TitleAr) AS [Value] FROM NavItems UNION ALL SELECT CONCAT(N'Sub|', TitleAr) FROM NavSubItems
@@ -104,7 +109,13 @@ public class MigrationTests(TestAppFactory f)
         // Keys: none duplicated, none overwritten, all registry keys present, hero keys renamed.
         var keys = await db.SiteContents.AsNoTracking().ToListAsync();
         Assert.Equal(keys.Count, keys.Select(k => k.SectionKey).Distinct().Count());
-        Assert.Empty(ContentKeys.All.Select(k => k.Key).Except(keys.Select(k => k.SectionKey)));
+        // Every key of the registry except those the later migration ApplyCompanyProfile adds.
+        string[] later = ["brand_positioning", "header_cta_label", "header_cta_page", "contact_whatsapp", "contact_website",
+            "list_page_size", "ecosystem_badge", "ecosystem_title", "ecosystem_subtitle", "cta_band_title", "cta_band_text",
+            "impact_title", "impact_intro"];
+        Assert.Empty(ContentKeys.All.Select(k => k.Key)
+            .Where(k => !later.Contains(k) && !k.StartsWith("section_") && !k.StartsWith("founder_"))
+            .Except(keys.Select(k => k.SectionKey)));
         var cta = keys.Single(k => k.SectionKey == "cta_register");
         Assert.Equal("انضم الآن", cta.ContentAr);
         Assert.Null(cta.ContentEn);
@@ -129,8 +140,8 @@ public class MigrationTests(TestAppFactory f)
         // Registration/contact timestamps are NOT changed by the migration (startup converts them — next test).
         Assert.Equal(new DateTime(2026, 7, 1, 12, 0, 0), await db.Registrations.Select(r => r.CreatedAt).SingleAsync());
 
-        // Applying again is a no-op (nothing pending).
-        Assert.Empty(await db.Database.GetPendingMigrationsAsync());
+        // Only the later migrations (multi-page site) are still pending.
+        Assert.Equal(["20261022152940_AddSiteStructure", "20261022153329_ApplyCompanyProfile", "20261022172550_RefineSiteStructure", "20261022200000_CorrectCoreValuesEnglish"], await db.Database.GetPendingMigrationsAsync());
     }
 
     [Fact] // a fresh install (migration + DbSeeder) equals an upgraded old install, row by row

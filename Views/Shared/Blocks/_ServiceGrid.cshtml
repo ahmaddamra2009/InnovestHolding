@@ -1,0 +1,34 @@
+@model ServicesBlock
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+<div class="service-grid">
+  @for (var i = 0; i < Model.Services.Count; i++)
+  {
+    var s = Model.Services[i];
+    <article class="service-card reveal@(HomeViewModel.Delay(i + 1))">
+      <span class="card-corner" aria-hidden="true"></span>
+      <div class="service-head">
+        <div class="item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(s.IconSvg)</svg></div>
+        <span class="service-num">@((i + 1).ToString("00", inv))</span>
+      </div>
+      <h3 lang="@s.Title.Lang" dir="@s.Title.Dir">@s.Title</h3>
+      @if (s.Lines.Count > 0)
+      {
+        <ul class="tri-list">
+          @foreach (var line in s.Lines)
+          {
+            <li lang="@line.Lang" dir="@line.Dir">@line</li>
+          }
+        </ul>
+      }
+      @if (s.LinkUrl is not null)
+      {
+        <a href="@s.LinkUrl" class="unit-link">
+          <span lang="@Model.ReadMore.Lang" dir="@Model.ReadMore.Dir">@Model.ReadMore</span>
+          <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </a>
+      }
+    </article>
+  }
+</div>

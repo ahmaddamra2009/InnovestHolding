@@ -1,0 +1,83 @@
+@model InnovestHolding.Controllers.Admin.ContentItemsVm
+@using InnovestHolding.Infrastructure.Content
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "القوائم";
+    var g = Model.Group;
+}
+@functions {
+    private Microsoft.AspNetCore.Html.IHtmlContent IconSelect(string id, string? selected)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append("<select class=\"form-control\" name=\"IconKey\" id=\"").Append(id).Append("\"><option value=\"\">— بلا أيقونة (مثلث) —</option>");
+        foreach (var (key, icon) in Icons.All)
+        {
+            sb.Append("<option value=\"").Append(key).Append('"').Append(key == selected ? " selected" : "").Append('>')
+              .Append(System.Net.WebUtility.HtmlEncode(icon.Label)).Append(" (").Append(key).Append(")</option>");
+        }
+        return new Microsoft.AspNetCore.Html.HtmlString(sb.Append("</select>").ToString());
+    }
+}
+<nav class="group-tabs" aria-label="القوائم">
+    @foreach (var group in ContentItemGroups.All)
+    {
+        <a href="/Admin/ContentItems?group=@group.Key" class="@(group.Key == g.Key ? "active" : null)">@group.Label (@(Model.Counts.GetValueOrDefault(group.Key)))</a>
+    }
+</nav>
+<p class="form-hint" style="margin-bottom:12px;">عنوان كل قائمة ونصها التمهيدي يُعدّلان من «النصوص العامة» ← «عناوين أقسام الصفحات».</p>
+
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">إضافة عنصر إلى: @g.Label</span></div>
+    <form method="post" asp-action="Create" asp-controller="ContentItems">
+        <input type="hidden" name="Group" value="@g.Key">
+        <lang-pair label="النص" name-ar="TextAr" name-en="TextEn" max="300" required="true" id-prefix="new-" />
+        @if (g.UsesDescription)
+        {
+            <lang-pair label="الوصف (اختياري)" name-ar="DescriptionAr" name-en="DescriptionEn" max="2000" rows="2" id-prefix="new-" />
+        }
+        @if (g.UsesIcon)
+        {
+            <div class="form-group"><label for="new-icon">الأيقونة</label>@IconSelect("new-icon", null)</div>
+        }
+        <button type="submit" class="btn-admin btn-primary">إضافة</button>
+    </form>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">@g.Label (@Model.Items.Count)</span></div>
+    @if (Model.Items.Count == 0)
+    {
+        <p style="text-align:center;color:var(--admin-text-muted);padding:40px 0;">لا توجد عناصر — يُخفى هذا القسم من الصفحة.</p>
+    }
+    @foreach (var item in Model.Items)
+    {
+        var prefix = $"i{item.Id}-";
+        <form method="post" asp-action="Update" asp-controller="ContentItems" class="row-form">
+            <input type="hidden" name="Id" value="@item.Id">
+            <input type="hidden" name="Group" value="@g.Key">
+            <div class="row-form-head">
+                <strong>@item.TextAr</strong>
+                <partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TextEn))" />
+                @if (item.IsActive) { <span class="badge-active">ظاهر</span> } else { <span class="badge-inactive">مخفي</span> }
+            </div>
+            <lang-pair label="النص" name-ar="TextAr" name-en="TextEn" value-ar="@item.TextAr" value-en="@item.TextEn" max="300" required="true" id-prefix="@prefix" />
+            @if (g.UsesDescription)
+            {
+                <lang-pair label="الوصف (اختياري)" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@item.DescriptionAr" value-en="@item.DescriptionEn" max="2000" rows="2" id-prefix="@prefix" />
+            }
+            <div class="inline-form">
+                @if (g.UsesIcon)
+                {
+                    <div class="form-group"><label for="@(prefix)icon">الأيقونة</label>@IconSelect(prefix + "icon", item.IconKey)</div>
+                }
+                <div class="form-group"><label for="@(prefix)order">الترتيب</label><input type="number" id="@(prefix)order" name="SortOrder" value="@item.SortOrder" class="form-control" min="0" max="100000"></div>
+                <div class="form-check"><input type="checkbox" id="@(prefix)active" name="IsActive" value="true" @(item.IsActive ? "checked" : "")> <label for="@(prefix)active">ظاهر</label></div>
+                <button type="submit" class="btn-admin btn-primary btn-sm">حفظ</button>
+            </div>
+        </form>
+        <form method="post" asp-action="Delete" asp-controller="ContentItems" style="margin:-8px 0 16px;">
+            <input type="hidden" name="id" value="@item.Id">
+            <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا العنصر؟')">حذف</button>
+        </form>
+    }
+</div>

@@ -3,7 +3,7 @@
 <div class="admin-card">
     <div class="admin-card-header">
         <span class="admin-card-title">الأخبار (@Model.Count) — بترتيب الظهور</span>
-        <a href="/News/Create" class="btn-admin btn-primary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> إضافة خبر</a>
+        <a href="/Admin/News/Create" class="btn-admin btn-primary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> إضافة خبر</a>
     </div>
     <table class="admin-table">
         <thead><tr><th>العنوان</th><th>الفئة</th><th>التاريخ</th><th>EN</th><th>الحالة</th><th>إجراءات</th></tr></thead>
@@ -17,7 +17,7 @@
                 <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.TitleEn) && (string.IsNullOrWhiteSpace(item.SummaryAr) || !string.IsNullOrWhiteSpace(item.SummaryEn)))" /></td>
                 <td>@if (item.IsActive) { <span class="badge-active">مفعّل</span> } else { <span class="badge-inactive">معطّل</span> }</td>
                 <td class="actions">
-                    <a href="/News/Edit/@item.Id" class="btn-admin btn-secondary btn-sm">تعديل</a>
+                    <a href="/Admin/News/Edit/@item.Id" class="btn-admin btn-secondary btn-sm">تعديل</a>
                     <form method="post" asp-action="Delete" asp-controller="News" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا الخبر؟')">حذف</button></form>
                 </td>
             </tr>

@@ -1,0 +1,130 @@
+@model ShellVm
+@using InnovestHolding.Infrastructure.Site
+@using InnovestHolding.Infrastructure.Content
+@using InnovestHolding.Infrastructure.Seo
+@{
+    var c = Model.Content;
+    var siteName = c.Text("site_name");
+    var footerDesc = c.Text("footer_description");
+    var quickTitle = c.Text("footer_quicklinks_title");
+    var contactTitle = c.Text("footer_contact_title");
+    var copyright = c.Text("footer_copyright");
+    var creditText = c.Text("footer_credit_text");
+    var creditName = c.Text("footer_credit_name");
+    var creditUrl = c.Neutral("footer_credit_url");
+    var creditHost = Uri.TryCreate(creditUrl, UriKind.Absolute, out var creditUri) && creditUri.Scheme == Uri.UriSchemeHttps ? creditUri.Host : null;
+    var address = c.Text("contact_address");
+    var phone = c.Neutral("contact_phone");
+    var email = c.Neutral("contact_email");
+    // Company column: the top-level pages; then one column per unit of the ecosystem (the same tree as the header).
+    var company = Model.Menu.Where(m => m.Children.Count == 0).ToList();
+    var ecosystem = Model.Menu.FirstOrDefault(m => m.Children.Count > 0);
+    if (ecosystem is not null) company.Insert(Math.Min(2, company.Count), ecosystem);
+    const string chevron = "<polyline points=\"15 18 9 12 15 6\"/>";
+}
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="200" height="51" loading="lazy">
+        </div>
+        <p class="footer-desc" lang="@footerDesc.Lang" dir="@footerDesc.Dir">@footerDesc</p>
+        @if (Model.Socials.Count > 0)
+        {
+          <div class="social-links">
+            @foreach (var social in Model.Socials)
+            {
+              var icon = SocialIcons.All[social.Network];
+              <a href="@social.Url" class="social-link" aria-label="@icon.Name" target="_blank" rel="noopener">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(icon.Svg)</svg>
+              </a>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="footer-col">
+        <h2 class="footer-col-title" lang="@quickTitle.Lang" dir="@quickTitle.Dir">@quickTitle</h2>
+        <div class="footer-links">
+          @foreach (var link in company)
+          {
+            <a href="@link.Href" class="footer-link">
+              <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
+              <span lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</span>
+            </a>
+          }
+          @foreach (var link in Model.ExtraLinks)
+          {
+            <a href="@link.Href" class="footer-link">
+              <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
+              <span lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</span>
+            </a>
+          }
+        </div>
+      </div>
+
+      @if (ecosystem is not null)
+      {
+        foreach (var unit in ecosystem.Children)
+        {
+          <details class="footer-col footer-unit" open>
+            <summary class="footer-col-title"><a href="@unit.Href" lang="@unit.Title.Lang" dir="@unit.Title.Dir">@unit.Title</a></summary>
+            <div class="footer-links">
+              @foreach (var pg in unit.Children)
+              {
+                <a href="@pg.Href" class="footer-link">
+                  <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
+                  <span lang="@pg.Title.Lang" dir="@pg.Title.Dir">@pg.Title</span>
+                </a>
+              }
+            </div>
+          </details>
+        }
+      }
+
+      <div class="footer-col">
+        <h2 class="footer-col-title" lang="@contactTitle.Lang" dir="@contactTitle.Dir">@contactTitle</h2>
+        <div class="footer-links footer-contact">
+          @if (!address.IsEmpty)
+          {
+            <div class="footer-contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span lang="@address.Lang" dir="@address.Dir">@address</span>
+            </div>
+          }
+          @if (!string.IsNullOrWhiteSpace(phone))
+          {
+            <div class="footer-contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <bdi dir="ltr">@phone</bdi>
+            </div>
+          }
+          @if (!string.IsNullOrWhiteSpace(email))
+          {
+            <div class="footer-contact-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <a href="mailto:@email"><bdi dir="ltr">@email</bdi></a>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span lang="@copyright.Lang" dir="@copyright.Dir">@ContentText.WithYear(copyright.Value, DateTime.UtcNow)</span>
+      <span>
+        <span lang="@creditText.Lang" dir="@creditText.Dir">@creditText</span>
+        @if (creditHost is not null)
+        {
+          <a href="@creditUrl" target="_blank" rel="noopener" lang="@creditName.Lang" dir="@creditName.Dir">@creditName</a><text> | </text><a href="@creditUrl" target="_blank" rel="noopener"><bdi dir="ltr">@creditHost</bdi></a>
+        }
+        else
+        {
+          <span lang="@creditName.Lang" dir="@creditName.Dir">@creditName</span>
+        }
+      </span>
+      <a href="#main" class="back-to-top">@L[K.Ui.BackToTop]</a>
+    </div>
+  </div>
+</footer>

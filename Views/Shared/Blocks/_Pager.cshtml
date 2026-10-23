@@ -1,0 +1,15 @@
+@model PagerVm
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+<nav class="pager" aria-label="@L[K.Ui.PagerAria]">
+  @if (Model.Page > 1)
+  {
+    <a href="@Model.UrlFor(Model.Page - 1)" class="pager-link" rel="prev">@L[K.Ui.PreviousPage]</a>
+  }
+  <span class="pager-status">@L[K.Ui.PageOf, Model.Page.ToString(inv), Model.PageCount.ToString(inv)]</span>
+  @if (Model.Page < Model.PageCount)
+  {
+    <a href="@Model.UrlFor(Model.Page + 1)" class="pager-link" rel="next">@L[K.Ui.NextPage]</a>
+  }
+</nav>

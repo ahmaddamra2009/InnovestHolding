@@ -53,7 +53,6 @@ public static class MessageKeys
         public const string Href = "Field_Href";
         public const string Value = "Field_Value";
         public const string Suffix = "Field_Suffix";
-        public const string Content = "Field_Content";
         public const string LinkUrl = "Field_LinkUrl";
         public const string Url = "Field_Url";
         public const string Title = "Field_Title";
@@ -86,6 +85,16 @@ public static class MessageKeys
         public const string ShortLabelEn = "Field_ShortLabelEn";
         public const string Text = "Field_Text";
         public const string TextEn = "Field_TextEn";
+        public const string Intro = "Field_Intro";
+        public const string IntroEn = "Field_IntroEn";
+        public const string Body = "Field_Body";
+        public const string BodyEn = "Field_BodyEn";
+        public const string EmptyText = "Field_EmptyText";
+        public const string EmptyTextEn = "Field_EmptyTextEn";
+        public const string MetaTitle = "Field_MetaTitle";
+        public const string MetaTitleEn = "Field_MetaTitleEn";
+        public const string MetaDescription = "Field_MetaDescription";
+        public const string MetaDescriptionEn = "Field_MetaDescriptionEn";
     }
 
     public static class Admin
@@ -121,8 +130,16 @@ public static class MessageKeys
         public const string BenefitUpdated = "Admin_BenefitUpdated";
         public const string BenefitDeleted = "Admin_BenefitDeleted";
         public const string SocialUpdated = "Admin_SocialUpdated";
+        public const string PageSaved = "Admin_PageSaved";
+        public const string PageMenuToggled = "Admin_PageMenuToggled";
+        public const string OrderChanged = "Admin_OrderChanged";
+        public const string ItemAdded = "Admin_ItemAdded";
+        public const string ItemUpdated = "Admin_ItemUpdated";
+        public const string ItemDeleted = "Admin_ItemDeleted";
+        public const string StatusToggled = "Admin_StatusToggled";
         public const string EnHint = "Admin_EnHint";
         public const string NeutralHint = "Admin_NeutralHint";
+        public const string ListHint = "Admin_ListHint";
     }
 
     public static class Ui
@@ -130,7 +147,6 @@ public static class MessageKeys
         public const string LangSwitchText = "Ui_LangSwitchText";
         public const string LangSwitchAria = "Ui_LangSwitchAria";
         public const string LangDrawerText = "Ui_LangDrawerText";
-        public const string ScrollHint = "Ui_ScrollHint";
         public const string NavAria = "Ui_NavAria";
         public const string MenuAria = "Ui_MenuAria";
         public const string FormFullName = "Ui_FormFullName";
@@ -154,6 +170,20 @@ public static class MessageKeys
         public const string ContactPhone = "Ui_ContactPhone";
         public const string ContactEmail = "Ui_ContactEmail";
         public const string ContactHours = "Ui_ContactHours";
-        public const string TimeUtcLabel = "Ui_TimeUtcLabel";
+        public const string BreadcrumbAria = "Ui_BreadcrumbAria";
+        public const string SubmenuToggle = "Ui_SubmenuToggle";
+        public const string Explore = "Ui_Explore";
+        public const string ViewAll = "Ui_ViewAll";
+        public const string PagerAria = "Ui_PagerAria";
+        public const string PreviousPage = "Ui_PreviousPage";
+        public const string NextPage = "Ui_NextPage";
+        public const string PageOf = "Ui_PageOf";
+        public const string NotFoundTitle = "Ui_NotFoundTitle";
+        public const string NotFoundText = "Ui_NotFoundText";
+        public const string ContactWhatsApp = "Ui_ContactWhatsApp";
+        public const string ContactWebsite = "Ui_ContactWebsite";
+        public const string ContactSocial = "Ui_ContactSocial";
+        public const string SkipToContent = "Ui_SkipToContent";
+        public const string BackToTop = "Ui_BackToTop";
     }
 }

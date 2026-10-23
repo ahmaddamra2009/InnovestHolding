@@ -2,6 +2,7 @@ using InnovestHolding.Data;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Infrastructure.Seo;
+using InnovestHolding.Infrastructure.Site;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
@@ -24,8 +25,20 @@ public class ContentController : AdminControllerBase
         var input = new ContentEditInput();
         foreach (var key in ContentKeys.All)
             input.Content[key.Key] = rows.GetValueOrDefault(key.Key) ?? new BilingualValueInput();
+        await SetPageChoicesAsync();
         return View(ViewPath, input);
     }
+
+    /// <summary>The pages a page-key setting can point to (route table order), labelled with their Arabic titles.</summary>
+    private async Task SetPageChoicesAsync()
+    {
+        var titles = await _db.Pages.AsNoTracking().ToDictionaryAsync(p => p.Key, p => p.TitleAr);
+        ViewData[PageChoicesKey] = SiteRoutes.All
+            .Select(p => new KeyValuePair<string, string>(p.Key, $"{titles.GetValueOrDefault(p.Key) ?? p.Key} ({p.Path})"))
+            .ToList();
+    }
+
+    public const string PageChoicesKey = "PageChoices";
 
     [HttpPost]
     public async Task<IActionResult> Edit(ContentEditInput input)
@@ -51,6 +64,7 @@ public class ContentController : AdminControllerBase
                 model.Content[key.Key] = stored.GetValueOrDefault(key.Key) ?? new BilingualValueInput();
             foreach (var (key, value) in posted)
                 model.Content[key.Key] = value;
+            await SetPageChoicesAsync();
             return View(ViewPath, model);
         }
 
@@ -116,6 +130,8 @@ public class ContentController : AdminControllerBase
             ContentRule.BaseUrl => SiteUrl.TryNormalize(value.Ar, out _),
             ContentRule.SitePath => SiteUrl.IsSitePath(value.Ar),
             ContentRule.Count => ContentKeys.ParseCount(value.Ar.Trim(), 0) > 0,
+            ContentRule.PageKey => SiteRoutes.IsKey(value.Ar.Trim()),
+            ContentRule.Digits => value.Ar.Trim() is { Length: >= 8 and <= 15 } d && d.All(char.IsAsciiDigit),
             _ => true
         };
         if (!ok)
@@ -125,6 +141,7 @@ public class ContentController : AdminControllerBase
                 ContentRule.BaseUrl => L(MessageKeys.BaseUrl),
                 ContentRule.SitePath => L(MessageKeys.SitePath, label),
                 ContentRule.Count => L(MessageKeys.Range, label, 1, ContentKeys.MaxCount),
+                ContentRule.PageKey or ContentRule.Digits => L(MessageKeys.InvalidValue, label),
                 _ => L(MessageKeys.HttpsUrl, label)
             };
             ModelState.AddModelError(arField, message);

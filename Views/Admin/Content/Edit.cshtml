@@ -22,13 +22,31 @@
             {
                 var value = Model.Content.GetValueOrDefault(key.Key) ?? new BilingualValueInput();
                 var rows = key.Multiline ? 3 : 0;
-                if (key.Neutral)
+                if (key.Rule == ContentRule.PageKey)
+                {
+                    var choices = ViewData[InnovestHolding.Controllers.Admin.ContentController.PageChoicesKey] as IReadOnlyList<KeyValuePair<string, string>> ?? [];
+                    var id = "content-" + key.Key.Replace('_', '-');
+                    <div class="form-group">
+                        <label for="@id">@key.Label</label>
+                        <select id="@id" name="content[@key.Key].Ar" class="form-control">
+                            @if (!choices.Any(c => c.Key == value.Ar?.Trim()))
+                            {
+                                <option value="@value.Ar" selected>@value.Ar</option>
+                            }
+                            @foreach (var choice in choices)
+                            {
+                                <option value="@choice.Key" selected="@(choice.Key == value.Ar?.Trim())">@choice.Value</option>
+                            }
+                        </select>
+                    </div>
+                }
+                else if (key.Neutral)
                 {
                     <lang-pair label="@key.Label" name-ar="content[@key.Key].Ar" value-ar="@value.Ar" max="@key.MaxLength" rows="@rows" ltr="true" required="@(!key.AllowEmpty)" />
                 }
                 else
                 {
-                    <lang-pair label="@key.Label" name-ar="content[@key.Key].Ar" name-en="content[@key.Key].En" value-ar="@value.Ar" value-en="@value.En" max="@key.MaxLength" rows="@rows" required="@(!key.AllowEmpty && !key.Optional)" />
+                    <lang-pair label="@key.Label" name-ar="content[@key.Key].Ar" name-en="content[@key.Key].En" value-ar="@value.Ar" value-en="@value.En" max="@key.MaxLength" rows="@rows" required="@(!key.AllowEmpty && !key.Optional)" hint-key="@key.HintKey" />
                 }
             }
         </div>

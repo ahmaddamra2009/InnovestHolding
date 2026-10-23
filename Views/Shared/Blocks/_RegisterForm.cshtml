@@ -1,0 +1,66 @@
+@model RegisterFormVm
+@using InnovestHolding.Infrastructure.Content
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    var p = Model.IdPrefix;
+}
+<div class="registration-grid">
+  <div class="registration-content reveal-start">
+    @if (!Model.Badge.IsEmpty)
+    {
+      <span class="section-badge on-dark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        <span lang="@Model.Badge.Lang" dir="@Model.Badge.Dir">@Model.Badge</span>
+      </span>
+    }
+    <h2 class="section-title on-dark" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+    <p lang="@Model.Text.Lang" dir="@Model.Text.Dir">@Model.Text</p>
+    @if (Model.Benefits.Count > 0)
+    {
+      <div class="registration-features">
+        @foreach (var benefit in Model.Benefits)
+        {
+          <div class="registration-feature">
+            <span class="tri-bullet" aria-hidden="true"></span>
+            <span lang="@benefit.Lang" dir="@benefit.Dir">@benefit</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <form class="registration-form reveal-end js-ajax-form" id="@(p)-form" method="post" action="@Model.Action" asp-antiforgery="true"
+        data-msg-busy="@L[K.Ui.FormRegistering]" data-msg-error="@L[K.Ui.FormGenericError]" data-message-box="@(p)-message">
+    <div class="form-group">
+      <label for="@(p)-name">@L[K.Ui.FormFullName]</label>
+      <input type="text" id="@(p)-name" name="fullName" class="form-control" placeholder="@L[K.Ui.FormFullNamePlaceholderRegister]" maxlength="200" required autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label for="@(p)-email">@L[K.Ui.FormEmail]</label>
+      <input type="email" id="@(p)-email" name="email" class="form-control ltr-input" placeholder="@L[K.Ui.FormEmailPlaceholder]" maxlength="200" required dir="ltr" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label for="@(p)-phone">@L[K.Ui.FormPhone]</label>
+      <input type="tel" id="@(p)-phone" name="phone" class="form-control ltr-input" placeholder="@L[K.Ui.FormPhonePlaceholder]" maxlength="50" dir="ltr" autocomplete="tel">
+    </div>
+    @if (Model.Interests.Count > 0)
+    {
+      <div class="form-group">
+        <label for="@(p)-interest">@L[K.Ui.FormInterest]</label>
+        <select id="@(p)-interest" name="interestOptionId" class="form-control" required>
+          <option value="" disabled selected>@L[K.Ui.FormInterestPlaceholder]</option>
+          @foreach (var option in Model.Interests)
+          {
+            <option value="@option.Id.ToString(inv)" lang="@option.Name.Lang" dir="@option.Name.Dir">@option.Name</option>
+          }
+        </select>
+      </div>
+    }
+    <input type="text" name="Website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <div id="@(p)-message" class="form-message" role="alert" hidden></div>
+    <button type="submit" class="form-submit-btn">
+      <span lang="@Model.SubmitLabel.Lang" dir="@Model.SubmitLabel.Dir">@Model.SubmitLabel</span>
+      <svg class="i-dir" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </button>
+  </form>
+</div>

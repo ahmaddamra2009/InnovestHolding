@@ -16,7 +16,7 @@ namespace InnovestHolding.Infrastructure;
 public static class RateLimitPolicies
 {
     /// <summary>
-    /// Public Register / Contact: per IP and per ACTION. The partition is the action the request was routed
+    /// Public forms (Forms/*): per IP and per ACTION. The partition is the action the request was routed
     /// to (from endpoint metadata), never the raw path, so <c>/Home/Contact/1</c>, a trailing slash, another
     /// casing or another route template all share one bucket.
     /// </summary>
@@ -87,12 +87,12 @@ public static class RateLimitPolicies
                 if (ctx.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
                     response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
 
-                // The public forms are called by fetch() and expect JSON; the login form is a full page, so it
+                // The public forms ([JsonFormEndpoint]) are called by fetch() and expect JSON; the login form is a full page, so it
                 // gets the login page back with the locked message (status stays 429, so clients and logs still see the limit); anything
                 // else gets plain text.
                 var action = Action(ctx.HttpContext);
                 var l = ctx.HttpContext.RequestServices.GetRequiredService<IStringLocalizer<SharedResource>>();
-                if (action is { ControllerName: "Home", ActionName: "Register" or "Contact" })
+                if (ctx.HttpContext.GetEndpoint()?.Metadata.GetMetadata<JsonFormEndpointAttribute>() is not null)
                 {
                     // Request localization runs before the limiter, so the message is in the page's language.
                     await response.WriteAsJsonAsync(
@@ -131,3 +131,10 @@ public static class RateLimitPolicies
         return result.ExecuteResultAsync(new ActionContext(http, http.GetRouteData(), action));
     }
 }
+
+/// <summary>
+/// Marks a public form endpoint that is called by fetch() and answers JSON: a rejected request (rate limit) then gets a
+/// JSON body in the page's language instead of plain text, which the page script can show.
+/// </summary>
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class JsonFormEndpointAttribute : Attribute;

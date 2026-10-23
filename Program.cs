@@ -5,6 +5,7 @@ using InnovestHolding.Infrastructure;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Infrastructure.Seo;
+using InnovestHolding.Infrastructure.Site;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -23,6 +24,9 @@ var isTesting = builder.Environment.IsEnvironment("Testing");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (LocalDbGuard.AppliesTo(builder.Environment))
     LocalDbGuard.EnsureLocalDb(connectionString, builder.Environment.EnvironmentName, "configuration");
+// In EVERY environment (Production included): a non-LocalDB database only on the production host (IIS, or the explicit
+// INNOVEST_ALLOW_REMOTE_DB=1). A developer machine pointed at the production database stops here, before any connection.
+ProductionDbGuard.Ensure(connectionString, Environment.GetEnvironmentVariable, "configuration");
 
 // ── Services ──
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(SecurityOptions.SectionName));
@@ -59,7 +63,7 @@ builder.Services.AddAntiforgery(options =>
 builder.Services.AddInnovestRateLimiting();
 builder.Services.AddStaticAssetCompression();
 
-// AppDbContext + the home-page cache and its invalidation interceptor (one helper, shared with the tests).
+// AppDbContext + the site content cache and its invalidation interceptor (one helper, shared with the tests).
 builder.Services.AddAppDbContext(connectionString);
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -111,6 +115,17 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    // The EFFECTIVE connection (a DI override included) is checked again, in every environment, before the migration;
+    // neither call connects. This final verdict is the one logged; every connection open is checked again by
+    // ProductionDbGuardInterceptor.
+    var finalVerdict = ProductionDbGuard.Ensure(db.Database.GetConnectionString(), Environment.GetEnvironmentVariable, "DbContext");
+    // A remote database is logged as a Warning because Production's minimum log level is Warning (an Information line
+    // would be dropped). Where that line ends up on the host (Event Log, stdout log) has not been verified. Never the
+    // connection string.
+    if (finalVerdict.Decision == ProductionDbGuard.Decision.LocalDb)
+        app.Logger.LogInformation("Database guard: {Decision}", finalVerdict.ToString());
+    else
+        app.Logger.LogWarning("Database guard: remote database allowed by {Decision}", finalVerdict.ToString()); // e.g. "IisHost (APP_POOL_ID)"
     if (LocalDbGuard.AppliesTo(app.Environment))
     {
         // The EFFECTIVE connection the migration will use (catches a DI override too). Does not connect.
@@ -162,15 +177,26 @@ app.MapControllerRoute(
     defaults: new { area = "" },
     constraints: new { controller = new AdminControllerConstraint() });
 
-// /en → the English home page. /en/Register and /en/Contact are attribute routes on HomeController.
-app.MapControllerRoute(
-    name: "home-en",
-    pattern: "en",
-    defaults: new { controller = "Home", action = "Index" });
+// The public pages: every entry of the route table, in Arabic and under /en (Infrastructure/Site/SiteRoutes).
+foreach (var page in SiteRoutes.All)
+{
+    var path = page.Path.TrimStart('/');
+    var defaults = new { controller = page.Controller, action = page.Action };
+    app.MapControllerRoute(page.Key + ".ar", path, defaults);
+    app.MapControllerRoute(page.Key + ".en", path.Length == 0 ? "en" : "en/" + path, defaults);
+}
 
+// Conventional routes reach ONLY Home (Error, and /Home → 301 by the normaliser) and Account (login/logout). Admin
+// controllers are reachable under /Admin/… only: /Dashboard, /Events, /News… now answer the 404 page instead of the
+// admin controller (or a redirect to the login page). No defaults: "/" is the home route above.
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller}/{action}/{id?}",
+    defaults: null,
+    constraints: new { controller = "^(?i:home|account)$" });
+
+// Everything else: the branded 404 in the URL's language. ":nonfile" keeps a missing static file a plain 404.
+app.MapFallbackToController("{*path:nonfile}", nameof(InnovestHolding.Controllers.HomeController.NotFoundPage), "Home");
 
 app.Run();
 

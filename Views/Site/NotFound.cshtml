@@ -1,0 +1,19 @@
+@model NotFoundVm
+@{
+    ViewData["Seo"] = Model.Seo;
+    ViewData["Shell"] = Model.Shell;
+}
+<section class="page-hero not-found">
+  <span class="hero-tri hero-tri-a" aria-hidden="true"></span>
+  <div class="container">
+    <p class="not-found-code" aria-hidden="true">404</p>
+    <h1 class="page-title">@L[K.Ui.NotFoundTitle]</h1>
+    <p class="page-intro">@L[K.Ui.NotFoundText]</p>
+    <ul class="not-found-links">
+      @foreach (var link in Model.Links)
+      {
+        <li><a href="@link.Href" class="btn btn-outline-light" lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</a></li>
+      }
+    </ul>
+  </div>
+</section>
