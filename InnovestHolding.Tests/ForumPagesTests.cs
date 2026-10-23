@@ -244,20 +244,33 @@ public class ForumPagesTests(TestAppFactory f)
         var active = await f.DbAsync(db => db.ForumEditions.Where(e => e.IsActive).Select(e => e.Id).ToListAsync());
         Assert.NotEmpty(active);
         var first = active[0];
-        var saved = await f.DbAsync(db => db.ForumEditions.AsNoTracking().SingleAsync(e => e.Id == first));
+        var saved = await f.DbAsync(db => db.ForumEditions.AsNoTracking().Where(e => active.Contains(e.Id)).ToListAsync());
+        var admin = await f.SignedInClientAsync();
+        // Rows whose EN chip is complete (the page shows one chip per edition row).
+        async Task<int> ChipsAsync() => Regex.Matches(await admin.GetStringAsync("/Admin/ForumEditions"), "badge-active en-chip\"").Count;
         try
         {
-            // The migration's editions have no English text: Arabic indexable + in the sitemap, English thin.
+            // ONE rule (Hassan F10 🟡1): the migration's editions have an English title and no text in either language, so
+            // they are English-complete — the admin shows EN ✓ on every row AND /en/forum/editions is indexable and listed.
             var (arR, _) = await GetAsync("/forum/editions");
             Assert.Null(Robots(arR));
             var (enR, _) = await GetAsync("/en/forum/editions");
-            Assert.Contains("noindex", Robots(enR));
+            Assert.Null(Robots(enR));
             var sitemap = await SitemapAsync();
             Assert.Contains("/forum/editions", sitemap);
-            Assert.DoesNotContain("/en/forum/editions", sitemap);
+            Assert.Contains("/en/forum/editions", sitemap);
+            Assert.Equal(active.Count, await ChipsAsync());
 
-            // One edition with English title + text → the English page is indexable and listed.
+            // Arabic text without English on every edition: EN — everywhere in the admin AND the English page is thin.
+            await Db(async db => { foreach (var e in await db.ForumEditions.Where(x => active.Contains(x.Id)).ToListAsync()) { e.TextAr = "نص عربي"; e.TextEn = null; } });
+            Assert.Equal(0, await ChipsAsync());
+            (enR, _) = await GetAsync("/en/forum/editions");
+            Assert.Contains("noindex", Robots(enR));
+            Assert.DoesNotContain("/en/forum/editions", await SitemapAsync());
+
+            // One edition with its English text too → EN ✓ on that row and the English page is indexable and listed.
             await Db(async db => { var e = await db.ForumEditions.SingleAsync(x => x.Id == first); e.TitleEn = "QA Edition"; e.TextEn = "QA text."; });
+            Assert.Equal(1, await ChipsAsync());
             (enR, var enHtml) = await GetAsync("/en/forum/editions");
             Assert.Null(Robots(enR));
             Assert.Contains("QA text.", enHtml);
@@ -278,9 +291,11 @@ public class ForumPagesTests(TestAppFactory f)
         {
             await Db(async db =>
             {
-                foreach (var e in await db.ForumEditions.Where(x => active.Contains(x.Id)).ToListAsync()) e.IsActive = true;
-                var row = await db.ForumEditions.SingleAsync(x => x.Id == first);
-                row.TitleEn = saved.TitleEn; row.TextEn = saved.TextEn;
+                foreach (var e in await db.ForumEditions.Where(x => active.Contains(x.Id)).ToListAsync())
+                {
+                    var s = saved.Single(x => x.Id == e.Id);
+                    (e.IsActive, e.TitleEn, e.TextAr, e.TextEn) = (true, s.TitleEn, s.TextAr, s.TextEn);
+                }
             });
         }
     }

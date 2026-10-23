@@ -169,6 +169,12 @@ public class PageSectionsController(AppDbContext db, ISiteContentCache cache) : 
             (_, "faq") => s.Faqs.Count,
             (PageKeys.About, "values") => Items(C.Values),
             (PageKeys.About, "why") => Items(C.WhyPoints),
+            // F10: the forum page's own lists (its «sectors» are forum_sectors, not the company list).
+            (PageKeys.Forum, "sectors") => Items(C.ForumSectors),
+            (PageKeys.Forum, "figures") => Items(C.ForumFigures),
+            (PageKeys.Forum, "audiences") => Items(C.ForumAudiences),
+            (PageKeys.Forum, "pillars") => Items(C.ForumPillars),
+            (PageKeys.Forum, "goals") => Items(C.ForumGoals),
             (_, "sectors") => Items(C.Sectors),
             (PageKeys.About, "partners_in_success") => Items(C.PartnersInSuccess),
             (PageKeys.About, "founder") => string.IsNullOrWhiteSpace(s.Content.GetValueOrDefault("founder_message")?.Ar) ? 0 : null,

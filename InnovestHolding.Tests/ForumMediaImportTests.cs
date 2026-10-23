@@ -212,6 +212,32 @@ public sealed class ForumMediaImportTests(TestAppFactory f) : IDisposable
         Assert.Equal(await RowFilesAsync(db), Files());
     }
 
+    [Fact] // Yasser F10 L1: a read failing partway through an edition discards that edition's files already written
+    public async Task Io_failure_partway_through_an_edition_leaves_no_stray()
+    {
+        foreach (var file in Directory.EnumerateFiles(BundledRoot, "*", SearchOption.AllDirectories))
+        {
+            var target = Path.Combine(_source, Path.GetRelativePath(BundledRoot, file));
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.Copy(file, target);
+        }
+        await using var db = await FreshAsync();
+        // The 3rd photo of the first edition cannot be read (held open exclusively): an IOException after 2 files were written.
+        var blocked = ForumMediaImport.PathOf(_source, ForumMediaImport.Editions[0].Photos[2].File);
+        ForumMediaImport.Result r;
+        using (new FileStream(blocked, FileMode.Open, FileAccess.Read, FileShare.None))
+            r = await RunAsync(db, _source);
+        Assert.Equal("failed", r.Outcome);
+        Assert.Contains(_log.Lines, l => l.StartsWith("Error|Forum media import stopped (IOException)", StringComparison.Ordinal));
+        Assert.Equal(8, await db.MediaFiles.CountAsync());   // the logos only
+        Assert.Equal(await RowFilesAsync(db), Files());       // no file of the failed edition is left
+        Assert.False(await db.SiteContents.AnyAsync(c => c.SectionKey == ForumMediaImport.Marker));
+
+        var again = await RunAsync(db, _source);
+        Assert.Equal(("imported", 31), (again.Outcome, again.Imported));
+        Assert.Equal(await RowFilesAsync(db), Files());
+    }
+
     [Fact] // the app's own startup ran the importer on the fresh test database: photos and logos are served from /media
     public async Task Startup_imported_the_media_into_the_app()
     {

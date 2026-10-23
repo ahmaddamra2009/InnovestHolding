@@ -179,11 +179,21 @@ public static class ForumMediaImport
                 }
 
                 var files = new List<MediaFile>();
-                foreach (var photo in edition.Photos)
+                try
                 {
-                    var file = await ReadAndStoreAsync(media, sourceRoot, photo.File, ImageUse.General, photo.AltAr, photo.AltEn, logger, ct);
-                    if (file is null) failed++;
-                    else files.Add(file);
+                    foreach (var photo in edition.Photos)
+                    {
+                        var file = await ReadAndStoreAsync(media, sourceRoot, photo.File, ImageUse.General, photo.AltAr, photo.AltEn, logger, ct);
+                        if (file is null) failed++;
+                        else files.Add(file);
+                    }
+                }
+                catch
+                {
+                    // A read or write failed partway through this edition (Yasser F10 L1): the photos already written for it
+                    // have no row yet, so they go now, as on a failed commit.
+                    foreach (var f in files) media.Discard(f);
+                    throw;
                 }
                 if (files.Count == 0) continue;
                 await CommitAsync(db, media, files, edition.Photos[0].File, beforeCommit, () =>

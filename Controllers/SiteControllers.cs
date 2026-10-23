@@ -192,7 +192,9 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
             var time0 = v.P(r.TimeAr, r.TimeEn);
             if (!time0.IsEmpty) facts.Add(new FactVm("clock", Ui(MessageKeys.Ui.EventTime), time0));
         }
-        var place = string.Join(" — ", new[] { venue, address, city }.Where(t => !t.IsEmpty).Select(t => t.Value));
+        // A part equal to an earlier one (e.g. the venue typed again as the city) is shown once (QA F10-QA-1).
+        var place = string.Join(" — ", new[] { venue, address, city }.Where(t => !t.IsEmpty).Select(t => t.Value.Trim())
+            .Distinct(StringComparer.Ordinal));
         if (place.Length > 0)
             facts.Add(new FactVm("pin", Ui(MessageKeys.Ui.EventVenue),
                 new LText(place, english && new[] { venue, address, city }.Any(t => t.IsFallback))));
@@ -279,7 +281,9 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
             Facts = facts,
             Actions = actions,
             Notice = past && r.Status != EventStatus.Cancelled ? Ui(MessageKeys.Ui.EventEndedNotice) : LText.Empty,
-            ArabicOnly = english && !available,
+            // Only when the Arabic page really has more (a summary or a description): never promise text that does not exist
+            // (QA F10-QA-4, the thin month-only programme events).
+            ArabicOnly = english && !available && EventQueries.HasText(r.SummaryAr, r.DescriptionAr),
             Back = new LinkVm(v.Url(PageKeys.ForumEvents), v.Title(PageKeys.ForumEvents)),
             Related = speakers.Count == 0 ? [] : [new RelatedVm(v.Title(PageKeys.ForumSpeakers), speakers, true)],
         });

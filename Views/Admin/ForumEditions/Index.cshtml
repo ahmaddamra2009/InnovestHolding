@@ -33,7 +33,7 @@
             {
                 var item = Model[i];
                 <tr id="row-@item.Id" tabindex="-1" class="@(item.IsActive ? "" : "row-hidden")">
-                    <td>@if (item.Cover is { } cover) { <img class="admin-thumb" src="@cover.Url" alt=""> } else { <span class="field-hint">—</span> }</td>
+                    <td>@if (item.Cover is { } cover) { <img class="admin-thumb" src="@cover.Url" width="@cover.Width" height="@cover.Height" alt="" loading="lazy" decoding="async"> } else { <span class="field-hint">—</span> }</td>
                     <td dir="ltr">@item.Year</td>
                     <td>
                         <strong>@item.TitleAr</strong>

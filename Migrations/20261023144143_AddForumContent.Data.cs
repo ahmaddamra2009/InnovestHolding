@@ -170,10 +170,10 @@ namespace InnovestHolding.Migrations
         [
             ("forum_figures",
             [
-                new("+2000", "2000+", null, "متدرب", "trainees"),
+                new("2000+", "2000+", null, "متدرب", "trainees"),
                 new("459", "459", null, "مستفيد من المسابقات", "competition beneficiaries"),
-                new("+300", "300+", null, "استشارة ودراسة جدوى", "consultations and feasibility studies"),
-                new("+58", "58+", null, "شركة مدعومة", "companies supported"),
+                new("300+", "300+", null, "استشارة ودراسة جدوى", "consultations and feasibility studies"),
+                new("58+", "58+", null, "شركة مدعومة", "companies supported"),
                 new("420 مليون", "420 million", null, "قيمة الشراكات", "in partnerships"),
                 new("50", "50", null, "شركة ضمن الاستثمار القادم", "companies in the next investment"),
             ]),
@@ -303,8 +303,9 @@ namespace InnovestHolding.Migrations
 
         // ── The 2026 programme (§10): month precision, offset +02:00, chronological. All visible (Anas, 2026-10-23). ──
 
+        /// <param name="PlaceAr">Written to LocationAr/En only (City stays empty: the venue is shown once, QA F10-QA-1).</param>
         public sealed record EventRow(string Slug, string TitleAr, string TitleEn, int Month, string MonthAr, string MonthEn,
-            string CityAr, string CityEn);
+            string PlaceAr, string PlaceEn);
 
         public const string EventOffset = "+02:00";
         public const int EventYear = 2026;
@@ -320,6 +321,28 @@ namespace InnovestHolding.Migrations
             new("2026-11-innovest-competition-finale", "ختام مسابقة إنوفست", "Innovest Competition Finale", 11, "نوفمبر", "November", "", null),
             new("2026-11-regional-summit-bahrain", "ملتقى القمة الإقليمية – البحرين", "Regional Summit – Bahrain", 11, "نوفمبر", "November", "البحرين", "Bahrain"),
             new("2026-12-annual-closing-arab-league", "الختام السنوي بجامعة الدول العربية", "Annual Closing at the Arab League", 12, "ديسمبر", "December", "جامعة الدول العربية", "Arab League"),
+        ];
+
+        // ── Naming rule (O1/O2): seeded values → the forum's full name. (table, row filter, column, seeded value, new value) ──
+
+        public const string CardComponentsAr =
+            "معرض إنوفست للشركات الناشئة\nمنتدى الابتكار والاستثمار العربي\nملتقى الذكاء الاصطناعي\nمسابقة العروض التقديمية\nاجتماعات المستثمرين\nالتشبيك بين الشركات\nجلسات حكومية\nجوائز الابتكار";
+        public const string CardComponentsEn =
+            "Innovest Startup Expo\nInvestment Forum Event\nAI Summit\nPitch Competition\nInvestment Meetings\nBusiness Matching\nGovernment Sessions\nInnovation Awards";
+        public const string ForumFullNameAr = "منتدى إنوفست للابتكار والاستثمار";
+        public const string ForumFullNameEn = "Innovest Forum for Innovation and Investment";
+
+        /// <summary>The hub's English meta title: the full name does not fit the 60-character title rule with the
+        /// " | Innovest Holding" suffix (63), so the title carries it in this form (60 with the suffix).</summary>
+        public const string HubMetaTitleEn = "Innovest Forum: Innovation and Investment";
+
+        public static readonly (string Table, string Key, string Column, string Old, string New)[] NamingUpdates =
+        [
+            ("Platforms", "TitleAr = N'منتدى إنوفست'", "DescriptionAr", CardComponentsAr,
+                CardComponentsAr.Replace("منتدى الابتكار والاستثمار العربي", ForumFullNameAr, StringComparison.Ordinal)),
+            ("Platforms", "TitleAr = N'منتدى إنوفست'", "DescriptionEn", CardComponentsEn,
+                CardComponentsEn.Replace("Investment Forum Event", ForumFullNameEn, StringComparison.Ordinal)),
+            ("Pages", "[Key] = 'forum'", "MetaTitleEn", "Innovest Forum for Investment", HubMetaTitleEn),
         ];
 
         /// <summary>"2026-06-01T00:00:00+02:00" and the month's last day at 23:59.</summary>
@@ -423,13 +446,14 @@ namespace InnovestHolding.Migrations
             var events = string.Join(",\n", Events.Select((e, i) =>
             {
                 var (starts, ends) = MonthRange(e.Month);
-                return $"('{e.Slug}', {L(e.TitleAr)}, {L(e.TitleEn)}, {L(e.MonthAr)}, {L(e.MonthEn)}, {L(e.CityAr)}, {L(e.CityEn)}, " +
+                return $"('{e.Slug}', {L(e.TitleAr)}, {L(e.TitleEn)}, {L(e.MonthAr)}, {L(e.MonthEn)}, {L(e.PlaceAr)}, {L(e.PlaceEn)}, " +
                        $"'{starts}', '{ends}', {i + 1})";
             }));
             sql.Add(Exec("INSERT INTO Events (Slug, TitleAr, TitleEn, DescriptionAr, DescriptionEn, SummaryAr, SummaryEn, EventDay, EventMonthAr, EventMonthEn, " +
                     "LocationAr, LocationEn, TimeAr, TimeEn, CityAr, CityEn, AddressAr, AddressEn, StartsAt, EndsAt, DateIsMonth, Status, AttendanceMode, " +
                     "RegistrationOpen, MetaTitleAr, MetaTitleEn, MetaDescriptionAr, MetaDescriptionEn, IsActive, SortOrder, CreatedAt, UpdatedAt)\n" +
-                    "SELECT v.Slug, v.TA, v.TE, N'', NULL, N'', NULL, 1, v.MA, v.ME, v.CA, v.CE, N'', NULL, v.CA, v.CE, N'', NULL, " +
+                    // The place goes to Location only (City empty), so the detail page names it once.
+                    "SELECT v.Slug, v.TA, v.TE, N'', NULL, N'', NULL, 1, v.MA, v.ME, v.CA, v.CE, N'', NULL, N'', NULL, N'', NULL, " +
                     "CAST(v.S AS datetimeoffset(0)), CAST(v.E AS datetimeoffset(0)), 1, 0, 0, 1, N'', NULL, N'', NULL, 1, " +
                     "ISNULL((SELECT MAX(SortOrder) FROM Events), 0) + v.I, SYSUTCDATETIME(), SYSUTCDATETIME() FROM (VALUES\n" +
                     $"{events}\n) v(Slug, TA, TE, MA, ME, CA, CE, S, E, I) " +
@@ -442,6 +466,12 @@ namespace InnovestHolding.Migrations
                     "SELECT v.Y, v.LA, v.LE, v.TA, v.TE, v.PA, v.PE, N'', NULL, ISNULL((SELECT MAX(SortOrder) FROM ForumEditions), 0) + v.I, 1, " +
                     $"SYSUTCDATETIME(), SYSUTCDATETIME() FROM (VALUES\n{editions}\n) v(Y, LA, LE, TA, TE, PA, PE, I) " +
                     $"WHERE NOT EXISTS (SELECT 1 FROM ForumEditions x WHERE x.[Year] = v.Y AND x.TitleAr {Bin} = v.TA);"));
+
+            // 10. Naming rule (CTO, QA O1/O2): the home forum card's components list and the hub's English meta title name
+            //     the forum «منتدى إنوفست للابتكار والاستثمار» / "Innovest Forum for Innovation and Investment". Each column is
+            //     changed only while it still holds its seeded value (binary): an admin's edit is never overwritten.
+            foreach (var (table, key, column, old, @new) in NamingUpdates)
+                sql.Add($"UPDATE {table} SET [{column}] = {L(@new)} WHERE {key} AND {Eq("[" + column + "]", old)};");
 
             return sql;
         }
@@ -498,6 +528,10 @@ namespace InnovestHolding.Migrations
             foreach (var r in NewKeys)
                 sql.Add($"DELETE FROM SiteContents WHERE SectionKey = {L(r[0])} AND {Eq("ContentAr", r[1])} AND {Eq("ContentEn", r[2])};");
             sql.Add($"DELETE FROM SiteContents WHERE SectionKey = '{MediaMarker}';");
+
+            // The naming updates back, only while each value is still what Up wrote.
+            foreach (var (table, key, column, old, @new) in NamingUpdates)
+                sql.Add($"UPDATE {table} SET [{column}] = {L(old)} WHERE {key} AND {Eq("[" + column + "]", @new)};");
             return sql;
         }
 

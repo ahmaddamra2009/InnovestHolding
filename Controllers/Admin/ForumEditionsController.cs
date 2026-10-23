@@ -32,12 +32,9 @@ public class ForumEditionsController(AppDbContext db) : AdminControllerBase
             })
             .ToListAsync();
         return View(IndexView, rows.Select(r => new ForumEditionRowVm(r.Id, r.Year, r.EditionLabelAr, r.TitleAr,
-            HasEnglish(r.TitleEn, r.TextAr, r.TextEn), r.IsActive, r.Photos, MediaRefs.Of(r.Cover))).ToList());
+            // The EN chip = the public pages' rule (one definition: ForumEditionQueries.IsEnglishComplete).
+            ForumEditionQueries.IsEnglishComplete(r.TitleEn, r.TextAr, r.TextEn), r.IsActive, r.Photos, MediaRefs.Of(r.Cover))).ToList());
     }
-
-    /// <summary>The EN chip: an English title, and English text wherever there is Arabic text.</summary>
-    private static bool HasEnglish(string? titleEn, string textAr, string? textEn) =>
-        !string.IsNullOrWhiteSpace(titleEn) && (string.IsNullOrWhiteSpace(textAr) || !string.IsNullOrWhiteSpace(textEn));
 
     [HttpPost]
     public async Task<IActionResult> Create(ForumEditionInput input)

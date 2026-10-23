@@ -42,6 +42,12 @@ public class ForumContentMigrationTests
             VALUES ('2026-12-annual-closing-arab-league', N'حفل الختام كما كتبه المشرف', N'', 15, N'ديسمبر', N'', N'', 1, 7, '2026-10-01T10:00:00', N'', N'', N'', 0, 0, 1, N'', N'', '2026-10-01T10:00:00');
         """;
 
+    /// <summary>Every page column except the hub's English meta title (the only page value AddForumContent may rename).</summary>
+    private const string OtherPages =
+        "SELECT Id, [Key], TitleAr, TitleEn, SummaryAr, SummaryEn, IntroAr, IntroEn, BodyAr, BodyEn, EmptyTextAr, EmptyTextEn, MetaTitleAr, " +
+        "CASE WHEN [Key] = 'forum' THEN NULL ELSE MetaTitleEn END AS MetaTitleEn, MetaDescriptionAr, MetaDescriptionEn, ShowInMenu, IsPublished, " +
+        "ShowInFooter, SortOrder, UpdatedAt FROM Pages WHERE 1 = 1 ORDER BY Id";
+
     private const string ItemsByContent = "SELECT [Group], TextAr, TextEn, DescriptionAr, DescriptionEn, IconKey, SortOrder, IsActive FROM ContentItems ORDER BY [Group], SortOrder, TextAr";
     private const string KeysByContent = "SELECT SectionKey, ContentAr, ContentEn FROM SiteContents ORDER BY SectionKey";
 
@@ -81,6 +87,7 @@ public class ForumContentMigrationTests
         var itemsByContent = await JsonAsync(db, ItemsByContent);
         var keysByContent = await JsonAsync(db, KeysByContent);
         var keysBefore = await JsonAsync(db, otherKeys);
+        var pagesBefore = await JsonAsync(db, OtherPages);
         var maxIds = new Dictionary<string, int>();
         foreach (var t in columns.Keys.Where(t => columns[t].Contains("Id")))
             maxIds[t] = await CountAsync(db, $"SELECT ISNULL(MAX(CAST([Id] AS int)), 0) AS [Value] FROM [{t}]");
@@ -90,7 +97,10 @@ public class ForumContentMigrationTests
         // Every pre-existing row keeps every pre-existing column, except ContentItems/SiteContents (checked below).
         var existingAfter = await AdminControlMigrationTests.DumpAsync(db, columns, maxIds);
         var changed = columns.Keys.Where(t => dumpBefore[t] != existingAfter[t]).Order().ToList();
-        Assert.Equal(["ContentItems", "SiteContents"], changed);
+        Assert.Equal(["ContentItems", "Pages", "SiteContents"], changed);
+        // Pages: only the hub's English meta title (the naming update of a still-seeded value).
+        Assert.Equal(pagesBefore, await JsonAsync(db, OtherPages.Replace("ORDER BY Id", $"AND Id <= {maxIds["Pages"]} ORDER BY Id")));
+        Assert.Equal(AddForumContent.HubMetaTitleEn, await db.Pages.Where(p => p.Key == "forum").Select(p => p.MetaTitleEn).SingleAsync());
         Assert.Equal(itemsBefore, await JsonAsync(db, otherItems.Replace("ORDER BY Id", $"AND Id <= {maxIds["ContentItems"]} ORDER BY Id")));
         Assert.Equal(keysBefore, await JsonAsync(db, otherKeys.Replace("ORDER BY Id", $"AND Id <= {maxIds["SiteContents"]} ORDER BY Id")));
 
@@ -240,8 +250,9 @@ public class ForumContentMigrationTests
     private static readonly string[] OldNames =
         ["هولدينغ", "منتدى إنوفست العربي", "منتدى الابتكار والاستثمار العربي", "منتدى الإبتكار والإستثمار العربي", "المنتدى العربي",
          "Arab Forum", "ARAB FORUM", "[?]", "ملتقي ", "الإصنطاعي", "يوينو", "الأقليمية", "الإجتماعى", "الأولي ", "يُعكس",
-         // COPY-F10 B1–B7: the PDF's hamza on these masdars.
-         "الإستثمار", "الإبتكار", "إنطلاق", "الإقتصاد"];
+         // COPY-F10 B1–B7: the PDF's hamza on these masdars — matched as STEMS, so prefixed forms («للإستثمار»,
+         // «بالإبتكار», «والإقتصاد») are caught too (Hassan F10 🔵1).
+         "إستثمار", "إبتكار", "إنطلاق", "إقتصاد", "إصطناع"];
 
     /// <summary>Every literal Up inserts or writes (not the frozen old components, which are only a guard and Down's restore).</summary>
     private static IEnumerable<string> InsertedLiterals() =>
@@ -252,8 +263,9 @@ public class ForumContentMigrationTests
             .Concat([AddForumContent.NewComponentsTitle.Ar, AddForumContent.NewComponentsTitle.En])
             .Concat(AddForumContent.PartnerGroups.SelectMany(g => new[] { g.NameAr, g.NameEn }))
             .Concat(AddForumContent.Partners.SelectMany(p => new[] { p.NameAr, p.NameEn }))
-            .Concat(AddForumContent.Events.SelectMany(e => new[] { e.TitleAr, e.TitleEn, e.CityAr, e.CityEn, e.MonthAr, e.MonthEn }))
+            .Concat(AddForumContent.Events.SelectMany(e => new[] { e.TitleAr, e.TitleEn, e.PlaceAr, e.PlaceEn, e.MonthAr, e.MonthEn }))
             .Concat(AddForumContent.Editions.SelectMany(e => new[] { e.LabelAr, e.LabelEn, e.TitleAr, e.TitleEn, e.PlaceAr, e.PlaceEn }))
+            .Concat(AddForumContent.NamingUpdates.Select(u => u.New))
             .Where(s => s is not null);
 
     [Fact] // T4 — no literal carries an old name, a "[?]" or a corrected typo
@@ -263,6 +275,8 @@ public class ForumContentMigrationTests
         Assert.True(all.Count > 250, $"{all.Count} literals searched");
         var hits = all.SelectMany(s => OldNames.Where(o => s.Contains(o, StringComparison.Ordinal)).Select(o => $"{o} in «{s[..Math.Min(40, s.Length)]}»")).ToList();
         Assert.True(hits.Count == 0, string.Join(" ‖ ", hits));
+        // The search catches prefixed forms (the negative control of 🔵1: «للإستثمار» was missed by «الإستثمار»).
+        Assert.All(new[] { "للإستثمار", "بالإبتكار", "والإقتصاد", "قبل إنطلاق" }, w => Assert.Contains(OldNames, o => w.Contains(o, StringComparison.Ordinal)));
         // N8 (RenameHoldingAndForum, frozen, runs BEFORE this migration) never sees F10's rows: they must arrive renamed.
         var n8 = all.SelectMany(s => RenameHoldingAndForum.Pairs.Where(p => s.Contains(p.Find, StringComparison.Ordinal))
             .Select(p => $"{p.Find} in «{s[..Math.Min(40, s.Length)]}»")).ToList();
@@ -318,7 +332,7 @@ public class ForumContentMigrationTests
         foreach (var e in AddForumContent.Events)
         {
             Fits<Event>("Slug", e.Slug); Fits<Event>("TitleAr", e.TitleAr); Fits<Event>("TitleEn", e.TitleEn);
-            Fits<Event>("CityAr", e.CityAr); Fits<Event>("CityEn", e.CityEn); Fits<Event>("LocationAr", e.CityAr);
+            Fits<Event>("LocationAr", e.PlaceAr); Fits<Event>("LocationEn", e.PlaceEn);
             Fits<Event>("EventMonthAr", e.MonthAr); Fits<Event>("EventMonthEn", e.MonthEn);
             Assert.True(Slugs.IsValid(e.Slug), e.Slug);
             var first = DateTimeOffset.Parse(AddForumContent.MonthRange(e.Month).Starts, System.Globalization.CultureInfo.InvariantCulture);

@@ -4,15 +4,21 @@ using InnovestHolding.Models;
 namespace InnovestHolding.Infrastructure.Content;
 
 /// <summary>
-/// F10 contract (Dev 1): the shared definitions of the past editions. <c>EditionsCount</c> of the site snapshot is
-/// <c>ListCount(active editions, active editions where <see cref="HasEnglish"/>)</c>; the editions page
-/// (<c>PageKeys.ForumEditions</c>, a List page) is thin while the count is 0.
+/// F10: the shared definitions of the past editions. ONE rule decides that an edition's English content is complete
+/// (<see cref="IsEnglishComplete"/>): the admin's EN chip, the snapshot's <c>EditionsCount.English</c> (which makes
+/// /en/forum/editions indexable, listed in the sitemap and hreflang-paired) and any SQL query (<see cref="HasEnglish"/>)
+/// all use it, so they cannot disagree (Hassan F10 🟡1/🔵2).
 /// </summary>
 public static class ForumEditionQueries
 {
-    /// <summary>An edition whose English page content exists: an English title AND an English text.</summary>
+    /// <summary>An English title, and English text wherever there is Arabic text (an edition with no text in either
+    /// language is complete with its title alone).</summary>
+    public static bool IsEnglishComplete(string? titleEn, string? textAr, string? textEn) =>
+        !string.IsNullOrWhiteSpace(titleEn) && (string.IsNullOrWhiteSpace(textAr) || !string.IsNullOrWhiteSpace(textEn));
+
+    /// <summary><see cref="IsEnglishComplete"/> as a query expression (same rule; a test pins the two together).</summary>
     public static readonly Expression<Func<ForumEdition, bool>> HasEnglish =
-        e => e.TitleEn != null && e.TitleEn != "" && e.TextEn != null && e.TextEn != "";
+        e => !string.IsNullOrWhiteSpace(e.TitleEn) && (string.IsNullOrWhiteSpace(e.TextAr) || !string.IsNullOrWhiteSpace(e.TextEn));
 
     /// <summary>The public order: SortOrder, then Id (the ISortable rule).</summary>
     public static IQueryable<ForumEdition> Ordered(IQueryable<ForumEdition> editions) =>

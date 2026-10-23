@@ -356,8 +356,8 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
             sections,
             footer,
             editions,
-            // English = ForumEditionQueries.HasEnglish (an English title AND an English text), on the loaded rows.
-            new ListCount(editions.Count, editions.Count(e => !string.IsNullOrEmpty(e.TitleEn) && !string.IsNullOrEmpty(e.TextEn))));
+            // English = the ONE shared rule (ForumEditionQueries.IsEnglishComplete, also the admin's EN chip), on the loaded rows.
+            new ListCount(editions.Count, editions.Count(e => ForumEditionQueries.IsEnglishComplete(e.TitleEn, e.TextAr, e.TextEn))));
     }
 
     /// <summary>
