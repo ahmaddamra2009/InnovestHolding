@@ -38,11 +38,13 @@ namespace InnovestHolding.Migrations
         /// <summary>Find → replace, applied in this order (longest phrase first, so no rule consumes part of another).</summary>
         public static readonly (string Find, string Replace)[] Pairs =
         [
+            // The forum brand only. Generic «المنتدى العربي» / "Arab Forum" are NOT renamed: they also name other
+            // organisations and the forum's own long name («منتدى الابتكار والاستثمار العربي») — CTO decision H2/N1.
             ("منتدى إنوفست العربي", "منتدى إنوفست"),
-            ("المنتدى العربي", "المنتدى"),
             ("Innovest Arab Forum", "Innovest Forum"),
             ("INNOVEST ARAB FORUM", "INNOVEST FORUM"),
-            ("Arab Forum", "Forum"), // case-sensitive: "the Arab Forum" → "the Forum"; the generic "Arab forum" stays
+            // «الهولدينغ» before the bare word, so the article is not doubled («الالقابضة»).
+            ("الهولدينغ", "القابضة"),
             ("هولدينغ", "القابضة"),
         ];
 

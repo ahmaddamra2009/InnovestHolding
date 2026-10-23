@@ -35,8 +35,14 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
 
     /// <summary>Admin edits and non-content data on top of the C5 state (synthetic, no real person's data).</summary>
     private static readonly string Fixture = $"""
-        UPDATE SiteContents SET ContentAr = N'نص كتبه المشرف: إنوفست هولدينغ ترعى منتدى إنوفست العربي والمنتدى العربي.',
-            ContentEn = N'Admin text: Innovest Holding hosts the Innovest Arab Forum, the Arab Forum Events and the largest Arab forum.' WHERE SectionKey = 'about_text_2';
+        UPDATE SiteContents SET ContentAr = N'نص كتبه المشرف: إنوفست هولدينغ (مجموعة الهولدينغ) ترعى منتدى إنوفست العربي.',
+            ContentEn = N'Admin text: Innovest Holding hosts the Innovest Arab Forum, the largest Arab forum.' WHERE SectionKey = 'about_text_2';
+        UPDATE Events SET DescriptionAr = N'تنظمها إنوفست هولدينغ ضمن منتدى إنوفست العربي.', DescriptionEn = N'Organised by Innovest Holding as part of the Innovest Arab Forum.'
+            WHERE Id = (SELECT MIN(Id) FROM Events);
+        INSERT INTO Partners (NameAr, NameEn, Url, SortOrder, IsActive, ShowOnHome, CreatedAt, UpdatedAt)
+            VALUES (N'المنتدى العربي للبيئة والتنمية', N'Arab Forum for Environment and Development', NULL, 5, 1, 0, '2026-10-01T10:00:00', '2026-10-01T10:00:00');
+        INSERT INTO Partners (NameAr, NameEn, Url, SortOrder, IsActive, ShowOnHome, CreatedAt, UpdatedAt)
+            VALUES (N'منتدى الابتكار والاستثمار العربي', N'Innovation and Investment Arab Forum', NULL, 6, 1, 0, '2026-10-01T10:00:00', '2026-10-01T10:00:00');
         UPDATE SiteContents SET ContentAr = N'الشركة القابضة للاستثمار' WHERE SectionKey = 'tagline';
         UPDATE SiteContents SET ContentAr = N'هولدينغ' WHERE SectionKey = 'org_address_locality';
         INSERT INTO NavItems (TitleAr, TitleEn, Href, SortOrder, HasDropdown, IsActive, ShowInFooter, ShowInHeader)
@@ -152,9 +158,18 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         Assert.Equal(oldBefore, logged); // one log row per changed value
 
         // Specific rows.
-        Assert.Equal("نص كتبه المشرف: إنوفست القابضة ترعى منتدى إنوفست والمنتدى.", await ContentArAsync(db, "about_text_2"));
-        Assert.Equal("Admin text: Innovest Holding hosts the Innovest Forum, the Forum Events and the largest Arab forum.",
+        Assert.Equal("نص كتبه المشرف: إنوفست القابضة (مجموعة القابضة) ترعى منتدى إنوفست.", await ContentArAsync(db, "about_text_2"));
+        Assert.Equal("Admin text: Innovest Holding hosts the Innovest Forum, the largest Arab forum.",
             await db.SiteContents.AsNoTracking().Where(c => c.SectionKey == "about_text_2").Select(c => c.ContentEn).SingleAsync());
+        Assert.Equal(0, await CountAsync(db, "SELECT COUNT(*) AS [Value] FROM SiteContents WHERE ContentAr LIKE N'%الالقابضة%'"));
+        var ev = await db.Events.AsNoTracking().OrderBy(e => e.Id).FirstAsync();
+        Assert.Equal(("تنظمها إنوفست القابضة ضمن منتدى إنوفست.", "Organised by Innovest Holding as part of the Innovest Forum."),
+            (ev.DescriptionAr, ev.DescriptionEn));
+        // Other organisations' names and the forum's long name are not the brand: kept in both languages (H2).
+        var partners = await db.Partners.AsNoTracking().Where(p => p.Url == null && p.NameEn!.Contains("Forum")).OrderBy(p => p.SortOrder)
+            .Select(p => p.NameAr + "|" + p.NameEn).ToListAsync();
+        Assert.Equal(["المنتدى العربي للبيئة والتنمية|Arab Forum for Environment and Development",
+            "منتدى الابتكار والاستثمار العربي|Innovation and Investment Arab Forum"], partners);
         Assert.Equal("الشركة القابضة للاستثمار", await ContentArAsync(db, "tagline"));
         Assert.Equal(OldHolding, await ContentArAsync(db, "org_address_locality")); // a non-text key is never rewritten
         var nav = await db.NavItems.AsNoTracking().SingleAsync(n => n.SortOrder == 60);
@@ -194,11 +209,15 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         await using var db = await AtC5WithDataAsync();
         var migrator = db.GetService<IMigrator>();
         await migrator.MigrateAsync(Rename);
-        await db.Database.ExecuteSqlRawAsync("UPDATE SiteContents SET ContentAr = N'إنوفست القابضة — عدّله المشرف' WHERE SectionKey = 'hero_title'");
+        // about_text_2 IS in the log (Up changed it), so only Down's guard can keep this later edit (review H1).
+        Assert.Equal(1, await CountAsync(db,
+            $"SELECT COUNT(*) AS [Value] FROM [{RenameHoldingAndForum.LogTable}] l JOIN SiteContents s ON s.Id = l.RowId " +
+            "WHERE l.TableName = 'SiteContents' AND l.ColumnName = 'ContentAr' AND s.SectionKey = 'about_text_2'"));
+        await db.Database.ExecuteSqlRawAsync("UPDATE SiteContents SET ContentAr = N'إنوفست القابضة — عدّله المشرف' WHERE SectionKey = 'about_text_2'");
 
         await migrator.MigrateAsync(Before);
 
-        Assert.Equal("إنوفست القابضة — عدّله المشرف", await ContentArAsync(db, "hero_title"));
+        Assert.Equal("إنوفست القابضة — عدّله المشرف", await ContentArAsync(db, "about_text_2"));
         Assert.Equal("الشركة القابضة للاستثمار", await ContentArAsync(db, "tagline"));
         Assert.Equal("شركة القابضة الأولى", await db.Partners.AsNoTracking().Where(p => p.SortOrder == 4 && p.NameEn == "First Holding Co").Select(p => p.NameAr).SingleAsync());
         Assert.Contains("إنوفست هولدينغ", await ContentArAsync(db, "about_text_1")); // an untouched-since value is restored
@@ -263,9 +282,12 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         for (var i = 0; i < pairs.Length; i++)
             for (var j = 0; j < i; j++) // an earlier, shorter phrase would consume part of a later, longer one
                 Assert.False(pairs[i].Find.Contains(pairs[j].Find, StringComparison.Ordinal), $"{pairs[i].Find} must come before {pairs[j].Find}");
-        var forumEn = Array.FindIndex(pairs, p => p.Find == "Innovest Arab Forum");
-        Assert.True(forumEn >= 0 && forumEn < Array.FindIndex(pairs, p => p.Find == "Arab Forum"));
+        var withArticle = Array.FindIndex(pairs, p => p.Find == "الهولدينغ");
+        Assert.True(withArticle >= 0 && withArticle < Array.FindIndex(pairs, p => p.Find == "هولدينغ"));
         Assert.DoesNotContain(pairs, p => p.Find.Contains("Holding", StringComparison.OrdinalIgnoreCase));
+        // Only brand phrases (CTO decision H2/N1): no generic «المنتدى العربي» / "Arab Forum" pair.
+        Assert.All(pairs, p => Assert.True(p.Find.Contains("هولدينغ") || p.Find.Contains("إنوفست") ||
+                                           p.Find.Contains("Innovest", StringComparison.OrdinalIgnoreCase), p.Find));
     }
 
     /// <summary>The page text as a reader (and a search engine) gets it: HTML entities and JSON \u escapes decoded.</summary>
@@ -285,9 +307,27 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var text = Decode(await response.Content.ReadAsStringAsync());
         Assert.Contains(expected, text);
-        Assert.DoesNotContain(OldHolding, text);
-        Assert.DoesNotContain(OldForumAr, text);
-        Assert.DoesNotContain("المنتدى العربي", text);
-        Assert.DoesNotContain(OldForumEn, text);
+        AssertNoOldName(path, text);
+    }
+
+    private static void AssertNoOldName(string path, string text)
+    {
+        foreach (var old in new[] { OldHolding, OldForumAr, "المنتدى العربي", OldForumEn })
+            Assert.False(text.Contains(old, StringComparison.Ordinal), $"{path} contains {old}");
+    }
+
+    [Fact] // SEO-N8: every sitemap URL (ar + en) carries no old name
+    public async Task Every_sitemap_url_shows_no_old_name()
+    {
+        var client = f.NewClient();
+        var xml = System.Xml.Linq.XDocument.Parse(await client.GetStringAsync("/sitemap.xml"));
+        var paths = xml.Descendants().Where(e => e.Name.LocalName == "loc").Select(e => new Uri(e.Value).PathAndQuery).Distinct().ToList();
+        Assert.True(paths.Count >= 20, $"{paths.Count} sitemap URLs");
+        foreach (var path in paths)
+        {
+            var response = await client.GetAsync(path);
+            Assert.True(response.StatusCode == HttpStatusCode.OK, $"{path}: {(int)response.StatusCode}");
+            AssertNoOldName(path, Decode(await response.Content.ReadAsStringAsync()));
+        }
     }
 }
