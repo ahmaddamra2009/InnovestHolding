@@ -248,7 +248,8 @@ namespace InnovestHolding.Migrations
             "The Innovest Holding TV program: find its episodes, guests and sponsorship opportunities here, in line with the company's mission of connecting entrepreneurs with investors and supporting innovation.";
 
         /// <summary>
-        /// The privacy page row (Anas, 2026-10-23: shipped with its text, CONTENT-C5.md): column → value. Not in the
+        /// The privacy page row (Anas, 2026-10-23: shipped with its text, CONTENT-C5.md; meta pair ar+en so /en/privacy is
+        /// indexable too — written only with the row, on insert): column → value. Not in the
         /// header menu nor the footer columns (its link sits in the footer's bottom bar and next to each consent box).
         /// </summary>
         public static readonly (string Column, string Value)[] PrivacyRow =
@@ -263,10 +264,10 @@ namespace InnovestHolding.Migrations
             ("BodyEn", PrivacyBodyEn),
             ("EmptyTextAr", "سيتم نشر سياسة الخصوصية قريباً."),
             ("EmptyTextEn", "The privacy policy will be published soon."),
-            ("MetaTitleAr", ""),
-            ("MetaTitleEn", null),
-            ("MetaDescriptionAr", ""),
-            ("MetaDescriptionEn", null),
+            ("MetaTitleAr", "سياسة الخصوصية"),
+            ("MetaTitleEn", "Privacy Policy"),
+            ("MetaDescriptionAr", "كيف يتعامل موقع إنوفست هولدينغ مع البيانات التي ترسلها عبر النماذج: ما نجمعه، ولماذا، ومن يطّلع عليه، وحقوقك."),
+            ("MetaDescriptionEn", "How the Innovest Holding website handles the data you send through its forms: what we collect, why, who sees it, and your rights."),
         ];
 
         /// <summary>The TV hub intro: column → text (IntroAr is NOT NULL: its empty value is ''; IntroEn's is NULL).</summary>

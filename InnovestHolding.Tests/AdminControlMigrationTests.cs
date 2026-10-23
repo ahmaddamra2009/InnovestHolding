@@ -133,6 +133,9 @@ public class AdminControlMigrationTests
         Assert.Equal(AddAdminControl.PrivacyBodyAr, privacy.BodyAr);
         Assert.Equal(AddAdminControl.PrivacyBodyEn, privacy.BodyEn);
         Assert.True(privacy is { ShowInMenu: false, ShowInFooter: false, IsPublished: true });
+        Assert.Equal(("سياسة الخصوصية", "Privacy Policy"), (privacy.MetaTitleAr, privacy.MetaTitleEn));
+        Assert.StartsWith("كيف يتعامل موقع إنوفست هولدينغ", privacy.MetaDescriptionAr);
+        Assert.StartsWith("How the Innovest Holding website handles", privacy.MetaDescriptionEn);
         Assert.Equal(1 + await db.Pages.Where(p => p.Key == "about" || p.Key == "ecosystem" || p.Key == "news" || p.Key == "contact").MaxAsync(p => p.SortOrder), privacy.SortOrder);
         var tv = await db.Pages.AsNoTracking().SingleAsync(p => p.Key == "tv");
         Assert.Equal(("مقدمة كتبها المشرف", "An intro the admin wrote"), (tv.IntroAr, tv.IntroEn)); // admin edit kept
@@ -326,11 +329,15 @@ public class AdminControlSiteTests(TestAppFactory f)
         var html = await r.Content.ReadAsStringAsync();
         Assert.Contains(WebUtility.HtmlEncode("1. متى نجمع بياناتك"), html);
         Assert.Contains($"{Base}/privacy", await SitemapAsync());
-        // The English meta pair is not part of CONTENT-C5: /en/privacy renders (English body) but stays noindex, follow.
+        Assert.Contains(WebUtility.HtmlEncode(AddAdminControl.PrivacyRow.Single(c => c.Column == "MetaDescriptionAr").Value), html);
+        // The row ships with an English meta pair too, so /en/privacy is indexable and listed.
         var en = await f.NewClient().GetAsync("/en/privacy");
         Assert.Equal(HttpStatusCode.OK, en.StatusCode);
-        Assert.Equal(RobotsHeader.FollowValue, Robots(en));
-        Assert.DoesNotContain($"{Base}/en/privacy", await SitemapAsync());
+        Assert.Null(Robots(en));
+        var enHtml = await en.Content.ReadAsStringAsync();
+        Assert.Contains("Privacy Policy", enHtml);
+        Assert.Contains(WebUtility.HtmlEncode(AddAdminControl.PrivacyRow.Single(c => c.Column == "MetaDescriptionEn").Value), enHtml);
+        Assert.Contains($"{Base}/en/privacy", await SitemapAsync());
 
         var stored = await f.DbAsync(db => db.Pages.AsNoTracking().SingleAsync(p => p.Key == "privacy"));
         var (bodyAr, bodyEn) = (stored.BodyAr, stored.BodyEn);
@@ -340,7 +347,10 @@ public class AdminControlSiteTests(TestAppFactory f)
             var empty = await f.NewClient().GetAsync("/privacy");
             Assert.Equal(HttpStatusCode.OK, empty.StatusCode);
             Assert.Equal(RobotsHeader.FollowValue, Robots(empty));
-            Assert.DoesNotContain($"{Base}/privacy", await SitemapAsync());
+            Assert.Equal(RobotsHeader.FollowValue, Robots(await f.NewClient().GetAsync("/en/privacy")));
+            var sitemap = await SitemapAsync();
+            Assert.DoesNotContain($"{Base}/privacy", sitemap);
+            Assert.DoesNotContain($"{Base}/en/privacy", sitemap);
         }
         finally
         {
