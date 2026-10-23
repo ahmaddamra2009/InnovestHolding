@@ -40,7 +40,71 @@
             {
                 var value = Model.Content.GetValueOrDefault(key.Key) ?? new BilingualValueInput();
                 var rows = key.Multiline ? 3 : 0;
-                if (key.Rule == ContentRule.PageKey)
+                if (key.Rule == ContentRule.Link)
+                {
+                    @* A page picker (route table) with «رابط خارجي…»: the https address goes in the box beside it. *@
+                    var choices = ViewData[InnovestHolding.Controllers.Admin.ContentController.PageChoicesKey] as IReadOnlyList<KeyValuePair<string, string>> ?? [];
+                    var id = "content-" + key.Key.Replace('_', '-');
+                    var current = value.Ar?.Trim() ?? "";
+                    var isPage = choices.Any(c => c.Key == current);
+                    var isExternal = !isPage && current.Length > 0 && ContentKeys.IsExternalLink(current);
+                    var defaultTitle = key.Default is null ? null : choices.FirstOrDefault(c => c.Key == key.Default).Value;
+                    <div class="form-group">
+                        <label for="@id">@key.Label</label>
+                        <select id="@id" name="content[@key.Key].Ar" class="form-control">
+                            @if (key.AllowEmpty)
+                            {
+                                <option value="" selected="@(current.Length == 0)">@(key.Key switch { "hero_cta_main_link" => "نفس وجهة زر الهيدر (افتراضي)", "cta_band_button2_link" => "بلا زر ثانٍ", _ => "الافتراضي" })</option>
+                            }
+                            else if (!isPage && !isExternal)
+                            {
+                                <option value="@value.Ar" selected>@value.Ar</option>
+                            }
+                            @foreach (var choice in choices)
+                            {
+                                <option value="@choice.Key" selected="@(choice.Key == current)">@choice.Value</option>
+                            }
+                            <option value="@ContentKeys.ExternalLinkChoice" selected="@isExternal">رابط خارجي… (https)</option>
+                        </select>
+                        <input type="url" dir="ltr" class="form-control" name="@InnovestHolding.Controllers.Admin.ContentController.ExternalField(key.Key)"
+                               value="@(isExternal ? current : null)" placeholder="https://" maxlength="@key.MaxLength" aria-label="@key.Label — رابط خارجي" />
+                        <p class="form-hint">اختر «رابط خارجي…» واكتب العنوان في المربع ليُفتح موقع آخر (يلزمه نص بالعربية). الزر الذي يشير إلى صفحة غير منشورة لا يظهر.@(defaultTitle is null ? "" : $" الافتراضي: {defaultTitle}.")</p>
+                    </div>
+                }
+                else if (key.Rule == ContentRule.IconKey)
+                {
+                    var id = "content-" + key.Key.Replace('_', '-');
+                    var current = value.Ar?.Trim() ?? "";
+                    var defaultIcon = key.Default is null ? null : Icons.All.GetValueOrDefault(key.Default).Label;
+                    <div class="form-group">
+                        <label for="@id">@key.Label</label>
+                        <select id="@id" name="content[@key.Key].Ar" class="form-control">
+                            @if (!Icons.IsKnown(current))
+                            {
+                                <option value="" selected>الافتراضي@(defaultIcon is null ? "" : $" ({defaultIcon})")</option>
+                            }
+                            @foreach (var (iconKey, icon) in Icons.All)
+                            {
+                                <option value="@iconKey" selected="@(iconKey == current)">@icon.Label (@iconKey)</option>
+                            }
+                        </select>
+                    </div>
+                }
+                else if (key.Rule == ContentRule.PageKeyList)
+                {
+                    var choices = ViewData[InnovestHolding.Controllers.Admin.ContentController.PageChoicesKey] as IReadOnlyList<KeyValuePair<string, string>> ?? [];
+                    var selected = ContentKeys.PageList(value.Ar).ToHashSet(StringComparer.Ordinal);
+                    <fieldset class="form-group">
+                        <legend>@key.Label</legend>
+                        <input type="hidden" name="@InnovestHolding.Controllers.Admin.ContentController.PageListMarker(key.Key)" value="1" />
+                        @foreach (var choice in choices)
+                        {
+                            <label class="form-check"><input type="checkbox" name="@InnovestHolding.Controllers.Admin.ContentController.PageListField(key.Key)" value="@choice.Key" checked="@selected.Contains(choice.Key)" /> @choice.Value</label>
+                        }
+                        <p class="form-hint">تظهر بترتيب قائمة الصفحات. الصفحة غير المنشورة تُتخطّى.</p>
+                    </fieldset>
+                }
+                else if (key.Rule == ContentRule.PageKey)
                 {
                     var choices = ViewData[InnovestHolding.Controllers.Admin.ContentController.PageChoicesKey] as IReadOnlyList<KeyValuePair<string, string>> ?? [];
                     var id = "content-" + key.Key.Replace('_', '-');

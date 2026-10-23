@@ -124,7 +124,7 @@
           <p class="empty-text" lang="@empty.Text.Lang" dir="@empty.Text.Dir">@empty.Text</p>
           @if (empty.Action is { } action)
           {
-            <a href="@action.Href" class="btn btn-accent" lang="@action.Title.Lang" dir="@action.Title.Dir">@action.Title</a>
+            <a href="@action.Href" class="btn btn-accent" rel="@action.Rel" lang="@action.Title.Lang" dir="@action.Title.Dir">@action.Title</a>
           }
         </div>
       </div>
@@ -163,7 +163,7 @@
             @for (var i = 0; i < cta.Buttons.Count; i++)
             {
               var b = cta.Buttons[i];
-              <a href="@b.Href" class="btn @(i == 0 ? "btn-accent" : "btn-outline-light")" lang="@b.Title.Lang" dir="@b.Title.Dir">@b.Title</a>
+              <a href="@b.Href" class="btn @(i == 0 ? "btn-accent" : "btn-outline-light")" rel="@b.Rel" lang="@b.Title.Lang" dir="@b.Title.Dir">@b.Title</a>
             }
           </div>
         </div>

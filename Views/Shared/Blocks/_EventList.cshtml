@@ -44,7 +44,7 @@
       </div>
       @if (Model.Action is { } action && open)
       {
-        <a href="@action.Href" class="event-register-btn" lang="@action.Title.Lang" dir="@action.Title.Dir">@action.Title</a>
+        <a href="@action.Href" class="event-register-btn" rel="@action.Rel" lang="@action.Title.Lang" dir="@action.Title.Dir">@action.Title</a>
       }
       else
       {

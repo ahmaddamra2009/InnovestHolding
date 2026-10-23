@@ -9,7 +9,15 @@
     <article class="service-card reveal@(HomeViewModel.Delay(i + 1))">
       <span class="card-corner" aria-hidden="true"></span>
       <div class="service-head">
-        <div class="item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(s.IconSvg)</svg></div>
+        @if (s.IconSvg is not null)
+        {
+          <div class="item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">@Html.Raw(s.IconSvg)</svg></div>
+        }
+        else
+        {
+          @* No icon chosen: the brand triangle bullet. *@
+          <div class="item-icon"><span class="tri-bullet" aria-hidden="true"></span></div>
+        }
         <span class="service-num">@((i + 1).ToString("00", inv))</span>
       </div>
       <h3 lang="@s.Title.Lang" dir="@s.Title.Dir">@s.Title</h3>

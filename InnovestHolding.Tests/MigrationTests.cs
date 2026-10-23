@@ -116,7 +116,7 @@ public class MigrationTests(TestAppFactory f)
             "forms_consent", "join_kind_title", "join_side_title", "join_side_text", "sponsorship_form_title",
             "sponsorship_form_text", "interest_form_title", "interest_form_text"];
         Assert.Empty(ContentKeys.All.Select(k => k.Key)
-            .Where(k => !later.Contains(k) && !k.StartsWith("section_") && !k.StartsWith("founder_"))
+            .Where(k => !later.Contains(k) && !AdminLinksTests.AddedByAdminControl.Contains(k) && !k.StartsWith("section_") && !k.StartsWith("founder_"))
             .Except(keys.Select(k => k.SectionKey)));
         var cta = keys.Single(k => k.SectionKey == "cta_register");
         Assert.Equal("انضم الآن", cta.ContentAr);
