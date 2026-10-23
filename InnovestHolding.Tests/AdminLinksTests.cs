@@ -334,6 +334,11 @@ public class AdminLinksTests(TestAppFactory f)
             Assert.Equal(HttpStatusCode.OK, (await PostAsync(client, token, ("content[vision_icon].Ar", "<svg onload=x>"))).StatusCode);
             Assert.Equal(HttpStatusCode.Redirect, (await PostAsync(client, token, ("content[vision_icon].Ar", "rocket"))).StatusCode);
             Assert.Equal("rocket", await StoredAsync("vision_icon"));
+            // The editor renders the shared icon grid (radios) with the stored icon checked; empty = the default.
+            var editor = await client.GetStringAsync("/Admin/Content/Edit");
+            Assert.Contains("<input type=\"radio\" class=\"sr-only\" name=\"content[vision_icon].Ar\" value=\"rocket\" checked=\"checked\">", editor);
+            Assert.Contains("<input type=\"radio\" class=\"sr-only\" name=\"content[mission_icon].Ar\" value=\"target\" checked=\"checked\">", editor);
+            Assert.DoesNotContain("<select id=\"content-vision-icon\"", editor);
 
             // Seven pages: refused; an unknown key: refused; none: refused.
             var seven = SiteRoutes.All.Take(7).Select(p => ("pagelist[notfound_pages]", p.Key)).Append(("pagelist-posted[notfound_pages]", "1")).ToArray();

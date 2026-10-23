@@ -503,7 +503,9 @@ public class MediaUploadTests(TestAppFactory f) : IDisposable
                 ("IntroAr", row.IntroAr), ("IntroEn", row.IntroEn ?? ""), ("BodyAr", row.BodyAr), ("BodyEn", row.BodyEn ?? ""),
                 ("EmptyTextAr", row.EmptyTextAr), ("EmptyTextEn", row.EmptyTextEn ?? ""), ("MetaTitleAr", row.MetaTitleAr),
                 ("MetaTitleEn", row.MetaTitleEn ?? ""), ("MetaDescriptionAr", row.MetaDescriptionAr), ("MetaDescriptionEn", row.MetaDescriptionEn ?? ""),
-                ("ShowInMenu", row.ShowInMenu ? "true" : "false"), ("RemoveImage", remove ? "true" : "false")));
+                ("ShowInMenu", row.ShowInMenu ? "true" : "false"), ("RemoveImage", remove ? "true" : "false"),
+                // C5: the form always posts its publication checkboxes (an omitted checkbox = unchecked = unpublished).
+                ("IsPublished", row.IsPublished ? "true" : "false"), ("ShowInFooter", row.ShowInFooter ? "true" : "false")));
             Assert.Equal(HttpStatusCode.Redirect, r.StatusCode);
         }
         await SaveAsync(("og.jpg", ImageInspectorTests.Fixture("og-1200x630.jpg"), "image/jpeg"), false);

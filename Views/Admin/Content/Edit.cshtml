@@ -73,21 +73,12 @@
                 }
                 else if (key.Rule == ContentRule.IconKey)
                 {
-                    var id = "content-" + key.Key.Replace('_', '-');
+                    @* The shared icon grid (Views/Admin/Shared/_IconPicker); «الافتراضي» = empty = the key's default icon. *@
                     var current = value.Ar?.Trim() ?? "";
                     var defaultIcon = key.Default is null ? null : Icons.All.GetValueOrDefault(key.Default).Label;
                     <div class="form-group">
-                        <label for="@id">@key.Label</label>
-                        <select id="@id" name="content[@key.Key].Ar" class="form-control">
-                            @if (!Icons.IsKnown(current))
-                            {
-                                <option value="" selected>الافتراضي@(defaultIcon is null ? "" : $" ({defaultIcon})")</option>
-                            }
-                            @foreach (var (iconKey, icon) in Icons.All)
-                            {
-                                <option value="@iconKey" selected="@(iconKey == current)">@icon.Label (@iconKey)</option>
-                            }
-                        </select>
+                        <partial name="~/Views/Admin/Shared/_IconPicker.cshtml"
+                                 model="@(new IconPickerVm($"content[{key.Key}].Ar", Icons.IsKnown(current) ? current : "", key.Label, AllowNone: true, NoneLabel: "الافتراضي" + (defaultIcon is null ? "" : $" ({defaultIcon})")))" />
                     </div>
                 }
                 else if (key.Rule == ContentRule.PageKeyList)

@@ -328,7 +328,9 @@ public class SiteStructureTests(TestAppFactory f)
             token = await client.GetTokenAsync($"/Admin/Pages/Edit/{PageKeys.ForumSpeakers}");
             var title = "متحدثون " + Guid.NewGuid().ToString("N")[..6];
             var r = await client.PostAsync($"/Admin/Pages/Edit/{PageKeys.ForumSpeakers}", Form(token,
-                ("TitleAr", title), ("TitleEn", "Speakers QA"), ("ShowInMenu", "true"), ("EmptyTextAr", "قريباً جداً")));
+                ("TitleAr", title), ("TitleEn", "Speakers QA"), ("ShowInMenu", "true"), ("EmptyTextAr", "قريباً جداً"),
+                // C5: the form always posts its publication checkboxes (an omitted checkbox = unchecked = unpublished).
+                ("IsPublished", "true"), ("ShowInFooter", original.ShowInFooter ? "true" : "false")));
             Assert.Equal(HttpStatusCode.Redirect, r.StatusCode);
             var page = await f.NewClient().GetStringAsync(url);
             Assert.Contains($">{title}</h1>", page);
@@ -343,6 +345,7 @@ public class SiteStructureTests(TestAppFactory f)
                 var row = await db.Pages.SingleAsync(p => p.Key == PageKeys.ForumSpeakers);
                 row.TitleAr = original.TitleAr; row.TitleEn = original.TitleEn; row.ShowInMenu = original.ShowInMenu;
                 row.EmptyTextAr = original.EmptyTextAr; row.EmptyTextEn = original.EmptyTextEn;
+                row.IsPublished = original.IsPublished; row.ShowInFooter = original.ShowInFooter;
                 return await db.SaveChangesAsync();
             });
         }
