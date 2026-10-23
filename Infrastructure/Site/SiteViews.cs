@@ -23,9 +23,10 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
 
     public LText Summary(string key) => s.Page(key) is { } p ? P(p.SummaryAr, p.SummaryEn) : LText.Empty;
 
-    /// <summary>Shown in menus: the page's own switch and every ancestor's (a hidden hub hides its sub-pages too).</summary>
+    /// <summary>Shown in menus: the page's own switch and every ancestor's (a hidden hub hides its sub-pages too), and
+    /// published (C5: an unpublished page is out of the menus, the drawer, the hub cards and the unit tabs).</summary>
     public bool InMenu(string key) =>
-        SiteRoutes.Chain(key).All(p => p.Key == PageKeys.Home || (s.Page(p.Key)?.ShowInMenu ?? true));
+        SiteRoutes.Chain(key).All(p => p.Key == PageKeys.Home || (s.Page(p.Key)?.ShowInMenu ?? true)) && s.IsPublished(key);
 
     private IEnumerable<SitePage> MenuChildren(string key) =>
         SiteRoutes.Children(key).Where(p => InMenu(p.Key)).OrderBy(p => s.Page(p.Key)?.SortOrder ?? 0);
@@ -45,9 +46,11 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
         menu.AddRange(MenuChildren(PageKeys.Home).Select(p => Item(p, 0)));
 
         var extra = s.Nav.Select(n => new LinkVm(n.Href, P(n.TitleAr, n.TitleEn))).ToList();
+        var headerLinks = s.Nav.Where(n => n.ShowInHeader).Select(n => new LinkVm(n.Href, P(n.TitleAr, n.TitleEn))).ToList();
 
+        var headerCta = HeaderCta();
         var ctaKey = Content.Neutral("header_cta_page");
-        var cta = new LinkVm(Url(SiteRoutes.IsKey(ctaKey) ? ctaKey : PageKeys.NetworkJoin), Content.Text("header_cta_label"));
+        var cta = headerCta ?? new LinkVm(Url(SiteRoutes.IsKey(ctaKey) ? ctaKey : PageKeys.NetworkJoin), Content.Text("header_cta_label"));
 
         var crumbs = currentKey == PageKeys.Home
             ? []
@@ -55,6 +58,7 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
                 baseUrl is null ? null : baseUrl + Url(p.Key))).ToList();
         if (leaf is not null) crumbs.Add(leaf);
 
+        var logo = s.Image(SiteImages.LogoOnDark);
         return new ShellVm
         {
             IsEnglish = english,
@@ -64,15 +68,166 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
             OtherLanguageUrl = otherLanguageUrl ?? CultureUrls.Alternate(currentKey, english),
             Menu = menu,
             ExtraLinks = extra,
+            HeaderLinks = headerLinks,
             Cta = cta,
+            HeaderCta = headerCta,
             Breadcrumbs = crumbs,
             Socials = Socials(),
-            Brand = new BrandImagesVm(s.Image(SiteImages.LogoOnDark), s.Image(SiteImages.HeroImage)),
+            Brand = new BrandImagesVm(logo, s.Image(SiteImages.HeroImage), LogoAlt(logo)),
+            Footer = FooterBuilder.Build(this),
         };
     }
 
+    /// <summary>The logo's alt: the uploaded logo's alt text in the page language, else the site name (as before C5).</summary>
+    public LText LogoAlt(MediaRef? logo)
+    {
+        var alt = logo is null ? LText.Empty : Bilingual.Optional(logo.AltAr, logo.AltEn, english);
+        return alt.IsEmpty ? Content.Text("site_name") : alt;
+    }
+
+    /// <summary>The known networks (brand icons) and the admin's "custom" ones that have a label and a known icon.</summary>
     public IReadOnlyList<SocialVm> Socials() =>
-        s.Socials.Where(x => SocialIcons.IsKnown(x.Network)).Select(x => new SocialVm(x.Network, x.Url)).ToList();
+        s.Socials.Where(x => SocialIcons.IsKnown(x.Network)
+                             || (x.Network == Models.SocialLink.Custom && !string.IsNullOrWhiteSpace(x.Label) && Icons.IsKnown(x.IconKey)))
+            .Select(x => SocialIcons.IsKnown(x.Network) ? new SocialVm(x.Network, x.Url) : new SocialVm(x.Network, x.Url, x.Label!.Trim(), x.IconKey))
+            .ToList();
+
+    // ── Links (C5: buttons the admin points to a page or to an https address) ──
+
+    /// <summary>A page of the route table as a link titled with the page's title, or null when it is not published.</summary>
+    public LinkVm? PageLink(string key) =>
+        SiteRoutes.IsKey(key) && s.IsPublished(key) && Title(key) is { IsEmpty: false } title ? new LinkVm(Url(key), title) : null;
+
+    /// <summary>The stored (trimmed) Arabic/neutral value of a key; null when the key has no row.</summary>
+    private string? Stored(string key) => s.Content.TryGetValue(key, out var row) ? (row.Ar ?? "").Trim() : null;
+
+    /// <summary>
+    /// A button text override in the page language only: on the English page an Arabic-only override is NOT used (the
+    /// target page's English title is, Dana Q10). Empty = no override.
+    /// </summary>
+    private LText Override(string? labelKey)
+    {
+        if (labelKey is null || !s.Content.TryGetValue(labelKey, out var row)) return LText.Empty;
+        var value = english ? row.En : row.Ar;
+        return string.IsNullOrWhiteSpace(value) ? LText.Empty : new LText(value.Trim(), false);
+    }
+
+    /// <summary>
+    /// A target value → link: a page key → that page's URL in the page language (null when unpublished), titled by
+    /// <paramref name="label"/> else the page title; an external https address → <paramref name="externalLabel"/>
+    /// (required: no text → not rendered), with rel="noopener noreferrer". Anything else → null.
+    /// </summary>
+    private LinkVm? Resolve(string target, LText label, LText externalLabel)
+    {
+        if (SiteRoutes.IsKey(target))
+        {
+            if (!s.IsPublished(target)) return null;
+            var title = label.IsEmpty ? Title(target) : label;
+            return title.IsEmpty ? null : new LinkVm(Url(target), title);
+        }
+        if (Infrastructure.Content.ContentKeys.IsExternalLink(target) && !externalLabel.IsEmpty)
+            return new LinkVm(target.Trim(), externalLabel, External: true);
+        return null;
+    }
+
+    /// <summary>
+    /// The button <paramref name="name"/>: target <c>{name}_link</c> (a page key or https; missing or invalid → the
+    /// registry default), text <c>{name}_label</c> (empty → the target page's title in the page language). An empty
+    /// target means the default, or no button for a key the registry allows to be empty without a default meaning
+    /// (cta_band_button2). Null = render nothing (unpublished target, external link without text).
+    /// </summary>
+    public LinkVm? Link(string name)
+    {
+        var linkKey = name + "_link";
+        var def = ContentKeys.Find(linkKey) ?? throw new ArgumentException($"Unknown link {name}.", nameof(name));
+        var stored = Stored(linkKey);
+        var noneWhenEmpty = def.AllowEmpty && def.Default is not null; // "empty = no button"
+        string? target = stored switch
+        {
+            null => def.Default,
+            "" => noneWhenEmpty ? null : def.Default,
+            _ => ContentKeys.IsLink(stored) ? stored : def.Default,
+        };
+        if (target is null) return null;
+        var labelKey = def.LabelKey;
+        var external = labelKey is null || !s.Content.TryGetValue(labelKey, out var row) ? LText.Empty : P(row.Ar, row.En);
+        return Resolve(target, Override(labelKey), external);
+    }
+
+    /// <summary>The header/drawer button: header_cta_page (page or https; invalid → Join the Network) titled
+    /// header_cta_label (English falls back to Arabic, as before C5). Null when the page is unpublished.</summary>
+    public LinkVm? HeaderCta()
+    {
+        var stored = Stored("header_cta_page");
+        var target = ContentKeys.IsLink(stored) ? stored! : PageKeys.NetworkJoin;
+        var label = Content.Text("header_cta_label");
+        return Resolve(target, label, label);
+    }
+
+    /// <summary>The hero's main button: hero_cta_main_link/label; while the link is empty it is the header button
+    /// (with the hero text when one is set in the page language).</summary>
+    public LinkVm? HeroMainCta()
+    {
+        var stored = Stored("hero_cta_main_link");
+        var label = Override("hero_cta_main_label");
+        if (!ContentKeys.IsLink(stored))
+        {
+            var header = HeaderCta();
+            return header is null || label.IsEmpty ? header : header with { Title = label };
+        }
+        return Link("hero_cta_main");
+    }
+
+    /// <summary>The hero's second button: text hero_cta_primary (as before C5), target hero_cta_secondary_link
+    /// (default the Ecosystem page).</summary>
+    public LinkVm? HeroSecondaryCta()
+    {
+        var stored = Stored("hero_cta_secondary_link");
+        var target = ContentKeys.IsLink(stored) ? stored! : PageKeys.Ecosystem;
+        var label = Content.Text("hero_cta_primary");
+        return Resolve(target, label, label);
+    }
+
+    /// <summary>The «more» button of the home About section (default: the About page, titled with its title).</summary>
+    public LinkVm? AboutMore() => Link("about_more");
+
+    /// <summary>The register action of the event rows and pages (default: Forum registration).</summary>
+    public LinkVm? EventsAction() => Link("events_action");
+
+    /// <summary>The action of the TV lists' empty states and of episode/guest pages (default: TV sponsorship).</summary>
+    public LinkVm? TvAction() => Link("tv_action");
+
+    /// <summary>
+    /// The empty-state button of a page: the page's own EmptyActionPage when set to a page key, else
+    /// <paramref name="fallback"/> (the code default). Null when the chosen page is unpublished.
+    /// </summary>
+    public LinkVm? EmptyAction(string pageKey, LinkVm? fallback) =>
+        s.Page(pageKey)?.EmptyActionPage is { } key && SiteRoutes.IsKey(key.Trim()) ? PageLink(key.Trim()) : fallback;
+
+    /// <summary>The 404 page's suggestions: notfound_pages (published pages only, in order, at most 6); none valid → the
+    /// default three (Home, Ecosystem, Contact).</summary>
+    public IReadOnlyList<LinkVm> NotFoundLinks()
+    {
+        IReadOnlyList<LinkVm> From(IEnumerable<string> keys) =>
+            keys.Distinct(StringComparer.Ordinal).Take(ContentKeys.MaxPageList).Select(PageLink).OfType<LinkVm>().ToList();
+        var links = From(ContentKeys.PageList(Stored(ContentKeys.NotFoundPages)));
+        return links.Count > 0 ? links : From(ContentKeys.PageList(ContentKeys.Find(ContentKeys.NotFoundPages)!.Default));
+    }
+
+    /// <summary>The privacy policy link (footer bottom bar, consent boxes): only while the page is published and its
+    /// Arabic body is not empty (Rami Q6).</summary>
+    public LinkVm? PrivacyLink() =>
+        s.Page(PageKeys.Privacy) is { } p && !string.IsNullOrWhiteSpace(p.BodyAr) ? PageLink(PageKeys.Privacy) : null;
+
+    // ── Counts and icons (C5 content keys; missing or invalid → the registry default = the value before C5) ──
+
+    /// <summary>A count key of the registry (hero_stats_limit, home_events_limit, forum_events_limit, home_news_limit…).</summary>
+    public int Count(string key) => ContentKeys.Count(s.Content, key);
+
+    /// <summary>The SVG body of an icon key (vision_icon, events_icon…): the admin's choice when it is a known icon,
+    /// else the registry default.</summary>
+    public string Icon(string key) =>
+        Icons.Svg(Stored(key)) ?? Icons.Svg(ContentKeys.Find(key)?.Default) ?? throw new ArgumentException($"No icon for {key}.", nameof(key));
 
     // ── Lists ──
 
@@ -92,8 +247,11 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
             withChips ? MenuChildren(p.Key).Select(c => new LinkVm(Url(c.Key), Title(c.Key))).ToList() : [],
             Image(s.Page(p.Key)?.Image, Title(p.Key)))).ToList();
 
+    /// <summary>The service cards: the icon of the admin's IconKey (whitelist), else the migration-owned markup of the
+    /// row (C4 rows → unchanged), else none (the view draws the brand bullet).</summary>
     public IReadOnlyList<ServiceVm> Services() =>
-        s.Platforms.Select(p => new ServiceVm(P(p.TitleAr, p.TitleEn), Lines(P(p.DescriptionAr, p.DescriptionEn)), p.IconSvg,
+        s.Platforms.Select(p => new ServiceVm(P(p.TitleAr, p.TitleEn), Lines(P(p.DescriptionAr, p.DescriptionEn)),
+            Icons.Svg(p.IconKey) ?? (string.IsNullOrWhiteSpace(p.IconSvg) ? null : p.IconSvg),
             string.IsNullOrWhiteSpace(p.LinkUrl) ? null : p.LinkUrl)).ToList();
 
     /// <summary>One bullet per non-empty line (each keeps the fallback marker of its text).</summary>
@@ -176,8 +334,14 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
 
     public IReadOnlyList<FaqVm> Faqs() => s.Faqs.Select(f => new FaqVm(P(f.QuestionAr, f.QuestionEn), P(f.AnswerAr, f.AnswerEn))).ToList();
 
+    /// <summary>Badge + title + subtitle of a section; the badge icon is <c>{prefix}_icon</c> when the registry has that
+    /// key (C5), else <paramref name="iconSvg"/>.</summary>
     public SectionHeaderVm Header(string prefix, string iconSvg) =>
-        new(Content.Text(prefix + "_badge"), Content.Text(prefix + "_title"), Content.Text(prefix + "_subtitle"), iconSvg);
+        new(Content.Text(prefix + "_badge"), Content.Text(prefix + "_title"), Content.Text(prefix + "_subtitle"),
+            ContentKeys.Find(prefix + "_icon") is null ? iconSvg : Icon(prefix + "_icon"));
+
+    /// <summary>A home section header whose badge icon is the content key <c>{prefix}_icon</c>.</summary>
+    public SectionHeaderVm Header(string prefix) => Header(prefix, Icon(prefix + "_icon"));
 
     // ── Forms ──
 
@@ -186,7 +350,7 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
         s.Interests.Select(i => new InterestChoiceVm(i.Id, P(i.NameAr, i.NameEn))).ToList(),
         s.Benefits.Select(b => P(b.Ar, b.En)).ToList(),
         Content.Text("register_badge"), Content.Text("register_title"), Content.Text("register_text"),
-        Content.Text("cta_register"), idPrefix);
+        Content.Text("cta_register"), idPrefix) { BadgeIconSvg = Icon("register_icon") };
 
     public ContactFormVm ContactForm(string idPrefix) => new(
         CultureUrls.Form("contact", english),
@@ -194,9 +358,12 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
         Content.Neutral("contact_phone"), Content.Neutral("contact_email"), Content.Neutral("contact_whatsapp"),
         Content.Neutral("contact_website"), Socials(), idPrefix);
 
+    /// <summary>The call-to-action band: two buttons (cta_band_button1/2: default Join the Network and Forum
+    /// registration, titled with the page titles); the second one is left out when its target is emptied.</summary>
     public CtaBlock CtaBand() => new(Content.Text("cta_band_title"), Content.Text("cta_band_text"),
-        [new LinkVm(Url(PageKeys.NetworkJoin), Title(PageKeys.NetworkJoin)), new LinkVm(Url(PageKeys.ForumRegistration), Title(PageKeys.ForumRegistration))]);
+        new[] { Link("cta_band_button1"), Link("cta_band_button2") }.OfType<LinkVm>().ToList());
 
-    public const string BadgeGrid = "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/>";
-    public const string BadgeQuestion = "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"/><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"/>";
+    /// <summary>The services-grid and FAQ badge glyphs (C5: entries of <see cref="Icons"/>, keys grid / question).</summary>
+    public static readonly string BadgeGrid = Icons.Svg("grid")!;
+    public static readonly string BadgeQuestion = Icons.Svg("question")!;
 }

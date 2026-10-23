@@ -6,7 +6,12 @@ namespace InnovestHolding.ViewModels;
 
 // Display records of the public site, already resolved for the page language (fallback applied).
 
-public sealed record LinkVm(string Href, LText Title, bool Active = false);
+/// <param name="External">An admin-chosen https address of another site (C5 links): rendered with <see cref="Rel"/>.</param>
+public sealed record LinkVm(string Href, LText Title, bool Active = false, bool External = false)
+{
+    /// <summary>"noopener noreferrer" for an external link, else null (Razor then omits the attribute).</summary>
+    public string? Rel => External ? "noopener noreferrer" : null;
+}
 
 /// <summary>A menu entry (the header, the drawer and the footer read the same tree).</summary>
 public sealed record MenuItemVm(string Key, string Href, LText Title, LText Summary, bool Active, IReadOnlyList<MenuItemVm> Children);
@@ -24,7 +29,14 @@ public sealed class ShellVm
     public required string OtherLanguageUrl { get; init; }
     public required IReadOnlyList<MenuItemVm> Menu { get; init; }
     public required IReadOnlyList<LinkVm> ExtraLinks { get; init; }
+    /// <summary>The header button target as before C5 (never null). The header and the drawer render
+    /// <see cref="HeaderCta"/> (C5: null when its target page is unpublished); the home hero moves to SiteViews.HeroMainCta().</summary>
     public required LinkVm Cta { get; init; }
+    public LinkVm? HeaderCta { get; init; }
+
+    /// <summary>The extra menu links of the header and the drawer (active AND ShowInHeader); <see cref="ExtraLinks"/>
+    /// keeps every active one (the automatic footer's rule).</summary>
+    public IReadOnlyList<LinkVm> HeaderLinks { get; init; } = [];
     public required IReadOnlyList<BreadcrumbVm> Breadcrumbs { get; init; }
     public required IReadOnlyList<SocialVm> Socials { get; init; }
 
@@ -103,10 +115,12 @@ public static class SocialIcons
     public static bool IsKnown(string network) => All.ContainsKey(network);
 }
 
-public sealed record SocialVm(string Network, string Url);
+/// <summary>A social link; <see cref="Label"/>/<see cref="IconKey"/> only on a "custom" network (icon from Icons).</summary>
+public sealed record SocialVm(string Network, string Url, string? Label = null, string? IconKey = null);
 
 /// <summary>The site logo (on a dark background) and the home hero image when the admin uploaded them.</summary>
-public sealed record BrandImagesVm(Infrastructure.Content.MediaRef? LogoOnDark, Infrastructure.Content.MediaRef? Hero);
+/// <param name="LogoAlt">The logo's alt text: the uploaded logo's alt in the page language, else the site name (C5).</param>
+public sealed record BrandImagesVm(Infrastructure.Content.MediaRef? LogoOnDark, Infrastructure.Content.MediaRef? Hero, LText LogoAlt = default);
 
 // ── Page blocks: a page is its header (title, intro, body) + an ordered list of blocks (Views/Site/_Blocks) ──
 
@@ -123,7 +137,8 @@ public sealed record CardVm(int Number, LText Title, LText Summary, string Href,
 public sealed record VisionBlock(IReadOnlyList<(LText Title, LText Text, string IconSvg)> Cards) : BlockVm;
 
 public sealed record ServicesBlock(SectionHeaderVm Header, IReadOnlyList<ServiceVm> Services, LText ReadMore) : BlockVm;
-public sealed record ServiceVm(LText Title, IReadOnlyList<LText> Lines, string IconSvg, string? LinkUrl);
+/// <param name="IconSvg">From the IconKey (whitelist), else the migration-owned markup; null = the brand bullet.</param>
+public sealed record ServiceVm(LText Title, IReadOnlyList<LText> Lines, string? IconSvg, string? LinkUrl);
 
 public sealed record StatsBlock(LText Title, LText Intro, IReadOnlyList<StatVm> Stats) : BlockVm;
 
@@ -150,7 +165,11 @@ public sealed record PagerVm(int Page, int PageCount, string BaseUrl)
 
 /// <summary>The quick-registration form (home and the Forum registration page).</summary>
 public sealed record RegisterFormVm(string Action, IReadOnlyList<InterestChoiceVm> Interests, IReadOnlyList<LText> Benefits,
-    LText Badge, LText Title, LText Text, LText SubmitLabel, string IdPrefix);
+    LText Badge, LText Title, LText Text, LText SubmitLabel, string IdPrefix)
+{
+    /// <summary>The badge icon (content key register_icon, an Icons key; default = today's user-plus glyph).</summary>
+    public string BadgeIconSvg { get; init; } = Icons.Svg("user_plus")!;
+}
 
 /// <summary>The contact block: details from the content keys and the form.</summary>
 public sealed record ContactFormVm(string Action, LText Intro, LText Address, LText Hours, string Phone, string Email,

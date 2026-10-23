@@ -12,13 +12,13 @@
       @if (Model.Brand.LogoOnDark is { } logo)
       {
         @* The logo the admin uploaded (Content editor); otherwise the bundled files. *@
-        <img src="@logo.Url" alt="@siteName" class="logo-img" width="@logo.Width" height="@logo.Height" fetchpriority="high">
+        <img src="@logo.Url" alt="@Model.Brand.LogoAlt" class="logo-img" width="@logo.Width" height="@logo.Height" fetchpriority="high">
       }
       else
       {
         <picture>
           <source type="image/webp" srcset="@Context.Versioned(BrandAssets.LogoOnDarkWebp) 1x, @Context.Versioned(BrandAssets.LogoOnDark2x) 2x">
-          <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" class="logo-img" width="240" height="61" fetchpriority="high">
+          <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@Model.Brand.LogoAlt" class="logo-img" width="240" height="61" fetchpriority="high">
         </picture>
       }
     </a>
@@ -71,7 +71,7 @@
           <a href="@item.Href" class="nav-link@(item.Active ? " active" : "")" aria-current="@(item.Active ? "page" : null)" lang="@item.Title.Lang" dir="@item.Title.Dir">@item.Title</a>
         }
       }
-      @foreach (var link in Model.ExtraLinks)
+      @foreach (var link in Model.HeaderLinks)
       {
         <a href="@link.Href" class="nav-link" lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</a>
       }
@@ -79,7 +79,10 @@
 
     <div class="nav-actions">
       <a class="btn-lang" id="lang-switch" href="@Model.OtherLanguageUrl" hreflang="@other" lang="@other" rel="alternate" aria-label="@L[K.Ui.LangSwitchAria]">@L[K.Ui.LangSwitchText]</a>
-      <a href="@Model.Cta.Href" class="nav-cta" lang="@Model.Cta.Title.Lang" dir="@Model.Cta.Title.Dir">@Model.Cta.Title</a>
+      @if (Model.HeaderCta is { } cta)
+      {
+        <a href="@cta.Href" class="nav-cta" rel="@cta.Rel" lang="@cta.Title.Lang" dir="@cta.Title.Dir">@cta.Title</a>
+      }
       <button type="button" class="hamburger" id="hamburger-menu" aria-label="@L[K.Ui.MenuAria]" aria-expanded="false" aria-controls="mobile-nav-drawer">
         <span></span>
         <span></span>
@@ -137,10 +140,13 @@
         <a href="@item.Href" class="nav-link@(item.Active ? " active" : "")" lang="@item.Title.Lang" dir="@item.Title.Dir">@item.Title</a>
       }
     }
-    @foreach (var link in Model.ExtraLinks)
+    @foreach (var link in Model.HeaderLinks)
     {
       <a href="@link.Href" class="nav-link" lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</a>
     }
   </nav>
-  <a href="@Model.Cta.Href" class="btn btn-accent mobile-cta" lang="@Model.Cta.Title.Lang" dir="@Model.Cta.Title.Dir">@Model.Cta.Title</a>
+  @if (Model.HeaderCta is { } mobileCta)
+  {
+    <a href="@mobileCta.Href" class="btn btn-accent mobile-cta" rel="@mobileCta.Rel" lang="@mobileCta.Title.Lang" dir="@mobileCta.Title.Dir">@mobileCta.Title</a>
+  }
 </div>
