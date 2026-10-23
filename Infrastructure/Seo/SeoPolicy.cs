@@ -33,6 +33,8 @@ public static class SeoPolicy
         PageKeys.TvGuests => s.Ecosystem.Guests,
         PageKeys.TvEpisodes => s.Ecosystem.Episodes,
         PageKeys.NetworkOpportunities => s.Ecosystem.Opportunities,
+        // F10: the past editions (English = editions with an English title and text).
+        PageKeys.ForumEditions => s.EditionsCount,
         _ => new ListCount(0, 0),
     };
 

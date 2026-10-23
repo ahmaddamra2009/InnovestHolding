@@ -31,7 +31,22 @@ public static class EventQueries
     public static readonly Expression<Func<Event, EventRow>> Row = e => new EventRow(e.TitleAr, e.TitleEn, e.DescriptionAr, e.DescriptionEn,
         e.EventDay, e.EventMonthAr, e.EventMonthEn, e.LocationAr, e.LocationEn, e.TimeAr, e.TimeEn,
         e.Slug, e.SummaryAr, e.SummaryEn, e.StartsAt, e.EndsAt, e.Status,
-        e.Image == null ? null : new MediaRef(e.Image.FileKey, e.Image.Format, e.Image.Width, e.Image.Height, e.Image.AltAr, e.Image.AltEn));
+        e.Image == null ? null : new MediaRef(e.Image.FileKey, e.Image.Format, e.Image.Width, e.Image.Height, e.Image.AltAr, e.Image.AltEn),
+        e.DateIsMonth);
+
+    /// <summary>
+    /// F10: an event the visitor can still register for: not past (<see cref="IsPast"/>; an undated event never is).
+    /// Written out for SQL: a NULL end/start is "not past", never dropped by a NULL comparison.
+    /// </summary>
+    public static IQueryable<Event> NotPast(IQueryable<Event> events, DateTimeOffset now) =>
+        events.Where(e => (e.EndsAt ?? e.StartsAt) == null || (e.EndsAt ?? e.StartsAt) >= now);
+
+    /// <summary>
+    /// F10: an event page has text of its own (an Arabic summary or description). Without it the page is thin:
+    /// noindex,follow and out of the sitemap (the 2026 programme rows carry a title, a month and a place only).
+    /// </summary>
+    public static bool HasText(string? summaryAr, string? descriptionAr) =>
+        !string.IsNullOrWhiteSpace(summaryAr) || !string.IsNullOrWhiteSpace(descriptionAr);
 
     /// <summary>
     /// An event's English page is complete — indexable, in the sitemap and hreflang — when it has an English title and

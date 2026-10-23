@@ -32,7 +32,9 @@ public class LeadFormTests(TestAppFactory f)
     private Task<int> Group(string group, int index) => f.DbAsync(db => db.ContentItems.Where(i => i.Group == group && i.IsActive)
         .OrderBy(i => i.SortOrder).ThenBy(i => i.Id).Skip(index).Select(i => i.Id).FirstAsync());
 
-    private Task<int> ActiveEvent() => f.DbAsync(db => db.Events.Where(e => e.IsActive).OrderBy(e => e.Id).Select(e => e.Id).FirstAsync());
+    // F10: the registration form offers (and accepts) only events that have not passed.
+    private Task<int> ActiveEvent() => f.DbAsync(db => InnovestHolding.Infrastructure.Content.EventQueries
+        .NotPast(db.Events.Where(e => e.IsActive), f.Time.GetUtcNow()).OrderBy(e => e.Id).Select(e => e.Id).FirstAsync());
 
     private static (string, string)[] Base(string email, string name = "QA Lead") =>
         [("FullName", name), ("Email", email), ("Consent", "true")];

@@ -245,7 +245,104 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
     {
         var g = ContentItemGroups.Find(group)!;
         var items = Items(group);
-        return items.Count == 0 ? null : new ItemsBlock(group, Content.Text(g.TitleKey), g.IntroKey is null ? LText.Empty : Content.Text(g.IntroKey), items, compact, dark);
+        return items.Count == 0 ? null : new ItemsBlock(group, Content.Text(g.TitleKey), g.IntroKey is null ? LText.Empty : Content.Text(g.IntroKey), items, compact, dark,
+            g.NoteKey is null ? LText.Empty : Content.Text(g.NoteKey));
+    }
+
+    // ── F10: the forum hub's blocks (null = nothing to show: the C5 empty rule) ──
+
+    private LText Intro(ContentItemGroup g) => g.IntroKey is null ? LText.Empty : Content.Text(g.IntroKey);
+
+    /// <summary>«عن المنتدى»: edition label, tagline, launch line, paragraphs and the positioning band.</summary>
+    public ForumAboutBlock? ForumAbout()
+    {
+        var b = new ForumAboutBlock(Content.Text(ContentKeys.Forum.EditionLabel), Content.Text(ContentKeys.Forum.Tagline),
+            Content.Text(ContentKeys.Forum.AboutLead), Paragraphs(Content.Text(ContentKeys.Forum.AboutText)),
+            Content.Text(ContentKeys.Forum.PositioningTitle), Paragraphs(Content.Text(ContentKeys.Forum.PositioningText)));
+        return b.Tagline.IsEmpty && b.Lead.IsEmpty && b.Paragraphs.Count == 0 && b.Positioning.Count == 0 ? null : b;
+    }
+
+    /// <summary>A Figures group: Text = the figure as displayed (digits as stored), Description = its label.</summary>
+    public FiguresBlock? Figures(string group)
+    {
+        var g = ContentItemGroups.Find(group)!;
+        var rows = s.ItemsOf(group).Select(i => new FigureVm(P(i.TextAr, i.TextEn), P(i.DescriptionAr, i.DescriptionEn))).ToList();
+        return rows.Count == 0 ? null : new FiguresBlock(group, Content.Text(g.TitleKey), Intro(g), rows);
+    }
+
+    /// <summary>A Bullets group: Text = card title, Description = one bullet per line; an optional band (title + lines).</summary>
+    public BulletCardsBlock? BulletCards(string group, string? bandTitleKey = null, string? bandTextKey = null)
+    {
+        var g = ContentItemGroups.Find(group)!;
+        var cards = s.ItemsOf(group).Select(i => new BulletCardVm(P(i.TextAr, i.TextEn), Lines(P(i.DescriptionAr, i.DescriptionEn)),
+            Icons.Svg(i.IconKey))).ToList();
+        if (cards.Count == 0) return null;
+        var bandTitle = bandTitleKey is null ? LText.Empty : Content.Text(bandTitleKey);
+        var bandLines = bandTextKey is null ? [] : Lines(Content.Text(bandTextKey));
+        return new BulletCardsBlock(group, Content.Text(g.TitleKey), Intro(g), cards, bandTitle, bandLines);
+    }
+
+    /// <summary>A Numbered group (01, 02, …) with its closing note.</summary>
+    public NumberedItemsBlock? Numbered(string group)
+    {
+        var g = ContentItemGroups.Find(group)!;
+        var items = Items(group);
+        return items.Count == 0 ? null : new NumberedItemsBlock(group, Content.Text(g.TitleKey), Intro(g), items,
+            g.NoteKey is null ? LText.Empty : Content.Text(g.NoteKey));
+    }
+
+    /// <summary>One past edition for the page language; <paramref name="photos"/> = how many photos (null = all).</summary>
+    public EditionVm Edition(EditionRow e, int? photos = null)
+    {
+        var title = P(e.TitleAr, e.TitleEn);
+        var images = (photos is { } n ? e.Photos.Take(n) : e.Photos).Select(m => Image(m, title)!).ToList();
+        return new EditionVm(P(e.LabelAr, e.LabelEn), e.Year, title, P(e.PlaceAr, e.PlaceEn), Paragraphs(P(e.TextAr, e.TextEn)), images);
+    }
+
+    /// <summary>The hub's teaser: the newest <c>forum_editions_limit</c> editions with their cover photo and a link to the
+    /// editions page (titled forum_editions_more_label in the page language, else the page title; none while unpublished).</summary>
+    public EditionsBlock? EditionsTeaser()
+    {
+        if (s.Editions.Count == 0) return null;
+        var editions = s.Editions.Take(Count(ContentKeys.ForumEditionsLimit)).Select(e => Edition(e, 1)).ToList();
+        var more = PageLink(PageKeys.ForumEditions);
+        var label = Content.Text(ContentKeys.Forum.EditionsMoreLabel);
+        if (more is not null && !label.IsEmpty) more = more with { Title = label };
+        var title = Content.Text(ContentKeys.Forum.EditionsTitle);
+        return new EditionsBlock(title.IsEmpty ? Title(PageKeys.ForumEditions) : title, editions, more, true);
+    }
+
+    /// <summary>The partner groups flagged for the forum hub, with their active partners (an empty group is left out).</summary>
+    public PatronageBlock? Patronage()
+    {
+        var all = Partners();
+        var groups = s.PartnerGroups.Where(g => g.ShowOnForumHub)
+            .Select(g => new PartnerGroupVm(P(g.NameAr, g.NameEn), all.Where(p => p.GroupId == g.Id).ToList()))
+            .Where(g => g.Partners.Count > 0).ToList();
+        return groups.Count == 0 ? null : new PatronageBlock(Content.Text(ContentKeys.Forum.PatronageTitle), groups);
+    }
+
+    /// <summary>
+    /// The forum's contact details: phone (a tel: link when it reads as a phone number), the social handle (text, never a
+    /// link), the website (only a valid https address, a link) and the address. An empty value is not shown; none → null.
+    /// </summary>
+    public FactsBlock? ForumContact()
+    {
+        var facts = new List<FactVm>();
+        var phone = Content.Neutral(ContentKeys.Forum.ContactPhone).Trim();
+        if (phone.Length > 0)
+            facts.Add(new FactVm("phone", Content.Text(ContentKeys.Forum.ContactPhoneLabel), new LText(phone, false),
+                ContactFormats.ToE164(phone) is { } e164 ? "tel:" + e164 : null));
+        var social = Content.Neutral(ContentKeys.Forum.ContactSocial).Trim();
+        if (social.Length > 0)
+            facts.Add(new FactVm("users", Content.Text(ContentKeys.Forum.ContactSocialLabel), new LText(social, false)));
+        var website = Content.Neutral(ContentKeys.Forum.ContactWebsite).Trim();
+        if (Seo.SiteUrl.IsHttpsUrl(website) && SafeHrefAttribute.IsSafe(website))
+            facts.Add(new FactVm("globe", Content.Text(ContentKeys.Forum.ContactWebsiteLabel),
+                new LText(Uri.TryCreate(website, UriKind.Absolute, out var u) ? u.Host : website, false), website));
+        var address = Content.Text(ContentKeys.Forum.ContactAddress);
+        if (!address.IsEmpty) facts.Add(new FactVm("pin", LText.Empty, address));
+        return facts.Count == 0 ? null : new FactsBlock(Content.Text(ContentKeys.Forum.ContactTitle), facts);
     }
 
     /// <summary>The three units (or a hub's sub-pages) as cards; each unit lists its visible sub-pages as chips.</summary>
@@ -308,14 +405,16 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
         {
             var title = P(e.TitleAr, e.TitleEn);
             var summary = P(e.SummaryAr, e.SummaryEn);
+            // F10: an event known to the month only shows the month and the year, no day and no clock time.
+            var monthOnly = e.DateIsMonth && e.StartsAt is not null;
             var (day, month) = e.StartsAt is { } start
-                ? (start.Day, new LText(EventDates.Month(start, english), false))
+                ? (monthOnly ? 0 : start.Day, new LText(EventDates.Month(start, english), false))
                 : (e.EventDay, P(e.EventMonthAr, e.EventMonthEn));
             var time = P(e.TimeAr, e.TimeEn);
-            if (time.IsEmpty && e.StartsAt is { } s0) time = new LText(EventDates.TimeRange(s0, e.EndsAt, english), false);
+            if (time.IsEmpty && !monthOnly && e.StartsAt is { } s0) time = new LText(EventDates.TimeRange(s0, e.EndsAt, english), false);
             return new EventCardVm(day, month, title, summary.IsEmpty ? P(e.DescriptionAr, e.DescriptionEn) : summary,
                 P(e.LocationAr, e.LocationEn), time, CultureUrls.Detail(DetailKeys.ForumEvent, e.Slug, english), Image(e.Image, title),
-                EventQueries.IsPast(e.StartsAt, e.EndsAt, now), e.Status);
+                EventQueries.IsPast(e.StartsAt, e.EndsAt, now), e.Status, monthOnly ? e.StartsAt!.Value.Year : 0);
         }).ToList();
 
     public IReadOnlyList<PartnerVm> Partners(bool homeOnly = false) =>

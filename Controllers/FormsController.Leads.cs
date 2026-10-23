@@ -97,7 +97,9 @@ public partial class FormsController
         FormChoice? evt = null;
         if (input.EventId is not null)
         {
-            evt = LeadFormChoices.Find(await LeadFormChoices.EventsAsync(data, ct), input.EventId);
+            // The list the page offers (F10: not-past events only): a past event's id is refused.
+            var at = HttpContext.RequestServices.GetRequiredService<TimeProvider>().GetUtcNow();
+            evt = LeadFormChoices.Find(await LeadFormChoices.EventsAsync(data, at, ct), input.EventId);
             if (evt is null) return BadChoice(F.Event, nameof(input.EventId));
         }
 

@@ -73,7 +73,8 @@ public static class PublicTexts
             U.LangSwitchText, U.LangSwitchAria, U.LangDrawerText, U.NavAria, U.MenuAria, U.BreadcrumbAria, U.SubmenuToggle,
             U.PagerAria, U.PreviousPage, U.NextPage, U.PageOf, U.SkipToContent, U.BackToTop, U.ProfilesAria),
         .. In("errors", U.NotFoundTitle, U.NotFoundText, M.ErrorTitle, M.ErrorGeneric, M.ErrorReference, M.BackToHome),
-        .. In("other", U.Explore, U.ViewAll, U.ViewDetails, U.ExpressInterest, U.SponsorshipPackages),
+        .. In("other", U.Explore, U.ViewAll, U.ViewDetails, U.ExpressInterest, U.SponsorshipPackages,
+            U.EditionMorePhotos, U.EditionPhotosAria),
     ];
 
     private static readonly Dictionary<string, PublicText> ByKey = All.ToDictionary(t => t.ResxKey, StringComparer.Ordinal);

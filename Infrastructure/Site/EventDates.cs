@@ -16,6 +16,9 @@ public static class EventDates
 
     public static string Month(DateTimeOffset at, bool english) => at.ToString("MMMM", Culture(english));
 
+    /// <summary>F10: an event known to the month only (DateIsMonth): "يونيو 2026" / "June 2026".</summary>
+    public static string MonthYear(DateTimeOffset at, bool english) => at.ToString("MMMM yyyy", Culture(english));
+
     /// <summary>A calendar date without a time: "15 يوليو 2026" / "15 July 2026".</summary>
     public static string Date(DateOnly date, bool english) => date.ToString("d MMMM yyyy", Culture(english));
 

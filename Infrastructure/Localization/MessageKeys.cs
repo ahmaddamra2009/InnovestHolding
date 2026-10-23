@@ -358,6 +358,10 @@ public static class MessageKeys
         public const string ExpressInterest = "Ui_ExpressInterest";
         public const string SponsorshipPackages = "Ui_SponsorshipPackages";
         public const string ProfilesAria = "Ui_ProfilesAria";
+        /// <summary>F10: the summary of an edition's further photos ({0} = how many, Latin digits).</summary>
+        public const string EditionMorePhotos = "Ui_EditionMorePhotos";
+        /// <summary>F10: the accessible name of an edition's photo gallery ({0} = the edition's title).</summary>
+        public const string EditionPhotosAria = "Ui_EditionPhotosAria";
         public const string WatchOnYouTube = "Ui_WatchOnYouTube";
         public const string ExternalLink = "Ui_ExternalLink";
         /// <summary>Visually hidden after the privacy link of a consent box (it opens in a new tab).</summary>

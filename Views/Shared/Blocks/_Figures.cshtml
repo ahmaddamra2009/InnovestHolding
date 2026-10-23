@@ -1,0 +1,27 @@
+@model FiguresBlock
+@using InnovestHolding.Infrastructure.Content
+@* F10: the forum's figures — each figure exactly as the admin stored it in the page language (its digits and its
+   "+" included: no number formatting), with its label. *@
+<section class="page-section forum-figures" aria-labelledby="sec-@Model.Group">
+  <div class="container">
+    <div class="block-head">
+      <h2 class="block-title" id="sec-@Model.Group" lang="@Model.Title.Lang" dir="@Model.Title.Dir">@ContentText.Highlight(Model.Title)</h2>
+      @if (!Model.Intro.IsEmpty)
+      {
+        <p class="block-intro" lang="@Model.Intro.Lang" dir="@Model.Intro.Dir">@Model.Intro</p>
+      }
+    </div>
+    <ul class="forum-figure-grid">
+      @foreach (var f in Model.Figures)
+      {
+        <li class="forum-figure">
+          <span class="forum-figure-value" lang="@f.Figure.Lang" dir="@f.Figure.Dir"><bdi>@f.Figure</bdi></span>
+          @if (!f.Label.IsEmpty)
+          {
+            <span class="forum-figure-label" lang="@f.Label.Lang" dir="@f.Label.Dir">@f.Label</span>
+          }
+        </li>
+      }
+    </ul>
+  </div>
+</section>

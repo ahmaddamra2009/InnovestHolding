@@ -95,12 +95,23 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     {
         var v = await ViewsAsync();
         var events = v.EventCards(v.Snapshot.Events.Take(v.Count(ContentKeys.ForumEventsLimit)), time.GetUtcNow());
+        // Every section is a hideable, movable PageSections block (order: PageSectionRegistry.Arrange); an empty one renders
+        // nothing.
         return Page(PageKeys.Forum, v,
         [
+            ("about", v.ForumAbout()),
             ("units", new CardsBlock(LText.Empty, LText.Empty, v.Cards(PageKeys.Forum, false), false)),
+            ("figures", v.Figures(C.ForumFigures)),
+            ("audiences", v.BulletCards(C.ForumAudiences, ContentKeys.Forum.StrategicLinkTitle, ContentKeys.Forum.StrategicLinkText)),
+            ("pillars", v.BulletCards(C.ForumPillars)),
+            ("goals", v.Numbered(C.ForumGoals)),
+            ("sectors", v.Numbered(C.ForumSectors)),
             ("components", v.ItemsSection(C.ForumComponents)),
             // The block's link is "all events" (not the event action).
             ("events", events.Count == 0 ? null : new EventsBlock(events, null, v.PageLink(PageKeys.ForumEvents))),
+            ("editions", v.EditionsTeaser()),
+            ("patronage", v.Patronage()),
+            ("contact", v.ForumContact()),
             ("cta_band", v.CtaBand()),
         ]);
     }
@@ -134,7 +145,8 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
             {
                 Row = new EventRow(x.TitleAr, x.TitleEn, x.DescriptionAr, x.DescriptionEn, x.EventDay, x.EventMonthAr, x.EventMonthEn,
                     x.LocationAr, x.LocationEn, x.TimeAr, x.TimeEn, x.Slug, x.SummaryAr, x.SummaryEn, x.StartsAt, x.EndsAt, x.Status,
-                    x.Image == null ? null : new MediaRef(x.Image.FileKey, x.Image.Format, x.Image.Width, x.Image.Height, x.Image.AltAr, x.Image.AltEn)),
+                    x.Image == null ? null : new MediaRef(x.Image.FileKey, x.Image.Format, x.Image.Width, x.Image.Height, x.Image.AltAr, x.Image.AltEn),
+                    x.DateIsMonth),
                 x.Id, x.AttendanceMode, x.CityAr, x.CityEn, x.AddressAr, x.AddressEn, x.OnlineUrl, x.RegistrationOpen,
                 x.MetaTitleAr, x.MetaTitleEn, x.MetaDescriptionAr, x.MetaDescriptionEn,
             })
@@ -157,7 +169,15 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
         var online = e.AttendanceMode != AttendanceMode.Offline && SiteUrl.IsHttpsUrl(e.OnlineUrl) ? e.OnlineUrl!.Trim() : null;
 
         var facts = new List<FactVm>();
-        if (r.StartsAt is { } start)
+        // F10: an event known to the month only: "June 2026", no day and no clock time.
+        var monthOnly = r.DateIsMonth && r.StartsAt is not null;
+        if (monthOnly)
+        {
+            facts.Add(new FactVm("calendar", Ui(MessageKeys.Ui.EventDate), new LText(EventDates.MonthYear(r.StartsAt!.Value, english), false)));
+            var time0 = v.P(r.TimeAr, r.TimeEn);
+            if (!time0.IsEmpty) facts.Add(new FactVm("clock", Ui(MessageKeys.Ui.EventTime), time0));
+        }
+        else if (r.StartsAt is { } start)
         {
             facts.Add(new FactVm("calendar", Ui(MessageKeys.Ui.EventDate), new LText(EventDates.DateLine(start, r.EndsAt, english), false)));
             var time0 = v.P(r.TimeAr, r.TimeEn);
@@ -196,10 +216,12 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
         var baseUrl = BaseUrl(v);
         var lead = summary.IsEmpty ? description : summary;
         var metaDescription = v.P(e.MetaDescriptionAr, e.MetaDescriptionEn);
-        var node = new Dictionary<string, object> { ["@type"] = r.StartsAt is null ? "WebPage" : "Event" };
+        // F10: an event known to the month only has no real start date either (WebPage, no Event markup).
+        var exact = r.StartsAt is not null && !monthOnly;
+        var node = new Dictionary<string, object> { ["@type"] = exact ? "Event" : "WebPage" };
         SeoBuilder.Set(node, "name", title.Value);
         SeoBuilder.Set(node, "description", SeoBuilder.Shorten(lead.Value, 300));
-        if (r.StartsAt is { } s1)
+        if (exact && r.StartsAt is { } s1)
         {
             node["startDate"] = EventDates.Iso(s1);
             if (r.EndsAt is { } e1) node["endDate"] = EventDates.Iso(e1);
@@ -239,9 +261,12 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
                 .Select(EcosystemQueries.PersonCard<Speaker>())
                 .ToListAsync(HttpContext.RequestAborted))
             .Select(s => PersonCard(v, s, DetailKeys.ForumSpeaker)).ToList();
-        if (r.StartsAt is not null && speakers.Count > 0) node["performer"] = PersonRefs(baseUrl, speakers);
+        if (exact && speakers.Count > 0) node["performer"] = PersonRefs(baseUrl, speakers);
+        // F10: an event without an Arabic summary or description is thin in both languages: noindex,follow, no hreflang,
+        // out of the sitemap (SeoController uses the same rule).
         var seo = SeoBuilder.BuildDetail(route, r.Slug, v, baseUrl, available, title, v.P(e.MetaTitleAr, e.MetaTitleEn).Value,
-            metaDescription.IsEmpty ? lead.Value : metaDescription.Value, r.Image, "website", node);
+            metaDescription.IsEmpty ? lead.Value : metaDescription.Value, r.Image, "website", node,
+            indexable: EventQueries.HasText(r.SummaryAr, r.DescriptionAr));
         return Detail(v, route, r.Slug, seo, new DetailPageVm
         {
             Seo = seo,
@@ -302,19 +327,30 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     {
         var v = await ViewsAsync();
         if (Unpublished(v, PageKeys.ForumRegistration)) return NotFoundPage(v);
-        var events = await LeadFormChoices.EventsAsync(db, HttpContext.RequestAborted);
-        return Page(PageKeys.ForumRegistration, v, [("form", new LeadFormBlock(v.ForumRegistrationForm(events, v.Content.Text("cta_register"))))]);
+        // F10: only events that have not passed (the POST checks the same list).
+        var events = await LeadFormChoices.EventsAsync(db, time.GetUtcNow(), HttpContext.RequestAborted);
+        return Page(PageKeys.ForumRegistration, v,
+        [
+            ("form", new LeadFormBlock(v.ForumRegistrationForm(events, v.Content.Text("cta_register")))),
+            ("contact", v.ForumContact()),
+        ]);
     }
 
-    /// <summary>F10 CONTRACT STUB (Dev 1): the route exists so every SiteRoutes entry answers; Dev 2 renders the editions.</summary>
+    /// <summary>
+    /// GET /forum/editions (and /en/…), F10: every active past edition with its photos (a gallery; no detail pages, no
+    /// paging). None → the admin's empty text. Thin (noindex,follow, out of the sitemap) while no edition is active
+    /// (English: none with English text) — SeoPolicy.
+    /// </summary>
     [AcceptVerbs("GET", "HEAD")]
     public async Task<IActionResult> Editions()
     {
         var v = await ViewsAsync();
         if (Unpublished(v, PageKeys.ForumEditions)) return NotFoundPage(v);
         var row = v.Snapshot.Page(PageKeys.ForumEditions);
-        return Page(PageKeys.ForumEditions, v,
-            [("list", new EmptyBlock(v.P(row?.EmptyTextAr, row?.EmptyTextEn), v.EmptyAction(PageKeys.ForumEditions, v.PageLink(PageKeys.Forum))))]);
+        BlockVm list = v.Snapshot.Editions.Count == 0
+            ? new EmptyBlock(v.P(row?.EmptyTextAr, row?.EmptyTextEn), v.EmptyAction(PageKeys.ForumEditions, v.PageLink(PageKeys.Forum)))
+            : new EditionsBlock(LText.Empty, v.Snapshot.Editions.Select(e => v.Edition(e)).ToList(), null, false);
+        return Page(PageKeys.ForumEditions, v, [("list", list)]);
     }
 
     internal static PagerVm? Pager(int total, int size, int page, string url)
