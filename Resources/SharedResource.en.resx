@@ -74,8 +74,6 @@
   <data name="Field_NameEn" xml:space="preserve"><value>Name (English)</value></data>
   <data name="Field_Label" xml:space="preserve"><value>Label</value></data>
   <data name="Field_LabelEn" xml:space="preserve"><value>Label (English)</value></data>
-  <data name="Field_ShortTitle" xml:space="preserve"><value>Short name</value></data>
-  <data name="Field_ShortTitleEn" xml:space="preserve"><value>Short name (English)</value></data>
   <data name="Field_ShortLabel" xml:space="preserve"><value>Short label</value></data>
   <data name="Field_ShortLabelEn" xml:space="preserve"><value>Short label (English)</value></data>
   <data name="Field_Text" xml:space="preserve"><value>Text</value></data>
@@ -93,9 +91,6 @@
   <data name="Admin_NavAdded" xml:space="preserve"><value>Item added</value></data>
   <data name="Admin_NavUpdated" xml:space="preserve"><value>Item updated</value></data>
   <data name="Admin_NavDeleted" xml:space="preserve"><value>Item deleted</value></data>
-  <data name="Admin_SubItemAdded" xml:space="preserve"><value>Sub-item added</value></data>
-  <data name="Admin_SubItemUpdated" xml:space="preserve"><value>Sub-item updated</value></data>
-  <data name="Admin_SubItemDeleted" xml:space="preserve"><value>Sub-item deleted</value></data>
   <data name="Admin_PartnerAdded" xml:space="preserve"><value>Partner added</value></data>
   <data name="Admin_PartnerUpdated" xml:space="preserve"><value>Partner updated</value></data>
   <data name="Admin_PartnerDeleted" xml:space="preserve"><value>Partner deleted</value></data>
@@ -329,4 +324,8 @@
   <data name="Admin_CsvReference" xml:space="preserve"><value>Reference (opportunity / package / event)</value></data>
   <data name="Admin_CsvReferenceId" xml:space="preserve"><value>Reference ID</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>Internal note</value></data>
+  <data name="Admin_FooterLimit" xml:space="preserve"><value>At most {0} columns and {1} links per column.</value></data>
+  <data name="Admin_SocialExists" xml:space="preserve"><value>This network is already added.</value></data>
+  <data name="Admin_IconInvalid" xml:space="preserve"><value>This icon is not available; pick one from the list.</value></data>
+  <data name="Admin_CustomSocialIncomplete" xml:space="preserve"><value>A custom network needs a name and an icon from the list.</value></data>
 </root>

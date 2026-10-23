@@ -168,20 +168,33 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 - **الاحتياط:** ما دام حقل الشعارين فارغاً يُستعمل الشعار المرفق مع الموقع، وما دامت صورة الواجهة فارغة يظهر المثلث. زر الحذف يعيد المرفق. لا يتغير
   شعار لوحة التحكم وصفحة الدخول ولا صورة المشاركة الافتراضية (`seo_og_image`) بهذه الشاشة.
 
-## 7. روابط إضافية في القائمة (`/Admin/Nav`)
+## 7. القائمة والفوتر (`/Admin/Nav`)
 
-«الموقع» ← «روابط إضافية في القائمة». قائمة الموقع الأساسية صارت من «صفحات الموقع». هذه الشاشة لروابط **إضافية** فقط
-(مثل رابط خارجي أو `#قسم`) تُضاف إلى القائمة والفوتر. لكل عنصر: الاسم بالعربية والإنجليزية، الرابط، «مفعّل» (يخفي العنصر
-دون حذفه)، و«يظهر في «روابط سريعة» بالفوتر». العناصر الفرعية تُضاف وتُعدَّل وتُحذف من نفس الشاشة. عناصر القائمة القديمة
-ذات الروابط `#قسم` الثمانية **عُطّلت ولم تُحذف** عند هذا الإصدار، وتظهر في اللوحة بحالة غير مفعّلة.
+«الموقع» ← «القائمة والفوتر». تبويبان:
+
+- **«القائمة العلوية»**: الروابط **الإضافية** (رابط خارجي أو `#قسم`) بعد صفحات الموقع. لكل رابط: الاسم بالعربية والإنجليزية،
+  الرابط، **«الحالة»** (ظاهر/مخفي: في الموقع كله)، **«في القائمة العلوية»** (رأس الموقع وقائمة الجوال فقط؛ الفوتر لا يتأثر)،
+  والترتيب بالسهمين ▲▼. «حذف» يزيله نهائياً ومن أعمدة الفوتر المخصّصة أيضاً. **القوائم الفرعية غير مدعومة** (لم تظهر في الموقع
+  قط): استخدم صفحة ابنة من «صفحات الموقع». العناصر الفرعية القديمة باقية في قاعدة البيانات ولا تُعرض.
+- **«أعمدة الفوتر»**: الفوتر **تلقائي** ما لم تخصّصه: عمود «روابط سريعة» (الرئيسية والصفحات الرئيسية والمنظومة ثم كل
+  رابط إضافي ظاهر)، ثم عمود لكل وحدة (المنتدى، الشبكة، البرنامج) بصفحاتها. تتحكم فيه من «صفحات الموقع» بمفتاح
+  **«يظهر في الفوتر»** لكل صفحة (مستقل عن «في القائمة») وبحالة النشر. زر **«تخصيص الأعمدة»** ينسخ الفوتر الحالي كما هو إلى
+  أعمدة قابلة للتعديل: عنوان كل عمود بالعربية والإنجليزية، إضافة رابط (صفحة أو رابط إضافي) وإزالته وترتيبه، ترتيب الأعمدة،
+  وحذف عمود. الحد الأقصى 4 أعمدة و8 روابط في كل عمود (للإضافة). العمود الذي أول رابط فيه يحمل اسم العمود نفسه يظهر
+  عنوانه رابطاً (كأعمدة الوحدات). رابط إلى صفحة غير منشورة أو رابط إضافي مخفي لا يظهر، والعمود بلا روابط ظاهرة لا يظهر.
+  **«إعادة إلى التلقائي»** يحذف الأعمدة المخصّصة.
+- رابط **«سياسة الخصوصية»** يظهر تلقائياً في الشريط السفلي للفوتر ما دامت صفحة الخصوصية منشورة ونصّها العربي غير فارغ.
 
 ## 8. الخدمات والأرقام
 
-- **«الخدمات»** (`/Admin/Platforms`، كانت «المنصات»): العنوان والوصف بالعربية والإنجليزية، **العنوان المختصر**
-  (إن تُرك فارغاً يُستعمل الكامل)، **الرابط** لزر «اعرف المزيد» (**يختفي الزر إن تُرك فارغاً**)، و«ظاهرة/مخفية» (شارة
-  تُضغط لإخفاء الخدمة من الموقع دون حذفها).
-- **«أرقام الأثر»** (`/Admin/Stats`): التسمية بالعربية والإنجليزية، التسمية المختصرة، الرقم، واللاحقة (مثل `+`). الأرقام
-  تظهر في الرئيسية وفي «من نحن».
+- **«الخدمات»** (`/Admin/Platforms`): بطاقة «إضافة خدمة» (الاسم والوصف بالعربية والإنجليزية، كل سطر من الوصف نقطة، رابط
+  «اعرف المزيد» الذي **يختفي إن تُرك فارغاً**، و**الأيقونة** من شبكة أيقونات ثابتة؛ «بلا أيقونة» = المثلث، أو الأيقونة
+  الأصلية للخدمات القديمة). في الجدول: «تعديل» يفتح النموذج، «ظاهر/مخفي»، الترتيب ▲▼، و«حذف» بعد تأكيد (الإخفاء يبقيها
+  محفوظة). الخدمة الجديدة تظهر آخر القائمة في الرئيسية وصفحة المنظومة.
+- **«أرقام الأثر»** (`/Admin/Stats`): «إضافة رقم» (التسمية بالعربية والإنجليزية، التسمية المختصرة لعدادات الواجهة، الرقم،
+  اللاحقة مثل `+` أو `%`). في الجدول: تعديل، ظاهر/مخفي، الترتيب ▲▼، حذف بعد تأكيد. **أول الأرقام الظاهرة** تظهر في واجهة
+  الرئيسية (عددها من «أقسام الصفحة الرئيسية»)، وكلها في قسم الأثر وفي «من نحن». الرقم المخفي لا يظهر في أي منهما. لا توجد
+  أيقونة للأرقام (التصميم لا يعرضها).
 
 ## 9. الأخبار والفعاليات والشركاء وصفحات التفاصيل
 
@@ -203,7 +216,7 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 - **«الشركاء والرعاة»**: الاسم بالعربية والإنجليزية، **شعار الشريك** (صورة)، **موقع الشريك** (`https://` اختياري؛ يُفتح برابط
   `rel="sponsored noopener"`)، **المجموعة**، و**«يظهر في شريط الشركاء في الصفحة الرئيسية»**. **المجموعات** (بطاقة في أسفل
   الشاشة): عناوين تُرتَّب بها صفحة `/forum/partners` (مثل «الرعاة الرئيسيون»)؛ حذف مجموعة **لا يحذف شركاءها** بل يُعرضون بعد
-  المجموعات. إخفاء شريك دون حذفه بشارة «ظاهر/مخفي».
+  المجموعات. إخفاء شريك دون حذفه بشارة «ظاهر/مخفي». **الترتيب** بالسهمين ▲▼ داخل مجموعة الشريك (ترتيب واحد يحكم شريط الرئيسية وصفحة الشركاء). **النص البديل للشعار** الذي تكتبه يُقرأ في الموقع بلغة الصفحة، وإن تُرك فارغاً يُستعمل اسم الشريك.
 - **الرابط المختصر:** أحرف إنجليزية صغيرة وأرقام وشرطات فقط (`innovest-forum-2026`)، حتى 100 حرف، وبعض الكلمات محجوزة (مثل
   `admin` و`media` و`en`). إن تُرك فارغاً عند الإضافة يُبنى من العنوان الإنجليزي (ويُضاف `-2` عند التكرار)، وإلا `news-<رقم>` أو
   `event-<رقم>`. **تغييره لاحقاً آمن:** يبقى الرابط القديم يحوّل (301) إلى الجديد، ولا يمكن لعنصر آخر استعمال رابط قديم لعنصر
@@ -282,9 +295,11 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 
 ## 13. روابط التواصل الاجتماعي
 
-«روابط التواصل الاجتماعي»: سبع شبكات ثابتة (LinkedIn وX/Twitter وInstagram وYouTube وFacebook وTikTok وLinktree). لكل
-شبكة: الرابط (`https://` كامل)، الترتيب، مفعّل. **الشبكة بلا رابط لا تظهر** في الفوتر. تُضاف الروابط المفعّلة أيضاً إلى
-البيانات المنظمة (`sameAs`) للموقع.
+«روابط التواصل الاجتماعي»: الشبكات المعروفة السبع (LinkedIn وX/Twitter وInstagram وYouTube وFacebook وTikTok وLinktree)،
+كل منها مرة واحدة باسمها وأيقونتها من الموقع؛ و**«شبكة أخرى»** باسم تكتبه (يقرؤه قارئ الشاشة) وأيقونة من الشبكة الثابتة
+(لا يُرفع SVG). «إضافة شبكة» تعرض فقط الشبكات المعروفة غير المضافة. لكل رابط: الرابط (`https://` كامل)، ظاهر/مخفي، الترتيب
+▲▼؛ و«حذف» للشبكات الأخرى فقط (الشبكة المعروفة تُخفى أو يُفرَّغ رابطها). **الشبكة بلا رابط لا تظهر** في الفوتر ولا في قسم
+التواصل. تُضاف الروابط المفعّلة أيضاً إلى البيانات المنظمة (`sameAs`) للموقع.
 
 ## 14. صندوق الطلبات والتسجيلات ورسائل التواصل
 
@@ -514,20 +529,35 @@ PNG or WebP up to 5 MB):
 - **Fallback:** while a logo field is empty the logo bundled with the site is used, and while the hero image is empty the triangle is shown.
   Removing an image brings the bundled one back. The admin panel and login logo and the default share image (`seo_og_image`) are not changed by this screen.
 
-## 7. Extra menu links (`/Admin/Nav`)
+## 7. Menu and footer (`/Admin/Nav`)
 
-«الموقع» → «روابط إضافية في القائمة». The site's main menu now comes from «صفحات الموقع». This screen is only for **extra**
-links (e.g. an external link or `#section`) added to the menu and the footer. Per item: name in Arabic and English, link,
-«active» (hides the item without deleting it) and «shown in footer quick links». Sub-items are added, edited and deleted on
-the same screen. The eight old `#section` menu items were **deactivated, not deleted**, by this release and show as inactive.
+«الموقع» → «القائمة والفوتر». Two tabs:
+
+- **«القائمة العلوية»**: the **extra** links (external link or `#section`) after the site pages. Per link: name in Arabic and
+  English, link, **status** (shown/hidden: on the whole site), **«in the top menu»** (header and mobile menu only; the footer
+  is not affected) and order with ▲▼. «حذف» deletes it for good, also from customised footer columns. **Sub-menus are not
+  supported** (they were never shown on the site): use a child page in «صفحات الموقع». Old sub-items stay in the database.
+- **«أعمدة الفوتر»**: the footer is **automatic** until you customise it: a «quick links» column (home, the top-level pages,
+  the ecosystem, then every shown extra link), then one column per unit (Forum, Network, TV) with its pages. You control it
+  in «صفحات الموقع» with each page's **«shown in the footer»** switch (independent of «in the menu») and its published state.
+  **«تخصيص الأعمدة»** copies the current footer as it is into editable columns: each column's title in Arabic and English,
+  add (a page or an extra link), remove and reorder links, reorder and delete columns. At most 4 columns and 8 links per
+  column (when adding). A column whose first link carries the column's own title shows its heading as that link (like the
+  unit columns). A link to an unpublished page or a hidden extra link is not shown; a column with no shown link is not
+  shown. **«إعادة إلى التلقائي»** deletes the customised columns.
+- The **«Privacy policy»** link appears in the footer bottom bar by itself while the privacy page is published and has an
+  Arabic body.
 
 ## 8. Services and figures
 
-- **«الخدمات»** (`/Admin/Platforms`, formerly «Platforms»): title and description in both languages, a **short title** (the
-  full title is used when empty), the **link** of the «اعرف المزيد» button (**the button is hidden when the link is
-  empty**), and a «ظاهرة/مخفية» badge (click to hide the service from the site without deleting it).
-- **«أرقام الأثر»** (`/Admin/Stats`): label in both languages, short label, number and suffix (e.g. `+`). The figures
-  appear on the home page and on About.
+- **«الخدمات»** (`/Admin/Platforms`): «إضافة خدمة» card (name and description in both languages, one bullet per line, the
+  «اعرف المزيد» link which is **hidden when empty**, and the **icon** from a fixed icon grid; «none» = the triangle, or the
+  original icon for the migrated services). In the table: «تعديل», shown/hidden, order ▲▼, and «حذف» after a confirmation
+  (hiding keeps it). A new service appears last on the home page and the ecosystem page.
+- **«أرقام الأثر»** (`/Admin/Stats`): «إضافة رقم» (label in both languages, short label for the hero counters, number,
+  suffix such as `+` or `%`). In the table: edit, shown/hidden, order ▲▼, delete after a confirmation. **The first shown**
+  **figures** appear in the home hero (how many: «أقسام الصفحة الرئيسية»), all of them in the impact section and on About. A
+  hidden figure appears in neither. Figures have no icon (the design does not show one).
 
 ## 9. News, events, partners and detail pages
 
@@ -550,7 +580,7 @@ cards in the lists and on the home page link to these pages.
 - **«الشركاء والرعاة»**: name in both languages, **partner logo** (image), **partner website** (`https://`, optional; opens
   with `rel="sponsored noopener"`), **group**, and **«shown in the home page partner strip»**. **Groups** (the card at the
   bottom of the screen) are the headings that organise `/forum/partners` (e.g. «main sponsors»); deleting a group **does
-  not delete its partners**: they are listed after the groups. Hide a partner without deleting it with the «ظاهر/مخفي» badge.
+  not delete its partners**: they are listed after the groups. Hide a partner without deleting it with the «ظاهر/مخفي» badge. **Order** with ▲▼ within the partner's group (one order drives the home strip and the partners page). The logo's **alt text** you write is used on the site in the page language; when empty, the partner's name is used.
 - **Slug:** lower-case English letters, digits and hyphens only (`innovest-forum-2026`), up to 100 characters; some words
   are reserved (e.g. `admin`, `media`, `en`). Left empty when adding, it is built from the English title (`-2` is added on a
   clash), otherwise `news-<id>` or `event-<id>`. **Changing it later is safe:** the old address keeps redirecting (301) to
@@ -643,9 +673,11 @@ point the box disappears.
 
 ## 13. Social links
 
-«روابط التواصل الاجتماعي»: seven fixed networks (LinkedIn, X/Twitter, Instagram, YouTube, Facebook, TikTok, Linktree). Per
-network: full `https://` URL, order, active. **A network with no URL is not shown** in the footer. Active links are also
-added to the site's structured data (`sameAs`).
+«روابط التواصل الاجتماعي»: the seven known networks (LinkedIn, X/Twitter, Instagram, YouTube, Facebook, TikTok, Linktree),
+each once with its name and icon from the site; and **«شبكة أخرى»** with a name you type (read by screen readers) and an icon
+from the fixed grid (no SVG upload). «إضافة شبكة» offers only the known networks not added yet. Per link: full `https://`
+URL, shown/hidden, order ▲▼; «حذف» for other networks only (a known network is hidden or its URL emptied). **A network with
+no URL is not shown** in the footer or the contact block. Active links are also added to the structured data (`sameAs`).
 
 ## 14. Applications inbox, registrations and contact messages
 
