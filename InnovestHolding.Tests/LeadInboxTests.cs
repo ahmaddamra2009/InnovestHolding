@@ -430,7 +430,8 @@ public class LeadFormsMigrationTests
         Assert.StartsWith("Whether you want", await Intro(db, "tv.sponsorship", "IntroEn"));
         // every content key of the registry exists after the migration
         var keys = await db.SiteContents.Select(c => c.SectionKey).ToListAsync();
-        Assert.Empty(Infrastructure.Content.ContentKeys.All.Select(k => k.Key).Except(AdminLinksTests.AddedByAdminControl).Except(keys));
+        Assert.Empty(Infrastructure.Content.ContentKeys.All.Select(k => k.Key).Except(AdminLinksTests.AddedByAdminControl)
+            .Except(Migrations.AddForumContent.NewKeys.Select(k => k[0])).Except(keys));
 
         var after = await StateAsync(db);
 

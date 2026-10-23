@@ -188,6 +188,9 @@ namespace InnovestHolding.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("DateIsMonth")
+                        .HasColumnType("bit");
+
                     b.Property<string>("DescriptionAr")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -435,6 +438,114 @@ namespace InnovestHolding.Migrations
                         {
                             t.HasCheckConstraint("CK_FooterLinks_Target", "([PageKey] IS NULL AND [NavItemId] IS NOT NULL) OR ([PageKey] IS NOT NULL AND [NavItemId] IS NULL)");
                         });
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.ForumEdition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("EditionLabelAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("EditionLabelEn")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PlaceAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("PlaceEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TextAr")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("TextEn")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TitleEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<short>("Year")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive", "SortOrder");
+
+                    b.ToTable("ForumEditions");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.ForumEditionPhoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("ForumEditionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ImageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImageId")
+                        .IsUnique();
+
+                    b.HasIndex("ForumEditionId", "SortOrder");
+
+                    b.ToTable("ForumEditionPhotos");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.InterestOption", b =>
@@ -1239,6 +1350,9 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("NameEn")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("ShowOnForumHub")
+                        .HasColumnType("bit");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -2126,6 +2240,25 @@ namespace InnovestHolding.Migrations
                     b.Navigation("NavItem");
                 });
 
+            modelBuilder.Entity("InnovestHolding.Models.ForumEditionPhoto", b =>
+                {
+                    b.HasOne("InnovestHolding.Models.ForumEdition", "ForumEdition")
+                        .WithMany("Photos")
+                        .HasForeignKey("ForumEditionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InnovestHolding.Models.MediaFile", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ForumEdition");
+
+                    b.Navigation("Image");
+                });
+
             modelBuilder.Entity("InnovestHolding.Models.InvestmentOpportunity", b =>
                 {
                     b.HasOne("InnovestHolding.Models.MediaFile", "Image")
@@ -2280,6 +2413,11 @@ namespace InnovestHolding.Migrations
             modelBuilder.Entity("InnovestHolding.Models.FooterColumn", b =>
                 {
                     b.Navigation("Links");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.ForumEdition", b =>
+                {
+                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.NavItem", b =>

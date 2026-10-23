@@ -306,6 +306,17 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
         return Page(PageKeys.ForumRegistration, v, [("form", new LeadFormBlock(v.ForumRegistrationForm(events, v.Content.Text("cta_register"))))]);
     }
 
+    /// <summary>F10 CONTRACT STUB (Dev 1): the route exists so every SiteRoutes entry answers; Dev 2 renders the editions.</summary>
+    [AcceptVerbs("GET", "HEAD")]
+    public async Task<IActionResult> Editions()
+    {
+        var v = await ViewsAsync();
+        if (Unpublished(v, PageKeys.ForumEditions)) return NotFoundPage(v);
+        var row = v.Snapshot.Page(PageKeys.ForumEditions);
+        return Page(PageKeys.ForumEditions, v,
+            [("list", new EmptyBlock(v.P(row?.EmptyTextAr, row?.EmptyTextEn), v.EmptyAction(PageKeys.ForumEditions, v.PageLink(PageKeys.Forum))))]);
+    }
+
     internal static PagerVm? Pager(int total, int size, int page, string url)
     {
         var count = (total + size - 1) / size;

@@ -17,5 +17,8 @@ public class PartnerGroup
 
     public bool IsActive { get; set; } = true;
 
+    /// <summary>F10: the group (with its partners) is also listed in the /forum patronage strip. Default off.</summary>
+    public bool ShowOnForumHub { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

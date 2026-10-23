@@ -58,6 +58,13 @@ public class Event
 
     public DateTimeOffset? EndsAt { get; set; }
 
+    /// <summary>
+    /// F10: the event is known to the month only. <see cref="StartsAt"/> is then the 1st of the month 00:00 and
+    /// <see cref="EndsAt"/> the last day 23:59 (at the event's offset), so ordering and past/upcoming need no special
+    /// case; the pages show month + year without a day, and the JSON-LD is a WebPage, never an Event.
+    /// </summary>
+    public bool DateIsMonth { get; set; }
+
     public EventStatus Status { get; set; } = EventStatus.Scheduled;
 
     public AttendanceMode AttendanceMode { get; set; } = AttendanceMode.Offline;

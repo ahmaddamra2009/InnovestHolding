@@ -69,9 +69,10 @@ public class CompanyProfileMigrationTests
         var realBefore = await RealDataAsync(db);
 
         // Up to the last migration before the N8 rename, which rewrites the brand names in real news/FAQ text on
-        // purpose (covered by RenameHoldingAndForumTests).
+        // purpose (covered by RenameHoldingAndForumTests); AddForumContent (F10) then adds forum events and partners
+        // (covered by ForumContentMigrationTests).
         await db.GetService<IMigrator>().MigrateAsync("20261023011038_AddAdminControl");
-        Assert.Equal(["20261023141145_RenameHoldingAndForum"], await db.Database.GetPendingMigrationsAsync());
+        Assert.Equal(["20261023141145_RenameHoldingAndForum", "20261023144143_AddForumContent"], await db.Database.GetPendingMigrationsAsync());
 
         // Real data: byte-identical (events, news, partners are real); partners stay visible.
         Assert.Equal(realBefore, await RealDataAsync(db));
@@ -88,7 +89,8 @@ public class CompanyProfileMigrationTests
         Assert.Equal("+20 01141410808", await Content(db, "contact_phone"));                          // neutral, seed → profile
         Assert.Equal("network.join", await Content(db, "header_cta_page"));                           // new key
         var keys = await db.SiteContents.Select(c => c.SectionKey).ToListAsync();
-        Assert.Empty(Infrastructure.Content.ContentKeys.All.Select(k => k.Key).Except(keys));      // every registry key exists
+        Assert.Empty(Infrastructure.Content.ContentKeys.All.Select(k => k.Key)                    // every registry key exists
+            .Except(AddForumContent.NewKeys.Select(k => k[0])).Except(keys));                    // (but F10's, not yet applied)
         Assert.Equal(keys.Count, keys.Distinct().Count());
         Assert.Equal("", await Content(db, "founder_message"));                                       // founder block hidden
 

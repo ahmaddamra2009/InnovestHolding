@@ -384,8 +384,13 @@ public class DetailPageTests(TestAppFactory f)
             Assert.DoesNotContain("href=\"/forum/registration\"", ActionCard(pastHtml));
 
             // The list shows upcoming events before past ones, whatever their admin order.
+            // F10's nine programme events can push the 2020 event to page 2 — still after the future one.
             var list = await f.NewClient().GetStringAsync("/forum/events");
-            Assert.True(list.IndexOf(future.Slug, StringComparison.Ordinal) < list.IndexOf(past.Slug, StringComparison.Ordinal));
+            var futureAt = list.IndexOf(future.Slug, StringComparison.Ordinal);
+            var pastAt = list.IndexOf(past.Slug, StringComparison.Ordinal);
+            Assert.True(futureAt >= 0, "future event not on page 1");
+            if (pastAt < 0) Assert.Contains(past.Slug, await f.NewClient().GetStringAsync("/forum/events?page=2"));
+            else Assert.True(futureAt < pastAt, $"future {futureAt}, past {pastAt}");
         }
         finally
         {

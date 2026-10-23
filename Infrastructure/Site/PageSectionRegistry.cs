@@ -57,7 +57,24 @@ public static class PageSectionRegistry
                 new("cta_band", "شريط الدعوة"),
             ],
             [PageKeys.Contact] = [new("contact", "نموذج التواصل", CanHide: false), new("faq", "الأسئلة الشائعة")],
-            [PageKeys.Forum] = [new("units", "الوحدات"), new("components", "مكونات المنتدى"), new("events", "الفعاليات"), new("cta_band", "شريط الدعوة")],
+            // F10: the forum sections of the event profile interleave with C5's (AddForumContent's SortOrder 5…36).
+            [PageKeys.Forum] =
+            [
+                new("about", "عن المنتدى"),
+                new("units", "الوحدات"),
+                new("figures", "الأرقام"),
+                new("audiences", "التأثير على الأطراف الرئيسية"),
+                new("pillars", "القطاعات الرئيسية (الركائز)"),
+                new("goals", "أهداف النسخة"),
+                new("sectors", "المحاور والقطاعات"),
+                new("components", "مكونات المنتدى"),
+                new("events", "الفعاليات"),
+                new("editions", "النسخ السابقة"),
+                new("patronage", "الجهات المنظمة"),
+                new("contact", "طرق التواصل"),
+                new("cta_band", "شريط الدعوة"),
+            ],
+            [PageKeys.ForumEditions] = [new("list", "القائمة", CanHide: false)],
             [PageKeys.Network] = [new("units", "الوحدات"), new("investor_services", "خدمات المستثمرين"), new("steps", "خطوات الانضمام"), new("cta_band", "شريط الدعوة")],
             [PageKeys.NetworkInvestors] = [new("investor_services", "خدمات المستثمرين"), new("join_cta", "دعوة الانضمام")],
             [PageKeys.NetworkStartups] = [new("startup_services", "خدمات الشركات الناشئة"), new("sectors", "القطاعات"), new("join_cta", "دعوة الانضمام")],
@@ -69,7 +86,7 @@ public static class PageSectionRegistry
             [PageKeys.News] = [new("list", "القائمة", CanHide: false)],
             [PageKeys.TvEpisodes] = [new("list", "القائمة", CanHide: false)],
             [PageKeys.TvGuests] = [new("list", "القائمة", CanHide: false)],
-            [PageKeys.ForumRegistration] = [new("form", "النموذج", CanHide: false)],
+            [PageKeys.ForumRegistration] = [new("form", "النموذج", CanHide: false), new("contact", "طرق التواصل")],
             [PageKeys.NetworkJoin] = [new("form", "النموذج", CanHide: false)],
             // The hub's only section: hiding it would leave the page empty, so it has no switch (Hassan C5 F5).
             [PageKeys.Tv] = [new("units", "الوحدات", CanHide: false)],
@@ -142,6 +159,7 @@ public static class PageSectionRegistry
         new(ContentKeys.HomeEventsLimit, PageKeys.Home, "events", "عدد الفعاليات على الصفحة الرئيسية"),
         new(ContentKeys.HomeNewsLimit, PageKeys.Home, "news", "عدد الأخبار على الصفحة الرئيسية"),
         new(ContentKeys.ForumEventsLimit, PageKeys.Forum, "events", "عدد الفعاليات في صفحة المنتدى"),
+        new(ContentKeys.ForumEditionsLimit, PageKeys.Forum, "editions", "عدد النسخ السابقة في صفحة المنتدى"),
     ];
 
     public static SectionLimit? FindLimit(string? key) => Limits.FirstOrDefault(l => l.Key == key);
