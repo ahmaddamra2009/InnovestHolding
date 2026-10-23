@@ -7,10 +7,10 @@ public class InterestOption
 {
     public int Id { get; set; }
 
-    [Required, MaxLength(100)]
+    [Required, MaxLength(170)]
     public string NameAr { get; set; } = string.Empty;
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? NameEn { get; set; }
 
     public int SortOrder { get; set; }

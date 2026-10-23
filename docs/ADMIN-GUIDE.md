@@ -28,12 +28,12 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 - **الروابط:** روابط التواصل الاجتماعي ورابط الجهة المطوّرة يجب أن تبدأ بـ `https://`. روابط القائمة والخدمات
   والأخبار تقبل `#قسم` أو `/مسار` أو `https://…`، وتُرفض `javascript:` وما شابهه. اتركوا الحقل فارغاً إن لم يوجد رابط.
 - لا تكتبوا كلمات مرور أو بيانات سرية في أي حقل: كل ما يُكتب في المحتوى يظهر للعامة.
-- **الأسماء الجديدة:** الاسم العربي للشركة صار **«إنوفست القابضة»** (بدل «إنوفست هولدينغ»)، واسم المنتدى **«منتدى إنوفست»** / "Innovest Forum"
-  (بدل «منتدى إنوفست العربي» / "Innovest Arab Forum"). الاسم الإنجليزي للشركة "Innovest Holding" لم يتغير. استبدل الترحيل `RenameHoldingAndForum` الاسمين القديمين
+- **الأسماء الجديدة:** الاسم العربي للشركة صار **«إنوفست القابضة»** (بدل «إنوفست هولدينغ»)، واسم المنتدى **«منتدى الإبتكار والإستثمار العربي»** (بهمزة القطع كما في شعار المنتدى) / **"Innovest Arab Forum"**
+  (بدل «منتدى إنوفست العربي»؛ الاسم الإنجليزي لم يتغير). الاسم الإنجليزي للشركة "Innovest Holding" لم يتغير. استبدل الترحيل `RenameHoldingAndForum` الاسمين القديمين
   في نصوص الموقع المحفوظة (الصفحات والنصوص العامة والأخبار والفعاليات والشركاء والأسئلة الشائعة وغيرها)، بما فيها ما عدّلتموه يدوياً إن احتوى العبارة القديمة نفسها. لا يغيّر الروابط
   ولا النطاق ولا الطلبات المستلمة. **نص تكتبونه بعد ذلك بالاسم القديم لا يُصحَّح تلقائياً**: استعملوا الأسماء الجديدة.
-- **القائمة الجانبية مجمّعة:** «نظرة عامة»، «الموقع»، «منتدى إنوفست»، «شبكة المستثمرين الملائكيين»، «البرنامج
-  التلفزيوني»، «الأخبار»، «الوارد». اضغطوا عنوان المجموعة لطيّها أو فتحها؛ يتذكر المتصفح اختياركم. مجموعة «منتدى إنوفست» تضم:
+- **القائمة الجانبية مجمّعة:** «نظرة عامة»، «الموقع»، «منتدى الإبتكار والإستثمار العربي»، «شبكة المستثمرين الملائكيين»، «البرنامج
+  التلفزيوني»، «الأخبار»، «الوارد». اضغطوا عنوان المجموعة لطيّها أو فتحها؛ يتذكر المتصفح اختياركم. مجموعة «منتدى الإبتكار والإستثمار العربي» تضم:
   الفعاليات، المتحدثون، الشركاء والرعاة، التسجيلات، خيارات مجال الاهتمام، مزايا التسجيل، **هوية المنتدى**، **النسخ السابقة**، **محتوى صفحة المنتدى**
   (اختصار إلى بطاقة «صفحات المنتدى» في «النصوص العامة»). مجموعة «الموقع» تضم:
   صفحات الموقع، النصوص العامة، القوائم، الخدمات، أرقام الأثر، الأسئلة الشائعة، روابط التواصل الاجتماعي، أقسام الصفحات،
@@ -49,7 +49,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 | الرئيسية | `/` | `/en` |
 | من نحن | `/about` | `/en/about` |
 | منظومتنا | `/ecosystem` | `/en/ecosystem` |
-| منتدى إنوفست | `/forum` | `/en/forum` |
+| منتدى الإبتكار والإستثمار العربي | `/forum` | `/en/forum` |
 | ↳ الفعاليات | `/forum/events` | `/en/forum/events` |
 | ↳ المتحدثون | `/forum/speakers` | `/en/forum/speakers` |
 | ↳ الشركاء والرعاة | `/forum/partners` | `/en/forum/partners` |
@@ -280,7 +280,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 
 ## 6هـ. هوية المنتدى (`/Admin/ForumIdentity`)
 
-«منتدى إنوفست» ← «هوية المنتدى». تغيّر شكل **صفحة المنتدى وكل الصفحات تحتها** (الفعاليات، المتحدثون، الشركاء، التسجيل، النسخ السابقة، وصفحات تفاصيل الفعالية والمتحدث)
+«منتدى الإبتكار والإستثمار العربي» ← «هوية المنتدى». تغيّر شكل **صفحة المنتدى وكل الصفحات تحتها** (الفعاليات، المتحدثون، الشركاء، التسجيل، النسخ السابقة، وصفحات تفاصيل الفعالية والمتحدث)
 بالعربية والإنجليزية؛ بقية الموقع تبقى بهوية إنوفست، ورأس الصفحة (كحلي) وتذييلها يبقيان بألوان إنوفست. صفحة «غير موجودة» ليست منها. الحقل الفارغ = القيمة الافتراضية المرفقة. هوية إنوفست نفسها في «الهوية البصرية» (القسم 6د).
 يظهر التغيير في الطلب التالي. تُقدَّم الأنماط من العنوان `/forum-theme.css`، ورقم نسخته في الرابط يتغير عند كل حفظ فلا يبقى في المتصفحات شكل قديم.
 
@@ -368,7 +368,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
   في صفحة الخبر)، **صورة الخبر**، وعنوان ووصف محركات البحث. «الترتيب»: الرقم الأصغر أولاً. «مفعّل» يخفي الخبر دون حذفه.
   الخبر الجديد يظهر أولاً. تظهر الأخبار في `/news` مرقّمة، وفي الرئيسية أول **عدد الأخبار المعروضة في الصفحة الرئيسية** (النصوص
   العامة ← «عناوين أقسام الصفحة الرئيسية»، رقم من 1 إلى 50، الافتراضي 6).
-- **«الفعاليات»** (ضمن «منتدى إنوفست»): العنوان، **الرابط المختصر**، الملخص، **الوصف** (نص صفحة الفعالية)، **الموعد**:
+- **«الفعاليات»** (ضمن «منتدى الإبتكار والإستثمار العربي»): العنوان، **الرابط المختصر**، الملخص، **الوصف** (نص صفحة الفعالية)، **الموعد**:
   البدء (بتوقيت مكان الفعالية) والانتهاء (اختياري) و**فرق التوقيت عن UTC** (الافتراضي `+02:00`)، **الحالة** (في موعدها / مؤجلة
   / ملغاة)، **طريقة الحضور** (حضوري / عن بُعد / حضوري وعن بُعد)، اسم المكان والمدينة والعنوان، **رابط الحضور عن بُعد**
   (`https://`)، **«التسجيل مفتوح»**، **صورة الفعالية**، ومحركات البحث. اليوم والشهر والوقت النصية حقول بديلة للفعاليات القديمة
@@ -411,7 +411,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 
 ## 9ب. المتحدثون وضيوف البرنامج والحلقات والفرص وباقات الرعاية
 
-في القائمة الجانبية: مجموعة «منتدى إنوفست» ← **المتحدثون**؛ مجموعة «شبكة المستثمرين الملائكيين» ← **الفرص الاستثمارية**؛ مجموعة
+في القائمة الجانبية: مجموعة «منتدى الإبتكار والإستثمار العربي» ← **المتحدثون**؛ مجموعة «شبكة المستثمرين الملائكيين» ← **الفرص الاستثمارية**؛ مجموعة
 «البرنامج التلفزيوني» ← **الحلقات** و**الضيوف** و**باقات الرعاية**. تحل هذه الشاشات محل نص «قريباً» في صفحات `/forum/speakers`
 و`/tv/episodes` و`/tv/guests` و`/angel-network/opportunities` (وتحت `/en`)، ولكل عنصر صفحة خاصة بالرابط المختصر.
 
@@ -446,7 +446,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 
 ## 9ج. النسخ السابقة (`/Admin/ForumEditions`)
 
-«منتدى إنوفست» ← «النسخ السابقة». سجلّ نسخ المنتدى السابقة بصورها. تظهر في صفحة **«النسخ السابقة»** (`/forum/editions`، كل النسخ الظاهرة بكل صورها)، وفي صفحة المنتدى قسم
+«منتدى الإبتكار والإستثمار العربي» ← «النسخ السابقة». سجلّ نسخ المنتدى السابقة بصورها. تظهر في صفحة **«النسخ السابقة»** (`/forum/editions`، كل النسخ الظاهرة بكل صورها)، وفي صفحة المنتدى قسم
 **«النسخ السابقة»** يعرض أوائل النسخ بترتيبها (العدد من «أقسام الصفحات»، الافتراضي 3، من 1 إلى 12) بصورة الغلاف فقط ورابط «كل النسخ» (نصه وعنوان القسم من «صفحات المنتدى»).
 - **إضافة نسخة:** السنة (2000–2100)، وتسمية النسخة (اختياري، حتى 60 حرفاً، مثل «النسخة الرابعة»)، والعنوان (مطلوب بالعربية). بعد الإضافة تنتقلون إلى صفحة النسخة.
 - **تعديل النسخة:** السنة، التسمية، العنوان، المكان (اختياري)، النص (اختياري؛ سطر فارغ = فقرة)، وخانة «ظاهرة في الموقع»؛ كلها بالعربية والإنجليزية. في القائمة: الغلاف، السنة، العنوان، عدد الصور من 12، شارة EN
@@ -461,7 +461,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 
 ## 9د. محتوى صفحة المنتدى (النصوص والقوائم)
 
-«منتدى إنوفست» ← «محتوى صفحة المنتدى» يفتح بطاقة **«صفحات المنتدى»** في «النصوص العامة» (القسم 6)؛ والقوائم من «القوائم» (القسم 4). كل ما يظهر في `/forum` ثنائي اللغة، والقسم الذي لا محتوى له يُخفى.
+«منتدى الإبتكار والإستثمار العربي» ← «محتوى صفحة المنتدى» يفتح بطاقة **«صفحات المنتدى»** في «النصوص العامة» (القسم 6)؛ والقوائم من «القوائم» (القسم 4). كل ما يظهر في `/forum` ثنائي اللغة، والقسم الذي لا محتوى له يُخفى.
 - **بطاقة «صفحات المنتدى»:** شعار المنتدى (عنوان «عن المنتدى»)، والنسخة الحالية (مثل «النسخة الخامسة»)، وسطر الإطلاق، ونص «عن المنتدى» (سطر فارغ يبدأ فقرة)، وعنوان ونص «التعريف بالمنتدى»،
   وعنوان ونص «الربط الاستراتيجي» (سطر لكل نقطة)، وعنوان قسم «النسخ السابقة» ونص رابط «كل النسخ»، وعنوان «الجهات المنظمة»، وعناوين القوائم وتمهيدها وفقراتها الختامية،
   و**طرق التواصل**: العنوان، والهاتف (7–15 رقماً، ويصير رابط اتصال `tel:`)، واسم حساب التواصل الاجتماعي (**نص فقط وليس رابطاً**)، والموقع الإلكتروني (`https://` فقط، رابط)، والعنوان البريدي. القيمة الفارغة لا تظهر، وإن فرغت كلها يختفي القسم.
@@ -579,13 +579,13 @@ which language you are typing.
   links accept `#section`, `/path` or `https://…`; `javascript:` and similar are refused. Leave the field empty when
   there is no link.
 - Never type passwords or secrets into any field: whatever is entered as content is public.
-- **The new names:** the company's Arabic name is now **«إنوفست القابضة»** (instead of «إنوفست هولدينغ»), and the forum is **«منتدى إنوفست»** / "Innovest Forum"
-  (instead of «منتدى إنوفست العربي» / "Innovest Arab Forum"). The English company name "Innovest Holding" did not change. The migration `RenameHoldingAndForum` replaced the two old names
+- **The new names:** the company's Arabic name is now **«إنوفست القابضة»** (instead of «إنوفست هولدينغ»), and the forum is **«منتدى الإبتكار والإستثمار العربي»** (with the hamza spelling of the forum's logo) / **"Innovest Arab Forum"**
+  (instead of «منتدى إنوفست العربي»; the English name did not change). The English company name "Innovest Holding" did not change. The migration `RenameHoldingAndForum` replaced the two old names
   in the saved site texts (pages, general texts, news, events, partners, FAQ and so on), including text you edited by hand when it contained the same old phrase. It does not touch links,
   the domain or the requests already received. **Text you type afterwards with an old name is not corrected automatically:** use the new names.
-- **The sidebar is grouped:** «نظرة عامة», «الموقع», «منتدى إنوفست», «شبكة المستثمرين الملائكيين», «البرنامج
+- **The sidebar is grouped:** «نظرة عامة», «الموقع», «منتدى الإبتكار والإستثمار العربي», «شبكة المستثمرين الملائكيين», «البرنامج
   التلفزيوني», «الأخبار», «الوارد». Click a group title to collapse or open it; the browser remembers your choice. The
-  «منتدى إنوفست» group holds: events, speakers, partners and sponsors, registrations, interest options, register benefits, **forum identity** («هوية المنتدى»), **past editions** («النسخ السابقة»)
+  «منتدى الإبتكار والإستثمار العربي» group holds: events, speakers, partners and sponsors, registrations, interest options, register benefits, **forum identity** («هوية المنتدى»), **past editions** («النسخ السابقة»)
   and **forum page content** («محتوى صفحة المنتدى», a shortcut to the «صفحات المنتدى» card of the general texts). The
   «الموقع» group holds: site pages, general texts, lists, services, impact figures, FAQ, social links, page sections («أقسام الصفحات»),
   site messages and buttons, menu and footer, brand identity, settings.
@@ -844,7 +844,7 @@ and content are checked together, as in «Uploading images»).
 
 ## 6e. Forum identity (`/Admin/ForumIdentity`)
 
-«منتدى إنوفست» → «هوية المنتدى». It changes the look of **the Forum page and every page under it** (events, speakers, partners, registration, past editions, and the event and speaker detail pages)
+«منتدى الإبتكار والإستثمار العربي» → «هوية المنتدى». It changes the look of **the Forum page and every page under it** (events, speakers, partners, registration, past editions, and the event and speaker detail pages)
 in both languages. The rest of the site keeps the Innovest identity, and the page header (navy) and footer keep Innovest colours. The "page not found" page is not part of it. An empty field = the bundled default. Innovest's own identity is in «الهوية البصرية» (section 6d).
 A change shows on the next request. The styles are served from `/forum-theme.css`, and the version number in its link changes on every save, so browsers never keep an old look.
 
@@ -934,7 +934,7 @@ cards in the lists and on the home page link to these pages.
   «Order»: lower number first. «Active» hides an item without deleting it. A new item appears first. News is listed on
   `/news` with paging, and the home page shows the first **number of news items on the home page** (General texts →
   «عناوين أقسام الصفحة الرئيسية», a whole number from 1 to 50, default 6).
-- **«الفعاليات»** (under «منتدى إنوفست»): title, **slug**, summary, **description** (the event page text), **date and
+- **«الفعاليات»** (under «منتدى الإبتكار والإستثمار العربي»): title, **slug**, summary, **description** (the event page text), **date and
   time**: start (in the event's local time), optional end and the **UTC offset** (default `+02:00`), **status** (scheduled /
   postponed / cancelled), **attendance mode** (in person / online / mixed), venue name, city and address, **online link**
   (`https://`), **«registration open»**, **event image**, and search engines. The day, month and time text fields remain
@@ -981,7 +981,7 @@ founder's photo (General texts).
 
 ## 9b. Speakers, TV guests, episodes, opportunities and sponsorship packages
 
-In the sidebar: group «منتدى إنوفست» → **المتحدثون** (speakers); group «شبكة المستثمرين الملائكيين» → **الفرص الاستثمارية**
+In the sidebar: group «منتدى الإبتكار والإستثمار العربي» → **المتحدثون** (speakers); group «شبكة المستثمرين الملائكيين» → **الفرص الاستثمارية**
 (opportunities); group «البرنامج التلفزيوني» → **الحلقات** (episodes), **الضيوف** (guests) and **باقات الرعاية** (sponsorship
 packages). These screens fill the former «coming soon» pages `/forum/speakers`, `/tv/episodes`, `/tv/guests` and
 `/angel-network/opportunities` (and the `/en` twins); every item also has its own page at its slug.
@@ -1026,7 +1026,7 @@ packages). These screens fill the former «coming soon» pages `/forum/speakers`
 
 ## 9c. Past editions (`/Admin/ForumEditions`)
 
-«منتدى إنوفست» → «النسخ السابقة». The register of the forum's past editions with their photos. They appear on the **«Past editions»** page (`/forum/editions`: every visible edition with all its photos) and, on the Forum page, in the
+«منتدى الإبتكار والإستثمار العربي» → «النسخ السابقة». The register of the forum's past editions with their photos. They appear on the **«Past editions»** page (`/forum/editions`: every visible edition with all its photos) and, on the Forum page, in the
 **«Past editions»** section, which shows the first editions in their order (how many: «أقسام الصفحات», default 3, from 1 to 12) with the cover photo only and a «view all editions» link (its text and the section heading come from «صفحات المنتدى»).
 - **Add an edition:** year (2000–2100), edition label (optional, up to 60 characters, e.g. «النسخة الرابعة») and title (required in Arabic). After adding you land on the edition's page.
 - **Edit an edition:** year, label, title, place (optional), text (optional; a blank line = a new paragraph) and the «ظاهرة في الموقع» box; all in Arabic and English. The list shows: cover, year, title, photo count out of 12, an EN chip
@@ -1041,7 +1041,7 @@ packages). These screens fill the former «coming soon» pages `/forum/speakers`
 
 ## 9d. Forum page content (texts and lists)
 
-«منتدى إنوفست» → «محتوى صفحة المنتدى» opens the **«صفحات المنتدى»** card in the general texts (section 6); the lists are under «القوائم» (section 4). Everything on `/forum` is bilingual, and a section with no content is hidden.
+«منتدى الإبتكار والإستثمار العربي» → «محتوى صفحة المنتدى» opens the **«صفحات المنتدى»** card in the general texts (section 6); the lists are under «القوائم» (section 4). Everything on `/forum` is bilingual, and a section with no content is hidden.
 - **The «صفحات المنتدى» card:** forum tagline (the heading of «about the forum»), current edition (e.g. «النسخة الخامسة»), launch line, «about the forum» text (a blank line starts a paragraph), title and text of «introducing the forum»,
   title and text of the «strategic link» (a line per point), the heading of the «past editions» section and the text of its «all editions» link, the heading «الجهات المنظمة», the headings, leads and closing paragraphs of the lists,
   and the **contact details**: title, phone (7–15 digits, becomes a `tel:` link), social account name (**text only, not a link**), website (`https://` only, a link) and postal address. An empty value is not shown, and when all are empty the section disappears.
@@ -1108,7 +1108,7 @@ per page** with paging. A badge with the **unread** count sits beside «الطل
     e-mail, phone, message.
   - **Quick registration** on the home page is as before (name, e-mail, phone, area of interest).
   Each lead also stores the consent time, the page language and the submission time. Choice lists are stored with their Arabic
-  text at submission time, so an old lead does not change if you later edit the options. The same holds for the event, package and opportunity titles stored with a lead: leads received before the rename (October 2026) keep the old name «منتدى إنوفست العربي» / "Innovest Arab Forum" or «إنوفست هولدينغ», as a record of what the visitor saw.
+  text at submission time, so an old lead does not change if you later edit the options. The same holds for the event, package and opportunity titles stored with a lead: leads received before the rename (October 2026) keep the old name «منتدى إنوفست العربي» or «إنوفست هولدينغ», as a record of what the visitor saw.
 - **Editing the form texts and options:** «النصوص العامة» → card «نماذج الطلبات» (the consent text and the side headings and
   texts of the join, sponsorship and interest forms); «القوائم» → four lists: investor types, ticket sizes, startup stages,
   funding sought (sectors come from the «sectors we serve» list). A hidden option is not offered in the form.

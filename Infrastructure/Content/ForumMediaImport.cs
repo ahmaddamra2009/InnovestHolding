@@ -58,7 +58,7 @@ public static class ForumMediaImport
 
     public static readonly EditionMedia[] Editions =
     [
-        new(2026, "منتدى إنوفست 2026",
+        new(2026, "منتدى الإبتكار والإستثمار العربي 2026",
         [
             new("photos/2026-forum-1.jpg", "صورة جماعية أمام مقر جامعة الدول العربية", "Group photo in front of the Arab League headquarters"),
             new("photos/2026-forum-2.jpg", "صورة جماعية على المسرح أمام شاشة إنوفست", "Group photo on stage at the Innovest screen"),
@@ -82,7 +82,7 @@ public static class ForumMediaImport
             new("photos/2025-tech-university-4.jpg", "الحضور في القاعة", "The audience in the auditorium"),
             new("photos/2025-tech-university-5.jpg", "مسؤولون يتجولون في المعرض", "Officials touring the exhibition"),
         ]),
-        new(2025, "منتدى إنوفست 2025",
+        new(2025, "منتدى الإبتكار والإستثمار العربي 2025",
         [
             new("photos/2025-forum-1.jpg", "صورة جماعية مسائية أمام خلفية إنوفست", "Evening group photo at the Innovest backdrop"),
             new("photos/2025-forum-2.jpg", "صورة جماعية في مقر جامعة الدول العربية", "Group photo at the Arab League headquarters"),

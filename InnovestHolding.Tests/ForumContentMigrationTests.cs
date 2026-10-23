@@ -248,8 +248,8 @@ public class ForumContentMigrationTests
     // ── T4: frozen literals ──
 
     private static readonly string[] OldNames =
-        ["هولدينغ", "منتدى إنوفست العربي", "منتدى الابتكار والاستثمار العربي", "منتدى الإبتكار والإستثمار العربي", "المنتدى العربي",
-         "Arab Forum", "ARAB FORUM", "[?]", "ملتقي ", "الإصنطاعي", "يوينو", "الأقليمية", "الإجتماعى", "الأولي ", "يُعكس",
+        // Anas 2026-10-23: the forum is «منتدى الإبتكار والإستثمار العربي» / "Innovest Arab Forum" — every other form is old.
+        ["هولدينغ", "منتدى إنوفست", "منتدى الابتكار والاستثمار العربي", "المنتدى العربي", "Innovest Forum", "INNOVEST FORUM", "[?]", "ملتقي ", "الإصنطاعي", "يوينو", "الأقليمية", "الإجتماعى", "الأولي ", "يُعكس",
          // COPY-F10 B1–B7: the PDF's hamza on these masdars — matched as STEMS, so prefixed forms («للإستثمار»,
          // «بالإبتكار», «والإقتصاد») are caught too (Hassan F10 🔵1).
          "إستثمار", "إبتكار", "إنطلاق", "إقتصاد", "إصطناع"];
@@ -268,15 +268,22 @@ public class ForumContentMigrationTests
             .Concat(AddForumContent.NamingUpdates.Select(u => u.New))
             .Where(s => s is not null);
 
+    /// <summary>The official name keeps the hamza spelling of the logo; it is the one exception to the stem check.</summary>
+    private static string WithoutOfficialName(string s) => s.Replace(RenameHoldingAndForum.ForumNameAr, "«name»", StringComparison.Ordinal);
+
     [Fact] // T4 — no literal carries an old name, a "[?]" or a corrected typo
     public void No_literal_holds_an_old_name_or_a_printed_typo()
     {
         var all = InsertedLiterals().ToList();
         Assert.True(all.Count > 250, $"{all.Count} literals searched");
-        var hits = all.SelectMany(s => OldNames.Where(o => s.Contains(o, StringComparison.Ordinal)).Select(o => $"{o} in «{s[..Math.Min(40, s.Length)]}»")).ToList();
+        var hits = all.SelectMany(s => OldNames.Where(o => WithoutOfficialName(s).Contains(o, StringComparison.Ordinal)).Select(o => $"{o} in «{s[..Math.Min(40, s.Length)]}»")).ToList();
         Assert.True(hits.Count == 0, string.Join(" ‖ ", hits));
         // The search catches prefixed forms (the negative control of 🔵1: «للإستثمار» was missed by «الإستثمار»).
         Assert.All(new[] { "للإستثمار", "بالإبتكار", "والإقتصاد", "قبل إنطلاق" }, w => Assert.Contains(OldNames, o => w.Contains(o, StringComparison.Ordinal)));
+        // ... and the exemption is the exact official name only: the stems around it are still caught.
+        Assert.Contains(OldNames, o => WithoutOfficialName(RenameHoldingAndForum.ForumNameAr + " والإستثمار").Contains(o, StringComparison.Ordinal));
+        Assert.Contains(all, s => s.Contains(RenameHoldingAndForum.ForumNameAr, StringComparison.Ordinal)); // the official name is used
+        Assert.Contains(all, s => s.Contains("Innovest Arab Forum", StringComparison.Ordinal));
         // N8 (RenameHoldingAndForum, frozen, runs BEFORE this migration) never sees F10's rows: they must arrive renamed.
         var n8 = all.SelectMany(s => RenameHoldingAndForum.Pairs.Where(p => s.Contains(p.Find, StringComparison.Ordinal))
             .Select(p => $"{p.Find} in «{s[..Math.Min(40, s.Length)]}»")).ToList();

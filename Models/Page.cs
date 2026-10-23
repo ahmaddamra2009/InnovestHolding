@@ -15,24 +15,24 @@ public class Page : ISortable
     public string Key { get; set; } = string.Empty;
 
     /// <summary>Menu label, &lt;h1&gt; and breadcrumb label.</summary>
-    [Required, MaxLength(150)]
+    [Required, MaxLength(250)]
     public string TitleAr { get; set; } = string.Empty;
 
-    [MaxLength(150)]
+    [MaxLength(250)]
     public string? TitleEn { get; set; }
 
     /// <summary>Card text (hub cards, mega-menu) and the fallback meta description.</summary>
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string SummaryAr { get; set; } = string.Empty;
 
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string? SummaryEn { get; set; }
 
     /// <summary>Lead paragraph under the title.</summary>
-    [MaxLength(2000)]
+    [MaxLength(3370)]
     public string IntroAr { get; set; } = string.Empty;
 
-    [MaxLength(2000)]
+    [MaxLength(3370)]
     public string? IntroEn { get; set; }
 
     /// <summary>Main text: plain text, a blank line starts a new paragraph.</summary>
@@ -41,22 +41,22 @@ public class Page : ISortable
     public string? BodyEn { get; set; }
 
     /// <summary>Shown when the page has no content yet (a list with no items, a page with no text).</summary>
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string EmptyTextAr { get; set; } = string.Empty;
 
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string? EmptyTextEn { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string MetaTitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? MetaTitleEn { get; set; }
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string MetaDescriptionAr { get; set; } = string.Empty;
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string? MetaDescriptionEn { get; set; }
 
     /// <summary>Listed in the header, the drawer and the footer. A hidden page stays reachable by its URL.</summary>

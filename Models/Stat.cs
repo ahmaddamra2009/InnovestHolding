@@ -6,17 +6,17 @@ public class Stat : ISortable
 {
     public int Id { get; set; }
 
-    [Required, MaxLength(100)]
+    [Required, MaxLength(170)]
     public string LabelAr { get; set; } = string.Empty;
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? LabelEn { get; set; }
 
     /// <summary>Optional shorter label for the hero counters; falls back to the label.</summary>
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? ShortLabelAr { get; set; }
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? ShortLabelEn { get; set; }
 
     public int Value { get; set; }

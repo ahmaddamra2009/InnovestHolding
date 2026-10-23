@@ -42,20 +42,20 @@ namespace InnovestHolding.Migrations
         // ── SiteContents: key, Arabic, English (NULL = neutral or no English) ──
 
         public const string AboutTextAr =
-            "تنطلق النسخة الخامسة من منتدى إنوفست في ظل تصاعد أهمية الابتكار وريادة الأعمال كركيزة أساسية للنهوض الاقتصادي وتحقيق التنمية المستدامة في العالم العربي.\n" +
+            "تنطلق النسخة الخامسة من منتدى الإبتكار والإستثمار العربي في ظل تصاعد أهمية الابتكار وريادة الأعمال كركيزة أساسية للنهوض الاقتصادي وتحقيق التنمية المستدامة في العالم العربي.\n" +
             "\n" +
             "ويواصل المنتدى مسيرته نحو تمكين الشباب، وتقديم منصة فعالة لدعم المشروعات الناشئة، من خلال حزمة متكاملة من البرامج والفعاليات التي تجمع بين التدريب، التشبيك، المعارض، التحكيم، والتحفيز على الاستثمار.\n" +
             "\n" +
-            "شباب قادرون قررت إطلاق النسخ القادمة من المؤتمر تحت اسم: (Innovest Forum – منتدى إنوفست)\n" +
+            "شباب قادرون قررت إطلاق النسخ القادمة من المؤتمر تحت اسم: (Innovest Arab Forum – منتدى الإبتكار والإستثمار العربي)\n" +
             "\n" +
             "ليكون المظلة الكبرى التي تضم كل النسخ السابقة والمستقبلية من المؤتمر، ويستهدف هذا الحدث المتميز توسيع نطاقه ليشمل دولًا عربية أخرى، مُقدِّمًا فرصًا أوسع في مجال ريادة الأعمال والاستثمار على المستوى العربي والشرق الأوسط.";
 
         public const string AboutTextEn =
-            "The fifth edition of the Innovest Forum is launched at a time when innovation and entrepreneurship are increasingly recognised as a fundamental pillar of economic advancement and sustainable development in the Arab world.\n" +
+            "The fifth edition of the Innovest Arab Forum is launched at a time when innovation and entrepreneurship are increasingly recognised as a fundamental pillar of economic advancement and sustainable development in the Arab world.\n" +
             "\n" +
             "The Forum continues its journey towards empowering young people and providing an effective platform to support emerging ventures, through an integrated package of programmes and events that combine training, networking, exhibitions, judging and the promotion of investment.\n" +
             "\n" +
-            "Qadroon Youth decided to launch the coming editions of the conference under the name: (Innovest Forum – منتدى إنوفست)\n" +
+            "Qadroon Youth decided to launch the coming editions of the conference under the name: (Innovest Arab Forum – منتدى الإبتكار والإستثمار العربي)\n" +
             "\n" +
             "It is to be the overarching umbrella for all past and future editions of the conference. This distinguished event aims to expand its reach to further Arab countries, offering wider opportunities in entrepreneurship and investment across the Arab region and the Middle East.";
 
@@ -73,9 +73,9 @@ namespace InnovestHolding.Migrations
         [
             ["forum_tagline", "نحو منظومة عربية مبتكرة للاستثمار والفرص الواعدة.", "Towards an innovative Arab ecosystem for investment and promising opportunities."],
             ["forum_edition_label", "النسخة الخامسة", "Fifth Edition"],
-            ["forum_about_lead", "شباب قادرون وإنوفست القابضة تطلقان منتدى إنوفست", "Qadroon Youth and Innovest Holding launch the Innovest Forum"],
+            ["forum_about_lead", "شباب قادرون وإنوفست القابضة تطلقان منتدى الإبتكار والإستثمار العربي", "Qadroon Youth and Innovest Holding launch the Innovest Arab Forum"],
             ["forum_about_text", AboutTextAr, AboutTextEn],
-            ["forum_positioning_title", "منتدى إنوفست", "Innovest Forum"],
+            ["forum_positioning_title", "منتدى الإبتكار والإستثمار العربي", "Innovest Arab Forum"],
             ["forum_positioning_text", PositioningTextAr, PositioningTextEn],
             ["forum_strategic_link_title", "الربط الاستراتيجي", "Strategic Link"],
             ["forum_strategic_link_text", "إنوفست يربط بين:\nالأفكار + المواهب + التمويل\nشركات ناجحة واستثمارات حقيقية",
@@ -124,18 +124,18 @@ namespace InnovestHolding.Migrations
         [
             ("TitleAr", "النسخ السابقة"),
             ("TitleEn", "Past Editions"),
-            ("SummaryAr", "محطات منتدى إنوفست منذ نسخته الأولى عام 2023."),
-            ("SummaryEn", "Milestones of the Innovest Forum since its first edition in 2023."),
-            ("IntroAr", "صور ومحطات من النسخ السابقة لمنتدى إنوفست والفعاليات المصاحبة لها."),
-            ("IntroEn", "Photos and highlights from past editions of the Innovest Forum and their side events."),
+            ("SummaryAr", "محطات منتدى الإبتكار والإستثمار العربي منذ نسخته الأولى عام 2023."),
+            ("SummaryEn", "Milestones of the Innovest Arab Forum since its first edition in 2023."),
+            ("IntroAr", "صور ومحطات من النسخ السابقة لمنتدى الإبتكار والإستثمار العربي والفعاليات المصاحبة لها."),
+            ("IntroEn", "Photos and highlights from past editions of the Innovest Arab Forum and their side events."),
             ("BodyAr", ""),
             ("BodyEn", null),
             ("EmptyTextAr", "ستُنشر النسخ السابقة قريبًا."),
             ("EmptyTextEn", "Past editions will be published soon."),
-            ("MetaTitleAr", "النسخ السابقة لمنتدى إنوفست"),
-            ("MetaTitleEn", "Past Editions of the Innovest Forum"),
-            ("MetaDescriptionAr", "تعرّف على النسخ السابقة لمنتدى إنوفست منذ 2023: مؤتمرات ريادة الأعمال والاستثمار، وملتقيات الجامعات، وقمة الشباب العربي في الأردن."),
-            ("MetaDescriptionEn", "Explore past editions of the Innovest Forum since 2023: entrepreneurship and investment conferences, university forums and the Arab youth summit in Jordan."),
+            ("MetaTitleAr", "النسخ السابقة لمنتدى الإبتكار والإستثمار العربي"),
+            ("MetaTitleEn", "Past Editions of the Innovest Arab Forum"),
+            ("MetaDescriptionAr", "تعرّف على النسخ السابقة لمنتدى الإبتكار والإستثمار العربي منذ 2023: مؤتمرات ريادة الأعمال والاستثمار، وملتقيات الجامعات، وقمة الشباب العربي في الأردن."),
+            ("MetaDescriptionEn", "Explore past editions of the Innovest Arab Forum since 2023: entrepreneurship and investment conferences, university forums and the Arab youth summit in Jordan."),
         ];
 
         public const string EditionsPageKey = "forum.editions";
@@ -265,7 +265,7 @@ namespace InnovestHolding.Migrations
             new("معرض INNOVEST للابتكار", "INNOVEST Innovation Exhibition", "cpu",
                 "منصة لعرض الابتكارات، النماذج الأولية، والتقنيات الحديثة من الشركات الناشئة، والمراكز البحثية، والمؤسسات الداعمة للابتكار.",
                 "A showcase for innovations, prototypes and new technologies from startups, research centres and institutions that support innovation."),
-            new("جوائز منتدى إنوفست", "Innovest Forum Awards", "award",
+            new("جوائز منتدى الإبتكار والإستثمار العربي", "Innovest Arab Forum Awards", "award",
                 "الجائزة العربية لريادة الأعمال والابتكار\nالجائزة العربية للمسؤولية المجتمعية للشركات\nالجائزة العربية للذكاء الاصطناعي\nجائزة أفضل شركة ناشئة\nجائزة أفضل رائد أعمال",
                 "Arab Award for Entrepreneurship and Innovation\nArab Award for Corporate Social Responsibility\nArab Award for Artificial Intelligence\nBest Startup Award\nBest Entrepreneur Award"),
         ];
@@ -329,20 +329,20 @@ namespace InnovestHolding.Migrations
             "معرض إنوفست للشركات الناشئة\nمنتدى الابتكار والاستثمار العربي\nملتقى الذكاء الاصطناعي\nمسابقة العروض التقديمية\nاجتماعات المستثمرين\nالتشبيك بين الشركات\nجلسات حكومية\nجوائز الابتكار";
         public const string CardComponentsEn =
             "Innovest Startup Expo\nInvestment Forum Event\nAI Summit\nPitch Competition\nInvestment Meetings\nBusiness Matching\nGovernment Sessions\nInnovation Awards";
-        public const string ForumFullNameAr = "منتدى إنوفست للابتكار والاستثمار";
-        public const string ForumFullNameEn = "Innovest Forum for Innovation and Investment";
+        public const string ForumFullNameAr = RenameHoldingAndForum.ForumNameAr;
+        public const string ForumFullNameEn = "Innovest Arab Forum";
 
-        /// <summary>The hub's English meta title: the full name does not fit the 60-character title rule with the
-        /// " | Innovest Holding" suffix (63), so the title carries it in this form (60 with the suffix).</summary>
-        public const string HubMetaTitleEn = "Innovest Forum: Innovation and Investment";
+        /// <summary>The hub's English meta title: the official name (38 characters with " | Innovest Holding", inside the
+        /// 60-character title rule).</summary>
+        public const string HubMetaTitleEn = ForumFullNameEn;
 
         public static readonly (string Table, string Key, string Column, string Old, string New)[] NamingUpdates =
         [
-            ("Platforms", "TitleAr = N'منتدى إنوفست'", "DescriptionAr", CardComponentsAr,
+            ("Platforms", "TitleAr = N'" + ForumFullNameAr + "'", "DescriptionAr", CardComponentsAr,
                 CardComponentsAr.Replace("منتدى الابتكار والاستثمار العربي", ForumFullNameAr, StringComparison.Ordinal)),
-            ("Platforms", "TitleAr = N'منتدى إنوفست'", "DescriptionEn", CardComponentsEn,
+            ("Platforms", "TitleAr = N'" + ForumFullNameAr + "'", "DescriptionEn", CardComponentsEn,
                 CardComponentsEn.Replace("Investment Forum Event", ForumFullNameEn, StringComparison.Ordinal)),
-            ("Pages", "[Key] = 'forum'", "MetaTitleEn", "Innovest Forum for Investment", HubMetaTitleEn),
+            ("Pages", "[Key] = 'forum'", "MetaTitleEn", "Innovest Arab Forum for Investment", HubMetaTitleEn),
         ];
 
         /// <summary>"2026-06-01T00:00:00+02:00" and the month's last day at 23:59.</summary>
@@ -358,10 +358,10 @@ namespace InnovestHolding.Migrations
 
         public static readonly EditionRow[] Editions =
         [
-            new(2026, "النسخة الرابعة", "Fourth Edition", "منتدى إنوفست 2026", "Innovest Forum 2026", "", null),
+            new(2026, "النسخة الرابعة", "Fourth Edition", "منتدى الإبتكار والإستثمار العربي 2026", "Innovest Arab Forum 2026", "", null),
             new(2025, "النسخة الرابعة", "Fourth Edition", "قمة الابتكار والتكنولوجيا للشباب العربي – الأردن 2025", "Arab Youth Innovation and Technology Summit – Jordan 2025", "الأردن", "Jordan"),
             new(2025, "النسخة الرابعة", "Fourth Edition", "ملتقى Innovest Tech University", "Innovest Tech University Forum", "", null),
-            new(2025, "النسخة الثالثة", "Third Edition", "منتدى إنوفست 2025", "Innovest Forum 2025", "", null),
+            new(2025, "النسخة الثالثة", "Third Edition", "منتدى الإبتكار والإستثمار العربي 2025", "Innovest Arab Forum 2025", "", null),
             new(2024, "النسخة الثانية", "Second Edition", "مؤتمر ريادة الأعمال والاستثمار العربي 2024", "Arab Entrepreneurship and Investment Conference 2024", "", null),
             new(2023, "النسخة الأولى", "First Edition", "مؤتمر ريادة الأعمال والتحول الرقمي 2023", "Entrepreneurship and Digital Transformation Conference 2023", "", null),
         ];
@@ -468,7 +468,7 @@ namespace InnovestHolding.Migrations
                     $"WHERE NOT EXISTS (SELECT 1 FROM ForumEditions x WHERE x.[Year] = v.Y AND x.TitleAr {Bin} = v.TA);"));
 
             // 10. Naming rule (CTO, QA O1/O2): the home forum card's components list and the hub's English meta title name
-            //     the forum «منتدى إنوفست للابتكار والاستثمار» / "Innovest Forum for Innovation and Investment". Each column is
+            //     the forum by its official name «منتدى الإبتكار والإستثمار العربي» / "Innovest Arab Forum". Each column is
             //     changed only while it still holds its seeded value (binary): an admin's edit is never overwritten.
             foreach (var (table, key, column, old, @new) in NamingUpdates)
                 sql.Add($"UPDATE {table} SET [{column}] = {L(@new)} WHERE {key} AND {Eq("[" + column + "]", old)};");

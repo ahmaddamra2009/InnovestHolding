@@ -10,10 +10,10 @@ public class NavSubItem
     [ForeignKey(nameof(NavItem))]
     public int NavItemId { get; set; }
 
-    [Required, MaxLength(100)]
+    [Required, MaxLength(170)]
     public string TitleAr { get; set; } = string.Empty;
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? TitleEn { get; set; }
 
     [Required, MaxLength(255)]

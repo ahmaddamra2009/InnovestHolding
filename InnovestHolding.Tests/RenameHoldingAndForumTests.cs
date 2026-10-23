@@ -7,6 +7,7 @@ using InnovestHolding.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace InnovestHolding.Tests;
 
@@ -24,14 +25,22 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
 
     private const string OldHolding = "هولدينغ";
     private const string OldForumAr = "منتدى إنوفست العربي";
-    private const string OldForumEn = "Arab Forum";
+    private const string NewForumAr = RenameHoldingAndForum.ForumNameAr;
+    private const string ForumEn = "Innovest Arab Forum"; // the official English name: never rewritten
 
     /// <summary>Tables the migration must never write (lead/visitor data, accounts, slug history).</summary>
     private static readonly string[] Untouchable =
         ["Registrations", "ContactMessages", "NetworkApplications", "SponsorshipEnquiries", "OpportunityInterests", "Users", "SlugRedirects"];
 
-    /// <summary>Hand-made 100-character title (NavItems.TitleAr is nvarchar(100)) holding the old word.</summary>
+    /// <summary>Hand-made 100-character title (NavItems.TitleAr was nvarchar(100)) holding the old word.</summary>
     private static readonly string NearLimit = ("إنوفست هولدينغ " + new string('ب', 100))[..100];
+
+    /// <summary>The worst case for a 100-character column: the old forum name 5 times (95) + 5 letters, exactly the old
+    /// limit; renamed in full it is 165 characters (the column is widened to 170 before the rename).</summary>
+    private static readonly string MaxForum = string.Concat(Enumerable.Repeat(OldForumAr, 5)) + new string('ب', 5);
+
+    /// <summary>A 200-character event title (Events.TitleAr was nvarchar(200)) with one old forum name: 213 after.</summary>
+    private static readonly string MaxForumTitle = OldForumAr + " " + new string('ب', 200 - OldForumAr.Length - 1);
 
     /// <summary>Admin edits and non-content data on top of the C5 state (synthetic, no real person's data).</summary>
     private static readonly string Fixture = $"""
@@ -47,6 +56,9 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         UPDATE SiteContents SET ContentAr = N'هولدينغ' WHERE SectionKey = 'org_address_locality';
         INSERT INTO NavItems (TitleAr, TitleEn, Href, SortOrder, HasDropdown, IsActive, ShowInFooter, ShowInHeader)
             VALUES (N'{NearLimit}', N'INNOVEST ARAB FORUM', N'https://example.com/هولدينغ/Innovest-Arab-Forum', 60, 0, 1, 0, 1);
+        INSERT INTO NavItems (TitleAr, TitleEn, Href, SortOrder, HasDropdown, IsActive, ShowInFooter, ShowInHeader)
+            VALUES (N'{MaxForum}', N'{MaxForum}', N'/forum', 61, 0, 1, 0, 1);
+        UPDATE Events SET TitleAr = N'{MaxForumTitle}' WHERE Id = (SELECT MAX(Id) FROM Events);
         INSERT INTO Partners (NameAr, NameEn, Url, SortOrder, IsActive, ShowOnHome, CreatedAt, UpdatedAt)
             VALUES (N'شركة القابضة الأولى', N'First Holding Co', N'https://example.com/innovest-arab-forum', 4, 1, 0, '2026-10-01T10:00:00', '2026-10-01T10:00:00');
         INSERT INTO SlugRedirects (EntityType, OldSlug, EntityId) VALUES ('event', 'innovest-arab-forum', 1);
@@ -123,6 +135,12 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         return n;
     }
 
+    /// <summary>"Table.Column = definition" of every default constraint on a bounded nvarchar …Ar/…En column.</summary>
+    private static Task<List<string>> TextDefaultsAsync(AppDbContext db) => db.Database.SqlQueryRaw<string>(
+        "SELECT OBJECT_NAME(d.parent_object_id) + '.' + c.name + ' = ' + d.definition AS [Value] FROM sys.default_constraints d " +
+        "JOIN sys.columns c ON c.object_id = d.parent_object_id AND c.column_id = d.parent_column_id " +
+        "WHERE TYPE_NAME(c.user_type_id) = 'nvarchar' AND c.max_length > 0 AND (c.name LIKE '%Ar' OR c.name LIKE '%En') ORDER BY 1").ToListAsync();
+
     private static Task<string> ContentArAsync(AppDbContext db, string key) =>
         db.SiteContents.AsNoTracking().Where(c => c.SectionKey == key).Select(c => c.ContentAr).SingleAsync();
 
@@ -142,8 +160,11 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         var englishHolding = await EnglishHoldingCountAsync(db);
         Assert.True(englishHolding >= 10, $"{englishHolding} values hold \"Innovest Holding\"");
         foreach (var table in Untouchable) Assert.True(await CountAsync(db, $"SELECT COUNT(*) AS [Value] FROM [{table}]") >= 1, table);
+        var defaults = await TextDefaultsAsync(db);
+        Assert.Equal(8, defaults.Count); // the N'' defaults of 8 widened columns (Events, MediaFiles, News)
 
         await migrator.MigrateAsync(Rename);
+        Assert.Equal(defaults, await TextDefaultsAsync(db)); // widening keeps every column default
 
         // Lead tables, Users, SlugRedirects and every non-target column (slugs, links, keys, ids, dates): identical.
         var nonTargetAfter = await AdminControlMigrationTests.DumpAsync(db, nonTarget);
@@ -158,13 +179,13 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         Assert.Equal(oldBefore, logged); // one log row per changed value
 
         // Specific rows.
-        Assert.Equal("نص كتبه المشرف: إنوفست القابضة (مجموعة القابضة) ترعى منتدى إنوفست.", await ContentArAsync(db, "about_text_2"));
-        Assert.Equal("Admin text: Innovest Holding hosts the Innovest Forum, the largest Arab forum.",
+        Assert.Equal("نص كتبه المشرف: إنوفست القابضة (مجموعة القابضة) ترعى منتدى الإبتكار والإستثمار العربي.", await ContentArAsync(db, "about_text_2"));
+        Assert.Equal("Admin text: Innovest Holding hosts the Innovest Arab Forum, the largest Arab forum.",
             await db.SiteContents.AsNoTracking().Where(c => c.SectionKey == "about_text_2").Select(c => c.ContentEn).SingleAsync());
         Assert.Equal(0, await CountAsync(db, "SELECT COUNT(*) AS [Value] FROM SiteContents WHERE ContentAr LIKE N'%الالقابضة%'"));
         // Projected: the database is at RenameHoldingAndForum, before F10's Events.DateIsMonth column.
         var ev = await db.Events.AsNoTracking().OrderBy(e => e.Id).Select(e => new { e.DescriptionAr, e.DescriptionEn }).FirstAsync();
-        Assert.Equal(("تنظمها إنوفست القابضة ضمن منتدى إنوفست.", "Organised by Innovest Holding as part of the Innovest Forum."),
+        Assert.Equal(("تنظمها إنوفست القابضة ضمن منتدى الإبتكار والإستثمار العربي.", "Organised by Innovest Holding as part of the Innovest Arab Forum."),
             (ev.DescriptionAr, ev.DescriptionEn));
         // Other organisations' names and the forum's long name are not the brand: kept in both languages (H2).
         var partners = await db.Partners.AsNoTracking().Where(p => p.Url == null && p.NameEn!.Contains("Forum")).OrderBy(p => p.SortOrder)
@@ -176,11 +197,20 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         var nav = await db.NavItems.AsNoTracking().SingleAsync(n => n.SortOrder == 60);
         Assert.Equal(NearLimit.Replace(OldHolding, "القابضة"), nav.TitleAr);
         Assert.Equal(100, nav.TitleAr.Length);
-        Assert.Equal("INNOVEST FORUM", nav.TitleEn);
+        Assert.Equal("INNOVEST ARAB FORUM", nav.TitleEn); // English is not rewritten
         Assert.Equal("https://example.com/هولدينغ/Innovest-Arab-Forum", nav.Href);
+        // Max-length values holding the longer new name: renamed in full, nothing skipped or cut (Anas: no skipped row).
+        var widest = await db.NavItems.AsNoTracking().SingleAsync(n => n.SortOrder == 61);
+        Assert.Equal(string.Concat(Enumerable.Repeat(NewForumAr, 5)) + new string('ب', 5), widest.TitleAr);
+        Assert.Equal(165, widest.TitleAr.Length);
+        Assert.Equal(widest.TitleAr, widest.TitleEn); // Arabic typed into an English column is renamed too
+        var title = await db.Events.AsNoTracking().OrderByDescending(e => e.Id).Select(e => e.TitleAr).FirstAsync();
+        Assert.Equal(MaxForumTitle.Replace(OldForumAr, NewForumAr, StringComparison.Ordinal), title);
+        Assert.Equal(213, title.Length);
         var forum = await db.Pages.AsNoTracking().SingleAsync(p => p.Key == "forum");
-        Assert.Equal(("منتدى إنوفست", "Innovest Forum"), (forum.TitleAr, forum.TitleEn));
-        Assert.StartsWith("The Innovest Forum is the largest Arab forum", forum.IntroEn);
+        Assert.Equal((NewForumAr, ForumEn), (forum.TitleAr, forum.TitleEn));
+        Assert.Equal(NewForumAr, forum.MetaTitleAr); // «… العربي للابتكار والاستثمار» does not repeat the long name
+        Assert.StartsWith("The Innovest Arab Forum is the largest Arab forum", forum.IntroEn);
         var privacy = await db.Pages.AsNoTracking().SingleAsync(p => p.Key == "privacy");
         Assert.StartsWith("كيف يتعامل موقع إنوفست القابضة", privacy.MetaDescriptionAr);
         Assert.StartsWith("How the Innovest Holding website handles", privacy.MetaDescriptionEn);
@@ -197,6 +227,8 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         await migrator.MigrateAsync(Before);
         Assert.Equal(columns.Keys.Order(), (await ColumnsAsync(db)).Keys.Order());
         Assert.Equal(before, await AdminControlMigrationTests.DumpAsync(db, columns));
+        Assert.Equal(defaults, await TextDefaultsAsync(db));
+        Assert.Equal(100, await CountAsync(db, "SELECT CHARACTER_MAXIMUM_LENGTH AS [Value] FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'NavItems' AND COLUMN_NAME = 'TitleAr'"));
 
         // Up again reaches the same state.
         await migrator.MigrateAsync(Rename);
@@ -236,8 +268,8 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
 
         // The same rename, wrongly widened to the lead snapshot columns, must make the check fail.
         await db.Database.ExecuteSqlRawAsync(
-            "UPDATE Registrations SET EventTitle = REPLACE(EventTitle COLLATE Latin1_General_100_BIN2, N'منتدى إنوفست العربي', N'منتدى إنوفست');" +
-            "UPDATE SponsorshipEnquiries SET PackageTitle = REPLACE(PackageTitle COLLATE Latin1_General_100_BIN2, N'منتدى إنوفست العربي', N'منتدى إنوفست');");
+            "UPDATE Registrations SET EventTitle = REPLACE(EventTitle COLLATE Latin1_General_100_BIN2, N'منتدى إنوفست العربي', N'منتدى الإبتكار والإستثمار العربي');" +
+            "UPDATE SponsorshipEnquiries SET PackageTitle = REPLACE(PackageTitle COLLATE Latin1_General_100_BIN2, N'منتدى إنوفست العربي', N'منتدى الإبتكار والإستثمار العربي');");
         var wrong = await AdminControlMigrationTests.DumpAsync(db, leads);
         Assert.NotEqual(before["Registrations"], wrong["Registrations"]);
         Assert.NotEqual(before["SponsorshipEnquiries"], wrong["SponsorshipEnquiries"]);
@@ -283,18 +315,64 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
             .Except(AddForumContent.NewKeys.Select(k => k[0])).Distinct().Order().ToList();
         Assert.Equal(nonText, RenameHoldingAndForum.NonTextKeys.Order().ToList());
 
-        // Pairs never grow a value; a phrase contained in another comes after it (longest first).
+        // A phrase contained in another comes after it (longest first); no replacement holds a phrase to find (a later
+        // pair never rewrites an earlier result). Growth is covered by the widening test.
         var pairs = RenameHoldingAndForum.Pairs;
-        foreach (var (find, replace) in pairs) Assert.True(replace.Length <= find.Length, find);
+        Assert.All(pairs, p => Assert.DoesNotContain(pairs, q => p.Replace.Contains(q.Find, StringComparison.Ordinal)));
         for (var i = 0; i < pairs.Length; i++)
             for (var j = 0; j < i; j++) // an earlier, shorter phrase would consume part of a later, longer one
                 Assert.False(pairs[i].Find.Contains(pairs[j].Find, StringComparison.Ordinal), $"{pairs[i].Find} must come before {pairs[j].Find}");
         var withArticle = Array.FindIndex(pairs, p => p.Find == "الهولدينغ");
         Assert.True(withArticle >= 0 && withArticle < Array.FindIndex(pairs, p => p.Find == "هولدينغ"));
         Assert.DoesNotContain(pairs, p => p.Find.Contains("Holding", StringComparison.OrdinalIgnoreCase));
+        // English is never rewritten (Anas, 2026-10-23: "Innovest Arab Forum" is the official English name).
+        Assert.All(pairs, p => Assert.Matches("^[\u0600-\u06FF ]+$", p.Find));
+        Assert.All(pairs.Where(p => p.Find.Contains("منتدى", StringComparison.Ordinal)), p => Assert.Equal(NewForumAr, p.Replace));
         // Only brand phrases (CTO decision H2/N1): no generic «المنتدى العربي» / "Arab Forum" pair.
         Assert.All(pairs, p => Assert.True(p.Find.Contains("هولدينغ") || p.Find.Contains("إنوفست") ||
                                            p.Find.Contains("Innovest", StringComparison.OrdinalIgnoreCase), p.Find));
+    }
+
+    [Fact] // Anas 2026-10-23 (no skipped rows): every bounded target column is widened, before the UPDATEs, enough for any value
+    public void Up_widens_every_bounded_target_column_enough_for_the_longer_name()
+    {
+        using var db = MigrationTests.NewContext();
+        var ops = new RenameHoldingAndForum().UpOperations;
+        var alters = ops.OfType<AlterColumnOperation>().ToList();
+        var firstSql = ops.ToList().FindIndex(o => o is SqlOperation);
+        Assert.True(firstSql > 0 && ops.Take(firstSql).All(o => o is AlterColumnOperation), "the widening runs before the rename");
+        Assert.Equal(firstSql, alters.Count);
+
+        // The bound: a value of N characters holds at most N / (shortest growing phrase) phrases, each growing by at most
+        // the largest growth. Pairs that do not grow need nothing.
+        var growing = RenameHoldingAndForum.Pairs.Where(p => p.Replace.Length > p.Find.Length).ToList();
+        Assert.NotEmpty(growing); // «منتدى إنوفست العربي» (19) → the official name (32)
+        var shortest = growing.Min(p => p.Find.Length);
+        var growth = growing.Max(p => p.Replace.Length - p.Find.Length);
+        Assert.Equal((19, 13), (shortest, growth));
+
+        var model = db.Model.GetEntityTypes().ToDictionary(e => e.GetTableName()!, e => e);
+        var expected = new List<string>();
+        foreach (var (table, cols) in RenameHoldingAndForum.Targets)
+            foreach (var col in cols)
+            {
+                var alter = alters.SingleOrDefault(a => a.Table == table && a.Name == col);
+                var now = model[table].GetProperties().Single(p => p.GetColumnName() == col).GetMaxLength();
+                if (alter is null)
+                {
+                    Assert.True(now is null, $"{table}.{col} is bounded ({now}) but not widened");
+                    continue;
+                }
+                expected.Add(table + "." + col);
+                var old = alter.OldColumn.MaxLength!.Value;
+                Assert.True(alter.MaxLength >= old + growth * (old / shortest), $"{table}.{col}: {old} -> {alter.MaxLength}");
+                Assert.True(alter.MaxLength <= 4000, $"{table}.{col}"); // stays nvarchar(n): REPLACE cannot truncate it
+                Assert.Equal(alter.MaxLength, now); // the EF model has the new length
+                Assert.Equal(alter.OldColumn.IsNullable, alter.IsNullable);
+                Assert.Equal(typeof(string), alter.ClrType);
+            }
+        Assert.Equal(expected.Order(), alters.Select(a => a.Table + "." + a.Name).Order()); // nothing else is altered
+        Assert.Equal(115, alters.Count);
     }
 
     /// <summary>The page text as a reader (and a search engine) gets it: HTML entities and JSON \u escapes decoded.</summary>
@@ -303,11 +381,11 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
 
     [Theory] // N8a-1/2, N8b-1: the rendered pages carry only the new names
     [InlineData("/", "إنوفست القابضة")]
-    [InlineData("/forum", "منتدى إنوفست")]
-    [InlineData("/forum/events", "منتدى إنوفست")]
+    [InlineData("/forum", RenameHoldingAndForum.ForumNameAr)]
+    [InlineData("/forum/events", RenameHoldingAndForum.ForumNameAr)]
     [InlineData("/en", "Innovest Holding")]
-    [InlineData("/en/forum", "Innovest Forum")]
-    [InlineData("/en/forum/events", "Innovest Forum")]
+    [InlineData("/en/forum", ForumEn)]
+    [InlineData("/en/forum/events", ForumEn)]
     public async Task Rendered_pages_show_the_new_names(string path, string expected)
     {
         var response = await f.NewClient().GetAsync(path);
@@ -317,10 +395,36 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         AssertNoOldName(path, text);
     }
 
-    private static void AssertNoOldName(string path, string text)
+    [Theory] // Anas 2026-10-23: the home forum card carries the official name (title and the components line)
+    [InlineData("/", RenameHoldingAndForum.ForumNameAr)]
+    [InlineData("/en", ForumEn)]
+    public async Task Home_forum_card_shows_the_official_name(string path, string name)
     {
-        foreach (var old in new[] { OldHolding, OldForumAr, "المنتدى العربي", OldForumEn })
-            Assert.False(text.Contains(old, StringComparison.Ordinal), $"{path} contains {old}");
+        var html = Decode(await f.NewClient().GetStringAsync(path)).Replace("\n", " ");
+        var esc = Regex.Escape(name);
+        Assert.Matches($"<article class=\"service-card[^\"]*\">(?:(?!</article>).)*<h3[^>]*>{esc}</h3>(?:(?!</article>).)*<li[^>]*>{esc}</li>", html);
+    }
+
+    /// <summary>Old forum names: «منتدى إنوفست» on its own or with «العربي» (any use), "Innovest Forum" (not followed by
+    /// " Arab"), the unofficial spelling of the long name, the generic «المنتدى العربي», and the old company word.</summary>
+    private static readonly Regex OldNames = new(
+        "هولدينغ|منتدى إنوفست|Innovest Forum(?! Arab)|INNOVEST FORUM|منتدى الابتكار والاستثمار العربي|المنتدى العربي", RegexOptions.CultureInvariant);
+
+    internal static void AssertNoOldName(string path, string text)
+    {
+        var m = OldNames.Match(text);
+        if (!m.Success) return;
+        var from = Math.Max(0, m.Index - 60);
+        Assert.Fail($"{path} contains «{m.Value}» in …{text.Substring(from, Math.Min(140, text.Length - from))}…");
+    }
+
+    [Fact] // Standing Check #6 for the page check itself: each old name IS caught, the official names are not
+    public void Old_name_check_catches_old_names_and_passes_the_official_ones()
+    {
+        foreach (var old in new[] { "منتدى إنوفست", "منتدى إنوفست العربي", "Innovest Forum", "the Innovest Forum 2025", "INNOVEST FORUM",
+                     "إنوفست هولدينغ", "منتدى الابتكار والاستثمار العربي" })
+            Assert.ThrowsAny<Xunit.Sdk.XunitException>(() => AssertNoOldName("x", "<p>" + old + "</p>"));
+        AssertNoOldName("x", "<p>" + RenameHoldingAndForum.ForumNameAr + " 2025 — Innovest Arab Forum 2025 — INNOVEST ARAB FORUM — إنوفست القابضة</p>");
     }
 
     [Fact] // SEO-N8: every sitemap URL (ar + en) carries no old name

@@ -27,10 +27,10 @@ public class MediaFile
     /// <summary>Size of the stored file.</summary>
     public int Bytes { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string AltAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? AltEn { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

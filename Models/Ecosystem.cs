@@ -26,22 +26,22 @@ public abstract class PersonProfile : IDetailEntity
     [Required, MaxLength(100)]
     public string Slug { get; set; } = string.Empty;
 
-    [Required, MaxLength(150)]
+    [Required, MaxLength(250)]
     public string NameAr { get; set; } = string.Empty;
 
-    [MaxLength(150)]
+    [MaxLength(250)]
     public string? NameEn { get; set; }
 
-    [MaxLength(150)]
+    [MaxLength(250)]
     public string JobTitleAr { get; set; } = string.Empty;
 
-    [MaxLength(150)]
+    [MaxLength(250)]
     public string? JobTitleEn { get; set; }
 
-    [MaxLength(150)]
+    [MaxLength(250)]
     public string OrganizationAr { get; set; } = string.Empty;
 
-    [MaxLength(150)]
+    [MaxLength(250)]
     public string? OrganizationEn { get; set; }
 
     public string BioAr { get; set; } = string.Empty;
@@ -57,16 +57,16 @@ public abstract class PersonProfile : IDetailEntity
     [MaxLength(500)]
     public string? XUrl { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string MetaTitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? MetaTitleEn { get; set; }
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string MetaDescriptionAr { get; set; } = string.Empty;
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string? MetaDescriptionEn { get; set; }
 
     public int SortOrder { get; set; }
@@ -79,7 +79,7 @@ public abstract class PersonProfile : IDetailEntity
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
-/// <summary>A speaker of the Innovest Forum (/forum/speakers/{slug}).</summary>
+/// <summary>A speaker of the Innovest Arab Forum (/forum/speakers/{slug}).</summary>
 public class Speaker : PersonProfile;
 
 /// <summary>A guest of the TV programme (/tv/guests/{slug}).</summary>
@@ -109,16 +109,16 @@ public class TvEpisode : IDetailEntity
 
     public int? Number { get; set; }
 
-    [Required, MaxLength(200)]
+    [Required, MaxLength(330)]
     public string TitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? TitleEn { get; set; }
 
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string SummaryAr { get; set; } = string.Empty;
 
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string? SummaryEn { get; set; }
 
     public string BodyAr { get; set; } = string.Empty;
@@ -134,16 +134,16 @@ public class TvEpisode : IDetailEntity
     public int? ThumbnailId { get; set; }
     public MediaFile? Thumbnail { get; set; }
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string MetaTitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? MetaTitleEn { get; set; }
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string MetaDescriptionAr { get; set; } = string.Empty;
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string? MetaDescriptionEn { get; set; }
 
     public int SortOrder { get; set; }
@@ -179,16 +179,16 @@ public class InvestmentOpportunity : IDetailEntity
     [Required, MaxLength(100)]
     public string Slug { get; set; } = string.Empty;
 
-    [Required, MaxLength(200)]
+    [Required, MaxLength(330)]
     public string TitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? TitleEn { get; set; }
 
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string SummaryAr { get; set; } = string.Empty;
 
-    [MaxLength(500)]
+    [MaxLength(840)]
     public string? SummaryEn { get; set; }
 
     public string BodyAr { get; set; } = string.Empty;
@@ -199,16 +199,16 @@ public class InvestmentOpportunity : IDetailEntity
     public int? SectorItemId { get; set; }
     public ContentItem? SectorItem { get; set; }
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string StageTextAr { get; set; } = string.Empty;
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? StageTextEn { get; set; }
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string AskTextAr { get; set; } = string.Empty;
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? AskTextEn { get; set; }
 
     public int? ImageId { get; set; }
@@ -217,16 +217,16 @@ public class InvestmentOpportunity : IDetailEntity
     /// <summary>Still accepting interest (shown as Open / Closed).</summary>
     public bool IsOpen { get; set; } = true;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string MetaTitleAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? MetaTitleEn { get; set; }
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string MetaDescriptionAr { get; set; } = string.Empty;
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string? MetaDescriptionEn { get; set; }
 
     public int SortOrder { get; set; }
@@ -248,24 +248,24 @@ public class SponsorshipPackage
     [Required, MaxLength(10)]
     public string Unit { get; set; } = SponsorshipUnits.Tv;
 
-    [Required, MaxLength(150)]
+    [Required, MaxLength(250)]
     public string TitleAr { get; set; } = string.Empty;
 
-    [MaxLength(150)]
+    [MaxLength(250)]
     public string? TitleEn { get; set; }
 
     /// <summary>Free text: a price or "on request".</summary>
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string PriceTextAr { get; set; } = string.Empty;
 
-    [MaxLength(100)]
+    [MaxLength(170)]
     public string? PriceTextEn { get; set; }
 
     /// <summary>One benefit per line.</summary>
-    [MaxLength(2000)]
+    [MaxLength(3370)]
     public string BenefitsAr { get; set; } = string.Empty;
 
-    [MaxLength(2000)]
+    [MaxLength(3370)]
     public string? BenefitsEn { get; set; }
 
     public int SortOrder { get; set; }

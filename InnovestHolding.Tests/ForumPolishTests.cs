@@ -154,19 +154,19 @@ public class ForumPolishTests(TestAppFactory f)
         await migrator.MigrateAsync(before);
         // The forum card as the company profile seeded it (an empty database has no platforms: insert it as seeded).
         await db.Database.ExecuteSqlRawAsync(
-            "INSERT INTO Platforms (TitleAr, TitleEn, DescriptionAr, DescriptionEn, IconSvg, SortOrder, IsActive, ShowInFooter) VALUES (N'منتدى إنوفست', N'Innovest Forum', {0}, {1}, N'', 6, 1, 1)",
-            AddForumContent.CardComponentsAr, "Admin wrote this");
-        Assert.Equal("Innovest Forum for Investment", await db.Pages.Where(p => p.Key == "forum").Select(p => p.MetaTitleEn).SingleAsync());
+            "INSERT INTO Platforms (TitleAr, TitleEn, DescriptionAr, DescriptionEn, IconSvg, SortOrder, IsActive, ShowInFooter) VALUES ({2}, N'Innovest Arab Forum', {0}, {1}, N'', 6, 1, 1)",
+            AddForumContent.CardComponentsAr, "Admin wrote this", RenameHoldingAndForum.ForumNameAr);
+        Assert.Equal("Innovest Arab Forum for Investment", await db.Pages.Where(p => p.Key == "forum").Select(p => p.MetaTitleEn).SingleAsync());
 
         await migrator.MigrateAsync(target);
-        var card = await db.Platforms.AsNoTracking().Where(p => p.TitleAr == "منتدى إنوفست").Select(p => new { p.DescriptionAr, p.DescriptionEn }).SingleAsync();
+        var card = await db.Platforms.AsNoTracking().Where(p => p.TitleAr == RenameHoldingAndForum.ForumNameAr).Select(p => new { p.DescriptionAr, p.DescriptionEn }).SingleAsync();
         Assert.Contains(AddForumContent.ForumFullNameAr, card.DescriptionAr);
         Assert.DoesNotContain("منتدى الابتكار والاستثمار العربي", card.DescriptionAr);
         Assert.Equal("Admin wrote this", card.DescriptionEn); // the admin's edit is kept
         Assert.Equal(AddForumContent.HubMetaTitleEn, await db.Pages.Where(p => p.Key == "forum").Select(p => p.MetaTitleEn).SingleAsync());
 
         await migrator.MigrateAsync(before);
-        Assert.Equal(AddForumContent.CardComponentsAr, await db.Platforms.Where(p => p.TitleAr == "منتدى إنوفست").Select(p => p.DescriptionAr).SingleAsync());
-        Assert.Equal("Innovest Forum for Investment", await db.Pages.Where(p => p.Key == "forum").Select(p => p.MetaTitleEn).SingleAsync());
+        Assert.Equal(AddForumContent.CardComponentsAr, await db.Platforms.Where(p => p.TitleAr == RenameHoldingAndForum.ForumNameAr).Select(p => p.DescriptionAr).SingleAsync());
+        Assert.Equal("Innovest Arab Forum for Investment", await db.Pages.Where(p => p.Key == "forum").Select(p => p.MetaTitleEn).SingleAsync());
     }
 }

@@ -14,16 +14,16 @@ public class ContentItem
     [Required, MaxLength(40)]
     public string Group { get; set; } = string.Empty;
 
-    [Required, MaxLength(300)]
+    [Required, MaxLength(500)]
     public string TextAr { get; set; } = string.Empty;
 
-    [MaxLength(300)]
+    [MaxLength(500)]
     public string? TextEn { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(3370)]
     public string? DescriptionAr { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(3370)]
     public string? DescriptionEn { get; set; }
 
     [MaxLength(40)]

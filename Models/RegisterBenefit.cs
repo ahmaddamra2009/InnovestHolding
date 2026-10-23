@@ -7,10 +7,10 @@ public class RegisterBenefit
 {
     public int Id { get; set; }
 
-    [Required, MaxLength(200)]
+    [Required, MaxLength(330)]
     public string TextAr { get; set; } = string.Empty;
 
-    [MaxLength(200)]
+    [MaxLength(330)]
     public string? TextEn { get; set; }
 
     public int SortOrder { get; set; }
