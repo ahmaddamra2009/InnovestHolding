@@ -230,7 +230,8 @@ select.form-control { cursor: pointer; }
 .row-editor .edit-form { padding: 12px; background: var(--admin-bg); border-radius: 10px; margin-top: 8px; }
 .pager { display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 16px; }
 .pager-info { color: var(--admin-text-muted); font-size: 0.85rem; }
-.sticky-actions { position: sticky; bottom: 0; display: flex; gap: 12px; align-items: center; padding: 14px 0; background: var(--admin-bg); z-index: 5; }
+/* flex-wrap: four buttons do not fit 375 px (QA C5-5: the bar made the page scroll sideways by 9 px). */
+.sticky-actions { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 14px 0; background: var(--admin-bg); z-index: 5; }
 .utc-time { white-space: nowrap; }
 @media (max-width: 768px) { .lang-pair { grid-template-columns: 1fr; } }
 

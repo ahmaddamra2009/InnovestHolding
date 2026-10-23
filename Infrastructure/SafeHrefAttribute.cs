@@ -18,7 +18,8 @@ public sealed class SafeHrefAttribute() : LocalizedValidationAttribute(Localizat
     {
         if (string.IsNullOrWhiteSpace(value)) return true;
         var v = value.Trim();
-        if (v.Any(char.IsControl) || v.Contains('\\')) return false;
+        // No control or Unicode format (Cf: bidi override, zero-width…) character: Yasser I-C5F-1.
+        if (v.Any(char.IsControl) || Seo.SiteUrl.HasFormatChar(v) || v.Contains('\\')) return false;
         if (v.StartsWith('#')) return true;
         if (v.StartsWith("//")) return false;
 

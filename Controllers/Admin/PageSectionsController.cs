@@ -29,26 +29,27 @@ public class PageSectionsController(AppDbContext db, ISiteContentCache cache) : 
     }
 
     [HttpPost]
-    public async Task<IActionResult> Toggle(string? id, string? section)
+    public async Task<IActionResult> Toggle(string? id, string? section, string? from)
     {
         if (Def(id, section) is not { } def) return NotFound();
         if (!def.CanHide) return BadRequest();
         var rows = await RowsAsync(id!);
         var row = rows.Single(r => r.SectionKey == def.Key);
-        if (row.IsVisible && rows.Count(r => r.IsVisible) <= 1)
+        // Visible as the page renders it (registry rows only; a fixed section is always visible): the card's rule.
+        if (row.IsVisible && rows.Count(r => PageSectionRegistry.Find(id!, r.SectionKey) is { } d && (r.IsVisible || !d.CanHide)) <= 1)
         {
             TempData["Error"] = L(MessageKeys.AdminSections.LastVisible);
-            return Back(id!, def.Key);
+            return Back(id!, def.Key, from);
         }
         row.IsVisible = !row.IsVisible;
         row.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
         TempData["Success"] = L(row.IsVisible ? MessageKeys.AdminSections.Shown : MessageKeys.AdminSections.Hidden, def.Label);
-        return Back(id!, def.Key);
+        return Back(id!, def.Key, from);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Move(string? id, string? section, int direction)
+    public async Task<IActionResult> Move(string? id, string? section, int direction, string? from)
     {
         if (Def(id, section) is not { } def || direction is not (-1 or 1)) return NotFound();
         if (!def.Movable) return BadRequest();
@@ -58,18 +59,18 @@ public class PageSectionsController(AppDbContext db, ISiteContentCache cache) : 
         var result = await MoveAsync(db.PageSections.Where(r => r.PageKey == id && movable.Contains(r.SectionKey)), rowId, direction);
         if (result is null) return NotFound();
         TempData["Success"] = L(MessageKeys.AdminSections.Moved, def.Label, result.Position, result.Count);
-        return Back(id!, def.Key);
+        return Back(id!, def.Key, from);
     }
 
     /// <summary>Sets one of the counts of <see cref="PageSectionRegistry.Limits"/> (an invalid value changes nothing).</summary>
     [HttpPost]
-    public async Task<IActionResult> SetLimit(string? key, string? value)
+    public async Task<IActionResult> SetLimit(string? key, string? value, string? from)
     {
         if (PageSectionRegistry.FindLimit(key) is not { } limit) return NotFound();
         if (PageSectionRegistry.ParseLimit(limit, value) is not { } n)
         {
             TempData["Error"] = L(MessageKeys.AdminSections.LimitInvalid, limit.Label, limit.Max);
-            return Back(limit.Page, limit.Section);
+            return Back(limit.Page, limit.Section, from);
         }
         var row = await db.SiteContents.FirstOrDefaultAsync(s => s.SectionKey == limit.Key);
         if (row is null)
@@ -82,14 +83,21 @@ public class PageSectionsController(AppDbContext db, ISiteContentCache cache) : 
         row.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
         TempData["Success"] = L(MessageKeys.Admin.ContentSaved);
-        return Back(limit.Page, limit.Section);
+        return Back(limit.Page, limit.Section, from);
     }
 
     private static SectionDef? Def(string? page, string? section) =>
         page is null ? null : PageSectionRegistry.Find(page, section);
 
-    private IActionResult Back(string page, string section) =>
-        Redirect($"/Admin/PageSections/Index/{page}#section-{section}");
+    /// <summary>The <c>from</c> value the card posts when it is embedded in Pages/Edit.</summary>
+    public const string EmbeddedFrom = "pages";
+
+    /// <summary>Back to the screen the card was on: Pages/Edit when it posted <c>from=pages</c> (QA C5-4), else this
+    /// screen. Only the literal "pages" is honoured and the page is a registry key, so this is never an open redirect.</summary>
+    private IActionResult Back(string page, string section, string? from = null) =>
+        Redirect(from == EmbeddedFrom
+            ? $"/Admin/Pages/Edit/{page}#section-{section}"
+            : $"/Admin/PageSections/Index/{page}#section-{section}");
 
     /// <summary>The page's rows, tracked; a registry section without a row (not possible after AddAdminControl) gets one.</summary>
     private async Task<List<PageSection>> RowsAsync(string page)
@@ -112,7 +120,8 @@ public class PageSectionsController(AppDbContext db, ISiteContentCache cache) : 
     /// The card of one page (also embedded by Pages/Edit, «كتل الصفحة»): its sections in render order with the admin's
     /// switch, how much content each has on the live site and the counts edited here.
     /// </summary>
-    public static async Task<PageSectionsCardVm> LoadCardAsync(AppDbContext db, ISiteContentCache cache, string pageKey, CancellationToken ct)
+    public static async Task<PageSectionsCardVm> LoadCardAsync(AppDbContext db, ISiteContentCache cache, string pageKey, CancellationToken ct,
+        bool embedded = false)
     {
         var snapshot = await cache.GetAsync(ct);
         var content = await db.SiteContents.AsNoTracking()
@@ -137,7 +146,7 @@ public class PageSectionsController(AppDbContext db, ISiteContentCache cache) : 
                 limit, limit is null ? null : PageSectionRegistry.ParseLimit(limit, content.GetValueOrDefault(limit.Key)) ?? limit.Default);
         }).ToList();
         var title = snapshot.Page(pageKey)?.TitleAr ?? pageKey;
-        return new PageSectionsCardVm(pageKey, title, SiteRoutes.PathFor(SiteRoutes.Get(pageKey), false), rows);
+        return new PageSectionsCardVm(pageKey, title, SiteRoutes.PathFor(SiteRoutes.Get(pageKey), false), rows, embedded);
     }
 
     /// <summary>

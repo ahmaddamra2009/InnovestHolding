@@ -4,10 +4,18 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "روابط التواصل الاجتماعي";
     var missing = SocialLink.Networks.Where(n => Model.All(s => s.Network != n)).ToList();
+    // At the cap the «شبكة أخرى» choice is not offered (the server refuses it: L-C5F-1).
+    var customOpen = Model.Count(s => s.Network == SocialLink.Custom) < InnovestHolding.Controllers.Admin.SocialLinksController.MaxCustom;
 }
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">إضافة شبكة</span></div>
     <p class="form-hint">شبكة معروفة (أيقونتها واسمها من الموقع) أو «شبكة أخرى» باسم وأيقونة من القائمة. الرابط يجب أن يبدأ بـ https:// والرابط الفارغ لا يظهر.</p>
+    @if (!customOpen)
+    {
+        <p class="form-hint social-custom-limit">@L[K.AdminLists.SocialCustomLimit, InnovestHolding.Controllers.Admin.SocialLinksController.MaxCustom]</p>
+    }
+    @if (customOpen || missing.Count > 0)
+    {
     <form method="post" asp-action="Create" asp-controller="SocialLinks">
         <div class="form-group">
             <label for="new-network">الشبكة</label>
@@ -16,17 +24,24 @@
                 {
                     <option value="@n">@SocialIcons.All[n].Name</option>
                 }
-                <option value="@SocialLink.Custom">شبكة أخرى…</option>
+                @if (customOpen)
+                {
+                    <option value="@SocialLink.Custom">شبكة أخرى…</option>
+                }
             </select>
         </div>
         <lang-pair label="الرابط (https://)" name-ar="Url" max="500" ltr="true" placeholder="https://" id-prefix="new-" />
-        <fieldset class="form-group" style="border:0;padding:0;margin:0;">
-            <legend class="form-hint">لـ «شبكة أخرى» فقط:</legend>
-            <div class="form-group"><label for="new-label">اسم الشبكة (يُقرأ لقارئ الشاشة)</label><input type="text" id="new-label" name="Label" class="form-control" maxlength="60"></div>
-            <partial name="~/Views/Admin/Shared/_IconPicker.cshtml" model="@(new IconPickerVm("IconKey", null, AllowNone: false))" />
-        </fieldset>
+        @if (customOpen)
+        {
+            <fieldset class="form-group" style="border:0;padding:0;margin:0;">
+                <legend class="form-hint">لـ «شبكة أخرى» فقط:</legend>
+                <div class="form-group"><label for="new-label">اسم الشبكة (يُقرأ لقارئ الشاشة)</label><input type="text" id="new-label" name="Label" class="form-control" maxlength="60"></div>
+                <partial name="~/Views/Admin/Shared/_IconPicker.cshtml" model="@(new IconPickerVm("IconKey", null, AllowNone: false))" />
+            </fieldset>
+        }
         <button type="submit" class="btn-admin btn-primary">إضافة</button>
     </form>
+    }
 </div>
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">الروابط في الفوتر وقسم التواصل (@Model.Count)</span></div>

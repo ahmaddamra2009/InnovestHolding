@@ -344,4 +344,14 @@
   <data name="Admin_SectionHidden" xml:space="preserve"><value>أُخفي «{0}» عن الموقع.</value></data>
   <data name="Admin_SectionMoved" xml:space="preserve"><value>نُقل «{0}» إلى الموضع {1} من {2}.</value></data>
   <data name="Admin_SectionLimitInvalid" xml:space="preserve"><value>«{0}»: أدخل رقماً صحيحاً من 1 إلى {1}. لم تُحفظ القيمة.</value></data>
+  <data name="Admin_SocialCustomLimit" xml:space="preserve"><value>الحد الأقصى {0} شبكات أخرى. احذف واحدة قبل إضافة غيرها.</value></data>
+  <data name="Admin_NavToggleSite" xml:space="preserve"><value>تبديل ظهور «{0}» في الموقع (القائمة والفوتر)</value></data>
+  <data name="Admin_NavToggleHeader" xml:space="preserve"><value>تبديل ظهور «{0}» في القائمة العلوية فقط</value></data>
+  <data name="Admin_PageFooterAutoOnly" xml:space="preserve"><value>الفوتر مخصّص الآن: هذا الخيار يعمل في الفوتر التلقائي فقط. روابط الفوتر المخصّص تُدار من</value></data>
+  <data name="Admin_PageFooterColumnsLink" xml:space="preserve"><value>القائمة والفوتر › أعمدة الفوتر</value></data>
+  <data name="Admin_PageUnsavedChanges" xml:space="preserve"><value>في الصفحة تعديلات لم تُحفظ وستضيع إذا تابعت. احفظ التعديلات أولاً، أو اضغط «موافق» للمتابعة دون حفظ.</value></data>
+  <data name="Admin_SectionFixed" xml:space="preserve"><value>ثابت</value></data>
+  <data name="Admin_SectionFixedHint" xml:space="preserve"><value>المحتوى الرئيسي للصفحة: يظهر دائماً ولا يُخفى.</value></data>
+  <data name="Admin_SectionVisible" xml:space="preserve"><value>ظاهر</value></data>
+  <data name="Admin_SectionsScreenTitle" xml:space="preserve"><value>أقسام الصفحات</value></data>
 </root>

@@ -9,5 +9,5 @@
         }
     }
     <button type="submit" class="@(Model.Visible ? "badge-active" : "badge-inactive")" aria-pressed="@(Model.Visible ? "true" : "false")"
-            title="تبديل ظهور «@Model.Name»" disabled="@Model.Disabled">@(Model.Visible ? "ظاهر" : "مخفي")</button>
+            title="@(Model.TitleKey is null ? $"تبديل ظهور «{Model.Name}»" : L[Model.TitleKey, Model.Name].Value)" disabled="@Model.Disabled">@(Model.Visible ? "ظاهر" : "مخفي")</button>
 </form>

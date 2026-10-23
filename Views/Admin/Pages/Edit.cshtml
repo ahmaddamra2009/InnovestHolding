@@ -7,7 +7,7 @@
     var isList = Model.Page.Kind == PageKind.List;
     var isHome = Model.Page.Key == PageKeys.Home;
 }
-<form method="post" action="/Admin/Pages/Edit/@Model.Page.Key" asp-antiforgery="true" enctype="multipart/form-data" class="content-editor">
+<form method="post" action="/Admin/Pages/Edit/@Model.Page.Key" asp-antiforgery="true" enctype="multipart/form-data" class="content-editor" id="page-form" data-unsaved="@L[K.AdminPages.UnsavedChanges]">
     @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
 
     <div class="admin-card">
@@ -55,9 +55,14 @@
                 <label for="ShowInMenu">تظهر في القائمة العلوية</label>
             </div>
             <div class="form-check" style="margin-bottom:12px;">
-                <input type="checkbox" id="ShowInFooter" name="ShowInFooter" value="true" @(i.ShowInFooter ? "checked" : "")>
+                <input type="checkbox" id="ShowInFooter" name="ShowInFooter" value="true" @(i.ShowInFooter ? "checked" : "") aria-describedby="@(Model.FooterCustomised ? "footer-auto-only" : null)">
                 <label for="ShowInFooter">تظهر في الفوتر</label>
             </div>
+            @if (Model.FooterCustomised)
+            {
+                @* Hassan C5 F6b: once the footer is customised, ShowInFooter feeds only the automatic footer. *@
+                <p class="form-hint" id="footer-auto-only" style="margin-bottom:12px;">@L[K.AdminPages.FooterAutoOnly] <a asp-controller="Nav" asp-action="Index" asp-route-tab="@NavAdminVm.FooterTab">«@L[K.AdminPages.FooterColumnsLink]»</a>.</p>
+            }
             <p class="form-hint">الصفحة المخفية من القائمة أو الفوتر تبقى متاحة برابطها ما دامت منشورة.</p>
         </div>
     }
@@ -89,6 +94,20 @@
     <partial name="~/Views/Admin/PageSections/_Card.cshtml" model="sections" />
 }
 <script>
+    // QA C5-4: a sections-card button posts its own form and reloads this page (it returns here, anchored), so
+    // unsaved edits of the page form would be lost: ask first while the form is dirty.
+    (function () {
+        const form = document.getElementById('page-form');
+        if (!form) return;
+        let dirty = false;
+        form.addEventListener('input', function () { dirty = true; });
+        form.addEventListener('change', function () { dirty = true; });
+        document.querySelectorAll('#blocks form.section-action').forEach(function (f) {
+            f.addEventListener('submit', function (e) {
+                if (dirty && !window.confirm(form.dataset.unsaved)) e.preventDefault();
+            });
+        });
+    })();
     // Live length hints for the SEO fields (a warning, never a block).
     (function () {
         const ranges = { MetaTitleAr: [30, 60], MetaTitleEn: [30, 60], MetaDescriptionAr: [70, 160], MetaDescriptionEn: [70, 160] };

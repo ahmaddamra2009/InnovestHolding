@@ -18,7 +18,7 @@ public static class SiteUrl
         normalized = "";
         if (string.IsNullOrWhiteSpace(value)) return false;
         var v = value.Trim();
-        if (v.Any(char.IsControl) || v.Contains('\\') || v.Any(char.IsWhiteSpace)) return false;
+        if (v.Any(char.IsControl) || HasFormatChar(v) || v.Contains('\\') || v.Any(char.IsWhiteSpace)) return false;
         if (!Uri.TryCreate(v, UriKind.Absolute, out var uri)) return false;
         if (uri.Scheme != Uri.UriSchemeHttps || string.IsNullOrEmpty(uri.Host)) return false;
         if (!string.IsNullOrEmpty(uri.UserInfo) || !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment)) return false;
@@ -41,10 +41,18 @@ public static class SiteUrl
             : null;
     }
 
-    /// <summary>An absolute https URL (or empty, which is allowed by the caller). No javascript:, no //host.</summary>
+    /// <summary>
+    /// A Unicode format character (category Cf: bidi overrides such as U+202E, zero-width U+200B/U+200D, the BOM, soft
+    /// hyphen…). Invisible or reordering, so a link could read differently from where it goes (Yasser I-C5F-1).
+    /// </summary>
+    public static bool HasFormatChar(string value) =>
+        value.Any(c => char.GetUnicodeCategory(c) == System.Globalization.UnicodeCategory.Format);
+
+    /// <summary>An absolute https URL (or empty, which is allowed by the caller). No javascript:, no //host, no control
+    /// or format (Cf) character anywhere.</summary>
     public static bool IsHttpsUrl(string? value) =>
         !string.IsNullOrWhiteSpace(value)
-        && !value.Any(char.IsControl) && !value.Contains('\\')
+        && !value.Any(char.IsControl) && !HasFormatChar(value) && !value.Contains('\\')
         && Uri.TryCreate(value.Trim(), UriKind.Absolute, out var uri)
         && uri.Scheme == Uri.UriSchemeHttps && !string.IsNullOrEmpty(uri.Host) && string.IsNullOrEmpty(uri.UserInfo);
 

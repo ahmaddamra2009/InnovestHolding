@@ -1,7 +1,9 @@
 @model ImageFieldsInput
 @* An image field of an admin form (the form must be enctype="multipart/form-data"). ViewData["ImageLabel"] names the
-   field, ViewData["ImagePrefix"] makes the ids unique when one page repeats the field (inline list forms). *@
+   field, ViewData["ImagePrefix"] makes the ids unique when one page repeats the field (inline list forms),
+   ViewData["ImageNoAlt"] = true drops the alt pair for an image no page draws (SiteImage.HasAlt). *@
 @{
+    var noAlt = ViewData["ImageNoAlt"] is true;
     var label = ViewData["ImageLabel"] as string ?? "الصورة";
     var prefix = ViewData["ImagePrefix"] as string ?? "";
     var logo = ViewData["ImageUse"] as string == "logo";
@@ -26,5 +28,8 @@
             <span class="field-error">@error</span>
         }
     </div>
-    <lang-pair label="النص البديل (وصف الصورة لقارئ الشاشة — فارغ = العنوان)" name-ar="ImageAltAr" name-en="ImageAltEn" value-ar="@Model.ImageAltAr" value-en="@Model.ImageAltEn" max="200" id-prefix="@prefix" />
+    @if (!noAlt)
+    {
+        <lang-pair label="النص البديل (وصف الصورة لقارئ الشاشة — فارغ = العنوان)" name-ar="ImageAltAr" name-en="ImageAltEn" value-ar="@Model.ImageAltAr" value-en="@Model.ImageAltEn" max="200" id-prefix="@prefix" />
+    }
 </fieldset>

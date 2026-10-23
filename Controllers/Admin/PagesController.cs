@@ -37,7 +37,8 @@ public class PagesController(AppDbContext db, ISiteContentCache cache) : AdminCo
     /// <summary>The edit model plus the page's sections card (embedded below the form: its own POST forms).</summary>
     private async Task<PageEditVm> VmAsync(SitePage page, PageEditInput input, bool isNew) =>
         new(page, input, isNew, PageSectionRegistry.Of(page.Key).Count == 0 ? null
-            : await PageSectionsController.LoadCardAsync(db, cache, page.Key, HttpContext.RequestAborted));
+                : await PageSectionsController.LoadCardAsync(db, cache, page.Key, HttpContext.RequestAborted, embedded: true),
+            await db.FooterColumns.AnyAsync(HttpContext.RequestAborted));
 
     [HttpPost]
     public async Task<IActionResult> Edit(string? id, PageEditInput input)
@@ -181,4 +182,7 @@ public sealed record PagesIndexVm(IReadOnlyDictionary<string, Page> Rows)
 }
 
 /// <param name="Sections">The page's «كتل الصفحة» card (Admin/PageSections), null for a page without sections.</param>
-public sealed record PageEditVm(SitePage Page, PageEditInput Input, bool IsNew, PageSectionsCardVm? Sections = null);
+/// <param name="FooterCustomised">FooterColumns has rows: «تظهر في الفوتر» then affects only the automatic footer, and
+/// the form says so (Hassan C5 F6b).</param>
+public sealed record PageEditVm(SitePage Page, PageEditInput Input, bool IsNew, PageSectionsCardVm? Sections = null,
+    bool FooterCustomised = false);

@@ -344,4 +344,14 @@
   <data name="Admin_SectionHidden" xml:space="preserve"><value>“{0}” is now hidden from the site.</value></data>
   <data name="Admin_SectionMoved" xml:space="preserve"><value>“{0}” moved to position {1} of {2}.</value></data>
   <data name="Admin_SectionLimitInvalid" xml:space="preserve"><value>“{0}”: enter a whole number from 1 to {1}. The value was not saved.</value></data>
+  <data name="Admin_SocialCustomLimit" xml:space="preserve"><value>At most {0} custom networks. Delete one before adding another.</value></data>
+  <data name="Admin_NavToggleSite" xml:space="preserve"><value>Toggle “{0}” on the site (menu and footer)</value></data>
+  <data name="Admin_NavToggleHeader" xml:space="preserve"><value>Toggle “{0}” in the top menu only</value></data>
+  <data name="Admin_PageFooterAutoOnly" xml:space="preserve"><value>The footer is customised: this option applies to the automatic footer only. The custom footer's links are managed in</value></data>
+  <data name="Admin_PageFooterColumnsLink" xml:space="preserve"><value>Menu and footer › Footer columns</value></data>
+  <data name="Admin_PageUnsavedChanges" xml:space="preserve"><value>This page has unsaved changes that will be lost if you continue. Save them first, or press OK to continue without saving.</value></data>
+  <data name="Admin_SectionFixed" xml:space="preserve"><value>Fixed</value></data>
+  <data name="Admin_SectionFixedHint" xml:space="preserve"><value>The page's main content: always shown, cannot be hidden.</value></data>
+  <data name="Admin_SectionVisible" xml:space="preserve"><value>Shown</value></data>
+  <data name="Admin_SectionsScreenTitle" xml:space="preserve"><value>Page sections</value></data>
 </root>

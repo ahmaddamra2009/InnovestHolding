@@ -54,8 +54,10 @@ public class SiteTextsController(AppDbContext db) : AdminControllerBase
         return new SiteTextsViewModel(tab, q, fields, counts);
     }
 
+    /// <summary>The key, the texts, and the field's group (its id and its tab name, e.g. «صفحة 404 وصفحة الخطأ»: QA C5-8).</summary>
     private static bool Matches(SiteTextField f, string q) =>
-        new[] { f.Text.ResxKey, f.DefaultAr, f.DefaultEn, f.ValueAr, f.ValueEn }
+        new[] { f.Text.ResxKey, f.DefaultAr, f.DefaultEn, f.ValueAr, f.ValueEn, f.Text.Group,
+                PublicTexts.Groups.FirstOrDefault(g => g.Id == f.Text.Group).Title }
             .Any(s => s?.Contains(q, StringComparison.OrdinalIgnoreCase) == true);
 
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim().Replace("\r\n", " ").Replace('\n', ' ').Replace('\r', ' ');

@@ -12,7 +12,7 @@
             <form method="post" asp-action="SiteImage" asp-controller="Content" enctype="multipart/form-data" class="row-editor" id="image-@image.Key">
                 <input type="hidden" name="Key" value="@image.Key">
                 <p class="field-hint">@image.Hint</p>
-                @{ ViewData["ImageLabel"] = image.Label; ViewData["ImagePrefix"] = image.Key + "-"; ViewData["ImageUse"] = image.IsLogo ? "logo" : null; }
+                @{ ViewData["ImageLabel"] = image.Label; ViewData["ImagePrefix"] = image.Key + "-"; ViewData["ImageUse"] = image.IsLogo ? "logo" : null; ViewData["ImageNoAlt"] = !image.HasAlt; }
                 <partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="input" view-data="ViewData" />
                 <button type="submit" class="btn-admin btn-primary">حفظ الصورة</button>
             </form>
