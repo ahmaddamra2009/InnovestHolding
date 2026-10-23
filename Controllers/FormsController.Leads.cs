@@ -1,3 +1,4 @@
+using InnovestHolding.Infrastructure.Site;
 using InnovestHolding.Data;
 using InnovestHolding.Infrastructure;
 using InnovestHolding.Infrastructure.Content;
@@ -76,6 +77,7 @@ public partial class FormsController
 
     [HttpPost("/forms/forum-registration")]
     [HttpPost("/en/forms/forum-registration")]
+    [PublishedFormPage(PageKeys.ForumRegistration, "form")]
     [JsonFormEndpoint]
     [EnableRateLimiting(RateLimitPolicies.PublicForm)]
     [RequestSizeLimit(InputLimits.PublicBodyBytes)]
@@ -124,6 +126,7 @@ public partial class FormsController
 
     [HttpPost("/forms/join")]
     [HttpPost("/en/forms/join")]
+    [PublishedFormPage(PageKeys.NetworkJoin, "form")]
     [JsonFormEndpoint]
     [EnableRateLimiting(RateLimitPolicies.PublicForm)]
     [RequestSizeLimit(InputLimits.PublicBodyBytes)]
@@ -202,6 +205,7 @@ public partial class FormsController
 
     [HttpPost("/forms/sponsorship")]
     [HttpPost("/en/forms/sponsorship")]
+    [PublishedFormPage(PageKeys.TvSponsorship, "form")]
     [JsonFormEndpoint]
     [EnableRateLimiting(RateLimitPolicies.PublicForm)]
     [RequestSizeLimit(InputLimits.PublicBodyBytes)]
@@ -240,6 +244,7 @@ public partial class FormsController
 
     [HttpPost("/forms/opportunity-interest")]
     [HttpPost("/en/forms/opportunity-interest")]
+    [PublishedFormPage(PageKeys.NetworkOpportunities, "interest_form")]
     [JsonFormEndpoint]
     [EnableRateLimiting(RateLimitPolicies.PublicForm)]
     [RequestSizeLimit(InputLimits.PublicBodyBytes)]

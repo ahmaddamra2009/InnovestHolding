@@ -36,14 +36,17 @@
 </div>
 <div class="admin-card">
     <div class="admin-card-header"><span class="admin-card-title">الشركاء الحاليون (@Model.Count)</span></div>
-    <table class="admin-table">
-        <thead><tr><th>#</th><th>الشعار</th><th>الاسم</th><th>EN</th><th>الظهور</th><th>إجراءات</th></tr></thead>
+    <p class="form-hint">ترتيب واحد يحكم شريط الشركاء في الرئيسية وصفحة شركاء المنتدى؛ ▲▼ تبادل الشريك مع جاره في المجموعة نفسها.</p>
+    <div class="table-scroll">
+    <table class="admin-table" style="min-width:680px;">
+        <thead><tr><th>#</th><th>الشعار</th><th>الاسم</th><th>EN</th><th>الظهور</th><th>الترتيب في مجموعته</th><th>إجراءات</th></tr></thead>
         <tbody>
         @foreach (var item in Model)
         {
             var current = MediaRefs.Of(item.Logo);
-            <tr>
-                <td>@item.SortOrder</td>
+            var peers = Model.Where(p => p.PartnerGroupId == item.PartnerGroupId).ToList();
+            <tr id="row-@item.Id" tabindex="-1" class="@(item.IsActive ? "" : "row-hidden")">
+                <td>@(Model.IndexOf(item) + 1)</td>
                 <td>@if (current is not null) { <img class="admin-thumb" src="@current.Url" alt=""> }</td>
                 <td>
                     <strong>@item.NameAr</strong>
@@ -63,12 +66,14 @@
                     </details>
                 </td>
                 <td><partial name="~/Views/Admin/Shared/_EnChip.cshtml" model="@(!string.IsNullOrWhiteSpace(item.NameEn))" /></td>
-                <td><form method="post" asp-action="Toggle" asp-controller="Partners" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="@(item.IsActive ? "badge-active" : "badge-inactive")" style="border:0;cursor:pointer;" title="تبديل الظهور">@(item.IsActive ? "ظاهر" : "مخفي")</button></form></td>
+                <td><partial name="~/Views/Admin/Shared/_VisibleSwitch.cshtml" model="@(new VisibleSwitchVm("Partners", item.Id.ToString(), item.NameAr, item.IsActive))" /></td>
+                <td><partial name="~/Views/Admin/Shared/_ReorderCell.cshtml" model="@(new ReorderCellVm("Partners", item.Id.ToString(), item.NameAr, peers.IndexOf(item) + 1, peers.Count))" /></td>
                 <td><form method="post" asp-action="Delete" asp-controller="Partners" style="display:inline;"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا الشريك وشعاره؟')">حذف</button></form></td>
             </tr>
         }
         </tbody>
     </table>
+    </div>
 </div>
 <div class="admin-card" id="groups">
     <div class="admin-card-header"><span class="admin-card-title">مجموعات الشركاء (عناوين صفحة شركاء المنتدى: الفئات أو مستويات الرعاية)</span></div>

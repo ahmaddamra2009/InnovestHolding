@@ -2,6 +2,7 @@ using InnovestHolding.Data;
 using InnovestHolding.Infrastructure;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Localization;
+using InnovestHolding.Infrastructure.Site;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Public;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,7 @@ public partial class FormsController(
     [HttpPost("/forms/register")]
     [HttpPost("/en/forms/register")]
     [HttpPost("/Home/Register")]
+    [PublishedFormPage(PageKeys.Home, "register")]
     [JsonFormEndpoint]
     [EnableRateLimiting(RateLimitPolicies.PublicForm)]
     [RequestSizeLimit(InputLimits.PublicBodyBytes)]
@@ -70,6 +72,7 @@ public partial class FormsController(
     [HttpPost("/forms/contact")]
     [HttpPost("/en/forms/contact")]
     [HttpPost("/Home/Contact")]
+    [PublishedFormPage(PageKeys.Home, "contact", AlsoPageKey = PageKeys.Contact, AlsoSectionKey = "contact", LegacyPath = "/Home/Contact")]
     [JsonFormEndpoint]
     [EnableRateLimiting(RateLimitPolicies.PublicForm)]
     [RequestSizeLimit(InputLimits.PublicBodyBytes)]

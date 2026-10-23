@@ -57,6 +57,7 @@ public static class PageKeys
     public const string TvSponsorship = "tv.sponsorship";
     public const string News = "news";
     public const string Contact = "contact";
+    public const string Privacy = "privacy";
 }
 
 /// <summary>
@@ -89,6 +90,7 @@ public static class SiteRoutes
         new(PageKeys.TvSponsorship, "/tv/sponsorship", PageKeys.Tv, "Tv", "Sponsorship", PageKind.Form),
         new(PageKeys.News, "/news", PageKeys.Home, "Newsroom", "Index", PageKind.List),
         new(PageKeys.Contact, "/contact", PageKeys.Home, "SitePages", "Contact", PageKind.Form),
+        new(PageKeys.Privacy, "/privacy", PageKeys.Home, "SitePages", "Privacy", PageKind.Static),
     ];
 
     public static readonly IReadOnlyList<DetailRoute> Details =

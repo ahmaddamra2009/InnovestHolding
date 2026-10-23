@@ -5,8 +5,9 @@
     var i = Model.Input;
     ViewData["Title"] = "تعديل صفحة: " + (string.IsNullOrWhiteSpace(i.TitleAr) ? Model.Page.Key : i.TitleAr);
     var isList = Model.Page.Kind == PageKind.List;
+    var isHome = Model.Page.Key == PageKeys.Home;
 }
-<form method="post" action="/Admin/Pages/Edit/@Model.Page.Key" asp-antiforgery="true" enctype="multipart/form-data" class="content-editor">
+<form method="post" action="/Admin/Pages/Edit/@Model.Page.Key" asp-antiforgery="true" enctype="multipart/form-data" class="content-editor" id="page-form" data-unsaved="@L[K.AdminPages.UnsavedChanges]">
     @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
 
     <div class="admin-card">
@@ -15,18 +16,56 @@
             <span class="page-key">@Model.Page.Key — @SiteRoutes.PathFor(Model.Page, false) · @SiteRoutes.PathFor(Model.Page, true)</span>
         </div>
         <lang-pair label="عنوان الصفحة (القائمة والعنوان الرئيسي ومسار التنقل)" name-ar="TitleAr" name-en="TitleEn" value-ar="@i.TitleAr" value-en="@i.TitleEn" max="150" required="true" />
-        <lang-pair label="الملخص (بطاقات الصفحة في المنظومة والقائمة)" name-ar="SummaryAr" name-en="SummaryEn" value-ar="@i.SummaryAr" value-en="@i.SummaryEn" max="500" rows="2" />
-        <lang-pair label="النص التمهيدي (تحت العنوان)" name-ar="IntroAr" name-en="IntroEn" value-ar="@i.IntroAr" value-en="@i.IntroEn" max="2000" rows="3" />
-        <lang-pair label="النص الرئيسي (سطر فارغ = فقرة جديدة)" name-ar="BodyAr" name-en="BodyEn" value-ar="@i.BodyAr" value-en="@i.BodyEn" max="20000" rows="6" />
-        <lang-pair label="@(isList ? "نص «قريباً» (يظهر ما دامت القائمة فارغة)" : "نص «قريباً» (يظهر ما دامت الصفحة بلا محتوى)")" name-ar="EmptyTextAr" name-en="EmptyTextEn" value-ar="@i.EmptyTextAr" value-en="@i.EmptyTextEn" max="500" rows="2" />
-        @if (Model.Page.Key != PageKeys.Home)
+        @if (isHome)
         {
-            <div class="form-check" style="margin-bottom:12px;">
-                <input type="checkbox" id="ShowInMenu" name="ShowInMenu" value="true" @(i.ShowInMenu ? "checked" : "")>
-                <label for="ShowInMenu">تظهر في القائمة الرئيسية والفوتر</label>
+            <p class="form-hint">نصوص الصفحة الرئيسية وأقسامها تُعدّل من «النصوص العامة» و«أقسام الصفحات»؛ هنا العنوان وبيانات محركات البحث والصورة فقط. الصفحة الرئيسية منشورة دائماً وتظهر في القائمة دائماً.</p>
+        }
+        else
+        {
+            <lang-pair label="الملخص (بطاقات الصفحة في المنظومة والقائمة)" name-ar="SummaryAr" name-en="SummaryEn" value-ar="@i.SummaryAr" value-en="@i.SummaryEn" max="500" rows="2" />
+            <lang-pair label="النص التمهيدي (تحت العنوان)" name-ar="IntroAr" name-en="IntroEn" value-ar="@i.IntroAr" value-en="@i.IntroEn" max="2000" rows="3" />
+            <lang-pair label="النص الرئيسي (سطر فارغ = فقرة جديدة)" name-ar="BodyAr" name-en="BodyEn" value-ar="@i.BodyAr" value-en="@i.BodyEn" max="20000" rows="6" />
+            <lang-pair label="@(isList ? "نص «قريباً» (يظهر ما دامت القائمة فارغة)" : "نص «قريباً» (يظهر ما دامت الصفحة بلا محتوى)")" name-ar="EmptyTextAr" name-en="EmptyTextEn" value-ar="@i.EmptyTextAr" value-en="@i.EmptyTextEn" max="500" rows="2" />
+            <div class="form-group">
+                <label for="EmptyActionPage">زر «قريباً» يفتح الصفحة</label>
+                <select id="EmptyActionPage" name="EmptyActionPage" class="form-control @(ViewData.ModelState["EmptyActionPage"]?.Errors.Count > 0 ? "is-invalid" : null)">
+                    <option value="" selected="@string.IsNullOrEmpty(i.EmptyActionPage)">الافتراضي</option>
+                    @foreach (var target in SiteRoutes.All.Where(p => p.Key != Model.Page.Key))
+                    {
+                        <option value="@target.Key" selected="@(i.EmptyActionPage == target.Key)">@SiteRoutes.PathFor(target, false) (@target.Key)</option>
+                    }
+                </select>
+                @Html.ValidationMessage("EmptyActionPage", new { @class = "field-error" })
+                <p class="form-hint">يظهر الزر مع نص «قريباً» حين تكون الصفحة بلا محتوى. «الافتراضي» = الصفحة التي يختارها الموقع لهذه الصفحة.</p>
             </div>
         }
     </div>
+
+    @if (!isHome)
+    {
+        <div class="admin-card">
+            <div class="admin-card-header"><span class="admin-card-title">النشر والظهور</span></div>
+            <div class="form-check" style="margin-bottom:8px;">
+                <input type="checkbox" id="IsPublished" name="IsPublished" value="true" @(i.IsPublished ? "checked" : "")>
+                <label for="IsPublished">منشورة</label>
+            </div>
+            <p class="form-hint" style="margin-bottom:12px;">إلغاء النشر يجعل الصفحة وكل الصفحات التابعة لها تُظهر صفحة «غير موجودة» (404)، ويخرجها من القوائم والفوتر والبطاقات والروابط وخريطة الموقع.</p>
+            <div class="form-check" style="margin-bottom:8px;">
+                <input type="checkbox" id="ShowInMenu" name="ShowInMenu" value="true" @(i.ShowInMenu ? "checked" : "")>
+                <label for="ShowInMenu">تظهر في القائمة العلوية</label>
+            </div>
+            <div class="form-check" style="margin-bottom:12px;">
+                <input type="checkbox" id="ShowInFooter" name="ShowInFooter" value="true" @(i.ShowInFooter ? "checked" : "") aria-describedby="@(Model.FooterCustomised ? "footer-auto-only" : null)">
+                <label for="ShowInFooter">تظهر في الفوتر</label>
+            </div>
+            @if (Model.FooterCustomised)
+            {
+                @* Hassan C5 F6b: once the footer is customised, ShowInFooter feeds only the automatic footer. *@
+                <p class="form-hint" id="footer-auto-only" style="margin-bottom:12px;">@L[K.AdminPages.FooterAutoOnly] <a asp-controller="Nav" asp-action="Index" asp-route-tab="@NavAdminVm.FooterTab">«@L[K.AdminPages.FooterColumnsLink]»</a>.</p>
+            }
+            <p class="form-hint">الصفحة المخفية من القائمة أو الفوتر تبقى متاحة برابطها ما دامت منشورة.</p>
+        </div>
+    }
 
     <div class="admin-card">
         <div class="admin-card-header"><span class="admin-card-title">صورة الصفحة</span></div>
@@ -49,7 +88,26 @@
         <a href="@SiteRoutes.PathFor(Model.Page, true)" target="_blank" rel="noopener" class="btn-admin btn-secondary">معاينة الإنجليزية</a>
     </div>
 </form>
+@if (Model.Sections is { } sections)
+{
+    @* «كتل الصفحة» (Admin/PageSections): outside the form above — the card's buttons are their own POST forms. *@
+    <partial name="~/Views/Admin/PageSections/_Card.cshtml" model="sections" />
+}
 <script>
+    // QA C5-4: a sections-card button posts its own form and reloads this page (it returns here, anchored), so
+    // unsaved edits of the page form would be lost: ask first while the form is dirty.
+    (function () {
+        const form = document.getElementById('page-form');
+        if (!form) return;
+        let dirty = false;
+        form.addEventListener('input', function () { dirty = true; });
+        form.addEventListener('change', function () { dirty = true; });
+        document.querySelectorAll('#blocks form.section-action').forEach(function (f) {
+            f.addEventListener('submit', function (e) {
+                if (dirty && !window.confirm(form.dataset.unsaved)) e.preventDefault();
+            });
+        });
+    })();
     // Live length hints for the SEO fields (a warning, never a block).
     (function () {
         const ranges = { MetaTitleAr: [30, 60], MetaTitleEn: [30, 60], MetaDescriptionAr: [70, 160], MetaDescriptionEn: [70, 160] };

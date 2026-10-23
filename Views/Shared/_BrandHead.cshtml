@@ -1,0 +1,19 @@
+@model BrandHeadVm
+    <meta name="theme-color" content="@Model.ThemeColor">
+    <link rel="icon" href="~/favicon.ico" sizes="any">
+@if (Model.Favicon is { } icon)
+{
+    <link rel="icon" href="@icon.Url" type="image/png" sizes="@(icon.Width)x@(icon.Height)">
+}
+else
+{
+    <link rel="icon" href="~/assets/brand/favicon.svg" asp-append-version="true" type="image/svg+xml">
+}
+@if (Model.AppleTouchIcon is { } apple)
+{
+    <link rel="apple-touch-icon" href="@apple.Url">
+}
+else
+{
+    <link rel="apple-touch-icon" href="~/assets/brand/apple-touch-icon.png" asp-append-version="true">
+}

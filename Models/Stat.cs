@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InnovestHolding.Models;
 
-public class Stat
+public class Stat : ISortable
 {
     public int Id { get; set; }
 
@@ -28,4 +28,7 @@ public class Stat
     public string IconSvg { get; set; } = string.Empty;
 
     public int SortOrder { get; set; }
+
+    /// <summary>Shown on the public site (hero figures and the impact section).</summary>
+    public bool IsActive { get; set; } = true;
 }

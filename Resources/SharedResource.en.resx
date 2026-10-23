@@ -74,8 +74,6 @@
   <data name="Field_NameEn" xml:space="preserve"><value>Name (English)</value></data>
   <data name="Field_Label" xml:space="preserve"><value>Label</value></data>
   <data name="Field_LabelEn" xml:space="preserve"><value>Label (English)</value></data>
-  <data name="Field_ShortTitle" xml:space="preserve"><value>Short name</value></data>
-  <data name="Field_ShortTitleEn" xml:space="preserve"><value>Short name (English)</value></data>
   <data name="Field_ShortLabel" xml:space="preserve"><value>Short label</value></data>
   <data name="Field_ShortLabelEn" xml:space="preserve"><value>Short label (English)</value></data>
   <data name="Field_Text" xml:space="preserve"><value>Text</value></data>
@@ -93,9 +91,6 @@
   <data name="Admin_NavAdded" xml:space="preserve"><value>Item added</value></data>
   <data name="Admin_NavUpdated" xml:space="preserve"><value>Item updated</value></data>
   <data name="Admin_NavDeleted" xml:space="preserve"><value>Item deleted</value></data>
-  <data name="Admin_SubItemAdded" xml:space="preserve"><value>Sub-item added</value></data>
-  <data name="Admin_SubItemUpdated" xml:space="preserve"><value>Sub-item updated</value></data>
-  <data name="Admin_SubItemDeleted" xml:space="preserve"><value>Sub-item deleted</value></data>
   <data name="Admin_PartnerAdded" xml:space="preserve"><value>Partner added</value></data>
   <data name="Admin_PartnerUpdated" xml:space="preserve"><value>Partner updated</value></data>
   <data name="Admin_PartnerDeleted" xml:space="preserve"><value>Partner deleted</value></data>
@@ -182,6 +177,8 @@
   <data name="Msg_SlugInvalid" xml:space="preserve"><value>The slug may only contain lower-case letters, digits and single hyphens (e.g. forum-2026)</value></data>
   <data name="Msg_SlugTaken" xml:space="preserve"><value>This slug is (or was) used by another item — choose another</value></data>
   <data name="Msg_UtcOffset" xml:space="preserve"><value>The UTC offset must look like +02:00 or -05:30</value></data>
+  <data name="Msg_ContentPhone" xml:space="preserve"><value>{0}: the phone number is not valid — digits, spaces and dashes only, an optional leading +, 7 to 15 digits</value></data>
+  <data name="Msg_ContentCountryCode" xml:space="preserve"><value>{0}: the country code must be two Latin letters per ISO 3166 (e.g. EG)</value></data>
   <data name="Msg_DateRequired" xml:space="preserve"><value>Enter the start date, or the day and month as text</value></data>
   <data name="Msg_EndBeforeStart" xml:space="preserve"><value>The end must be after the start</value></data>
   <data name="Field_Slug" xml:space="preserve"><value>Slug</value></data>
@@ -199,6 +196,11 @@
   <data name="Admin_GroupUpdated" xml:space="preserve"><value>Group updated</value></data>
   <data name="Admin_GroupDeleted" xml:space="preserve"><value>Group deleted (its partners now have no group)</value></data>
   <data name="Admin_PhotoSaved" xml:space="preserve"><value>Image saved</value></data>
+  <data name="Admin_BrandSaved" xml:space="preserve"><value>“{0}” saved. The browser may take a while to show the new icon.</value></data>
+  <data name="Admin_BrandReverted" xml:space="preserve"><value>“{0}” is back to the bundled default file.</value></data>
+  <data name="Admin_ThemeColorInvalid" xml:space="preserve"><value>Invalid colour: write it as #RRGGBB (e.g. #111145), or leave it empty for the default colour.</value></data>
+  <data name="Admin_ThemeColorSaved" xml:space="preserve"><value>Browser colour saved.</value></data>
+  <data name="Admin_LoginSiteName" xml:space="preserve"><value>Innovest Holding</value></data>
   <data name="Ui_EventDate" xml:space="preserve"><value>Date</value></data>
   <data name="Ui_EventTime" xml:space="preserve"><value>Time</value></data>
   <data name="Ui_EventVenue" xml:space="preserve"><value>Venue</value></data>
@@ -233,6 +235,12 @@
   <data name="Ui_SponsorshipPackages" xml:space="preserve"><value>Sponsorship packages</value></data>
   <data name="Ui_ProfilesAria" xml:space="preserve"><value>{0} profiles</value></data>
   <data name="Admin_SectorInUse" xml:space="preserve"><value>This sector is used by an investment opportunity — deactivate it instead of deleting it.</value></data>
+  <data name="Admin_SiteTextsSaved" xml:space="preserve"><value>The site texts were saved</value></data>
+  <data name="Admin_SiteTextReset" xml:space="preserve"><value>The text is back to its default</value></data>
+  <data name="Admin_SiteTextGroupReset" xml:space="preserve"><value>Every text of the group is back to its default</value></data>
+  <data name="Admin_SiteTextPlaceholders" xml:space="preserve"><value>"{0}" ({1}): the text must contain {2} as the default does, and nothing else between {{ }}</value></data>
+  <data name="Admin_SiteTextMarkup" xml:space="preserve"><value>"{0}" ({1}): links and tags (and javascript: or data:) are not allowed in this field</value></data>
+  <data name="Admin_SiteTextFormatSpec" xml:space="preserve"><value>"{0}" ({1}): write the placeholders exactly as they are, e.g. {{0}}, with no format or width after the number (such as {{0:…}} or {{0,…}})</value></data>
   <data name="Field_JobTitle" xml:space="preserve"><value>Role</value></data>
   <data name="Field_JobTitleEn" xml:space="preserve"><value>Role (English)</value></data>
   <data name="Field_Organization" xml:space="preserve"><value>Organization</value></data>
@@ -254,6 +262,7 @@
   <data name="Msg_SlugReserved" xml:space="preserve"><value>The form "{0}-number" is reserved for automatic addresses — choose another short link.</value></data>
   <data name="Ui_WatchOnYouTube" xml:space="preserve"><value>Watch on YouTube</value></data>
   <data name="Ui_ExternalLink" xml:space="preserve"><value>(opens another site)</value></data>
+  <data name="Ui_OpensInNewTab" xml:space="preserve"><value>(opens in a new tab)</value></data>
   <data name="Msg_ForumRegistrationSuccess" xml:space="preserve"><value>Your Forum registration was received! We will contact you with the event details</value></data>
   <data name="Msg_JoinSuccess" xml:space="preserve"><value>Your application was received! Our team will review it and contact you</value></data>
   <data name="Msg_SponsorshipSuccess" xml:space="preserve"><value>Your sponsorship enquiry was received! Our team will contact you with the details</value></data>
@@ -329,4 +338,23 @@
   <data name="Admin_CsvReference" xml:space="preserve"><value>Reference (opportunity / package / event)</value></data>
   <data name="Admin_CsvReferenceId" xml:space="preserve"><value>Reference ID</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>Internal note</value></data>
+  <data name="Admin_FooterLimit" xml:space="preserve"><value>At most {0} columns and {1} links per column.</value></data>
+  <data name="Admin_SocialExists" xml:space="preserve"><value>This network is already added.</value></data>
+  <data name="Admin_IconInvalid" xml:space="preserve"><value>This icon is not available; pick one from the list.</value></data>
+  <data name="Admin_CustomSocialIncomplete" xml:space="preserve"><value>A custom network needs a name and an icon from the list.</value></data>
+  <data name="Admin_SectionLastVisible" xml:space="preserve"><value>At least one section must stay visible.</value></data>
+  <data name="Admin_SectionShown" xml:space="preserve"><value>“{0}” is now shown on the site.</value></data>
+  <data name="Admin_SectionHidden" xml:space="preserve"><value>“{0}” is now hidden from the site.</value></data>
+  <data name="Admin_SectionMoved" xml:space="preserve"><value>“{0}” moved to position {1} of {2}.</value></data>
+  <data name="Admin_SectionLimitInvalid" xml:space="preserve"><value>“{0}”: enter a whole number from 1 to {1}. The value was not saved.</value></data>
+  <data name="Admin_SocialCustomLimit" xml:space="preserve"><value>At most {0} custom networks. Delete one before adding another.</value></data>
+  <data name="Admin_NavToggleSite" xml:space="preserve"><value>Toggle “{0}” on the site (menu and footer)</value></data>
+  <data name="Admin_NavToggleHeader" xml:space="preserve"><value>Toggle “{0}” in the top menu only</value></data>
+  <data name="Admin_PageFooterAutoOnly" xml:space="preserve"><value>The footer is customised: this option applies to the automatic footer only. The custom footer's links are managed in</value></data>
+  <data name="Admin_PageFooterColumnsLink" xml:space="preserve"><value>Menu and footer › Footer columns</value></data>
+  <data name="Admin_PageUnsavedChanges" xml:space="preserve"><value>This page has unsaved changes that will be lost if you continue. Save them first, or press OK to continue without saving.</value></data>
+  <data name="Admin_SectionFixed" xml:space="preserve"><value>Fixed</value></data>
+  <data name="Admin_SectionFixedHint" xml:space="preserve"><value>The page's main content: always shown, cannot be hidden.</value></data>
+  <data name="Admin_SectionVisible" xml:space="preserve"><value>Shown</value></data>
+  <data name="Admin_SectionsScreenTitle" xml:space="preserve"><value>Page sections</value></data>
 </root>

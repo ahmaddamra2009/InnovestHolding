@@ -99,7 +99,8 @@ public class RenderedFormTests(TestAppFactory f)
 
         foreach (var expectedActive in new[] { false, true })
         {
-            var form = FormFor(await Html(client, "/Admin/Nav"), "/Admin/Nav/Update", id);
+            // C5: «ظاهر / مخفي» is its own POST (Views/Admin/Shared/_VisibleSwitch, id in the route).
+            var form = FormFor(await Html(client, "/Admin/Nav"), $"/Admin/Nav/Toggle/{id}");
             await AssertSavedWithoutError(client, await client.PostAsync(form.Action, Submit(form)));
             var row = await f.DbAsync(db => db.NavItems.AsNoTracking().SingleAsync(n => n.Id == id));
             Assert.Equal(expectedActive, row.IsActive);

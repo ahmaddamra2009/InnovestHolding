@@ -55,7 +55,7 @@ public class CultureRoutingTests(TestAppFactory f)
     [InlineData("/ar/x")]
     [InlineData("/en/Account/Login")]
     [InlineData("/en/Admin/Dashboard")]
-    [InlineData("/en/Privacy")]
+    [InlineData("/en/Home/Privacy")] // the template's action (the privacy page is /en/privacy since C5)
     public async Task Unknown_language_paths_are_404(string path) =>
         Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync(path)).StatusCode);
 
@@ -752,7 +752,7 @@ public class ContentLineBreakTests(TestAppFactory f)
     [Fact]
     public async Task Unchanged_multiline_value_is_not_rewritten_whatever_its_line_breaks()
     {
-        const string key = "about_years_label";
+        const string key = "about_text_1"; // a multiline key with a row
         var cr = ((char)13).ToString();
         var lf = ((char)10).ToString();
         var stamp = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);

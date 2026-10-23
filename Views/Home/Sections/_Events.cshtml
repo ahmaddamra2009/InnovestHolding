@@ -1,0 +1,10 @@
+﻿@model HomeViewModel
+@{ var c = Model.Content; }
+    <!-- 6. EVENTS -->
+    <section class="events-section" id="events">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("events_badge"), c.Text("events_title"), c.Text("events_subtitle"), Model.Icon("events")))" />
+        <partial name="Blocks/_EventList" model="@(new EventsBlock(Model.Events, null, Model.EventsAction))" />
+        @Model.ViewAllLink("events", L[K.Ui.ViewAll].Value)
+      </div>
+    </section>

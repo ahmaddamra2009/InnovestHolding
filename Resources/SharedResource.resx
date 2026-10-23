@@ -74,8 +74,6 @@
   <data name="Field_NameEn" xml:space="preserve"><value>الاسم (الإنجليزية)</value></data>
   <data name="Field_Label" xml:space="preserve"><value>التسمية</value></data>
   <data name="Field_LabelEn" xml:space="preserve"><value>التسمية (الإنجليزية)</value></data>
-  <data name="Field_ShortTitle" xml:space="preserve"><value>الاسم المختصر</value></data>
-  <data name="Field_ShortTitleEn" xml:space="preserve"><value>الاسم المختصر (الإنجليزية)</value></data>
   <data name="Field_ShortLabel" xml:space="preserve"><value>التسمية المختصرة</value></data>
   <data name="Field_ShortLabelEn" xml:space="preserve"><value>التسمية المختصرة (الإنجليزية)</value></data>
   <data name="Field_Text" xml:space="preserve"><value>النص</value></data>
@@ -93,9 +91,6 @@
   <data name="Admin_NavAdded" xml:space="preserve"><value>تمت إضافة العنصر بنجاح</value></data>
   <data name="Admin_NavUpdated" xml:space="preserve"><value>تم تحديث العنصر بنجاح</value></data>
   <data name="Admin_NavDeleted" xml:space="preserve"><value>تم حذف العنصر بنجاح</value></data>
-  <data name="Admin_SubItemAdded" xml:space="preserve"><value>تمت إضافة العنصر الفرعي بنجاح</value></data>
-  <data name="Admin_SubItemUpdated" xml:space="preserve"><value>تم تحديث العنصر الفرعي بنجاح</value></data>
-  <data name="Admin_SubItemDeleted" xml:space="preserve"><value>تم حذف العنصر الفرعي بنجاح</value></data>
   <data name="Admin_PartnerAdded" xml:space="preserve"><value>تمت إضافة الشريك بنجاح</value></data>
   <data name="Admin_PartnerUpdated" xml:space="preserve"><value>تم تحديث الشريك بنجاح</value></data>
   <data name="Admin_PartnerDeleted" xml:space="preserve"><value>تم حذف الشريك بنجاح</value></data>
@@ -182,6 +177,8 @@
   <data name="Msg_SlugInvalid" xml:space="preserve"><value>الرابط المختصر: أحرف إنجليزية صغيرة وأرقام وشرطات بين الكلمات فقط (مثال: forum-2026)</value></data>
   <data name="Msg_SlugTaken" xml:space="preserve"><value>الرابط المختصر مستخدم (أو كان مستخدماً) لعنصر آخر — اختر غيره</value></data>
   <data name="Msg_UtcOffset" xml:space="preserve"><value>فرق التوقيت يجب أن يكون بالشكل ‎+02:00 أو ‎-05:30</value></data>
+  <data name="Msg_ContentPhone" xml:space="preserve"><value>حقل {0}: رقم هاتف غير صالح — أرقام ومسافات وشرطات فقط، مع «+» اختيارية في البداية، ومن 7 إلى 15 رقماً</value></data>
+  <data name="Msg_ContentCountryCode" xml:space="preserve"><value>حقل {0}: رمز الدولة يجب أن يكون حرفين لاتينيين وفق ISO 3166 (مثل EG)</value></data>
   <data name="Msg_DateRequired" xml:space="preserve"><value>أدخل تاريخ البدء، أو اليوم والشهر كنص</value></data>
   <data name="Msg_EndBeforeStart" xml:space="preserve"><value>وقت الانتهاء يجب أن يكون بعد وقت البدء</value></data>
   <data name="Field_Slug" xml:space="preserve"><value>الرابط المختصر</value></data>
@@ -199,6 +196,11 @@
   <data name="Admin_GroupUpdated" xml:space="preserve"><value>تم تحديث المجموعة بنجاح</value></data>
   <data name="Admin_GroupDeleted" xml:space="preserve"><value>تم حذف المجموعة (شركاؤها بلا مجموعة الآن)</value></data>
   <data name="Admin_PhotoSaved" xml:space="preserve"><value>تم حفظ الصورة</value></data>
+  <data name="Admin_BrandSaved" xml:space="preserve"><value>تم حفظ «{0}». قد يحتاج المتصفح وقتاً لإظهار الأيقونة الجديدة.</value></data>
+  <data name="Admin_BrandReverted" xml:space="preserve"><value>عاد «{0}» إلى الملف الافتراضي المرفق.</value></data>
+  <data name="Admin_ThemeColorInvalid" xml:space="preserve"><value>اللون غير صالح: اكتبه بالصيغة #RRGGBB (مثل #111145)، أو اتركه فارغاً للون الافتراضي.</value></data>
+  <data name="Admin_ThemeColorSaved" xml:space="preserve"><value>تم حفظ لون المتصفح.</value></data>
+  <data name="Admin_LoginSiteName" xml:space="preserve"><value>Innovest Holding</value></data>
   <data name="Ui_EventDate" xml:space="preserve"><value>التاريخ</value></data>
   <data name="Ui_EventTime" xml:space="preserve"><value>الوقت</value></data>
   <data name="Ui_EventVenue" xml:space="preserve"><value>المكان</value></data>
@@ -233,6 +235,12 @@
   <data name="Ui_SponsorshipPackages" xml:space="preserve"><value>باقات الرعاية</value></data>
   <data name="Ui_ProfilesAria" xml:space="preserve"><value>حسابات {0}</value></data>
   <data name="Admin_SectorInUse" xml:space="preserve"><value>هذا القطاع مستخدم في فرصة استثمارية — عطّله بدلاً من حذفه.</value></data>
+  <data name="Admin_SiteTextsSaved" xml:space="preserve"><value>تم حفظ نصوص الموقع</value></data>
+  <data name="Admin_SiteTextReset" xml:space="preserve"><value>أُعيد النص إلى الافتراضي</value></data>
+  <data name="Admin_SiteTextGroupReset" xml:space="preserve"><value>أُعيدت نصوص المجموعة كلها إلى الافتراضي</value></data>
+  <data name="Admin_SiteTextPlaceholders" xml:space="preserve"><value>«{0}» ({1}): يجب أن يحتوي النص على {2} كما في النص الافتراضي، ولا شيء غيرها بين {{ }}</value></data>
+  <data name="Admin_SiteTextMarkup" xml:space="preserve"><value>«{0}» ({1}): لا يُسمح بالروابط أو الوسوم (ولا javascript: أو data:) في هذا الحقل</value></data>
+  <data name="Admin_SiteTextFormatSpec" xml:space="preserve"><value>«{0}» ({1}): اكتب المتغيرات كما هي فقط، مثل {{0}}، بلا أي تنسيق أو عرض بعد الرقم (مثل {{0:…}} أو {{0,…}})</value></data>
   <data name="Field_JobTitle" xml:space="preserve"><value>المنصب</value></data>
   <data name="Field_JobTitleEn" xml:space="preserve"><value>المنصب (بالإنجليزية)</value></data>
   <data name="Field_Organization" xml:space="preserve"><value>الجهة</value></data>
@@ -254,6 +262,7 @@
   <data name="Msg_SlugReserved" xml:space="preserve"><value>الشكل «{0}-رقم» محجوز للروابط التلقائية — اختر رابطاً مختصراً آخر.</value></data>
   <data name="Ui_WatchOnYouTube" xml:space="preserve"><value>المشاهدة على يوتيوب</value></data>
   <data name="Ui_ExternalLink" xml:space="preserve"><value>(يفتح موقعاً آخر)</value></data>
+  <data name="Ui_OpensInNewTab" xml:space="preserve"><value>(يفتح في نافذة جديدة)</value></data>
   <data name="Msg_ForumRegistrationSuccess" xml:space="preserve"><value>تم استلام تسجيلك في المنتدى! سنتواصل معك بتفاصيل الفعاليات</value></data>
   <data name="Msg_JoinSuccess" xml:space="preserve"><value>تم استلام طلب الانضمام! سيراجعه فريقنا ويتواصل معك</value></data>
   <data name="Msg_SponsorshipSuccess" xml:space="preserve"><value>تم استلام استفسار الرعاية! سيتواصل معك فريقنا بالتفاصيل</value></data>
@@ -329,4 +338,23 @@
   <data name="Admin_CsvReference" xml:space="preserve"><value>المرجع (الفرصة / الباقة / الفعالية)</value></data>
   <data name="Admin_CsvReferenceId" xml:space="preserve"><value>رقم المرجع</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>
+  <data name="Admin_FooterLimit" xml:space="preserve"><value>الحد الأقصى {0} أعمدة و{1} روابط في كل عمود.</value></data>
+  <data name="Admin_SocialExists" xml:space="preserve"><value>هذه الشبكة مضافة بالفعل.</value></data>
+  <data name="Admin_IconInvalid" xml:space="preserve"><value>الأيقونة غير متاحة، اختر من القائمة.</value></data>
+  <data name="Admin_CustomSocialIncomplete" xml:space="preserve"><value>الشبكة الأخرى تحتاج اسماً وأيقونة من القائمة.</value></data>
+  <data name="Admin_SectionLastVisible" xml:space="preserve"><value>يجب أن يبقى قسم واحد على الأقل ظاهراً.</value></data>
+  <data name="Admin_SectionShown" xml:space="preserve"><value>أُظهر «{0}» في الموقع.</value></data>
+  <data name="Admin_SectionHidden" xml:space="preserve"><value>أُخفي «{0}» عن الموقع.</value></data>
+  <data name="Admin_SectionMoved" xml:space="preserve"><value>نُقل «{0}» إلى الموضع {1} من {2}.</value></data>
+  <data name="Admin_SectionLimitInvalid" xml:space="preserve"><value>«{0}»: أدخل رقماً صحيحاً من 1 إلى {1}. لم تُحفظ القيمة.</value></data>
+  <data name="Admin_SocialCustomLimit" xml:space="preserve"><value>الحد الأقصى {0} شبكات أخرى. احذف واحدة قبل إضافة غيرها.</value></data>
+  <data name="Admin_NavToggleSite" xml:space="preserve"><value>تبديل ظهور «{0}» في الموقع (القائمة والفوتر)</value></data>
+  <data name="Admin_NavToggleHeader" xml:space="preserve"><value>تبديل ظهور «{0}» في القائمة العلوية فقط</value></data>
+  <data name="Admin_PageFooterAutoOnly" xml:space="preserve"><value>الفوتر مخصّص الآن: هذا الخيار يعمل في الفوتر التلقائي فقط. روابط الفوتر المخصّص تُدار من</value></data>
+  <data name="Admin_PageFooterColumnsLink" xml:space="preserve"><value>القائمة والفوتر › أعمدة الفوتر</value></data>
+  <data name="Admin_PageUnsavedChanges" xml:space="preserve"><value>في الصفحة تعديلات لم تُحفظ وستضيع إذا تابعت. احفظ التعديلات أولاً، أو اضغط «موافق» للمتابعة دون حفظ.</value></data>
+  <data name="Admin_SectionFixed" xml:space="preserve"><value>ثابت</value></data>
+  <data name="Admin_SectionFixedHint" xml:space="preserve"><value>المحتوى الرئيسي للصفحة: يظهر دائماً ولا يُخفى.</value></data>
+  <data name="Admin_SectionVisible" xml:space="preserve"><value>ظاهر</value></data>
+  <data name="Admin_SectionsScreenTitle" xml:space="preserve"><value>أقسام الصفحات</value></data>
 </root>

@@ -1,0 +1,90 @@
+﻿@model PageSectionsCardVm
+@* The sections of one page (UX-C5 §2/§3): # · section · content · status · order. Each action is its own POST form
+   (antiforgery from the form tag helper) that redirects back to #section-<key>. Embedded by Pages/Edit too: there each
+   form posts from=pages and the action returns to Pages/Edit (QA C5-4). *@
+@{
+    void From()
+    {
+        if (Model.Embedded)
+        {
+            <input type="hidden" name="from" value="@InnovestHolding.Controllers.Admin.PageSectionsController.EmbeddedFrom">
+        }
+    }
+}
+<div class="admin-card" id="blocks">
+    <div class="admin-card-header"><span class="admin-card-title">@(Model.IsHome ? "الأقسام" : "كتل الصفحة") (@Model.Rows.Count)</span></div>
+    <div class="table-scroll">
+    <table class="admin-table" style="min-width:560px;">
+        <thead><tr><th>#</th><th>القسم</th><th>المحتوى</th><th>الحالة</th><th>الترتيب</th></tr></thead>
+        <tbody>
+        @foreach (var row in Model.Rows)
+        {
+            var name = row.Def.Label;
+            <tr id="section-@row.Def.Key" class="@(row.Visible ? null : "row-hidden")" style="@(row.Visible ? null : "opacity:.6")">
+                <td>@(row.Position > 0 ? row.Position.ToString(System.Globalization.CultureInfo.InvariantCulture) : "—")</td>
+                <td><strong>@name</strong><div class="page-key">@row.Def.Key</div></td>
+                <td>
+                    @if (row.Count is { } count)
+                    {
+                        if (count == 0)
+                        {
+                            <span class="form-hint">0 (يُخفى تلقائياً)</span>
+                        }
+                        else
+                        {
+                            <span>@count</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>—</span>
+                    }
+                    @if (row.Limit is { } limit)
+                    {
+                        <form method="post" asp-antiforgery="true" action="/Admin/PageSections/SetLimit" class="inline-actions section-action" style="margin-top:6px;">@{ From(); }
+                            <input type="hidden" name="key" value="@limit.Key">
+                            <label for="limit-@limit.Key" class="form-hint">@limit.Label:</label>
+                            <input type="number" id="limit-@limit.Key" name="value" value="@row.LimitValue" min="1" max="@limit.Max" inputmode="numeric" class="form-control" style="width:80px;" required>
+                            <button type="submit" class="btn-admin btn-secondary btn-sm">حفظ</button>
+                        </form>
+                    }
+                </td>
+                <td>
+                    @* A switch only when it can succeed (Model.CanToggle): a fixed/list/form section, or the last
+                       visible one, shows its state without a button. *@
+                    @if (Model.CanToggle(row))
+                    {
+                        <form method="post" asp-antiforgery="true" action="/Admin/PageSections/Toggle/@Model.PageKey" class="section-action">@{ From(); }
+                            <input type="hidden" name="section" value="@row.Def.Key">
+                            <button type="submit" class="@(row.Visible ? "badge-active" : "badge-inactive")" style="border:0;cursor:pointer;" aria-pressed="@(row.Visible ? "true" : "false")" title="تبديل ظهور «@name»">@(row.Visible ? "ظاهر" : "مخفي")</button>
+                        </form>
+                    }
+                    else if (!row.Def.CanHide)
+                    {
+                        <span class="badge-active section-fixed" title="@L[K.AdminSections.FixedHint]">@L[K.AdminSections.Fixed]</span>
+                    }
+                    else
+                    {
+                        <span class="badge-active section-last" title="@L[K.AdminSections.LastVisible]">@L[K.AdminSections.Visible]</span>
+                        <div class="form-hint">@L[K.AdminSections.LastVisible]</div>
+                    }
+                </td>
+                <td>
+                    @if (row.Def.Movable)
+                    {
+                        <div class="inline-actions">
+                            <form method="post" asp-antiforgery="true" action="/Admin/PageSections/Move/@Model.PageKey" class="section-action">@{ From(); }<input type="hidden" name="section" value="@row.Def.Key"><input type="hidden" name="direction" value="-1"><button type="submit" class="btn-admin btn-secondary btn-sm" aria-label="تحريك «@name» للأعلى" disabled="@(row.Position <= 1)">▲</button></form>
+                            <form method="post" asp-antiforgery="true" action="/Admin/PageSections/Move/@Model.PageKey" class="section-action">@{ From(); }<input type="hidden" name="section" value="@row.Def.Key"><input type="hidden" name="direction" value="1"><button type="submit" class="btn-admin btn-secondary btn-sm" aria-label="تحريك «@name» للأسفل" disabled="@(row.Position >= row.MovableCount)">▼</button></form>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="form-hint">ثابت</span>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+</div>

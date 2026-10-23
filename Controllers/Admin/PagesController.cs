@@ -11,10 +11,12 @@ namespace InnovestHolding.Controllers.Admin;
 
 /// <summary>
 /// The texts of the public pages (one Pages row per route of Infrastructure/Site/SiteRoutes): titles, intro, body,
-/// "coming soon" text, SEO, menu visibility and order. A page's URL is code; the admin cannot add or remove a page.
-/// The id is the page key, checked against the route table (anything else → 404).
+/// "coming soon" text and its button, SEO, publication, menu/footer visibility and order. A page's URL is code; the
+/// admin cannot add or remove a page. The id is the page key, checked against the route table (anything else → 404).
+/// The home page renders Content keys, not its row's texts: its form keeps only title, SEO and image, and it is always
+/// published and in the menu (posted values for the other fields are ignored).
 /// </summary>
-public class PagesController(AppDbContext db) : AdminControllerBase
+public class PagesController(AppDbContext db, ISiteContentCache cache) : AdminControllerBase
 {
     private const string EditView = "~/Views/Admin/Pages/Edit.cshtml";
 
@@ -29,8 +31,14 @@ public class PagesController(AppDbContext db) : AdminControllerBase
     {
         if (SiteRoutes.Find(id) is not { } page) return NotFound();
         var row = await db.Pages.AsNoTracking().Include(p => p.Image).FirstOrDefaultAsync(p => p.Key == page.Key);
-        return View(EditView, new PageEditVm(page, ToInput(row), row is null));
+        return View(EditView, await VmAsync(page, ToInput(row), row is null));
     }
+
+    /// <summary>The edit model plus the page's sections card (embedded below the form: its own POST forms).</summary>
+    private async Task<PageEditVm> VmAsync(SitePage page, PageEditInput input, bool isNew) =>
+        new(page, input, isNew, PageSectionRegistry.Of(page.Key).Count == 0 ? null
+                : await PageSectionsController.LoadCardAsync(db, cache, page.Key, HttpContext.RequestAborted, embedded: true),
+            await db.FooterColumns.AnyAsync(HttpContext.RequestAborted));
 
     [HttpPost]
     public async Task<IActionResult> Edit(string? id, PageEditInput input)
@@ -38,9 +46,13 @@ public class PagesController(AppDbContext db) : AdminControllerBase
         if (SiteRoutes.Find(id) is not { } page) return NotFound();
         var row = await db.Pages.Include(p => p.Image).FirstOrDefaultAsync(p => p.Key == page.Key);
         input.Current = MediaRefs.Of(row?.Image);
-        if (!ModelState.IsValid) return View(EditView, new PageEditVm(page, input, row is null));
+        var isHome = page.Key == PageKeys.Home;
+        var emptyAction = Optional(input.EmptyActionPage);
+        if (!isHome && emptyAction is not null && (!SiteRoutes.IsKey(emptyAction) || emptyAction == page.Key))
+            ModelState.AddModelError(nameof(PageEditInput.EmptyActionPage), L(MessageKeys.InvalidValueNoField));
+        if (!ModelState.IsValid) return View(EditView, await VmAsync(page, input, row is null));
         var uploaded = await UploadImageAsync(input);
-        if (!ModelState.IsValid) return View(EditView, new PageEditVm(page, input, row is null));
+        if (!ModelState.IsValid) return View(EditView, await VmAsync(page, input, row is null));
 
         if (row is null)
         {
@@ -50,19 +62,26 @@ public class PagesController(AppDbContext db) : AdminControllerBase
 
         row.TitleAr = input.TitleAr!.Trim();
         row.TitleEn = Optional(input.TitleEn);
-        row.SummaryAr = input.SummaryAr?.Trim() ?? "";
-        row.SummaryEn = Optional(input.SummaryEn);
-        row.IntroAr = input.IntroAr?.Trim() ?? "";
-        row.IntroEn = Optional(input.IntroEn);
-        row.BodyAr = Lf(input.BodyAr) ?? "";
-        row.BodyEn = Lf(input.BodyEn);
-        row.EmptyTextAr = input.EmptyTextAr?.Trim() ?? "";
-        row.EmptyTextEn = Optional(input.EmptyTextEn);
+        if (!isHome)
+        {
+            // Home: these fields have no public effect and are not on its form — the stored values stay.
+            row.SummaryAr = input.SummaryAr?.Trim() ?? "";
+            row.SummaryEn = Optional(input.SummaryEn);
+            row.IntroAr = input.IntroAr?.Trim() ?? "";
+            row.IntroEn = Optional(input.IntroEn);
+            row.BodyAr = Lf(input.BodyAr) ?? "";
+            row.BodyEn = Lf(input.BodyEn);
+            row.EmptyTextAr = input.EmptyTextAr?.Trim() ?? "";
+            row.EmptyTextEn = Optional(input.EmptyTextEn);
+            row.EmptyActionPage = emptyAction;
+        }
         row.MetaTitleAr = input.MetaTitleAr?.Trim() ?? "";
         row.MetaTitleEn = Optional(input.MetaTitleEn);
         row.MetaDescriptionAr = input.MetaDescriptionAr?.Trim() ?? "";
         row.MetaDescriptionEn = Optional(input.MetaDescriptionEn);
-        row.ShowInMenu = page.Key == PageKeys.Home || input.ShowInMenu;
+        row.ShowInMenu = isHome || input.ShowInMenu;
+        row.ShowInFooter = isHome || input.ShowInFooter;
+        row.IsPublished = isHome || input.IsPublished;
         row.UpdatedAt = DateTime.UtcNow;
         var leaving = ApplyImage(db, row.Image, uploaded, input, m => row.Image = m);
 
@@ -82,6 +101,23 @@ public class PagesController(AppDbContext db) : AdminControllerBase
         row.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
         TempData["Success"] = L(MessageKeys.Admin.PageMenuToggled);
+        return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>
+    /// Publishes or unpublishes the page: an unpublished page (and every page under it) answers the branded 404 and
+    /// leaves the menus, footer, cards, links and sitemap. The home page cannot be unpublished.
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> TogglePublished(string? id)
+    {
+        if (SiteRoutes.Find(id) is not { } page || page.Key == PageKeys.Home) return NotFound();
+        var row = await db.Pages.FirstOrDefaultAsync(p => p.Key == page.Key);
+        if (row is null) return NotFound();
+        row.IsPublished = !row.IsPublished;
+        row.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        TempData["Success"] = L(MessageKeys.Admin.StatusToggled);
         return RedirectToAction(nameof(Index));
     }
 
@@ -111,13 +147,14 @@ public class PagesController(AppDbContext db) : AdminControllerBase
     }
 
     private static PageEditInput ToInput(Page? p) => p is null
-        ? new PageEditInput { ShowInMenu = true }
+        ? new PageEditInput { ShowInMenu = true, ShowInFooter = true, IsPublished = true }
         : new PageEditInput
         {
             TitleAr = p.TitleAr, TitleEn = p.TitleEn, SummaryAr = p.SummaryAr, SummaryEn = p.SummaryEn,
             IntroAr = p.IntroAr, IntroEn = p.IntroEn, BodyAr = p.BodyAr, BodyEn = p.BodyEn,
             EmptyTextAr = p.EmptyTextAr, EmptyTextEn = p.EmptyTextEn, MetaTitleAr = p.MetaTitleAr, MetaTitleEn = p.MetaTitleEn,
             MetaDescriptionAr = p.MetaDescriptionAr, MetaDescriptionEn = p.MetaDescriptionEn, ShowInMenu = p.ShowInMenu,
+            ShowInFooter = p.ShowInFooter, IsPublished = p.IsPublished, EmptyActionPage = p.EmptyActionPage,
             ImageAltAr = p.Image?.AltAr, ImageAltEn = p.Image?.AltEn, Current = MediaRefs.Of(p.Image),
         };
 }
@@ -136,6 +173,16 @@ public sealed record PagesIndexVm(IReadOnlyDictionary<string, Page> Rows)
         }
         return Walk(SiteRoutes.Get(PageKeys.Home), 0);
     }
+
+    /// <summary>The stored pages of <paramref name="page"/>'s parent in the order Move uses (SortOrder, then route order).</summary>
+    public List<string> Siblings(SitePage page) => page.Parent is null
+        ? []
+        : SiteRoutes.Children(page.Parent).Where(c => Rows.ContainsKey(c.Key))
+            .OrderBy(c => Rows[c.Key].SortOrder).Select(c => c.Key).ToList();
 }
 
-public sealed record PageEditVm(SitePage Page, PageEditInput Input, bool IsNew);
+/// <param name="Sections">The page's «كتل الصفحة» card (Admin/PageSections), null for a page without sections.</param>
+/// <param name="FooterCustomised">FooterColumns has rows: «تظهر في الفوتر» then affects only the automatic footer, and
+/// the form says so (Hassan C5 F6b).</param>
+public sealed record PageEditVm(SitePage Page, PageEditInput Input, bool IsNew, PageSectionsCardVm? Sections = null,
+    bool FooterCustomised = false);

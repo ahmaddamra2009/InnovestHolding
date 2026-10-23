@@ -207,8 +207,7 @@ public class SiteStructureTests(TestAppFactory f)
     [InlineData("/forum/speakers")]
     [InlineData("/en/forum/speakers")]
     [InlineData("/angel-network/opportunities")]
-    [InlineData("/tv/episodes")]
-    [InlineData("/tv")]
+    [InlineData("/tv/episodes")] // (/tv has its intro since C5 AddAdminControl: indexable)
     public async Task A_page_with_no_content_yet_is_200_with_its_empty_text_and_noindex_follow(string path)
     {
         var r = await f.NewClient().GetAsync(path);
@@ -252,7 +251,9 @@ public class SiteStructureTests(TestAppFactory f)
         Assert.Contains($"{Base}/forum/events", locs);
         Assert.Contains($"{Base}/en/forum/events", locs);
         Assert.DoesNotContain($"{Base}/forum/speakers", locs);
-        Assert.DoesNotContain($"{Base}/tv", locs);
+        // C5 AddAdminControl: the TV hub has its intro and the privacy page its body → both listed (intended change).
+        Assert.Contains($"{Base}/tv", locs);
+        Assert.Contains($"{Base}/privacy", locs);
         Assert.DoesNotContain(locs, l => l.Contains("/Admin", StringComparison.OrdinalIgnoreCase) || l.Contains("/forms"));
         // Each listed URL answers 200 without a noindex header.
         foreach (var loc in locs)
@@ -321,13 +322,17 @@ public class SiteStructureTests(TestAppFactory f)
             var token = await client.GetTokenAsync("/Admin/Pages");
             Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync($"/Admin/Pages/ToggleMenu/{PageKeys.ForumSpeakers}", Form(token))).StatusCode);
             var home = await f.NewClient().GetStringAsync("/");
-            Assert.DoesNotContain(Link(), home);                                       // header, drawer, footer
+            var footerAt = home.IndexOf("<footer class=\"site-footer\">", StringComparison.Ordinal);
+            Assert.DoesNotContain(Link(), home[..footerAt]);                           // header, drawer
+            Assert.Contains(Link(), home[footerAt..]);   // C5: the footer has its own switch (Pages.ShowInFooter)
             Assert.Equal(HttpStatusCode.OK, (await f.NewClient().GetAsync(url)).StatusCode); // still reachable
 
             token = await client.GetTokenAsync($"/Admin/Pages/Edit/{PageKeys.ForumSpeakers}");
             var title = "متحدثون " + Guid.NewGuid().ToString("N")[..6];
             var r = await client.PostAsync($"/Admin/Pages/Edit/{PageKeys.ForumSpeakers}", Form(token,
-                ("TitleAr", title), ("TitleEn", "Speakers QA"), ("ShowInMenu", "true"), ("EmptyTextAr", "قريباً جداً")));
+                ("TitleAr", title), ("TitleEn", "Speakers QA"), ("ShowInMenu", "true"), ("EmptyTextAr", "قريباً جداً"),
+                // C5: the form always posts its publication checkboxes (an omitted checkbox = unchecked = unpublished).
+                ("IsPublished", "true"), ("ShowInFooter", original.ShowInFooter ? "true" : "false")));
             Assert.Equal(HttpStatusCode.Redirect, r.StatusCode);
             var page = await f.NewClient().GetStringAsync(url);
             Assert.Contains($">{title}</h1>", page);
@@ -342,6 +347,7 @@ public class SiteStructureTests(TestAppFactory f)
                 var row = await db.Pages.SingleAsync(p => p.Key == PageKeys.ForumSpeakers);
                 row.TitleAr = original.TitleAr; row.TitleEn = original.TitleEn; row.ShowInMenu = original.ShowInMenu;
                 row.EmptyTextAr = original.EmptyTextAr; row.EmptyTextEn = original.EmptyTextEn;
+                row.IsPublished = original.IsPublished; row.ShowInFooter = original.ShowInFooter;
                 return await db.SaveChangesAsync();
             });
         }

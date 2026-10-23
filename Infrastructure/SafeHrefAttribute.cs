@@ -18,7 +18,8 @@ public sealed class SafeHrefAttribute() : LocalizedValidationAttribute(Localizat
     {
         if (string.IsNullOrWhiteSpace(value)) return true;
         var v = value.Trim();
-        if (v.Any(char.IsControl) || v.Contains('\\')) return false;
+        // No control or Unicode format (Cf: bidi override, zero-width…) character: Yasser I-C5F-1.
+        if (v.Any(char.IsControl) || Seo.SiteUrl.HasFormatChar(v) || v.Contains('\\')) return false;
         if (v.StartsWith('#')) return true;
         if (v.StartsWith("//")) return false;
 
@@ -37,5 +38,19 @@ public sealed class SafeHrefAttribute() : LocalizedValidationAttribute(Localizat
         return Uri.TryCreate(v, UriKind.Absolute, out var uri)
                && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
+
+    /// <summary>
+    /// True for an absolute http(s) address — a link to another site, which the public pages render with
+    /// <c>rel="noopener noreferrer"</c> (SEO-C5 §4). Site paths, fragments, mailto: and tel: are not external.
+    /// </summary>
+    public static bool IsExternal(string? href)
+    {
+        var v = href?.Trim();
+        return !string.IsNullOrEmpty(v)
+               && (v.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || v.StartsWith("http://", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>The rel of a link: <c>noopener noreferrer</c> for an external address, else null (Razor omits it).</summary>
+    public static string? RelFor(string? href) => IsExternal(href) ? "noopener noreferrer" : null;
 
 }

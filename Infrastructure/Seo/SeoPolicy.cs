@@ -43,11 +43,16 @@ public static class SeoPolicy
     /// is exempt: its content is the site's).</item>
     /// <item>The English page whose English meta title or description is empty → <see cref="RobotsDecision.NoIndexFollow"/>
     /// (it would be a duplicate of the Arabic page).</item>
+    /// <item>The English page of a page that is not a list (home exempt) whose English intro and body are both empty →
+    /// <see cref="RobotsDecision.NoIndexFollow"/>: it would show the Arabic text under the English URL (SEO-C5 §1b).</item>
+    /// <item>An unpublished page (its own row or an ancestor's IsPublished off) → <see cref="RobotsDecision.NoIndexNoFollow"/>:
+    /// it is out of the sitemap (the page itself answers the 404 before reaching this rule).</item>
     /// <item>A page without its Pages row → <see cref="RobotsDecision.NoIndexFollow"/>.</item>
     /// </list>
     /// </summary>
     public static RobotsDecision Decide(SitePage page, bool english, SiteSnapshot s)
     {
+        if (!s.IsPublished(page.Key)) return RobotsDecision.NoIndexNoFollow;
         if (s.Page(page.Key) is not { } row) return RobotsDecision.NoIndexFollow;
 
         if (page.Kind == PageKind.List)
@@ -55,7 +60,8 @@ public static class SeoPolicy
             var count = ListCountOf(page.Key, s);
             if ((english ? count.English : count.Total) == 0) return RobotsDecision.NoIndexFollow;
         }
-        else if (page.Key != PageKeys.Home && !Has(row.IntroAr) && !Has(row.BodyAr))
+        else if (page.Key != PageKeys.Home
+                 && (english ? !Has(row.IntroEn) && !Has(row.BodyEn) : !Has(row.IntroAr) && !Has(row.BodyAr)))
         {
             return RobotsDecision.NoIndexFollow;
         }

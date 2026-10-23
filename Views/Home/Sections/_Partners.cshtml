@@ -1,0 +1,22 @@
+﻿@model HomeViewModel
+@{ var c = Model.Content; }
+    <!-- 8. PARTNERS -->
+    <section class="partners-section" id="partners">
+      <div class="container">
+        <partial name="_SectionHeader" model="@(new SectionHeaderVm(c.Text("partners_badge"), c.Text("partners_title"), c.Text("partners_subtitle"), Model.Icon("partners")))" />
+      </div>
+      <div class="partners-marquee">
+        <div class="marquee-track">
+          @foreach (var partner in Model.Partners)
+          {
+            <div class="partner-logo"><partial name="Blocks/_PartnerMark" model="partner" /></div>
+          }
+          @* Second copy for the seamless loop — hidden from assistive technology (and from the tab order). *@
+          @foreach (var partner in Model.Partners)
+          {
+            <div class="partner-logo" aria-hidden="true" inert><partial name="Blocks/_PartnerMark" model="partner" /></div>
+          }
+        </div>
+      </div>
+      <div class="container">@Model.ViewAllLink("partners", L[K.Ui.ViewAll].Value)</div>
+    </section>

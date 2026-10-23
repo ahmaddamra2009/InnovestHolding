@@ -1,0 +1,25 @@
+﻿@model PageSectionsCardVm
+@using InnovestHolding.Infrastructure.Site
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    // QA C5-7: the screen manages every page's sections, so it is «أقسام الصفحات: <the page in view>».
+    ViewData["Title"] = L[K.AdminSections.ScreenTitle] + ": " + Model.PageTitle;
+}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <span class="admin-card-title">@ViewData["Title"]</span>
+        <a href="@Model.PageUrl" target="_blank" rel="noopener" class="btn-admin btn-secondary btn-sm">معاينة الصفحة ↗</a>
+    </div>
+    <p class="form-hint" style="margin-bottom:12px;">اعرض الأقسام أو أخفها ورتّبها. القسم المخفي لا يظهر للزوار ومحتواه يبقى محفوظاً. القسم الظاهر الذي لا محتوى له يُخفى تلقائياً.@(Model.IsHome ? " واجهة الصفحة (العنوان الرئيسي) ثابتة في الأعلى دائماً." : "")</p>
+    <form method="get" action="/Admin/PageSections/Index" class="inline-actions" style="margin-bottom:12px;">
+        <label for="page-picker">صفحة أخرى:</label>
+        <select id="page-picker" name="id" class="form-control" style="max-width:320px;">
+            @foreach (var key in PageSectionRegistry.Pages.Keys)
+            {
+                <option value="@key" selected="@(key == Model.PageKey)">@SiteRoutes.PathFor(SiteRoutes.Get(key), false) (@key)</option>
+            }
+        </select>
+        <button type="submit" class="btn-admin btn-secondary btn-sm">عرض</button>
+    </form>
+</div>
+<partial name="~/Views/Admin/PageSections/_Card.cshtml" model="Model" />

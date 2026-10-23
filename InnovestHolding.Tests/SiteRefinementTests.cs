@@ -40,7 +40,7 @@ public class SiteRefinementTests(TestAppFactory f)
             Assert.True((description?.Length ?? 0) <= 160, $"{page.Key}: description {description?.Length} «{description}»");
             checkedPages++;
         }
-        Assert.Equal(19, checkedPages);
+        Assert.Equal(20, checkedPages); // + privacy (C5)
     }
 
     [Fact] // a node referenced by @id (isPartOf, publisher, about, parentOrganization) is in the same page's graph
@@ -129,7 +129,7 @@ public class SiteRefinementTests(TestAppFactory f)
         var select = Regex.Match(html, "<select id=\"content-header-cta-page\" name=\"content\\[header_cta_page\\].Ar\" class=\"form-control\">(.*?)</select>", RegexOptions.Singleline);
         Assert.True(select.Success, "no page select");
         var options = Regex.Matches(select.Groups[1].Value, "<option value=\"([^\"]*)\"").Select(m => m.Groups[1].Value).ToList();
-        Assert.Equal(SiteRoutes.All.Select(p => p.Key), options);
+        Assert.Equal(SiteRoutes.All.Select(p => p.Key).Append(ContentKeys.ExternalLinkChoice), options); // C5: + «رابط خارجي…»
         Assert.Contains("<option value=\"network.join\" selected=\"selected\">", select.Groups[1].Value);
     }
 

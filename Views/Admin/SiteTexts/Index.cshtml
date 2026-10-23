@@ -1,0 +1,113 @@
+@model SiteTextsViewModel
+@using InnovestHolding.Infrastructure.Content
+@using InnovestHolding.Controllers.Admin
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "رسائل وأزرار الموقع";
+    var allTab = SiteTextsController.AllTab;
+    var groupTitles = PublicTexts.Groups.ToDictionary(g => g.Id, g => g.Title);
+}
+
+<nav class="group-tabs" aria-label="مجموعات النصوص">
+    <a href="@Url.Action("Index", new { tab = allTab, q = Model.Query })" class="@(Model.Tab == allTab ? "active" : null)" aria-current="@(Model.Tab == allTab ? "page" : null)">الكل (@PublicTexts.All.Count)</a>
+    @foreach (var (id, title) in PublicTexts.Groups)
+    {
+        <a href="@Url.Action("Index", new { tab = id, q = Model.Query })" class="@(Model.Tab == id ? "active" : null)" aria-current="@(Model.Tab == id ? "page" : null)">@title (@Model.CustomCounts.GetValueOrDefault(id) مخصّص)</a>
+    }
+</nav>
+
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">رسائل وأزرار الموقع</span></div>
+    <p class="form-hint">نصوص صغيرة يراها الزائر (أسماء الحقول، الأزرار، رسائل الشكر والأخطاء، التسميات). اترك الحقل فارغاً لاستخدام النص الافتراضي (يظهر باهتاً داخل الحقل). كل لغة مستقلة: الحقل الإنجليزي الفارغ يعرض النص الإنجليزي الافتراضي.</p>
+    <form method="get" asp-action="Index" class="inline-actions" role="search">
+        <input type="hidden" name="tab" value="@Model.Tab">
+        <label for="site-text-search" class="sr-only">بحث</label>
+        <input id="site-text-search" type="search" name="q" value="@Model.Query" maxlength="100" class="form-control" placeholder="بحث في النصوص…" style="max-width:320px;">
+        <button type="submit" class="btn-admin btn-secondary btn-sm">بحث</button>
+        @if (Model.Query is not null)
+        {
+            <a href="@Url.Action("Index", new { tab = Model.Tab })" class="btn-admin btn-secondary btn-sm">مسح البحث</a>
+        }
+    </form>
+</div>
+
+@if (Model.Fields.Count == 0)
+{
+    <div class="admin-card"><p class="form-hint">لا توجد نتائج لـ «@Model.Query». جرّب كلمة أخرى.</p></div>
+}
+else
+{
+    @* One form: «إعادة للافتراضي» and the group reset are submit buttons of this form (name=reset / resetGroup), so the
+   other edits on the page are saved with the reset instead of being lost. *@
+    <form method="post" asp-action="Index" asp-route-tab="@Model.Tab" asp-route-q="@Model.Query" class="content-editor">
+        @* The form's default button (Enter in a field) must be Save, never a reset button: the first submit button wins. *@
+        <button type="submit" class="sr-only" tabindex="-1" aria-hidden="true">حفظ كل التغييرات</button>
+        @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All" tabindex="-1"></div> }
+
+        @foreach (var group in Model.Fields.GroupBy(f => f.Text.Group))
+        {
+            <div class="admin-card" id="group-@group.Key">
+                <div class="admin-card-header">
+                    <span class="admin-card-title">@groupTitles[group.Key]</span>
+                    @if (Model.CustomCounts.GetValueOrDefault(group.Key) > 0)
+                    {
+                        <button type="submit" class="btn-admin btn-secondary btn-sm" name="resetGroup" value="@group.Key" formnovalidate
+                                data-confirm="إعادة كل نصوص «@groupTitles[group.Key]» إلى النص الافتراضي؟" onclick="return confirm(this.dataset.confirm)">إعادة المجموعة كلها للافتراضي</button>
+                    }
+                </div>
+                @foreach (var f in group)
+                {
+                    var key = f.Text.ResxKey;
+                    var anchor = SiteTextsController.Anchor(key);
+                    var nameAr = $"texts[{key}].Ar";
+                    var nameEn = $"texts[{key}].En";
+                    var errAr = ViewData.ModelState.TryGetValue(nameAr, out var ea) ? ea.Errors.Select(e => e.ErrorMessage).ToList() : new List<string>();
+                    var errEn = ViewData.ModelState.TryGetValue(nameEn, out var ee) ? ee.Errors.Select(e => e.ErrorMessage).ToList() : new List<string>();
+                    var longest = Math.Max(f.ValueAr?.Length ?? 0, f.ValueEn?.Length ?? 0);
+                    <div class="row-editor site-text" id="t-@anchor" tabindex="-1">
+                        <p class="site-text-head">
+                            <strong>@f.DefaultAr</strong>
+                            <span class="@(f.IsCustom ? "badge-active" : "badge-inactive") en-chip">@(f.IsCustom ? "مخصّص" : "افتراضي")</span>
+                            <code dir="ltr" class="field-hint">@key</code>
+                        </p>
+                        @if (f.Placeholders.Count > 0)
+                        {
+                            <p class="field-hint">احتفظ بـ <span dir="ltr">@string.Join(" ", f.Placeholders)</span> في النص: يُستبدل تلقائياً (اسم الحقل، الرقم…).</p>
+                        }
+                        <div class="lang-pair">
+                            <div class="form-group lang-field lang-ar">
+                                <label for="t-@anchor-ar">العربية <span class="lang-chip">ع</span></label>
+                                <input id="t-@anchor-ar" name="@nameAr" value="@f.ValueAr" placeholder="@f.DefaultAr" maxlength="@PublicTexts.MaxLength" dir="rtl" lang="ar" class="form-control@(errAr.Count > 0 ? " is-invalid" : "")">
+                                @foreach (var e in errAr) { <span class="field-error">@e</span> }
+                            </div>
+                            <div class="form-group lang-field lang-en">
+                                <label for="t-@anchor-en">English <span class="lang-chip en">EN</span></label>
+                                <input id="t-@anchor-en" name="@nameEn" value="@f.ValueEn" placeholder="@f.DefaultEn" maxlength="@PublicTexts.MaxLength" dir="ltr" lang="en" class="form-control ltr-input@(errEn.Count > 0 ? " is-invalid" : "")">
+                                <span class="field-hint">فارغ = النص الإنجليزي الافتراضي</span>
+                                @foreach (var e in errEn) { <span class="field-error">@e</span> }
+                            </div>
+                        </div>
+                        @if (f.IsCustom)
+                        {
+                            if (longest > 60)
+                            {
+                                <button type="submit" class="btn-admin btn-secondary btn-sm" name="reset" value="@key" formnovalidate
+                                        onclick="return confirm('إعادة هذا النص الطويل إلى الافتراضي؟')">إعادة للافتراضي</button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn-admin btn-secondary btn-sm" name="reset" value="@key" formnovalidate>إعادة للافتراضي</button>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="sticky-actions">
+            <button type="submit" class="btn-admin btn-primary">حفظ كل التغييرات</button>
+            <a href="/" target="_blank" rel="noopener" class="btn-admin btn-secondary">معاينة العربية</a>
+            <a href="/en" target="_blank" rel="noopener" class="btn-admin btn-secondary">معاينة الإنجليزية</a>
+        </div>
+    </form>
+}

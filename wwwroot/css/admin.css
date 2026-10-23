@@ -230,7 +230,8 @@ select.form-control { cursor: pointer; }
 .row-editor .edit-form { padding: 12px; background: var(--admin-bg); border-radius: 10px; margin-top: 8px; }
 .pager { display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 16px; }
 .pager-info { color: var(--admin-text-muted); font-size: 0.85rem; }
-.sticky-actions { position: sticky; bottom: 0; display: flex; gap: 12px; align-items: center; padding: 14px 0; background: var(--admin-bg); z-index: 5; }
+/* flex-wrap: four buttons do not fit 375 px (QA C5-5: the bar made the page scroll sideways by 9 px). */
+.sticky-actions { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 14px 0; background: var(--admin-bg); z-index: 5; }
 .utc-time { white-space: nowrap; }
 @media (max-width: 768px) { .lang-pair { grid-template-columns: 1fr; } }
 
@@ -282,3 +283,44 @@ select.form-control { cursor: pointer; }
 .lead-detail dd { margin: 0; color: var(--admin-text); overflow-wrap: anywhere; }
 .lead-detail .lead-value { white-space: pre-line; }
 @media (max-width: 640px) { .lead-detail { grid-template-columns: 1fr; gap: 4px; } .lead-detail dd { margin-bottom: 10px; } }
+
+/* ── C5 shared list patterns (Views/Admin/Shared/_ReorderCell, _VisibleSwitch, _IconPicker) ── */
+.reorder-cell { display: inline-flex; align-items: center; gap: 6px; }
+.reorder-cell form { margin: 0; }
+.reorder-cell .btn-sm { min-width: 40px; min-height: 40px; padding: 0; }
+.reorder-cell .btn-sm:disabled { opacity: .35; cursor: default; }
+.reorder-pos { min-width: 1.5em; text-align: center; color: var(--admin-text-muted); font-size: 0.8rem; }
+.visible-switch { margin: 0; }
+.visible-switch button { border: 0; cursor: pointer; }
+.visible-switch button:disabled { cursor: default; opacity: .7; }
+.row-hidden > td { opacity: .6; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.icon-picker { border: 0; padding: 0; margin: 0 0 12px; }
+.icon-picker legend { font-weight: 700; margin-bottom: 8px; }
+.icon-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.icon-picker-option { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border: 1px solid var(--admin-border); border-radius: 10px; cursor: pointer; text-align: center; }
+.icon-picker-option:has(input:checked) { border-color: var(--admin-navy); box-shadow: 0 0 0 2px var(--admin-navy) inset; }
+.icon-picker-option:has(input:focus-visible) { outline: 2px solid var(--admin-navy); outline-offset: 2px; }
+.icon-picker-none { font-size: 1.2rem; line-height: 24px; }
+.icon-picker-label { font-size: 0.75rem; color: var(--admin-text-muted); }
+
+/* Admin › رسائل وأزرار الموقع (SiteTexts) */
+.site-text { padding-block: 12px; border-block-end: 1px solid var(--admin-border); }
+.site-text:last-child { border-block-end: 0; }
+.site-text-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 8px; }
+.site-text-head code { font-size: 0.72rem; }
+@media (max-width: 768px) { .site-text .btn-sm { width: 100%; } }
+
+/* Brand screen (Admin/Brand): preview beside the form, stacked on a phone. */
+.brand-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 24px; }
+.brand-form { flex: 1 1 280px; min-width: 0; }
+.brand-preview { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px; border-radius: 10px; background: var(--admin-bg); font-size: 0.78rem; color: var(--admin-text-muted); text-align: center; }
+.brand-preview img { display: block; object-fit: contain; }
+.brand-preview--icon img { width: 32px; height: 32px; image-rendering: auto; }
+.brand-preview--apple img { width: 90px; height: 90px; border-radius: 20px; }
+.brand-preview--og { flex: 1 1 320px; max-width: 480px; }
+.brand-preview--og img { width: 100%; height: auto; aspect-ratio: 1200 / 630; object-fit: cover; border-radius: 8px; }
+.brand-ok { display: block; color: #16a34a; }
+.brand-warning { margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: #a16207; font-size: 0.85rem; }
+.brand-swatch { inline-size: 48px; block-size: 48px; border-radius: 10px; border: 1px solid var(--admin-border, rgba(0,0,0,0.1)); flex: none; }
+@media (max-width: 640px) { .brand-preview--og { max-width: 100%; } }

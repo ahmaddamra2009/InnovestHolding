@@ -10,7 +10,17 @@ public sealed record ChoiceVm(int Id, LText Text);
 public sealed record FormSideVm(LText Badge, LText Title, LText Text, IReadOnlyList<LText> Points, bool Numbered);
 
 /// <summary>What every lead form shares: where it posts, its ids, the consent sentence, the submit label, the side column.</summary>
-public abstract record LeadFormVm(string Action, string IdPrefix, LText Consent, LText SubmitLabel, FormSideVm? Side);
+public abstract record LeadFormVm(string Action, string IdPrefix, LText Consent, LText SubmitLabel, FormSideVm? Side)
+{
+    /// <summary>
+    /// The privacy policy link next to the consent box (<c>SiteViews.PrivacyLink</c>: null while the policy is unpublished
+    /// or has no body). A <c>{privacy}</c> token in the consent text places it; without the token it follows the text.
+    /// </summary>
+    public LinkVm? Privacy { get; init; }
+
+    /// <summary>The privacy page's title: what a <c>{privacy}</c> token shows, as plain text, while there is no link.</summary>
+    public LText PrivacyTitle { get; init; } = LText.Empty;
+}
 
 public sealed record ForumRegistrationFormVm(string Action, string IdPrefix, LText Consent, LText SubmitLabel, FormSideVm? Side,
     IReadOnlyList<ChoiceVm> Events, IReadOnlyList<ChoiceVm> Interests)

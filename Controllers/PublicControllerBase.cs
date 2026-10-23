@@ -29,22 +29,37 @@ public abstract partial class PublicControllerBase : Controller
     /// <summary>Records the page's robots decision for the X-Robots-Tag middleware.</summary>
     protected void SetRobots(RobotsDecision decision) => HttpContext.Items[SeoPolicy.ItemKey] = decision;
 
+    /// <summary>The links that resolved (a link to an unpublished page is null and left out).</summary>
+    protected static IReadOnlyList<LinkVm> Actions(params LinkVm?[] links) => links.OfType<LinkVm>().ToList();
+
+    /// <summary>True when the page (or one of its ancestors) is unpublished: it answers the branded 404.</summary>
+    protected static bool Unpublished(SiteViews v, string key) => !v.Snapshot.IsPublished(key);
+
     /// <summary>
-    /// Renders a page of the route table: its title, intro and body from the Pages row, then <paramref name="blocks"/>.
-    /// A page with no text and no content block (links and calls to action do not count) shows its admin-managed empty text with <paramref name="emptyAction"/>.
+    /// Renders a page of the route table: its title, intro and body from the Pages row, then <paramref name="blocks"/>
+    /// — each keyed by its section of Infrastructure/Site/PageSectionRegistry, shown and ordered as the admin set them
+    /// (a block whose key is not a section of the page is not rendered). An unpublished page is the branded 404.
+    /// A page with no text and no content block (links and calls to action do not count) shows its admin-managed empty
+    /// text with the admin's empty-state page (Pages.EmptyActionPage) or else <paramref name="emptyAction"/>.
     /// </summary>
-    protected IActionResult Page(string key, SiteViews v, IEnumerable<BlockVm?> blocks, LinkVm? emptyAction = null)
+    protected IActionResult Page(string key, SiteViews v, IEnumerable<(string Key, BlockVm? Block)> blocks, LinkVm? emptyAction = null)
     {
+        if (Unpublished(v, key)) return NotFoundPage(v);
         var page = SiteRoutes.Get(key);
         var row = v.Snapshot.Page(key);
         var baseUrl = BaseUrl(v);
-        var list = blocks.OfType<BlockVm>().ToList();
+        var list = PageSectionRegistry.Arrange(v.Snapshot, key, blocks).ToList();
 
         var intro = row is null ? LText.Empty : v.P(row.IntroAr, row.IntroEn);
         var body = row is null ? [] : SiteViews.Paragraphs(v.P(row.BodyAr, row.BodyEn));
-        var hasContent = list.Any(b => b is not (CtaBlock or CardsBlock or LeadFormBlock { IsContent: false })) || !intro.IsEmpty || body.Count > 0;
+        // A hub (a page with sub-pages, e.g. TV) keeps its "coming soon" block and its button while it has no content
+        // block, even with an intro or body: the text adds to the page, it never removes the way to the sub-pages
+        // (Rami, C5). Any other page: its text counts as content.
+        var hub = SiteRoutes.Children(key).Any();
+        var hasContent = list.Any(b => b is not (CtaBlock or CardsBlock or LeadFormBlock { IsContent: false }))
+                         || (!hub && (!intro.IsEmpty || body.Count > 0));
         if (!hasContent && row is not null)
-            list.Insert(0, new EmptyBlock(v.P(row.EmptyTextAr, row.EmptyTextEn), emptyAction));
+            list.Insert(0, new EmptyBlock(v.P(row.EmptyTextAr, row.EmptyTextEn), v.EmptyAction(key, emptyAction)));
 
         // The unit (Forum / Network / TV) the page belongs to: its tab bar.
         var unit = SiteRoutes.Chain(key).FirstOrDefault(p => p.Parent == PageKeys.Ecosystem);
@@ -94,6 +109,8 @@ public abstract partial class PublicControllerBase : Controller
     /// </summary>
     protected IActionResult Detail(SiteViews v, DetailRoute route, string slug, SeoVm seo, DetailPageVm page)
     {
+        // The item of an unpublished list page (or of a page under an unpublished hub) is not public either.
+        if (Unpublished(v, route.Parent)) return NotFoundPage(v);
         var baseUrl = BaseUrl(v);
         var own = CultureUrls.Detail(route.Key, slug, English);
         page.Shell = v.Shell(route.Parent, baseUrl, CultureUrls.Detail(route.Key, slug, !English),
@@ -109,9 +126,12 @@ public abstract partial class PublicControllerBase : Controller
     protected async Task<IActionResult> OldSlugAsync(Data.AppDbContext db, string detailKey, string slug)
     {
         var route = SiteRoutes.Detail(detailKey);
-        if (await DetailSlugs.CurrentAsync(db, route, slug, HttpContext.RequestAborted) is { } current && current != slug)
+        var v = await ViewsAsync();
+        // No redirect into an unpublished section of the site.
+        if (!Unpublished(v, route.Parent)
+            && await DetailSlugs.CurrentAsync(db, route, slug, HttpContext.RequestAborted) is { } current && current != slug)
             return RedirectPermanent(Request.PathBase + CultureUrls.Detail(detailKey, current, English));
-        return await NotFoundPageAsync();
+        return NotFoundPage(v);
     }
 
     /// <summary>
@@ -137,9 +157,14 @@ public abstract partial class PublicControllerBase : Controller
     private const string NotFoundKey = "404";
 
     /// <summary>The branded 404 (status 404, noindex), in the language of the URL.</summary>
-    protected async Task<IActionResult> NotFoundPageAsync()
+    protected async Task<IActionResult> NotFoundPageAsync() => NotFoundPage(await ViewsAsync());
+
+    /// <summary>
+    /// The branded 404 for an already loaded snapshot. Its links are the admin's notfound_pages (published pages only;
+    /// default Home, Ecosystem, Contact). Status 404 and noindex,nofollow whatever the admin stored.
+    /// </summary>
+    protected IActionResult NotFoundPage(SiteViews v)
     {
-        var v = await ViewsAsync();
         var baseUrl = BaseUrl(v);
         var page = SiteRoutes.Get(PageKeys.Home);
         var seo = SeoBuilder.Build(page, v, baseUrl, RobotsDecision.NoIndexNoFollow) with
@@ -150,8 +175,7 @@ public abstract partial class PublicControllerBase : Controller
         };
         Response.StatusCode = StatusCodes.Status404NotFound;
         SetRobots(RobotsDecision.NoIndexNoFollow);
-        var links = new[] { PageKeys.Home, PageKeys.Ecosystem, PageKeys.Contact }
-            .Select(k => new LinkVm(v.Url(k), v.Title(k))).ToList();
+        var links = v.NotFoundLinks();
         // Not a page of the table: no breadcrumb, no active menu item; the language switch goes to the other home.
         return View("~/Views/Site/NotFound.cshtml", new NotFoundVm(v.Shell(NotFoundKey, baseUrl, CultureUrls.Home(!English)), seo, links));
     }

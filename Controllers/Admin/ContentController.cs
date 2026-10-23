@@ -44,7 +44,7 @@ public class ContentController : AdminControllerBase
     private async Task SetSiteImagesAsync()
     {
         var forms = new List<(SiteImage Image, SiteImageInput Input)>();
-        foreach (var image in SiteImages.All)
+        foreach (var image in SiteImages.ContentEditor)
         {
             var m = await SiteImageRowAsync(image.Key, false);
             forms.Add((image, new SiteImageInput { Key = image.Key, Current = MediaRefs.Of(m), ImageAltAr = m?.AltAr, ImageAltEn = m?.AltEn }));
@@ -61,11 +61,14 @@ public class ContentController : AdminControllerBase
     [HttpPost]
     public async Task<IActionResult> SiteImage(SiteImageInput input)
     {
-        var image = SiteImages.Find(input.Key);
+        // A brand asset is refused here: its slot rules (format, size, alpha) live on Admin/Brand only.
+        var image = SiteImages.Find(input.Key) is { IsBrand: false } found ? found : null;
         if (image is null)
             ModelState.AddModelError(nameof(input.Key), L(MessageKeys.InvalidValueNoField));
         if (!ModelState.IsValid || image is null) return InvalidRedirectToEdit();
         var key = image.Key;
+        // An image no page draws (the light logo) has no alt text: a posted one is ignored, never stored.
+        if (!image.HasAlt) { input.ImageAltAr = null; input.ImageAltEn = null; }
         var current = await SiteImageRowAsync(key, true);
         var uploaded = await UploadImageAsync(input, image.IsLogo ? Infrastructure.Media.ImageUse.Logo : Infrastructure.Media.ImageUse.General);
         if (!ModelState.IsValid) return InvalidRedirectToEdit();
@@ -104,12 +107,15 @@ public class ContentController : AdminControllerBase
         return RedirectToAction(nameof(Edit));
     }
 
-    /// <summary>The pages a page-key setting can point to (route table order), labelled with their Arabic titles.</summary>
+    /// <summary>The pages a page-key setting can point to (route table order), labelled with their Arabic titles; an
+    /// unpublished page is marked (a button pointing to it is not shown on the site).</summary>
     private async Task SetPageChoicesAsync()
     {
-        var titles = await _db.Pages.AsNoTracking().ToDictionaryAsync(p => p.Key, p => p.TitleAr);
+        var pages = await _db.Pages.AsNoTracking().Select(p => new { p.Key, p.TitleAr, p.IsPublished }).ToDictionaryAsync(p => p.Key);
         ViewData[PageChoicesKey] = SiteRoutes.All
-            .Select(p => new KeyValuePair<string, string>(p.Key, $"{titles.GetValueOrDefault(p.Key) ?? p.Key} ({p.Path})"))
+            .Select(p => pages.GetValueOrDefault(p.Key) is { } row
+                ? new KeyValuePair<string, string>(p.Key, $"{row.TitleAr} ({p.Path}){(row.IsPublished ? "" : " — غير منشورة")}")
+                : new KeyValuePair<string, string>(p.Key, $"{p.Key} ({p.Path})"))
             .ToList();
         await SetSiteImagesAsync();
     }
@@ -119,6 +125,8 @@ public class ContentController : AdminControllerBase
     [HttpPost]
     public async Task<IActionResult> Edit(ContentEditInput input)
     {
+        ApplyPickers(input);
+
         // Only registry keys are considered (anything else posted is ignored — no over-posting); keys that were not
         // posted are left unchanged.
         var posted = input.Content
@@ -129,6 +137,19 @@ public class ContentController : AdminControllerBase
 
         foreach (var (key, value) in posted)
             Validate(key, value);
+
+        // An external button target needs its Arabic text (an https address alone would render an empty or a raw-URL
+        // button): the text posted with it, else the stored one.
+        var stored0 = posted.Any(p => p.Key.Rule == ContentRule.Link && ContentKeys.IsExternalLink(p.Value.Ar))
+            ? await _db.SiteContents.AsNoTracking().ToDictionaryAsync(c => c.SectionKey, c => c.ContentAr)
+            : null;
+        foreach (var (key, value) in posted.Where(p => p.Key.Rule == ContentRule.Link && p.Key.LabelKey is not null))
+        {
+            if (!ContentKeys.IsExternalLink(value.Ar)) continue;
+            var label = input.Content.TryGetValue(key.LabelKey!, out var l) ? l?.Ar : stored0!.GetValueOrDefault(key.LabelKey!);
+            if (string.IsNullOrWhiteSpace(label))
+                ModelState.AddModelError($"content[{key.LabelKey}].Ar", L(MessageKeys.Required, ContentKeys.Find(key.LabelKey!)?.Label ?? key.LabelKey!));
+        }
 
         if (!ModelState.IsValid)
         {
@@ -174,10 +195,41 @@ public class ContentController : AdminControllerBase
         return RedirectToAction(nameof(Edit));
     }
 
+    /// <summary>The form field of a link's external address (shown beside the page picker).</summary>
+    public static string ExternalField(string key) => $"external[{key}]";
+
+    /// <summary>The checkbox name of a page-list key, and the hidden marker telling that its checkboxes were on the form.</summary>
+    public static string PageListField(string key) => $"pagelist[{key}]";
+    public static string PageListMarker(string key) => $"pagelist-posted[{key}]";
+
+    /// <summary>
+    /// Turns the pickers into the stored text: a link whose picker says «رابط خارجي…» takes the address typed beside it;
+    /// a page list (checkboxes, when they were on the form) becomes "key1,key2" in the order of the route table.
+    /// </summary>
+    private void ApplyPickers(ContentEditInput input)
+    {
+        var form = Request.HasFormContentType ? Request.Form : null;
+        if (form is null) return;
+        foreach (var key in ContentKeys.All)
+        {
+            if (key.Rule == ContentRule.Link && input.Content.TryGetValue(key.Key, out var v) && v?.Ar?.Trim() == ContentKeys.ExternalLinkChoice)
+                v.Ar = form[ExternalField(key.Key)].ToString();
+            else if (key.Rule == ContentRule.PageKeyList && form.ContainsKey(PageListMarker(key.Key)))
+            {
+                var chosen = form[PageListField(key.Key)].Where(x => x is not null).Select(x => x!.Trim()).ToHashSet(StringComparer.Ordinal);
+                // An unknown value posted is kept so the validation refuses it (never silently dropped).
+                var ordered = SiteRoutes.All.Select(p => p.Key).Where(chosen.Contains)
+                    .Concat(chosen.Where(c => !SiteRoutes.IsKey(c)));
+                input.Content[key.Key] = new BilingualValueInput { Ar = string.Join(",", ordered) };
+            }
+        }
+    }
+
     private static string? Normalize(ContentKey key, string? value)
     {
         if (string.IsNullOrWhiteSpace(value)) return null;
         var v = value.Trim().Replace("\r\n", "\n").Replace('\r', '\n'); // one line-break form: LF
+        if (key.Rule == ContentRule.CountryCode && ContactFormats.CountryCode(v) is { } country) return country; // eg → EG
         return key.Rule == ContentRule.BaseUrl && SiteUrl.TryNormalize(v, out var normalized) ? normalized : v;
     }
 
@@ -205,10 +257,16 @@ public class ContentController : AdminControllerBase
             ContentRule.HttpsUrl => SiteUrl.IsHttpsUrl(value.Ar),
             ContentRule.BaseUrl => SiteUrl.TryNormalize(value.Ar, out _),
             ContentRule.SitePath => SiteUrl.IsSitePath(value.Ar),
-            ContentRule.Count => ContentKeys.ParseCount(value.Ar.Trim(), 0) > 0,
+            ContentRule.Count => ContentKeys.ParseCount(value.Ar.Trim(), 0, key.CountMax) > 0,
             ContentRule.PageKey => SiteRoutes.IsKey(value.Ar.Trim()),
+            ContentRule.Link => ContentKeys.IsLink(value.Ar),
+            ContentRule.IconKey => Icons.IsKnown(value.Ar.Trim()),
+            ContentRule.PageKeyList => ContentKeys.PageList(value.Ar) is { Count: >= 1 and <= ContentKeys.MaxPageList } list
+                                       && list.All(SiteRoutes.IsKey) && list.Distinct(StringComparer.Ordinal).Count() == list.Count,
             ContentRule.Digits => value.Ar.Trim() is { Length: >= 8 and <= 15 } d && d.All(char.IsAsciiDigit),
             ContentRule.UtcOffset => EventDates.TryParseOffset(value.Ar.Trim(), out _),
+            ContentRule.Phone => ContactFormats.IsPhone(value.Ar),
+            ContentRule.CountryCode => ContactFormats.CountryCode(value.Ar) is not null,
             _ => true
         };
         if (!ok)
@@ -217,9 +275,12 @@ public class ContentController : AdminControllerBase
             {
                 ContentRule.BaseUrl => L(MessageKeys.BaseUrl),
                 ContentRule.SitePath => L(MessageKeys.SitePath, label),
-                ContentRule.Count => L(MessageKeys.Range, label, 1, ContentKeys.MaxCount),
-                ContentRule.PageKey or ContentRule.Digits => L(MessageKeys.InvalidValue, label),
+                ContentRule.Count => L(MessageKeys.Range, label, 1, key.CountMax),
+                ContentRule.PageKey or ContentRule.Digits or ContentRule.IconKey or ContentRule.PageKeyList => L(MessageKeys.InvalidValue, label),
+                ContentRule.Link => L(MessageKeys.HttpsUrl, label),
                 ContentRule.UtcOffset => L(MessageKeys.UtcOffset),
+                ContentRule.Phone => L(MessageKeys.ContentPhone, label),
+                ContentRule.CountryCode => L(MessageKeys.ContentCountryCode, label),
                 _ => L(MessageKeys.HttpsUrl, label)
             };
             ModelState.AddModelError(arField, message);

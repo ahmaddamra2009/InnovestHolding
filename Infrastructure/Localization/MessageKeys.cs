@@ -46,6 +46,9 @@ public static class MessageKeys
     public const string EndBeforeStart = "Msg_EndBeforeStart";
     public const string DateRequired = "Msg_DateRequired";
     public const string UtcOffset = "Msg_UtcOffset";
+    /// <summary>Content editor: contact_phone / org_address_country (C5 final, SEO-C5 §7).</summary>
+    public const string ContentPhone = "Msg_ContentPhone";
+    public const string ContentCountryCode = "Msg_ContentCountryCode";
     public const string SlugTaken = "Msg_SlugTaken";
     public const string SlugReserved = "Msg_SlugReserved";
     public const string SlugInvalid = "Msg_SlugInvalid";
@@ -118,8 +121,6 @@ public static class MessageKeys
         public const string NameEn = "Field_NameEn";
         public const string Label = "Field_Label";
         public const string LabelEn = "Field_LabelEn";
-        public const string ShortTitle = "Field_ShortTitle";
-        public const string ShortTitleEn = "Field_ShortTitleEn";
         public const string ShortLabel = "Field_ShortLabel";
         public const string ShortLabelEn = "Field_ShortLabelEn";
         public const string Text = "Field_Text";
@@ -180,9 +181,6 @@ public static class MessageKeys
         public const string NavAdded = "Admin_NavAdded";
         public const string NavUpdated = "Admin_NavUpdated";
         public const string NavDeleted = "Admin_NavDeleted";
-        public const string SubItemAdded = "Admin_SubItemAdded";
-        public const string SubItemUpdated = "Admin_SubItemUpdated";
-        public const string SubItemDeleted = "Admin_SubItemDeleted";
         public const string PartnerAdded = "Admin_PartnerAdded";
         public const string PartnerUpdated = "Admin_PartnerUpdated";
         public const string PartnerDeleted = "Admin_PartnerDeleted";
@@ -238,6 +236,23 @@ public static class MessageKeys
         public const string ImageHintGeneral = "Admin_ImageHintGeneral";
         public const string ImageHintLogo = "Admin_ImageHintLogo";
         public const string SectorInUse = "Admin_SectorInUse";
+        // Admin › رسائل وأزرار الموقع (Infrastructure/Content/PublicTexts).
+        public const string SiteTextsSaved = "Admin_SiteTextsSaved";
+        public const string SiteTextReset = "Admin_SiteTextReset";
+        public const string SiteTextGroupReset = "Admin_SiteTextGroupReset";
+        /// <summary>{0} = the text, {1} = the language, {2} = the placeholders the default has.</summary>
+        public const string SiteTextPlaceholders = "Admin_SiteTextPlaceholders";
+        /// <summary>{0} = the text, {1} = the language.</summary>
+        public const string SiteTextMarkup = "Admin_SiteTextMarkup";
+        /// <summary>{0} = the text, {1} = the language.</summary>
+        public const string SiteTextFormatSpec = "Admin_SiteTextFormatSpec";
+
+        public const string BrandSaved = "Admin_BrandSaved";
+        public const string BrandReverted = "Admin_BrandReverted";
+        public const string ThemeColorInvalid = "Admin_ThemeColorInvalid";
+        public const string ThemeColorSaved = "Admin_ThemeColorSaved";
+        /// <summary>The login page's site name when the content cannot be read (C4's hard-coded value).</summary>
+        public const string LoginSiteName = "Admin_LoginSiteName";
     }
 
     public static class Ui
@@ -345,5 +360,54 @@ public static class MessageKeys
         public const string ProfilesAria = "Ui_ProfilesAria";
         public const string WatchOnYouTube = "Ui_WatchOnYouTube";
         public const string ExternalLink = "Ui_ExternalLink";
+        /// <summary>Visually hidden after the privacy link of a consent box (it opens in a new tab).</summary>
+        public const string OpensInNewTab = "Ui_OpensInNewTab";
+    }
+
+    /// <summary>C5 list screens (Nav/footer, services, social links): admin messages, Arabic admin.</summary>
+    public static class AdminLists
+    {
+        public const string FooterLimit = "Admin_FooterLimit";
+        public const string SocialExists = "Admin_SocialExists";
+        public const string IconInvalid = "Admin_IconInvalid";
+        public const string CustomSocialIncomplete = "Admin_CustomSocialIncomplete";
+        /// <summary>{0} = the cap (SocialLinksController.MaxCustom).</summary>
+        public const string SocialCustomLimit = "Admin_SocialCustomLimit";
+        /// <summary>Tooltip of a menu row's site switch; {0} = the link's name.</summary>
+        public const string NavToggleSite = "Admin_NavToggleSite";
+        /// <summary>Tooltip of a menu row's header switch; {0} = the link's name.</summary>
+        public const string NavToggleHeader = "Admin_NavToggleHeader";
+    }
+
+    /// <summary>C5 Admin/Pages/Edit hints.</summary>
+    public static class AdminPages
+    {
+        /// <summary>Next to «تظهر في الفوتر» while the footer is customised.</summary>
+        public const string FooterAutoOnly = "Admin_PageFooterAutoOnly";
+        /// <summary>The link to «القائمة والفوتر» › footer columns.</summary>
+        public const string FooterColumnsLink = "Admin_PageFooterColumnsLink";
+        /// <summary>confirm() before a sections-card button reloads the page over unsaved edits.</summary>
+        public const string UnsavedChanges = "Admin_PageUnsavedChanges";
+    }
+
+    /// <summary>C5 Admin/PageSections (show/hide, order, counts): admin messages.</summary>
+    public static class AdminSections
+    {
+        public const string LastVisible = "Admin_SectionLastVisible";
+        /// <summary>{0} = the section.</summary>
+        public const string Shown = "Admin_SectionShown";
+        /// <summary>{0} = the section.</summary>
+        public const string Hidden = "Admin_SectionHidden";
+        /// <summary>{0} = the section, {1} = its new position, {2} = the number of movable sections.</summary>
+        public const string Moved = "Admin_SectionMoved";
+        /// <summary>{0} = the count's label, {1} = its maximum.</summary>
+        public const string LimitInvalid = "Admin_SectionLimitInvalid";
+        /// <summary>Status of a section that cannot be hidden (no switch).</summary>
+        public const string Fixed = "Admin_SectionFixed";
+        public const string FixedHint = "Admin_SectionFixedHint";
+        /// <summary>Status of the last visible section (no switch: hiding it is refused).</summary>
+        public const string Visible = "Admin_SectionVisible";
+        /// <summary>The screen's name (sidebar and heading): it manages every page's sections (QA C5-7).</summary>
+        public const string ScreenTitle = "Admin_SectionsScreenTitle";
     }
 }

@@ -1,0 +1,17 @@
+﻿@model HomeViewModel
+@{ var inv = System.Globalization.CultureInfo.InvariantCulture; }
+    <!-- 5. IMPACT -->
+    <section class="stats-section" id="stats">
+      <div class="container">
+        <div class="impact-grid">
+          @for (var i = 0; i < Model.Stats.Count; i++)
+          {
+            var s = Model.Stats[i];
+            <div class="impact-card reveal@(HomeViewModel.Delay(i + 1))">
+              <div class="impact-number" data-counter="@s.Value.ToString(inv)" data-suffix="@s.Suffix">@s.Value.ToString("N0", inv)@s.Suffix</div>
+              <div class="impact-label" lang="@s.Label.Lang" dir="@s.Label.Dir">@s.Label</div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>

@@ -4,9 +4,7 @@
 @using InnovestHolding.Infrastructure.Seo
 @{
     var c = Model.Content;
-    var siteName = c.Text("site_name");
     var footerDesc = c.Text("footer_description");
-    var quickTitle = c.Text("footer_quicklinks_title");
     var contactTitle = c.Text("footer_contact_title");
     var copyright = c.Text("footer_copyright");
     var creditText = c.Text("footer_credit_text");
@@ -16,10 +14,8 @@
     var address = c.Text("contact_address");
     var phone = c.Neutral("contact_phone");
     var email = c.Neutral("contact_email");
-    // Company column: the top-level pages; then one column per unit of the ecosystem (the same tree as the header).
-    var company = Model.Menu.Where(m => m.Children.Count == 0).ToList();
-    var ecosystem = Model.Menu.FirstOrDefault(m => m.Children.Count > 0);
-    if (ecosystem is not null) company.Insert(Math.Min(2, company.Count), ecosystem);
+    // The link columns: automatic (the company column, then one per unit) or the admin's (Infrastructure/Site/FooterBuilder).
+    var columns = Model.Footer.Columns;
     const string chevron = "<polyline points=\"15 18 9 12 15 6\"/>";
 }
 <footer class="site-footer">
@@ -29,11 +25,11 @@
         <div class="footer-logo">
           @if (Model.Brand.LogoOnDark is { } logo)
           {
-            <img src="@logo.Url" alt="@siteName" width="@logo.Width" height="@logo.Height" loading="lazy">
+            <img src="@logo.Url" alt="@Model.Brand.LogoAlt" width="@logo.Width" height="@logo.Height" loading="lazy">
           }
           else
           {
-            <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@siteName" width="200" height="51" loading="lazy">
+            <img src="@Context.Versioned(BrandAssets.LogoOnDark)" alt="@Model.Brand.LogoAlt" width="200" height="51" loading="lazy">
           }
         </div>
         <p class="footer-desc" lang="@footerDesc.Lang" dir="@footerDesc.Dir">@footerDesc</p>
@@ -42,7 +38,7 @@
           <div class="social-links">
             @foreach (var social in Model.Socials)
             {
-              var icon = SocialIcons.All[social.Network];
+              if (SocialDisplay.Of(social) is not { } icon) { continue; }
               <a href="@social.Url" class="social-link" aria-label="@icon.Name" target="_blank" rel="noopener">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(icon.Svg)</svg>
               </a>
@@ -51,38 +47,36 @@
         }
       </div>
 
-      <div class="footer-col">
-        <h2 class="footer-col-title" lang="@quickTitle.Lang" dir="@quickTitle.Dir">@quickTitle</h2>
-        <div class="footer-links">
-          @foreach (var link in company)
-          {
-            <a href="@link.Href" class="footer-link">
-              <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
-              <span lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</span>
-            </a>
-          }
-          @foreach (var link in Model.ExtraLinks)
-          {
-            <a href="@link.Href" class="footer-link">
-              <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
-              <span lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</span>
-            </a>
-          }
-        </div>
-      </div>
-
-      @if (ecosystem is not null)
+      @foreach (var column in columns)
       {
-        foreach (var unit in ecosystem.Children)
+        // A column headed by its own first link (a unit) is collapsible on a phone; any other has a plain heading.
+        var heading = FooterBuilder.HeadingLink(column);
+        var links = heading is null ? column.Links : column.Links.Skip(1);
+        if (heading is null)
+        {
+          <div class="footer-col">
+            <h2 class="footer-col-title" lang="@column.Title.Lang" dir="@column.Title.Dir">@column.Title</h2>
+            <div class="footer-links">
+              @foreach (var link in links)
+              {
+                <a href="@link.Href" class="footer-link" rel="@link.Rel">
+                  <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
+                  <span lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</span>
+                </a>
+              }
+            </div>
+          </div>
+        }
+        else
         {
           <details class="footer-col footer-unit" open>
-            <summary class="footer-col-title"><a href="@unit.Href" lang="@unit.Title.Lang" dir="@unit.Title.Dir">@unit.Title</a></summary>
+            <summary class="footer-col-title"><a href="@heading.Href" lang="@heading.Title.Lang" dir="@heading.Title.Dir">@heading.Title</a></summary>
             <div class="footer-links">
-              @foreach (var pg in unit.Children)
+              @foreach (var link in links)
               {
-                <a href="@pg.Href" class="footer-link">
+                <a href="@link.Href" class="footer-link" rel="@link.Rel">
                   <svg class="i-dir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(chevron)</svg>
-                  <span lang="@pg.Title.Lang" dir="@pg.Title.Dir">@pg.Title</span>
+                  <span lang="@link.Title.Lang" dir="@link.Title.Dir">@link.Title</span>
                 </a>
               }
             </div>
@@ -120,6 +114,11 @@
 
     <div class="footer-bottom">
       <span lang="@copyright.Lang" dir="@copyright.Dir">@ContentText.WithYear(copyright.Value, DateTime.UtcNow)</span>
+      @if (Model.Footer.Privacy is { } privacy)
+      {
+        @* A bare <a> (no wrapper): only once the policy has a body (Rami Q6). *@
+        <a href="@privacy.Href" class="footer-legal-link" lang="@privacy.Title.Lang" dir="@privacy.Title.Dir">@privacy.Title</a>
+      }
       <span>
         <span lang="@creditText.Lang" dir="@creditText.Dir">@creditText</span>
         @if (creditHost is not null)

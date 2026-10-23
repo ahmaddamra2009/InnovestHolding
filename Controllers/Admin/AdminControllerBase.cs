@@ -228,6 +228,30 @@ public abstract class AdminControllerBase : Controller
         }
     }
 
+    // ── Reorder (▲▼, Views/Admin/Shared/_ReorderCell) ──
+
+    /// <summary>
+    /// Moves row <paramref name="id"/> one place up (-1) or down (+1) within <paramref name="scope"/> (the list as the
+    /// admin sees it: same group / page / column — a tracked query of the request's AppDbContext), ordered by SortOrder
+    /// then Id; then renumbers the scope 1..n and saves. Returns null when the id is not in the scope or the direction
+    /// is not ±1 (the caller answers 404); at an edge nothing is written (<see cref="MoveResult{T}.Moved"/> false).
+    /// </summary>
+    protected async Task<MoveResult<T>?> MoveAsync<T>(IQueryable<T> scope, int id, int direction) where T : class, ISortable
+    {
+        if (direction is not (-1 or 1)) return null;
+        var rows = await scope.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync();
+        var index = rows.FindIndex(x => x.Id == id);
+        if (index < 0) return null;
+        var target = index + direction;
+        if (target < 0 || target >= rows.Count) return new MoveResult<T>(rows[index], index + 1, rows.Count, false);
+
+        (rows[index], rows[target]) = (rows[target], rows[index]);
+        for (var i = 0; i < rows.Count; i++) rows[i].SortOrder = i + 1;
+        // The scope's context is the request's (scoped) AppDbContext; the interceptor invalidates the site cache.
+        await HttpContext.RequestServices.GetRequiredService<AppDbContext>().SaveChangesAsync();
+        return new MoveResult<T>(rows[target], target + 1, rows.Count, true);
+    }
+
     /// <summary>The item's redirects leave with it (its old URLs then answer 404).</summary>
     protected static async Task RemoveSlugRedirectsAsync(AppDbContext db, string entityType, int id) =>
         db.SlugRedirects.RemoveRange(await db.SlugRedirects.Where(r => r.EntityType == entityType && r.EntityId == id).ToListAsync());

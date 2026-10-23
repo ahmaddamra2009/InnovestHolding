@@ -116,7 +116,7 @@ public class MigrationTests(TestAppFactory f)
             "forms_consent", "join_kind_title", "join_side_title", "join_side_text", "sponsorship_form_title",
             "sponsorship_form_text", "interest_form_title", "interest_form_text"];
         Assert.Empty(ContentKeys.All.Select(k => k.Key)
-            .Where(k => !later.Contains(k) && !k.StartsWith("section_") && !k.StartsWith("founder_"))
+            .Where(k => !later.Contains(k) && !AdminLinksTests.AddedByAdminControl.Contains(k) && !k.StartsWith("section_") && !k.StartsWith("founder_"))
             .Except(keys.Select(k => k.SectionKey)));
         var cta = keys.Single(k => k.SectionKey == "cta_register");
         Assert.Equal("انضم الآن", cta.ContentAr);
@@ -145,7 +145,7 @@ public class MigrationTests(TestAppFactory f)
         // Only the later migrations (multi-page site) are still pending.
         Assert.Equal(["20261022152940_AddSiteStructure", "20261022153329_ApplyCompanyProfile", "20261022172550_RefineSiteStructure",
             "20261022200000_CorrectCoreValuesEnglish", "20261022202359_AddMediaAndDetailPages", "20261022213309_AddEcosystemEntities",
-            "20261022221815_AddLeadForms"], await db.Database.GetPendingMigrationsAsync());
+            "20261022221815_AddLeadForms", "20261023011038_AddAdminControl"], await db.Database.GetPendingMigrationsAsync());
     }
 
     [Fact] // a fresh install (migration + DbSeeder) equals an upgraded old install, row by row

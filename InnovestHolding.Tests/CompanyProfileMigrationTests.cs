@@ -107,7 +107,7 @@ public class CompanyProfileMigrationTests
         Assert.Equal(["رابط المدير"], await db.NavItems.Where(n => n.IsActive).Select(n => n.TitleAr).ToListAsync());
 
         // New reference rows.
-        Assert.Equal(19, await db.Pages.CountAsync());
+        Assert.Equal(20, await db.Pages.CountAsync()); // + privacy (AddAdminControl)
         // 13 page lists (AddSiteStructure, 101 rows) + the 4 choice lists of the Join form (AddLeadForms, 18 rows).
         Assert.Equal(17, await db.ContentItems.Select(i => i.Group).Distinct().CountAsync());
         Assert.Equal(119, await db.ContentItems.CountAsync());
