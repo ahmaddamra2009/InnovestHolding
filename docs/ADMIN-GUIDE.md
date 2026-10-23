@@ -2,8 +2,8 @@
 
 العربية أولاً، ثم English. / Arabic first, then English.
 
-يصف هذا الدليل الموقع حتى المرحلة C4 (الفرع `feature/6-lead-forms`) قبل دمجه في `master`.
-This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) before it is merged into `master`.
+يصف هذا الدليل الموقع حتى المرحلة C5 (التحكم الكامل من لوحة التحكم، فرع `c5/fix-docs` المبني على `a4f086d`) قبل دمجه في `master`.
+This guide describes the site up to phase C5 (full admin control; branch `c5/fix-docs`, built on `a4f086d`) before it is merged into `master`.
 
 ---
 
@@ -28,8 +28,10 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 - **الروابط:** روابط التواصل الاجتماعي ورابط الجهة المطوّرة يجب أن تبدأ بـ `https://`. روابط القائمة والخدمات
   والأخبار تقبل `#قسم` أو `/مسار` أو `https://…`، وتُرفض `javascript:` وما شابهه. اتركوا الحقل فارغاً إن لم يوجد رابط.
 - لا تكتبوا كلمات مرور أو بيانات سرية في أي حقل: كل ما يُكتب في المحتوى يظهر للعامة.
-- **القائمة الجانبية مجمّعة:** «نظرة عامة»، «الموقع»، «منتدى إنوفست العربي»، «الأخبار»، «الوارد». اضغطوا عنوان المجموعة
-  لطيّها أو فتحها؛ يتذكر المتصفح اختياركم.
+- **القائمة الجانبية مجمّعة:** «نظرة عامة»، «الموقع»، «منتدى إنوفست العربي»، «شبكة المستثمرين الملائكيين»، «البرنامج
+  التلفزيوني»، «الأخبار»، «الوارد». اضغطوا عنوان المجموعة لطيّها أو فتحها؛ يتذكر المتصفح اختياركم. مجموعة «الموقع» تضم:
+  صفحات الموقع، النصوص العامة، القوائم، الخدمات، أرقام الأثر، الأسئلة الشائعة، روابط التواصل الاجتماعي، أقسام الصفحة
+  الرئيسية، رسائل وأزرار الموقع، القائمة والفوتر، الهوية البصرية، الإعدادات.
 
 ## 2. بنية الموقع
 
@@ -57,23 +59,30 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 | ↳ الرعاية | `/tv/sponsorship` | `/en/tv/sponsorship` |
 | الأخبار | `/news` | `/en/news` |
 | تواصل معنا | `/contact` | `/en/contact` |
+| سياسة الخصوصية | `/privacy` | `/en/privacy` |
 
-(أسماء الصفحات في الموقع تأتي من حقل «عنوان الصفحة» وقد تختلف عن العمود الأول.) تتفرع الصفحات هكذا: الرئيسية ← من نحن،
-منظومتنا، الأخبار، تواصل معنا؛ منظومتنا ← المنتدى، شبكة المستثمرين الملائكة، التلفزيون؛ ولكل منها صفحاته الفرعية أعلاه.
+(أسماء الصفحات في الموقع تأتي من حقل «عنوان الصفحة» وقد تختلف عن العمود الأول.) المجموع **20 صفحة**. تتفرع الصفحات هكذا:
+الرئيسية ← من نحن، منظومتنا، الأخبار، تواصل معنا، سياسة الخصوصية؛ منظومتنا ← المنتدى، شبكة المستثمرين الملائكة، التلفزيون؛ ولكل منها صفحاته الفرعية أعلاه.
 الصفحة الرئيسية تحتفظ بمعرّفات الأقسام (`#about` وغيرها) فتعمل الروابط القديمة المنتهية بها.
 
 ## 3. صفحات الموقع (`/Admin/Pages`)
 
-القائمة الجانبية ← «الموقع» ← «صفحات الموقع». شجرة بكل الصفحات (عددها في العنوان) مع: الاسم، الرابط (يفتح الصفحة في
-نافذة جديدة)، «في القائمة»، شارة «EN» (مكتملة حين يوجد عنوان الصفحة وعنوان ووصف محركات البحث بالإنجليزية)، وأزرار.
+القائمة الجانبية ← «الموقع» ← «صفحات الموقع». شجرة بكل الصفحات (20، وعددها في العنوان) مع: الاسم، الرابط (يفتح الصفحة في
+نافذة جديدة)، «النشر»، «في القائمة»، شارة «EN» (مكتملة حين يوجد عنوان الصفحة وعنوان ووصف محركات البحث بالإنجليزية)، الترتيب،
+وزر «تعديل».
 
-- **«في القائمة»:** اضغطوا الشارة «ظاهرة/مخفية» لإظهار الصفحة أو إخفائها من القائمة العلوية وقائمة الجوال والفوتر.
-  الإخفاء **لا يحذف الصفحة**: تبقى متاحة برابطها (وتبقى في خريطة الموقع إن كان محتواها كافياً). إخفاء صفحة رئيسية في
-  القائمة يخفي معها صفحاتها الفرعية. الصفحة الرئيسية دائماً ظاهرة. الافتراضي: ظاهرة.
+- **«النشر»:** اضغطوا الشارة «منشورة/غير منشورة». **الصفحة غير المنشورة وكل الصفحات التابعة لها تعرض للزوار صفحة «غير
+  موجودة» (404)** بدل المحتوى، وتخرج من القائمة العلوية وقائمة الجوال والفوتر والبطاقات والروابط والأزرار التي تشير إليها
+  (الزر الذي وجهته صفحة غير منشورة لا يظهر)، ومن خريطة الموقع (`/sitemap.xml`)؛ وترفض نماذجها (إن وجدت) أي إرسال بالخطأ 404.
+  إعادة النشر تعيد كل شيء كما كان؛ النصوص والبيانات المحفوظة لا تُحذف. الصفحة الرئيسية دائماً منشورة. الافتراضي: منشورة.
+- **«في القائمة»:** اضغطوا الشارة «ظاهرة/مخفية» لإظهار الصفحة أو إخفائها من **القائمة العلوية وقائمة الجوال فقط**. الإخفاء
+  **لا يحذف الصفحة**: تبقى متاحة برابطها (وتبقى في خريطة الموقع إن كان محتواها كافياً)، ولا يغيّر الفوتر. إخفاء صفحة
+  رئيسية في القائمة يخفي معها صفحاتها الفرعية من القائمة. الصفحة الرئيسية دائماً ظاهرة. الافتراضي: ظاهرة.
+- **الفوتر:** له مفتاحه الخاص «تظهر في الفوتر» داخل شاشة «تعديل» (انظروا أدناه والقسم 7).
 - **▲ ▼:** يحرّكان الصفحة بين الصفحات التي تتبع الأب نفسه (لا تظهر للرئيسية).
 - **تعديل / إنشاء:** صفحات الموقع الأصلية موجودة بعد النشر؛ يظهر «إنشاء» فقط لصفحة بلا سجل.
 
-شاشة «تعديل صفحة» تحتوي بطاقتين:
+شاشة «تعديل صفحة» تحتوي البطاقات التالية:
 
 **بطاقة «النصوص»** (عربي وإنجليزي لكل حقل):
 - **عنوان الصفحة** (مطلوب): في القائمة والعنوان الرئيسي ومسار التنقل.
@@ -81,7 +90,21 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 - **النص التمهيدي:** تحت العنوان مباشرة.
 - **النص الرئيسي:** سطر فارغ = فقرة جديدة.
 - **نص «قريباً»** (يظهر ما دامت القائمة فارغة، أو ما دامت الصفحة بلا محتوى): نص الحالة الفارغة، انظر القسم 5.
-- **«تظهر في القائمة الرئيسية والفوتر»:** هو مفتاح الإظهار نفسه، ولا يظهر للصفحة الرئيسية.
+- **«زر «قريباً» يفتح الصفحة»:** قائمة بباقي الصفحات؛ «الافتراضي» = الصفحة التي يختارها الموقع لهذه الصفحة. إن كانت
+  الصفحة المختارة غير منشورة لا يظهر الزر.
+- في **الصفحة الرئيسية** تقتصر بطاقة «النصوص» على «عنوان الصفحة» (وتبقى بطاقتا الصورة ومحركات البحث) (نصوص الرئيسية وأقسامها تُعدَّل من «النصوص العامة» و«أقسام
+  الصفحة الرئيسية»).
+
+**بطاقة «النشر والظهور»** (لا تظهر للصفحة الرئيسية):
+- **«منشورة»:** مفتاح النشر نفسه الموصوف أعلاه.
+- **«تظهر في القائمة العلوية»:** مفتاح «في القائمة» نفسه (القائمة العلوية وقائمة الجوال).
+- **«تظهر في الفوتر»:** يعمل **في الفوتر التلقائي فقط**؛ بعد «تخصيص الأعمدة» (القسم 7) يُهمَل هذا المفتاح وتتحكمون
+  بالروابط من «أعمدة الفوتر»، وتبقى حالة النشر مطبّقة (رابط الصفحة غير المنشورة لا يظهر).
+
+**بطاقة «صورة الصفحة»:** صورة بطاقة الصفحة وصورة مشاركتها (يُفضّل 1200×630)، بقواعد الرفع في «رفع الصور».
+
+**بطاقة «كتل الصفحة»** (أسفل الشاشة، للصفحات التي لها أقسام؛ للرئيسية باسم «الأقسام»): إظهار أقسام الصفحة وإخفاؤها
+وترتيبها، انظروا القسم 3ب. أزرارها تحفظ فوراً وبشكل مستقل، ولا يحتاج حفظها إلى «حفظ التعديلات».
 
 **بطاقة «محركات البحث»:** عنوان ووصف محركات البحث بالعربية والإنجليزية. المقترح: العنوان من 30 إلى 60 حرفاً والوصف من
 70 إلى 160 (تنبيه ملوّن فقط، لا يمنع الحفظ). إن تُرك العنوان فارغاً يُستعمل عنوان الصفحة. **عنوان ووصف الصفحة الرئيسية
@@ -96,13 +119,35 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 | الرئيسية | «النصوص العامة» (Hero، من نحن، عناوين الأقسام، التسجيل، التواصل…) + «الخدمات» + «أرقام الأثر» + الأخبار + الفعاليات + «الشركاء والرعاة» + «الأسئلة الشائعة» |
 | من نحن | «النصوص العامة» (الرؤية والرسالة وكلمة المؤسس) + قوائم: القيم، لماذا إنوفست، القطاعات، شركاء النجاح + «أرقام الأثر» |
 | منظومتنا | «الخدمات» + قوائم: ماذا نقدم، برامجنا، خدمات الجهات الحكومية، خدمات الجامعات |
-| المنتدى | قائمة «مكونات المنتدى» + آخر ثلاث فعاليات |
+| المنتدى | قائمة «مكونات المنتدى» + أحدث الفعاليات (عددها من «أقسام الصفحات»، الافتراضي 3) |
 | الفعاليات | «الفعاليات» (القسم 9) |
 | الشركاء والرعاة (المنتدى) | «الشركاء والرعاة» + قائمة «الجهات التي نعمل معها» |
 | شبكة المستثمرين | قوائم: خدمات المستثمرين، خطوات الانضمام (مع وصف)، خدمات الشركات الناشئة، القطاعات |
 | الأخبار | «الأخبار» (القسم 8) |
 | تواصل معنا | «النصوص العامة» ← «معلومات التواصل» + «الأسئلة الشائعة» |
-| كل الصفحات | العناوين والملخص والنص التمهيدي والنص الرئيسي ونص «قريباً» وSEO من «صفحات الموقع» |
+| سياسة الخصوصية | النص الرئيسي من «صفحات الموقع» (القسم 7ب) |
+| كل الصفحات | العناوين والملخص والنص التمهيدي والنص الرئيسي ونص «قريباً» وSEO من «صفحات الموقع»؛ ظهور الأقسام وترتيبها من «أقسام الصفحات» (القسم 3ب)؛ الأزرار والأيقونات من «النصوص العامة» |
+
+## 3ب. أقسام الصفحات (`/Admin/PageSections`)
+
+«الموقع» ← «أقسام الصفحة الرئيسية». تحدّدون **أي أقسام تظهر في كل صفحة وبأي ترتيب**. تفتح الشاشة على الصفحة الرئيسية، وقائمة
+«صفحة أخرى» تعرض أي من الصفحات التسع عشرة التي لها أقسام (كل الصفحات عدا «سياسة الخصوصية»). البطاقة نفسها تظهر أيضاً أسفل
+«تعديل صفحة» لكل صفحة لها أقسام. زر «معاينة الصفحة» يفتح الصفحة. يظهر التغيير في الموقع عند الطلب التالي.
+
+الجدول: # · القسم · المحتوى · الحالة · الترتيب.
+- **الحالة:** الشارة «ظاهر/مخفي» تخفي القسم عن الزوار ومحتواه يبقى محفوظاً. القسم الظاهر الذي **لا محتوى له** يُخفى
+  تلقائياً مهما كان مفتاحه (عمود «المحتوى» يعرض عدد عناصره الحالية، و«0 (يُخفى تلقائياً)» حين لا شيء). **لا يمكن إخفاء آخر
+  قسم ظاهر في الصفحة** (تُرفض العملية برسالة). المحتوى الرئيسي لصفحات القوائم والنماذج (القائمة أو النموذج نفسه، مثل
+  قائمة الأخبار ونموذج التواصل) تظهر له شارة «ظاهر دائماً» ولا يُخفى. القسم الوحيد في صفحة التلفزيون (`/tv`) يظهر كذلك
+  «ظاهر دائماً».
+- **الترتيب:** ▲▼ يحرّكان القسم بين الأقسام المتحركة في الصفحة. الأقسام **الثابتة** (تظهر أولاً في الجدول وعليها «ثابت»)
+  لا تتحرك: العنوان الرئيسي للصفحة الرئيسية (Hero) ليس قسماً في الجدول ويبقى في الأعلى دائماً؛ و«أرقام الواجهة» داخل الـ Hero
+  (يمكن إخفاؤها لكن لا تتحرك)؛ و«قيمنا» داخل «من نحن».
+- **الأعداد:** في الجدول مربعات أرقام مع زر «حفظ»: عدد الأرقام في واجهة الرئيسية (1–12، الافتراضي 4)، وعدد الفعاليات على
+  الرئيسية (1–12، الافتراضي 3)، وعدد الأخبار على الرئيسية (1–50، الافتراضي 6)، وعدد الفعاليات في صفحة المنتدى (1–12،
+  الافتراضي 3). قيمة خارج المدى تُرفض برسالة ولا يتغير شيء. هذه القيم نفسها في «النصوص العامة» ← «عناوين أقسام الصفحة
+  الرئيسية».
+- الأقسام وأسماؤها ثابتة في الكود: لا تُضاف ولا تُحذف من اللوحة.
 
 ## 4. القوائم (`/Admin/ContentItems`)
 
@@ -130,9 +175,9 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 
 ## 6. النصوص العامة (`/Admin/Content/Edit`)
 
-«الموقع» ← «النصوص العامة» (كانت «الصفحة الرئيسية»). بطاقات: الهيدر والأزرار، الهوية، Hero، من نحن، عناوين أقسام
-الصفحة الرئيسية، عناوين أقسام الصفحات، كلمة المؤسس، التسجيل، معلومات التواصل، الفوتر، SEO وبيانات الموقع. لكل نص حقل عربي
-وحقل إنجليزي ثم «حفظ».
+«الموقع» ← «النصوص العامة» (كانت «الصفحة الرئيسية»). بطاقات: الهيدر والأزرار، الهوية، Hero، من نحن، الأزرار والروابط،
+عناوين أقسام الصفحة الرئيسية، الأيقونات، عناوين أقسام الصفحات، كلمة المؤسس، التسجيل، نماذج الطلبات، معلومات التواصل،
+الفوتر، SEO وبيانات الموقع. لكل نص حقل عربي وحقل إنجليزي ثم «حفظ».
 
 - **الجزء المميز في العناوين:** ضعوا الجزء الذي يظهر بلون مميز بين `{` و`}`. يجب أن يحتوي النص على زوج واحد فقط
   من الأقواس، وإلا يُرفض الحفظ.
@@ -141,13 +186,23 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
   فقرة عادية. نصا الرؤية والرسالة يظلان فقرتين دائماً ولا يُقسَّمان عند الفواصل. افصلوا القيم الإنجليزية بفاصلة أيضاً
   (النص الإنجليزي المبذور صُحّح ليعطي 7 شرائح كالعربي، ما لم يكن قد عُدّل يدوياً). صفحة «من نحن» تعرض قيمها من قائمة
   «القيم الأساسية» (القسم 4) لا من هذا الحقل.
-- **سنوات الخبرة، الهاتف، البريد:** قيمة واحدة للغتين.
-- **نص شارة الخبرة:** كل سطر يظهر في سطر.
+- **الهاتف، البريد:** قيمة واحدة للغتين. (حقلا «سنوات الخبرة» ونص شارة الخبرة أُزيلا: لا صفحة تعرضهما.)
 - **حقوق النشر:** اكتبوا `{year}` ليُستبدل بالسنة الحالية.
 - **رابط الجهة المطوّرة** (الفوتر): `https://` أو فارغ.
 - **السطر العلوي في Hero:** اختياري، ولا يظهر في الصفحة الإنجليزية إن تُرك حقله الإنجليزي فارغاً.
-- **زر الهيدر:** «نص زر الهيدر» و«الصفحة التي يفتحها زر الهيدر» (قائمة منسدلة بالصفحات التسع عشرة بعناوينها ومساراتها؛ وإن كانت القيمة المحفوظة غير صالحة
-  يُستعمل `network.join`).
+- **زر الهيدر:** «نص زر الهيدر» و«الصفحة التي يفتحها زر الهيدر» (قائمة منسدلة بالصفحات العشرين بعناوينها ومساراتها، مع
+  علامة «— غير منشورة» لما لم يُنشر، وخيار «رابط خارجي… (https)»؛ وإن كانت القيمة المحفوظة غير صالحة يُستعمل `network.join`).
+- **الأزرار والروابط (بطاقة «الأزرار والروابط»):** لكل زر **نص** و**وجهة**. الوجهة تُختار من قائمة الصفحات (العنوان
+  والمسار) أو «رابط خارجي… (https)» فيُكتب العنوان في المربع المجاور (`https://` فقط؛ **الرابط الخارجي يلزمه نص بالعربية**
+  وإلا يُرفض الحفظ). **نص فارغ = عنوان الصفحة الوجهة بلغة الصفحة** (في الصفحة الإنجليزية يُستعمل النص الإنجليزي فقط؛ نص عربي
+  وحده لا يظهر هناك بل عنوان الصفحة الإنجليزي). الزر الذي وجهته صفحة غير منشورة **لا يظهر**. الأزرار: زر الواجهة
+  الرئيسي (وجهة فارغة = وجهة زر الهيدر؛ نص فارغ = نص زر الهيدر)، زر الواجهة الثانوي (نصه «نص الزر الثانوي» في بطاقة Hero)،
+  زر «من نحن» في الرئيسية، زرا شريط الدعوة (وجهة الزر الثاني فارغة = بلا زر ثانٍ)، زر الفعاليات (التسجيل: قوائم
+  الفعاليات وصفحتا الفعالية والمتحدث)، وزر البرنامج التلفزيوني (الرعاية: الحلقات والضيوف).
+- **صفحة «غير موجودة» (404):** في البطاقة نفسها تختارون **حتى 6 صفحات** مقترحة (مربعات اختيار بترتيب قائمة الصفحات)؛
+  الصفحة غير المنشورة تُتخطّى، وإن لم تبقَ صفحة صالحة تُعرض الافتراضية الثلاث (الرئيسية، المنظومة، تواصل معنا).
+- **الأيقونات (بطاقة «الأيقونات»):** شبكة أيقونات ثابتة (لا يُرفع SVG) لبطاقات الرؤية والرسالة والقيم، وشارات أقسام المنظومة
+  والخدمات والفعاليات والأخبار والشركاء والأسئلة الشائعة والتواصل. «الافتراضي» = الأيقونة الأصلية للقسم.
 - **عدد عناصر كل صفحة من القوائم:** «عدد العناصر في كل صفحة من القوائم (الأخبار، الفعاليات…) (1–50)»، الافتراضي 12؛
   تُرقَّم الصفحات `?page=2`… ومن يطلب رقماً خارج النطاق يرى «غير موجود».
 - **حفظ الشاشة لا يغيّر ما لم يُرسل:** أي مفتاح غير موجود في النموذج يبقى كما هو.
@@ -166,7 +221,43 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 - **صورة الواجهة في الرئيسية:** تظهر بجانب عنوان الصفحة الرئيسية بدل المثلث البرتقالي المرسوم.
 - **صورة المؤسس:** قسم «كلمة المؤسس» في «من نحن».
 - **الاحتياط:** ما دام حقل الشعارين فارغاً يُستعمل الشعار المرفق مع الموقع، وما دامت صورة الواجهة فارغة يظهر المثلث. زر الحذف يعيد المرفق. لا يتغير
-  شعار لوحة التحكم وصفحة الدخول ولا صورة المشاركة الافتراضية (`seo_og_image`) بهذه الشاشة.
+  شعار القائمة الجانبية للوحة التحكم ولا حقل مسار صورة المشاركة (`seo_og_image`) بهذه الشاشة. «الشعار على خلفية داكنة» و«اسم
+  الموقع» («SEO وبيانات الموقع») يظهران أيضاً في صفحة الدخول. أيقونة المتصفح وأيقونة الآيفون وصورة المشاركة الافتراضية ولون
+  شريط المتصفح في «الهوية البصرية» (القسم 6د).
+- «الشعار على خلفية فاتحة»: النص البديل (ع / EN) المعروض لهذه الصورة في النموذج غير مستعمل في الموقع (يُقرأ رابط الصورة فقط).
+
+## 6ج. رسائل وأزرار الموقع (`/Admin/SiteTexts`)
+
+«الموقع» ← «رسائل وأزرار الموقع». النصوص الصغيرة التي يراها الزائر خارج محتوى الصفحات: أسماء حقول النماذج وأزرارها، رسائل
+الشكر والأخطاء، تسميات صفحات التفاصيل، الشارات والحالات، التنقل وإمكانية الوصول، صفحة 404 وصفحة الخطأ، وغيرها.
+- **التبويبات:** «الكل» ثم المجموعات (النماذج، رسائل الشكر والأخطاء، تسميات التفاصيل، الشارات والحالات، التنقل وإمكانية
+  الوصول، 404 والخطأ، أخرى) وبجانب كل مجموعة عدد النصوص «المخصّصة». ومربع **بحث** في النص الافتراضي والمخصّص ومفتاحه.
+- **كل نص بلغتين مستقلتين.** النص الافتراضي (من ملفات الموارد) يظهر **باهتاً داخل الحقل**. **الحقل الفارغ = النص الافتراضي**
+  لتلك اللغة فقط (الإنجليزي الفارغ يعرض الإنجليزي الافتراضي). الشارة «مخصّص» أو «افتراضي» تبيّن الحالة.
+- **«إعادة للافتراضي»** لنص واحد، و**«إعادة المجموعة كلها للافتراضي»** (يُطلب تأكيد للنص الطويل وللمجموعة). الإعادة تحذف
+  التخصيص وتحفظ معها أي تعديلات أخرى في الصفحة فلا تضيع.
+- **القواعد:** حتى 300 حرف؛ فواصل الأسطر تتحول إلى مسافة. **ممنوع** الوسوم و`<` و`>` و`javascript:` و`data:`، وكذلك
+  الروابط (`://`) ما لم يحتوِها النص الافتراضي نفسه. إن كان النص الافتراضي فيه متغيّر مثل `{0}` فاكتبوه كما هو **بالأرقام
+  نفسها** (يُستبدل تلقائياً باسم الحقل أو الرقم…)؛ والمسموح فقط `{رقم}` بسيطاً، أما التنسيق مثل `{0:N}` أو `{0,5}` فمرفوض. النص
+  الافتراضي بلا متغيرات: أقواسكم حرة. عند رفض أي حقل لا يُحفظ شيء ويعاد عرض الصفحة بتعديلاتكم والرسالة تحت الحقل.
+- يظهر التغيير في الصفحتين العربية والإنجليزية عند الطلب التالي. لتغيير نصوص الصفحات والأزرار الكبيرة استعملوا «النصوص العامة».
+
+## 6د. الهوية البصرية (`/Admin/Brand`)
+
+«الموقع» ← «الهوية البصرية»: ثلاث صور ولون. لكل صورة نموذج خاص ومعاينة للحالية (أبعادها ووزنها) أو للملف الافتراضي المرفق. الملف
+المرفوض تظهر رسالته تحت الحقل ولا يُحفظ شيء (تُراجَع الامتدادات والنوع والمحتوى معاً، كما في «رفع الصور»).
+- **أيقونة المتصفح (Favicon):** PNG فقط، **مربعة**، من 32×32 إلى 512×512 بكسل، حتى 512 KB. تنبيه غير مانع إن لم تكن
+  الأبعاد من مضاعفات 48 (لنتائج بحث Google). الافتراضي أيقونة SVG مرفقة، ويبقى `/favicon.ico` المرفق للمتصفحات القديمة.
+- **أيقونة الآيفون (Apple Touch Icon):** PNG فقط، **180×180 بالضبط**، **بخلفية مصمتة بلا شفافية** (يُرفض الـ PNG الذي فيه
+  قناة شفافية حتى لو كانت بكسلاته معتمة: احفظوه بلا شفافية)، حتى 512 KB.
+- **صورة المشاركة الافتراضية (og:image):** JPG أو PNG، **من 1200×630 على الأقل**، أطول ضلع حتى 4000 بكسل وحتى **12 ميغابكسل**،
+  حتى 5 MB. تنبيه غير مانع إن كانت النسبة بعيدة عن 1.91:1 (خارج 1.8–2.0) أو الوزن فوق 600 KB (واتساب). لها نص بديل بالعربية
+  والإنجليزية (فارغ = «النص البديل لصورة المشاركة» في «النصوص العامة»). تُستعمل لكل صفحة ليست لها صورة خاصة، وتسبق حقل
+  المسار `seo_og_image`.
+- **الاستبدال والحذف:** اختاروا ملفاً جديداً ثم «حفظ» (الرابط `/media/…` يتغير). لإزالة الصورة علّموا «حذف والعودة إلى الملف
+  الافتراضي المرفق» ثم «حفظ».
+- **لون شريط المتصفح على الجوال (theme-color):** بصيغة `#RRGGBB` (ستة خانات سداسية عشرية) وإلا يُرفض؛ **فارغ = اللون
+  الافتراضي `#111145`**. تظهر معاينة اللون الحالي.
 
 ## 7. القائمة والفوتر (`/Admin/Nav`)
 
@@ -177,13 +268,26 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
   والترتيب بالسهمين ▲▼. «حذف» يزيله نهائياً ومن أعمدة الفوتر المخصّصة أيضاً. **القوائم الفرعية غير مدعومة** (لم تظهر في الموقع
   قط): استخدم صفحة ابنة من «صفحات الموقع». العناصر الفرعية القديمة باقية في قاعدة البيانات ولا تُعرض.
 - **«أعمدة الفوتر»**: الفوتر **تلقائي** ما لم تخصّصه: عمود «روابط سريعة» (الرئيسية والصفحات الرئيسية والمنظومة ثم كل
-  رابط إضافي ظاهر)، ثم عمود لكل وحدة (المنتدى، الشبكة، البرنامج) بصفحاتها. تتحكم فيه من «صفحات الموقع» بمفتاح
-  **«يظهر في الفوتر»** لكل صفحة (مستقل عن «في القائمة») وبحالة النشر. زر **«تخصيص الأعمدة»** ينسخ الفوتر الحالي كما هو إلى
+  رابط إضافي ظاهر)، ثم عمود لكل وحدة (المنتدى، الشبكة، البرنامج) بصفحاتها. تتحكم فيه من «تعديل صفحة» ← «النشر
+  والظهور» بمفتاح **«تظهر في الفوتر»** لكل صفحة (مستقل تماماً عن «في القائمة») وبحالة النشر؛ **هذا المفتاح خاص بالفوتر
+  التلقائي**، فبعد التخصيص يُهمَل وتُدار الروابط من الأعمدة. زر **«تخصيص الأعمدة»** ينسخ الفوتر الحالي كما هو إلى
   أعمدة قابلة للتعديل: عنوان كل عمود بالعربية والإنجليزية، إضافة رابط (صفحة أو رابط إضافي) وإزالته وترتيبه، ترتيب الأعمدة،
   وحذف عمود. الحد الأقصى 4 أعمدة و8 روابط في كل عمود (للإضافة). العمود الذي أول رابط فيه يحمل اسم العمود نفسه يظهر
   عنوانه رابطاً (كأعمدة الوحدات). رابط إلى صفحة غير منشورة أو رابط إضافي مخفي لا يظهر، والعمود بلا روابط ظاهرة لا يظهر.
   **«إعادة إلى التلقائي»** يحذف الأعمدة المخصّصة.
-- رابط **«سياسة الخصوصية»** يظهر تلقائياً في الشريط السفلي للفوتر ما دامت صفحة الخصوصية منشورة ونصّها العربي غير فارغ.
+- رابط **«سياسة الخصوصية»** يظهر تلقائياً في الشريط السفلي للفوتر ما دامت صفحة الخصوصية منشورة ونصّها العربي غير فارغ
+  (انظروا القسم 7ب).
+
+## 7ب. صفحة سياسة الخصوصية
+
+صفحة عادية بالرابطين `/privacy` و`/en/privacy`، تُعدَّل من «صفحات الموقع» ← «سياسة الخصوصية» ← «تعديل»: النص كله في **«النص
+الرئيسي»** بالعربية والإنجليزية (سطر فارغ = فقرة جديدة). تأتي بنص مبدئي مع الترحيل فراجعوه واعتمدوه. افتراضياً هي خارج
+القائمة العلوية والأعمدة التلقائية للفوتر؛ رابطها خاص:
+- يظهر رابط **«سياسة الخصوصية»** في الشريط السفلي للفوتر، وبجانب **مربع الموافقة** في كل نموذج يجمع بيانات (يُفتح في
+  تبويب جديد) — **ما دامت الصفحة منشورة ونصّها العربي غير فارغ**. إن فرّغتم النص الرئيسي العربي أو ألغيتم النشر اختفى الرابط
+  من كل هذه الأماكن.
+- الصفحة بلا نص رئيسي ولا تمهيدي تعرض نص «قريباً» وتبقى خارج محركات البحث (`noindex`)؛ وإلغاء النشر يجعلها 404.
+- الصفحة الإنجليزية تدخل محركات البحث فقط حين يُملأ عنوان ووصف محركات البحث بالإنجليزية (كغيرها).
 
 ## 8. الخدمات والأرقام
 
@@ -211,8 +315,8 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
   / ملغاة)، **طريقة الحضور** (حضوري / عن بُعد / حضوري وعن بُعد)، اسم المكان والمدينة والعنوان، **رابط الحضور عن بُعد**
   (`https://`)، **«التسجيل مفتوح»**، **صورة الفعالية**، ومحركات البحث. اليوم والشهر والوقت النصية حقول بديلة للفعاليات القديمة
   غير المؤرَّخة. في القوائم تظهر الفعاليات القادمة أولاً (الفعاليات القديمة غير المؤرَّخة قبلها) ثم المنتهية، وتحمل المنتهية
-  والملغاة شارة، ويختفي زر التسجيل تلقائياً بعد الانتهاء أو الإلغاء أو إغلاق التسجيل. تظهر الفعاليات في `/forum/events`، وأول ثلاث
-  في صفحة المنتدى.
+  والملغاة شارة، ويختفي زر التسجيل تلقائياً بعد الانتهاء أو الإلغاء أو إغلاق التسجيل. تظهر الفعاليات في `/forum/events`، وأولها في
+  صفحة المنتدى والرئيسية بالعدد المحدد في «أقسام الصفحات» (القسم 3ب؛ الافتراضي 3 لكل منهما).
 - **«الشركاء والرعاة»**: الاسم بالعربية والإنجليزية، **شعار الشريك** (صورة)، **موقع الشريك** (`https://` اختياري؛ يُفتح برابط
   `rel="sponsored noopener"`)، **المجموعة**، و**«يظهر في شريط الشركاء في الصفحة الرئيسية»**. **المجموعات** (بطاقة في أسفل
   الشاشة): عناوين تُرتَّب بها صفحة `/forum/partners` (مثل «الرعاة الرئيسيون»)؛ حذف مجموعة **لا يحذف شركاءها** بل يُعرضون بعد
@@ -297,7 +401,7 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
 
 «روابط التواصل الاجتماعي»: الشبكات المعروفة السبع (LinkedIn وX/Twitter وInstagram وYouTube وFacebook وTikTok وLinktree)،
 كل منها مرة واحدة باسمها وأيقونتها من الموقع؛ و**«شبكة أخرى»** باسم تكتبه (يقرؤه قارئ الشاشة) وأيقونة من الشبكة الثابتة
-(لا يُرفع SVG). «إضافة شبكة» تعرض فقط الشبكات المعروفة غير المضافة. لكل رابط: الرابط (`https://` كامل)، ظاهر/مخفي، الترتيب
+(لا يُرفع SVG)، **ويُسمح بحتى 10 شبكات أخرى** كحد أقصى. «إضافة شبكة» تعرض فقط الشبكات المعروفة غير المضافة. لكل رابط: الرابط (`https://` كامل)، ظاهر/مخفي، الترتيب
 ▲▼؛ و«حذف» للشبكات الأخرى فقط (الشبكة المعروفة تُخفى أو يُفرَّغ رابطها). **الشبكة بلا رابط لا تظهر** في الفوتر ولا في قسم
 التواصل. تُضاف الروابط المفعّلة أيضاً إلى البيانات المنظمة (`sameAs`) للموقع.
 
@@ -315,6 +419,8 @@ This guide describes the site up to phase C4 (branch `feature/6-lead-forms`) bef
   بعد تأكيد؛ **الحذف نهائي**.
 - **حالة المتابعة والملاحظة الداخلية** (في شاشة التفاصيل): اختاروا الحالة — **جديد** (كل الطلبات عند وصولها وكل الطلبات القديمة) ثم **تم التواصل** ثم **مغلق** — واكتبوا **ملاحظة داخلية** (حتى 2000 حرف، مثل «اتصلنا به يوم الاثنين») ثم «حفظ». الحالة والملاحظة **لا يراها الزائر أبداً** ولا يمكن إرسالهما من نماذج الموقع، وهما منفصلتان عن «مقروء/غير مقروء». كل تغيير يُحفظ بزر واحد.
 - **التصدير إلى Excel (CSV):** رابط «تصدير إلى Excel (CSV)» في رأس القائمة ينزّل ملف `leads-<النوع أو all>-<التاريخ>.csv` يضم **الطلبات التي يطابقها المرشّح الحالي** (النوع والقراءة والحالة) من الأحدث إلى الأقدم، دون ترقيم صفحات. الأعمدة: النوع، الرقم، التاريخ (UTC)، الاسم، البريد، الهاتف، التفاصيل، الحالة، مقروء، لغة الصفحة، الملاحظة الداخلية، المرجع (الفرصة / الباقة / الفعالية)، رقم المرجع (فارغ إن لم يُختر شيء أو حُذف المرجع بعد الإرسال). يُحفظ الملف بترميز UTF-8 مع BOM فيُفتح بالعربية الصحيحة بنقرتين في Excel، وكل خلية بين علامتي اقتباس. **القيمة التي تبدأ بـ `=` أو `+` أو `-` أو `@` أو `|` (أو بصيغها العريضة ＝ ＋ － ＠، ولو سبقتها مسافات أو مسافة جدولة) تُسبَق بعلامة `'`** حتى لا تُنفَّذ كصيغة في Excel؛ ستراها في الخلية بعلامة `'` في أولها (مثل `'=SUM(1)`) وهذا مقصود. التواريخ نص بتوقيت UTC. الملف المنزَّل **بيانات شخصية**: عاملوه كقاعدة البيانات، ولا تتركوه في مجلد التنزيلات أو تُرسلوه بقناة غير آمنة.
+- **مربع الموافقة** في كل نموذج يحمل رابط **«سياسة الخصوصية»** (يُفتح في تبويب جديد) ما دامت الصفحة منشورة ونصّها العربي غير
+  فارغ (القسم 7ب). **الهاتف والدولة** يُتحقَّق منهما قبل الحفظ: صيغة الهاتف وقيمة الدولة غير الصالحتين تُرفضان برسالة تحت الحقل.
 - ما يجمعه كل نموذج (النماذج الأربعة الأولى تتطلب الاسم والبريد وتعليم مربع الموافقة؛ الهاتف اختياري):
   - **التسجيل في المنتدى** (`/forum/registration`): الجهة، المسمى الوظيفي، الدولة، مجال الاهتمام (من «خيارات مجال الاهتمام»)،
     والفعالية (اختيارية؛ فعالية مفعّلة فقط، وإلا «أي فعالية»).
@@ -380,8 +486,10 @@ which language you are typing.
   links accept `#section`, `/path` or `https://…`; `javascript:` and similar are refused. Leave the field empty when
   there is no link.
 - Never type passwords or secrets into any field: whatever is entered as content is public.
-- **The sidebar is grouped:** «نظرة عامة», «الموقع», «منتدى إنوفست العربي», «الأخبار», «الوارد». Click a group title to
-  collapse or open it; the browser remembers your choice.
+- **The sidebar is grouped:** «نظرة عامة», «الموقع», «منتدى إنوفست العربي», «شبكة المستثمرين الملائكيين», «البرنامج
+  التلفزيوني», «الأخبار», «الوارد». Click a group title to collapse or open it; the browser remembers your choice. The
+  «الموقع» group holds: site pages, general texts, lists, services, impact figures, FAQ, social links, home-page sections,
+  site messages and buttons, menu and footer, brand identity, settings.
 
 ## 2. Site structure
 
@@ -410,24 +518,32 @@ the same path after `/en`.
 | ↳ Sponsorship | `/tv/sponsorship` | `/en/tv/sponsorship` |
 | News | `/news` | `/en/news` |
 | Contact | `/contact` | `/en/contact` |
+| Privacy policy | `/privacy` | `/en/privacy` |
 
-(The name shown on the site comes from the «page title» field and may differ from the first column.) The tree: Home →
-About, Ecosystem, News, Contact; Ecosystem → Forum, Angel network, TV; each with the sub-pages above. The home page
+(The name shown on the site comes from the «page title» field and may differ from the first column.) **20 pages** in all.
+The tree: Home → About, Ecosystem, News, Contact, Privacy policy; Ecosystem → Forum, Angel network, TV; each with the sub-pages above. The home page
 keeps its section ids (`#about` etc.), so old links ending in them still work.
 
 ## 3. Site pages (`/Admin/Pages`)
 
-Sidebar → «الموقع» → «صفحات الموقع». A tree of all pages (the count is in the heading) showing: name, URL (opens the page
-in a new tab), «in menu», an «EN» chip (complete when the page title and the English search title and description exist),
-and buttons.
+Sidebar → «الموقع» → «صفحات الموقع». A tree of all pages (20; the count is in the heading) showing: name, URL (opens the
+page in a new tab), «publication», «in menu», an «EN» chip (complete when the page title and the English search title and
+description exist), the order, and an «edit» button.
 
-- **«In menu»:** click the «ظاهرة/مخفية» badge to show or hide the page in the top menu, the mobile drawer and the footer.
-  Hiding **does not delete the page**: it stays reachable by its URL (and stays in the sitemap if it has enough content).
-  Hiding a top-level page also hides its sub-pages from the menu. The home page is always shown. Default: shown.
+- **«Publication»:** click the «منشورة/غير منشورة» badge. **An unpublished page, and every page under it, shows visitors the
+  «not found» page (404)** instead of its content, and leaves the top menu, the mobile drawer, the footer, the cards, the
+  links and the buttons that point to it (a button whose target is an unpublished page is not shown), and the sitemap
+  (`/sitemap.xml`); its form (if it has one) refuses any submission with a 404. Publishing it again restores everything;
+  saved texts and data are never deleted. The home page is always published. Default: published.
+- **«In menu»:** click the «ظاهرة/مخفية» badge to show or hide the page in the **top menu and the mobile drawer only**.
+  Hiding **does not delete the page**: it stays reachable by its URL (and stays in the sitemap if it has enough content) and
+  does not change the footer. Hiding a top-level page also hides its sub-pages from the menu. The home page is always
+  shown. Default: shown.
+- **Footer:** it has its own switch, «تظهر في الفوتر», inside «edit» (see below and section 7).
 - **▲ ▼:** move the page among the pages that share its parent (not shown for the home page).
 - **Edit / Create:** the site's pages exist after the deploy; «إنشاء» appears only for a page with no row.
 
-The «edit page» screen has two cards:
+The «edit page» screen has these cards:
 
 **«النصوص» card** (Arabic and English for each field):
 - **Page title** (required): menu, main heading and breadcrumb.
@@ -436,7 +552,21 @@ The «edit page» screen has two cards:
 - **Main text:** a blank line starts a new paragraph.
 - **«Coming soon» text** (shown while the list is empty, or while the page has no content): the empty-state text, see
   section 5.
-- **«تظهر في القائمة الرئيسية والفوتر»:** the same show-in-menu switch; absent for the home page.
+- **«Coming soon» button opens page:** a list of the other pages; «الافتراضي» = the page the site picks for this page. If the
+  chosen page is unpublished the button is not shown.
+- On the **home page** the «النصوص» card is limited to «page title» (the image and search-engine cards remain) (the home
+  page's texts and sections are edited in «النصوص العامة» and «أقسام الصفحة الرئيسية»).
+
+**«النشر والظهور» card** (absent for the home page):
+- **«منشورة»:** the publication switch described above.
+- **«تظهر في القائمة العلوية»:** the same «in menu» switch (top menu and mobile drawer).
+- **«تظهر في الفوتر»:** works **in the automatic footer only**; after «تخصيص الأعمدة» (section 7) it is ignored and you manage
+  the links from «أعمدة الفوتر»; the publication state still applies (a link to an unpublished page is not shown).
+
+**«صورة الصفحة» card:** the page's card image and share image (1200×630 preferred), with the rules of «Uploading images».
+
+**«كتل الصفحة» card** (bottom of the screen, for pages that have sections; named «الأقسام» for the home page): show, hide and
+order the page's sections, see section 3b. Its buttons save at once and independently; they do not need «حفظ التعديلات».
 
 **«محركات البحث» card:** search-engine title and description in Arabic and English. Suggested: title 30-60
 characters, description 70-160 (a coloured hint only; it never blocks saving). If the title is empty the page title is
@@ -452,13 +582,36 @@ Where is the rest of each page's content edited?
 | Home | «النصوص العامة» (Hero, About, section headings, register, contact…) + «الخدمات» + «أرقام الأثر» + News + Events + «الشركاء والرعاة» + «الأسئلة الشائعة» |
 | About | «النصوص العامة» (vision, mission, founder's message) + lists: values, why Innovest, sectors, partners in success + «أرقام الأثر» |
 | Ecosystem | «الخدمات» + lists: what we offer, programs, government services, university services |
-| Forum | list «مكونات المنتدى» + the latest three events |
+| Forum | list «مكونات المنتدى» + the first events (how many: «أقسام الصفحات», default 3) |
 | Events | «الفعاليات» (section 9) |
 | Partners (forum) | «الشركاء والرعاة» + list «الجهات التي نعمل معها» |
 | Angel network | lists: investor services, join steps (with description), startup services, sectors |
 | News | «الأخبار» (section 9) |
 | Contact | «النصوص العامة» → «معلومات التواصل» + «الأسئلة الشائعة» |
-| All pages | titles, summary, intro, main text, «coming soon» text and SEO from «صفحات الموقع» |
+| Privacy policy | the main text, from «صفحات الموقع» (section 7b) |
+| All pages | titles, summary, intro, main text, «coming soon» text and SEO from «صفحات الموقع»; which sections show and their order from «أقسام الصفحات» (section 3b); buttons and icons from «النصوص العامة» |
+
+## 3b. Page sections (`/Admin/PageSections`)
+
+«الموقع» → «أقسام الصفحة الرئيسية». You decide **which sections each page shows and in what order**. The screen opens on the
+home page; the «صفحة أخرى» list offers any of the 19 pages that have sections (every page except «Privacy policy»). The same
+card also appears at the bottom of «edit page» for every page that has sections. «معاينة الصفحة» opens the page. A change
+shows on the site on the next request.
+
+The table: # · section · content · status · order.
+- **Status:** the «ظاهر/مخفي» badge hides the section from visitors; its content stays saved. A visible section that has **no
+  content** is hidden automatically whatever its switch (the «content» column shows the section's current item count, and
+  «0 (يُخفى تلقائياً)» when empty). **The last visible section of a page cannot be hidden** (the action is refused with a
+  message). The main content of list and form pages (the list or the form itself, e.g. the news list or the contact form)
+  carries a «ظاهر دائماً» badge and cannot be hidden. The only section of the TV page (`/tv`) also shows «ظاهر دائماً».
+- **Order:** ▲▼ move the section among the page's movable sections. **Fixed** sections (listed first, marked «ثابت») do not
+  move: the home page's main heading (Hero) is not a row in the table and always stays on top; the «hero figures» inside the
+  Hero (can be hidden, cannot move); and «our values» inside «About».
+- **Counts:** number boxes with a «حفظ» button in the table: how many figures in the home hero (1–12, default 4), how many
+  events on the home page (1–12, default 3), how many news items on the home page (1–50, default 6), and how many events on the
+  Forum page (1–12, default 3). A value out of range is refused with a message and nothing changes. The same values are in
+  «النصوص العامة» → «عناوين أقسام الصفحة الرئيسية».
+- The sections and their names are fixed in code: they cannot be added or removed from the panel.
 
 ## 4. Lists (`/Admin/ContentItems`)
 
@@ -489,9 +642,9 @@ events, news or partners) show **the «coming soon» text you write** in «edit 
 
 ## 6. General texts (`/Admin/Content/Edit`)
 
-«الموقع» → «النصوص العامة» (formerly «الصفحة الرئيسية»). Cards: header and buttons, brand, Hero, About, home-page section
-headings, page-section headings, founder's message, register section, contact details, footer, SEO and site data. Each text
-has an Arabic and an English field, then Save.
+«الموقع» → «النصوص العامة» (formerly «الصفحة الرئيسية»). Cards: header and buttons, brand, Hero, About, buttons and links,
+home-page section headings, icons, page-section headings, founder's message, register section, lead-form texts, contact
+details, footer, SEO and site data. Each text has an Arabic and an English field, then Save.
 
 - **Highlighted part of a heading:** put the part shown in the accent colour between `{` and `}`. Use exactly one pair of
   braces or the save is refused.
@@ -501,13 +654,28 @@ has an Arabic and an English field, then Save.
   paragraphs and are never split at commas. Separate the English values with commas too (the seeded English text was
   corrected to give 7 chips like the Arabic, unless it had been edited by hand). The About page takes its values from the «core values» list (section 4),
   not from this field.
-- **Years of experience, phone, e-mail:** one value for both languages.
-- **Experience badge text:** each line is shown on its own line.
+- **Phone, e-mail:** one value for both languages. (The «years of experience» fields and the experience badge text were removed:
+  no page shows them.)
 - **Copyright:** type `{year}` to insert the current year.
 - **Developer credit link** (footer): `https://` or empty.
 - **Hero kicker:** optional; hidden on the English page when its English field is empty.
-- **Header button:** «نص زر الهيدر» and «الصفحة التي يفتحها زر الهيدر» (a drop-down of the 19 pages with their Arabic titles and paths; an invalid stored value
-  falls back to `network.join`).
+- **Header button:** «نص زر الهيدر» and «الصفحة التي يفتحها زر الهيدر» (a drop-down of the 20 pages with their Arabic titles and
+  paths, marked «— غير منشورة» when unpublished, plus «رابط خارجي… (https)»; an invalid stored value falls back to
+  `network.join`).
+- **Buttons and links («الأزرار والروابط» card):** every button has a **text** and a **destination**. The destination is
+  picked from the page list (title and path) or «رابط خارجي… (https)», in which case the address goes in the box beside it
+  (`https://` only; **an external link needs an Arabic text** or the save is refused). **An empty text = the destination
+  page's title in the page's language** (on the English page only the English text is used; an Arabic-only text does not
+  appear there, the page's English title does). A button whose destination is an unpublished page is **not shown**. The
+  buttons: the main hero button (empty destination = the header button's destination; empty text = the header button's
+  text), the secondary hero button (its text is «نص الزر الثانوي» in the Hero card), the «About» button on the home page,
+  the two CTA-band buttons (an empty second destination = no second button), the events button (registration: event lists,
+  the event page and the speaker page) and the TV button (sponsorship: episodes and guests).
+- **«Not found» (404) page:** the same card lets you tick **up to 6 suggested pages** (checkboxes, shown in the page-list
+  order); an unpublished page is skipped, and when no valid page is left the default three are shown (Home, Ecosystem,
+  Contact).
+- **Icons («الأيقونات» card):** a fixed icon grid (no SVG upload) for the vision, mission and values cards and the badges
+  of the ecosystem, services, events, news, partners, FAQ and contact sections. «الافتراضي» = the section's original icon.
 - **Items per page of the lists:** «عدد العناصر في كل صفحة من القوائم (الأخبار، الفعاليات…) (1–50)», default 12; pages are
   numbered `?page=2`…; a number out of range shows "not found".
 - **Saving does not change what is not posted:** any key missing from the form stays as it was.
@@ -527,7 +695,47 @@ PNG or WebP up to 5 MB):
 - **Home hero image:** shown beside the home page heading instead of the drawn orange triangle.
 - **Founder photo:** the «founder's message» block on About.
 - **Fallback:** while a logo field is empty the logo bundled with the site is used, and while the hero image is empty the triangle is shown.
-  Removing an image brings the bundled one back. The admin panel and login logo and the default share image (`seo_og_image`) are not changed by this screen.
+  Removing an image brings the bundled one back. The admin sidebar logo and the share-image path field (`seo_og_image`) are not changed by this screen. The
+  «logo on a dark background» and the «site name» («SEO and site data») also appear on the login page. The favicon, the Apple icon, the default share image and
+  the browser-bar colour are in «الهوية البصرية» (section 6d).
+- «Logo on a light background»: the alt-text pair (ع / EN) offered for this image in the form is not used on the site (only the image address is read).
+
+## 6c. Site messages and buttons (`/Admin/SiteTexts`)
+
+«الموقع» → «رسائل وأزرار الموقع». The small texts visitors see outside the page content: form field names and buttons, thank-you
+and error messages, detail-page labels, badges and states, navigation and accessibility labels, the 404 and error pages, and more.
+- **Tabs:** «الكل», then the groups (forms, thank-you and error messages, detail labels, badges and states, navigation and
+  accessibility, 404 and error, other), each with the number of «custom» texts. A **search** box looks in the default text,
+  the custom text and the key.
+- **Every text has two independent languages.** The default text (from the resource files) is shown **greyed inside the
+  field**. **An empty field = the default text** of that language only (an empty English field shows the default English). The
+  «مخصّص» / «افتراضي» chip shows the state.
+- **«إعادة للافتراضي»** for one text and **«إعادة المجموعة كلها للافتراضي»** for a whole group (a confirmation is asked for a long
+  text and for a group). A reset removes the customisation and saves any other edits on the page with it, so nothing is lost.
+- **Rules:** up to 300 characters; line breaks become a space. Markup, `<`, `>`, `javascript:` and `data:` are **refused**, and so
+  are links (`://`) unless the default text itself has one. If the default text has a placeholder such as `{0}`, keep it exactly
+  **with the same numbers** (it is replaced automatically by the field name or the number…); only a bare `{number}` is allowed,
+  a format such as `{0:N}` or `{0,5}` is refused. A default text without placeholders: your braces are free. When any field is
+  refused nothing is saved and the page comes back with all your edits and the message under the field.
+- A change shows in both languages on the next request. To change page texts and the big buttons use «النصوص العامة».
+
+## 6d. Brand identity (`/Admin/Brand`)
+
+«الموقع» → «الهوية البصرية»: three images and a colour. Each image has its own form and a preview of the current file (its size
+and weight) or of the bundled default. A refused file shows its message under the field and nothing is saved (extension, type
+and content are checked together, as in «Uploading images»).
+- **Favicon:** PNG only, **square**, 32×32 to 512×512 pixels, up to 512 KB. A non-blocking hint appears when the size is not a
+  multiple of 48 (for Google results). The default is a bundled SVG icon, and the bundled `/favicon.ico` stays for old browsers.
+- **Apple Touch Icon:** PNG only, **exactly 180×180**, **with a solid background and no transparency** (a PNG that has an alpha
+  channel is refused even if all its pixels are opaque: save it without transparency), up to 512 KB.
+- **Default share image (og:image):** JPG or PNG, **at least 1200×630**, longest side up to 4000 pixels and up to **12
+  megapixels**, up to 5 MB. A non-blocking hint appears when the ratio is far from 1.91:1 (outside 1.8–2.0) or the file is over
+  600 KB (WhatsApp). It has an alt text in Arabic and English (empty = «النص البديل لصورة المشاركة» in «النصوص العامة»). It is used
+  by every page that has no image of its own, and it takes precedence over the path field `seo_og_image`.
+- **Replace and remove:** pick a new file and «حفظ» (the `/media/…` address changes). To remove an image tick «حذف والعودة إلى
+  الملف الافتراضي المرفق» and «حفظ»; the bundled default comes back.
+- **Mobile browser-bar colour (theme-color):** `#RRGGBB` (six hex digits) or it is refused; **empty = the default `#111145`**. A
+  preview of the current colour is shown.
 
 ## 7. Menu and footer (`/Admin/Nav`)
 
@@ -539,14 +747,27 @@ PNG or WebP up to 5 MB):
   supported** (they were never shown on the site): use a child page in «صفحات الموقع». Old sub-items stay in the database.
 - **«أعمدة الفوتر»**: the footer is **automatic** until you customise it: a «quick links» column (home, the top-level pages,
   the ecosystem, then every shown extra link), then one column per unit (Forum, Network, TV) with its pages. You control it
-  in «صفحات الموقع» with each page's **«shown in the footer»** switch (independent of «in the menu») and its published state.
-  **«تخصيص الأعمدة»** copies the current footer as it is into editable columns: each column's title in Arabic and English,
+  in «edit page» → «النشر والظهور» with each page's **«shown in the footer»** switch (completely independent of «in the menu»)
+  and its published state; **this switch is for the automatic footer only**: after customising it is ignored and the links are
+  managed from the columns. **«تخصيص الأعمدة»** copies the current footer as it is into editable columns: each column's title in Arabic and English,
   add (a page or an extra link), remove and reorder links, reorder and delete columns. At most 4 columns and 8 links per
   column (when adding). A column whose first link carries the column's own title shows its heading as that link (like the
   unit columns). A link to an unpublished page or a hidden extra link is not shown; a column with no shown link is not
   shown. **«إعادة إلى التلقائي»** deletes the customised columns.
 - The **«Privacy policy»** link appears in the footer bottom bar by itself while the privacy page is published and has an
-  Arabic body.
+  Arabic body (see section 7b).
+
+## 7b. The privacy policy page
+
+An ordinary page at `/privacy` and `/en/privacy`, edited in «صفحات الموقع» → «سياسة الخصوصية» → «edit»: the whole text goes in
+the **main text** field, in Arabic and English (a blank line starts a new paragraph). It arrives with a starter text from the
+migration, so review and approve it. By default it is outside the top menu and the automatic footer columns; its link is special:
+- The **«سياسة الخصوصية»** link appears in the footer bottom bar and next to the **consent checkbox** of every form that collects
+  data (it opens in a new tab) — **only while the page is published and its Arabic text is not empty**. If you empty the
+  Arabic main text or unpublish the page, the link disappears from all these places.
+- A page with neither main nor intro text shows the «coming soon» text and stays out of search engines (`noindex`); unpublishing
+  makes it a 404.
+- The English page is offered to search engines only when its English search title and description are filled (like any page).
 
 ## 8. Services and figures
 
@@ -576,7 +797,7 @@ cards in the lists and on the home page link to these pages.
   (`https://`), **«registration open»**, **event image**, and search engines. The day, month and time text fields remain
   as a fallback for old events without a date. Lists show upcoming events first (old undated ones before them), then past
   ones; past and cancelled events carry a badge, and the register button disappears automatically after the event ends, when
-  it is cancelled, or when registration is closed. Events are listed on `/forum/events`; the first three also on the Forum page.
+  it is cancelled, or when registration is closed. Events are listed on `/forum/events`; the first ones also on the Forum page and the home page, as many as set in «أقسام الصفحات» (section 3b; default 3 each).
 - **«الشركاء والرعاة»**: name in both languages, **partner logo** (image), **partner website** (`https://`, optional; opens
   with `rel="sponsored noopener"`), **group**, and **«shown in the home page partner strip»**. **Groups** (the card at the
   bottom of the screen) are the headings that organise `/forum/partners` (e.g. «main sponsors»); deleting a group **does
@@ -675,7 +896,7 @@ point the box disappears.
 
 «روابط التواصل الاجتماعي»: the seven known networks (LinkedIn, X/Twitter, Instagram, YouTube, Facebook, TikTok, Linktree),
 each once with its name and icon from the site; and **«شبكة أخرى»** with a name you type (read by screen readers) and an icon
-from the fixed grid (no SVG upload). «إضافة شبكة» offers only the known networks not added yet. Per link: full `https://`
+from the fixed grid (no SVG upload), **up to 10 other networks** in all. «إضافة شبكة» offers only the known networks not added yet. Per link: full `https://`
 URL, shown/hidden, order ▲▼; «حذف» for other networks only (a known network is hidden or its URL emptied). **A network with
 no URL is not shown** in the footer or the contact block. Active links are also added to the structured data (`sameAs`).
 
@@ -694,6 +915,9 @@ per page** with paging. A badge with the **unread** count sits beside «الطل
   opening it), and **delete** asks for confirmation; **deletion is permanent**.
 - **Follow-up status and internal note** (on the details screen): choose the status — **new** (every lead on arrival and every old lead), then **contacted**, then **closed** — and type an **internal note** (up to 2000 characters, e.g. "called him on Monday"), then save. The status and the note are **never visible to visitors** and cannot be sent from the public forms; they are separate from read/unread. One button saves both.
 - **Export to Excel (CSV):** the «تصدير إلى Excel (CSV)» link in the list header downloads `leads-<type or all>-<date>.csv` with **the leads that match the current filters** (type, read state, status), newest first, without paging. Columns: type, id, date (UTC), name, e-mail, phone, details, status, read, page language, internal note, reference (opportunity / package / event), reference ID (empty when nothing was chosen or the referenced record was deleted after submission). The file is UTF-8 **with a BOM**, so Excel opens the Arabic correctly with a double-click, and every cell is quoted. **A value that starts with `=`, `+`, `-`, `@` or `|` (or their fullwidth forms ＝ ＋ － ＠, also after leading spaces or a tab) is prefixed with a `'`** so Excel never runs it as a formula; you will see the `'` at the start of such a cell (e.g. `'=SUM(1)`), which is intended. Dates are UTC text. The downloaded file is **personal data**: treat it like the database, and do not leave it in Downloads or send it over an insecure channel.
+- The **consent checkbox** of every form carries a **«سياسة الخصوصية»** link (opens in a new tab) while the page is published and
+  its Arabic text is not empty (section 7b). The **phone and the country** are validated before saving: a phone format or a
+  country value that is not valid is refused with a message under the field.
 - What each form collects (the first four require name, e-mail and the consent box; the phone is optional):
   - **Forum registration** (`/forum/registration`): organisation, job title, country, area of interest (from «خيارات مجال
     الاهتمام»), and the event (optional; an active event only, otherwise «any event»).
