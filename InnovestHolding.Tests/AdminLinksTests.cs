@@ -81,7 +81,6 @@ public class AdminLinksTests(TestAppFactory f)
 
             var shell = v.Shell(PageKeys.About, null);
             Assert.Equal(header, shell.HeaderCta);
-            Assert.Equal(shell.HeaderCta, shell.Cta);
             Assert.Equal(v.Content.Text("site_name"), shell.Brand.LogoAlt); // no uploaded logo → the site name
         }
 
@@ -163,12 +162,11 @@ public class AdminLinksTests(TestAppFactory f)
         var hub = new SiteViews(Unpublished(await SnapshotAsync(), PageKeys.Forum), false);
         Assert.Null(hub.PageLink(PageKeys.ForumRegistration));
 
-        // The header button: hidden, while the legacy Cta stays non-null for the home hero until it reads HeroMainCta().
+        // The header button and the hero's main button (which follows it) are both hidden.
         var header = new SiteViews(With(Unpublished(await SnapshotAsync(), PageKeys.NetworkJoin)), false);
         var shell = header.Shell(PageKeys.About, null);
         Assert.Null(shell.HeaderCta);
         Assert.Null(header.HeroMainCta());
-        Assert.NotNull(shell.Cta);
     }
 
     [Fact]

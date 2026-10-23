@@ -29,9 +29,8 @@ public sealed class ShellVm
     public required string OtherLanguageUrl { get; init; }
     public required IReadOnlyList<MenuItemVm> Menu { get; init; }
     public required IReadOnlyList<LinkVm> ExtraLinks { get; init; }
-    /// <summary>The header button target as before C5 (never null). The header and the drawer render
-    /// <see cref="HeaderCta"/> (C5: null when its target page is unpublished); the home hero moves to SiteViews.HeroMainCta().</summary>
-    public required LinkVm Cta { get; init; }
+    /// <summary>The header and drawer button (C5: null when its target page is unpublished). The home hero reads
+    /// SiteViews.HeroMainCta().</summary>
     public LinkVm? HeaderCta { get; init; }
 
     /// <summary>The extra menu links of the header and the drawer (active AND ShowInHeader); <see cref="ExtraLinks"/>

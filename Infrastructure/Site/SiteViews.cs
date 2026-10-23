@@ -49,8 +49,6 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
         var headerLinks = s.Nav.Where(n => n.ShowInHeader).Select(n => new LinkVm(n.Href, P(n.TitleAr, n.TitleEn))).ToList();
 
         var headerCta = HeaderCta();
-        var ctaKey = Content.Neutral("header_cta_page");
-        var cta = headerCta ?? new LinkVm(Url(SiteRoutes.IsKey(ctaKey) ? ctaKey : PageKeys.NetworkJoin), Content.Text("header_cta_label"));
 
         var crumbs = currentKey == PageKeys.Home
             ? []
@@ -69,7 +67,6 @@ public sealed class SiteViews(SiteSnapshot s, bool english)
             Menu = menu,
             ExtraLinks = extra,
             HeaderLinks = headerLinks,
-            Cta = cta,
             HeaderCta = headerCta,
             Breadcrumbs = crumbs,
             Socials = Socials(),
