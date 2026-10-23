@@ -179,7 +179,14 @@ public class ForumPagesTests(TestAppFactory f)
     [Fact]
     public async Task Editions_page_gallery_lazy_images_with_size_and_more_photos()
     {
-        var editionId = await f.DbAsync(db => db.ForumEditions.Where(e => e.IsActive).OrderBy(e => e.SortOrder).ThenBy(e => e.Id).Select(e => e.Id).FirstAsync());
+        // Its own edition, first in order (the bundled editions already carry the photos imported at startup).
+        var editionId = await f.DbAsync(async db =>
+        {
+            var e = new ForumEdition { Year = 2027, TitleAr = "نسخة اختبار المعرض", EditionLabelAr = "اختبار", SortOrder = -1000, IsActive = true };
+            db.ForumEditions.Add(e);
+            await db.SaveChangesAsync();
+            return e.Id;
+        });
         var photoIds = new List<int>();
         var mediaIds = new List<int>();
         try
@@ -188,7 +195,7 @@ public class ForumPagesTests(TestAppFactory f)
             {
                 for (var i = 0; i < 6; i++)
                 {
-                    var m = new MediaFile { FileKey = Guid.NewGuid().ToString("N"), Format = "jpeg", Width = 1280, Height = 853, Bytes = 1, AltAr = i == 0 ? "صورة الافتتاح" : "", AltEn = i == 0 ? "Opening photo" : null };
+                    var m = new MediaFile { FileKey = Guid.NewGuid().ToString("N"), Format = "jpeg", Width = 1279, Height = 851, Bytes = 1, AltAr = i == 0 ? "صورة الافتتاح" : "", AltEn = i == 0 ? "Opening photo" : null };
                     db.MediaFiles.Add(m);
                     await db.SaveChangesAsync();
                     mediaIds.Add(m.Id);
@@ -202,11 +209,11 @@ public class ForumPagesTests(TestAppFactory f)
             var ar = await PageAsync("/forum/editions");
             Assert.Contains("class=\"forum-gallery\"", ar);
             Assert.Contains("alt=\"صورة الافتتاح\"", ar);
-            Assert.Equal(6, Regex.Matches(ar, "width=\"1280\" height=\"853\"").Count);
+            Assert.Equal(6, Regex.Matches(ar, "width=\"1279\" height=\"851\"").Count);
             // The first edition's large photo is eager (likely the LCP); every other photo is lazy.
             Assert.Single(Regex.Matches(ar, "class=\"forum-gallery-main\"[^>]*fetchpriority=\"high\""));
-            Assert.Equal(6, Regex.Matches(ar, "width=\"1280\" height=\"853\"[^>]*(loading=\"lazy\"|fetchpriority=\"high\")").Count);
-            Assert.Equal(5, Regex.Matches(ar, "width=\"1280\" height=\"853\"[^>]*loading=\"lazy\"").Count);
+            Assert.Equal(6, Regex.Matches(ar, "width=\"1279\" height=\"851\"[^>]*(loading=\"lazy\"|fetchpriority=\"high\")").Count);
+            Assert.Equal(5, Regex.Matches(ar, "width=\"1279\" height=\"851\"[^>]*loading=\"lazy\"").Count);
             Assert.Contains("<details class=\"forum-gallery-more\">", ar);
             Assert.Contains(Msg.Ar(MessageKeys.Ui.EditionMorePhotos)!.Replace("{0}", "2"), ar);
 
@@ -226,6 +233,7 @@ public class ForumPagesTests(TestAppFactory f)
                 db.ForumEditionPhotos.RemoveRange(await db.ForumEditionPhotos.Where(p => photoIds.Contains(p.Id)).ToListAsync());
                 await db.SaveChangesAsync();
                 db.MediaFiles.RemoveRange(await db.MediaFiles.Where(m => mediaIds.Contains(m.Id)).ToListAsync());
+                db.ForumEditions.RemoveRange(await db.ForumEditions.Where(e => e.Id == editionId).ToListAsync());
             });
         }
     }
