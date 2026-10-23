@@ -1,4 +1,3 @@
-using System.Globalization;
 using InnovestHolding.Data;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Localization;
@@ -13,7 +12,7 @@ namespace InnovestHolding.Controllers.Admin;
 /// «هوية المنتدى»: the forum pages' identity (Infrastructure/Content/ForumIdentity) — logos, title-band image, share
 /// image, colours and fonts. Images follow the Brand screen (SiteContents key → MediaFiles FileKey, slot rules, then the
 /// shared MediaStore pipeline); colours and fonts are SiteContents keys. Nothing is written when any value is refused.
-/// Messages are Arabic literals (the admin is Arabic only, like the Brand slots).
+/// Messages are resx keys (MessageKeys.AdminForum); slot labels and hints stay with the slots (ForumIdentity), like Brand.
 /// </summary>
 public class ForumIdentityController : AdminControllerBase
 {
@@ -81,9 +80,9 @@ public class ForumIdentityController : AdminControllerBase
         if (result == SlotSave.Refused) return View(ViewPath, await PageAsync(slot.Key, refusal));
         TempData["Success"] = result switch
         {
-            SlotSave.Uploaded => $"تم حفظ «{slot.Label}».",
-            SlotSave.Removed => $"تم حذف «{slot.Label}» والعودة إلى الافتراضي.",
-            _ => "تم حفظ التغييرات.",
+            SlotSave.Uploaded => L(MessageKeys.AdminForum.ImageSaved, slot.Label),
+            SlotSave.Removed => L(MessageKeys.AdminForum.ImageRemoved, slot.Label),
+            _ => L(MessageKeys.AdminForum.Saved),
         };
         return Redirect(Url.Action(nameof(Index))! + "#forum-" + slot.Key);
     }
@@ -103,22 +102,22 @@ public class ForumIdentityController : AdminControllerBase
             var raw = input.Colors.GetValueOrDefault(c.Key)?.Trim() ?? "";
             if (raw.Length == 0) values[c.Key] = null;
             else if (raw.Length == 7 && BrandImages.HexColor().IsMatch(raw)) values[c.Key] = raw.ToLowerInvariant();
-            else errors[c.Key] = "قيمة غير صالحة: اكتب اللون بالصيغة #RRGGBB (مثل #D21E33) أو اترك الحقل فارغاً للون الافتراضي.";
+            else errors[c.Key] = L(MessageKeys.AdminForum.ColorInvalid);
         }
         var fontAr = (input.FontAr ?? "").Trim();
         var fontEn = (input.FontEn ?? "").Trim();
         string? fontError = null;
         if ((fontAr.Length > 0 && ForumIdentity.FindFont(fontAr) is null) || (fontEn.Length > 0 && ForumIdentity.FindFont(fontEn) is null))
-            fontError = "اختر خطاً من القائمة.";
+            fontError = L(MessageKeys.AdminForum.FontInvalid);
 
         if (!ModelState.IsValid || errors.Count > 0 || fontError is not null)
             return View(ViewPath, await PageAsync(typed: input, colorErrors: errors, fontError: fontError ?? (ModelState.IsValid ? null : JoinErrors()),
-                colorsError: "لم يُحفظ شيء: صحّح الحقول المعلَّمة."));
+                colorsError: L(MessageKeys.AdminForum.FieldsRefused)));
 
         var failures = ForumIdentity.ContrastFailures(values);
         if (failures.Count > 0)
             return View(ViewPath, await PageAsync(typed: input, failures: failures,
-                colorsError: "لم يُحفظ شيء: بعض الألوان لا تحقق حد التباين المطلوب لقراءة النص (WCAG AA). غيّر أحد لوني كل زوج أدناه."));
+                colorsError: L(MessageKeys.AdminForum.ContrastRefused)));
 
         var settings = new Dictionary<string, string?>(values, StringComparer.Ordinal)
         {
@@ -144,7 +143,7 @@ public class ForumIdentityController : AdminControllerBase
             }
         }
         await _db.SaveChangesAsync();
-        TempData["Success"] = "تم حفظ ألوان المنتدى وخطوطه.";
+        TempData["Success"] = L(MessageKeys.AdminForum.ColorsSaved);
         return Redirect(Url.Action(nameof(Index))! + "#forum-colors");
     }
 
@@ -158,8 +157,8 @@ public class ForumIdentityController : AdminControllerBase
         _db.SiteContents.RemoveRange(rows);
         await _db.SaveChangesAsync();
         TempData["Success"] = rows.Count == 0
-            ? "الألوان والخطوط على الافتراضي أصلاً."
-            : string.Format(CultureInfo.InvariantCulture, "تمت استعادة الألوان والخطوط الافتراضية ({0} قيمة).", rows.Count);
+            ? L(MessageKeys.AdminForum.ResetNothing)
+            : L(MessageKeys.AdminForum.ResetDone, rows.Count);
         return Redirect(Url.Action(nameof(Index))! + "#forum-colors");
     }
 }

@@ -97,6 +97,7 @@
 /* Text on the dark-red surfaces (event date box, CTA band, dark sections, title band): the light text colour
    (on-primary on primary-deep / link / primary). */
 .theme-forum .event-date-day,
+.theme-forum .event-date-month,
 .theme-forum .cta-title .gold,
 .theme-forum .is-dark .block-title .gold,
 .theme-forum .section-title.on-dark .gold,
@@ -138,7 +139,8 @@
   display: flex; align-items: center; flex: 0 1 auto; min-width: 0; max-width: 110px; height: 40px;
   margin-inline-start: 24px; margin-inline-end: auto;
 }
-.forum-subbrand img { display: block; flex: 0 1 auto; min-width: 0; width: auto; height: auto; max-width: 100%; max-height: 40px; object-fit: contain; }
+/* A fixed height (the width follows from the width/height attributes) so the bar never shifts while the image loads. */
+.forum-subbrand img { display: block; flex: 0 1 auto; min-width: 0; width: auto; height: 40px; max-width: 100%; object-fit: contain; }
 /* The free space is shared by the sub-brand and the menu, so the menu stays centred as on the company pages. */
 .theme-forum .nav-container > .nav-links { margin-inline-end: auto; }
 
@@ -152,12 +154,12 @@
 @media (max-width: 600px) {
   .theme-forum .logo-img { height: 32px; }
   .forum-subbrand { margin-inline-start: 16px; max-width: 64px; height: 28px; }
-  .forum-subbrand img { max-height: 28px; }
+  .forum-subbrand img { height: 28px; }
 }
 @media (max-width: 380px) {
   .theme-forum .logo-img { height: 28px; }
   .forum-subbrand { margin-inline-start: 12px; max-width: 48px; height: 24px; }
-  .forum-subbrand img { max-height: 24px; }
+  .forum-subbrand img { height: 24px; }
 }
 
 @media (max-width: 600px) {

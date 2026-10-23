@@ -114,7 +114,8 @@ public class ForumIdentityUnitTests
         Assert.Contains("max-width: 110px;", slot); // and never grows past its slot
         var img = Rule(css, ".forum-subbrand img");
         Assert.Contains("max-width: 100%;", img);
-        Assert.Contains("max-height: 40px;", img);
+        Assert.Contains("height: 40px;", img);     // fixed: no layout shift (Hassan D2)
+        Assert.DoesNotContain("height: auto", img);
         Assert.Contains("min-width: 0;", img);
         Assert.DoesNotContain("wordmark", css);
         Assert.DoesNotContain("nowrap", slot);
@@ -122,9 +123,9 @@ public class ForumIdentityUnitTests
         Assert.Contains("display: none;", Rule(css, ".theme-forum .nav-actions .nav-cta", "(max-width: 1200px)"));
         Assert.Contains("display: flex;", Rule(css, ".theme-forum .hamburger", "(max-width: 1200px)"));
         Assert.Contains("max-width: 64px;", Rule(css, ".forum-subbrand", "(max-width: 600px)"));
-        Assert.Contains("max-height: 28px;", Rule(css, ".forum-subbrand img", "(max-width: 600px)"));
+        Assert.Contains("height: 28px;", Rule(css, ".forum-subbrand img", "(max-width: 600px)"));
         Assert.Contains("max-width: 48px;", Rule(css, ".forum-subbrand", "(max-width: 380px)"));
-        Assert.Contains("max-height: 24px;", Rule(css, ".forum-subbrand img", "(max-width: 380px)"));
+        Assert.Contains("height: 24px;", Rule(css, ".forum-subbrand img", "(max-width: 380px)"));
         // The red buttons' keyboard focus: a 3 px white ring with an offset (Layla).
         Assert.Contains("outline: 3px solid #ffffff; outline-offset: 2px;",
             Rule(css, ".theme-forum :is(.btn-accent, .nav-cta, .form-submit-btn):focus-visible"));
@@ -135,7 +136,7 @@ public class ForumIdentityUnitTests
     {
         var css = Regex.Replace(File.ReadAllText(Path.Combine(ProjectDir(), "wwwroot", "css", "forum.css")), @"\s+", " ");
         // Light text on the dark-red surfaces.
-        foreach (var selector in new[] { ".theme-forum .event-date-day,", ".theme-forum .cta-title .gold,", ".theme-forum .detail-facts a," })
+        foreach (var selector in new[] { ".theme-forum .event-date-day,", ".theme-forum .event-date-month,", ".theme-forum .cta-title .gold,", ".theme-forum .detail-facts a," })
             Assert.Contains(selector, css);
         Assert.Contains(".theme-forum .detail-facts svg { color: var(--forum-on-primary); }", css);
         // Pills on an accent fill: ink on gold.
@@ -505,6 +506,7 @@ public class ForumIdentityTests(TestAppFactory f)
                 db.MediaFiles.Add(new MediaFile { FileKey = bad, Format = "png", Width = 240, Height = 64, Bytes = 10, AltAr = "x" });
                 db.SiteContents.Add(new SiteContent { SectionKey = ForumIdentity.LogoOnDark, ContentAr = bad, UpdatedAt = DateTime.UtcNow });
                 db.SiteContents.Add(new SiteContent { SectionKey = ForumIdentity.LogoOnLight, ContentAr = bad, UpdatedAt = DateTime.UtcNow });
+                db.SiteContents.Add(new SiteContent { SectionKey = ForumIdentity.OgDefault, ContentAr = bad, UpdatedAt = DateTime.UtcNow });
                 return db.SaveChangesAsync();
             });
             f.Services.GetRequiredService<ISiteContentCache>().Invalidate();
@@ -513,6 +515,8 @@ public class ForumIdentityTests(TestAppFactory f)
             Assert.Contains("class=\"forum-symbol\"", Header(html)); // the bundled symbol instead
             var org = Graph(html).EnumerateArray().Single(n => n.TryGetProperty("@id", out var id) && id.GetString() == Base + "/forum#organization");
             Assert.Equal(Base + ForumAssets.LogoOnLight, org.GetProperty("logo").GetString());
+            // The share image falls through to the site default (Hassan D1).
+            Assert.Contains($"<meta property=\"og:image\" content=\"{Base}/assets/brand/og-default.jpg\">", html);
         }
         finally
         {

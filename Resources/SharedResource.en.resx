@@ -357,4 +357,14 @@
   <data name="Admin_SectionFixedHint" xml:space="preserve"><value>The page's main content: always shown, cannot be hidden.</value></data>
   <data name="Admin_SectionVisible" xml:space="preserve"><value>Shown</value></data>
   <data name="Admin_SectionsScreenTitle" xml:space="preserve"><value>Page sections</value></data>
+  <data name="Admin_ForumImageSaved" xml:space="preserve"><value>“{0}” saved.</value></data>
+  <data name="Admin_ForumImageRemoved" xml:space="preserve"><value>“{0}” removed; the default is back.</value></data>
+  <data name="Admin_ForumSaved" xml:space="preserve"><value>Changes saved.</value></data>
+  <data name="Admin_ForumColorInvalid" xml:space="preserve"><value>Invalid value: write the colour as #RRGGBB (e.g. #D21E33), or leave it empty for the default colour.</value></data>
+  <data name="Admin_ForumFontInvalid" xml:space="preserve"><value>Choose a font from the list.</value></data>
+  <data name="Admin_ForumFieldsRefused" xml:space="preserve"><value>Nothing was saved: correct the marked fields.</value></data>
+  <data name="Admin_ForumContrastRefused" xml:space="preserve"><value>Nothing was saved: some colours do not reach the contrast needed to read the text (WCAG AA). Change one colour of each pair below.</value></data>
+  <data name="Admin_ForumColorsSaved" xml:space="preserve"><value>Forum colours and fonts saved.</value></data>
+  <data name="Admin_ForumResetNothing" xml:space="preserve"><value>The colours and fonts are already the defaults.</value></data>
+  <data name="Admin_ForumResetDone" xml:space="preserve"><value>Default colours and fonts restored ({0} values).</value></data>
 </root>
