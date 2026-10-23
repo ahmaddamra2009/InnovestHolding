@@ -37,13 +37,13 @@ public class PageSectionsController(AppDbContext db, ISiteContentCache cache) : 
         var row = rows.Single(r => r.SectionKey == def.Key);
         if (row.IsVisible && rows.Count(r => r.IsVisible) <= 1)
         {
-            TempData["Error"] = "يجب أن يبقى قسم واحد على الأقل ظاهراً.";
+            TempData["Error"] = L(MessageKeys.AdminSections.LastVisible);
             return Back(id!, def.Key);
         }
         row.IsVisible = !row.IsVisible;
         row.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
-        TempData["Success"] = row.IsVisible ? $"أُظهر «{def.Label}» في الموقع." : $"أُخفي «{def.Label}» عن الموقع.";
+        TempData["Success"] = L(row.IsVisible ? MessageKeys.AdminSections.Shown : MessageKeys.AdminSections.Hidden, def.Label);
         return Back(id!, def.Key);
     }
 
@@ -57,7 +57,7 @@ public class PageSectionsController(AppDbContext db, ISiteContentCache cache) : 
         var rowId = rows.Single(r => r.SectionKey == def.Key).Id;
         var result = await MoveAsync(db.PageSections.Where(r => r.PageKey == id && movable.Contains(r.SectionKey)), rowId, direction);
         if (result is null) return NotFound();
-        TempData["Success"] = $"نُقل «{def.Label}» إلى الموضع {result.Position} من {result.Count}.";
+        TempData["Success"] = L(MessageKeys.AdminSections.Moved, def.Label, result.Position, result.Count);
         return Back(id!, def.Key);
     }
 
@@ -68,7 +68,7 @@ public class PageSectionsController(AppDbContext db, ISiteContentCache cache) : 
         if (PageSectionRegistry.FindLimit(key) is not { } limit) return NotFound();
         if (PageSectionRegistry.ParseLimit(limit, value) is not { } n)
         {
-            TempData["Error"] = $"«{limit.Label}»: أدخل رقماً صحيحاً من 1 إلى {limit.Max}. لم تُحفظ القيمة.";
+            TempData["Error"] = L(MessageKeys.AdminSections.LimitInvalid, limit.Label, limit.Max);
             return Back(limit.Page, limit.Section);
         }
         var row = await db.SiteContents.FirstOrDefaultAsync(s => s.SectionKey == limit.Key);

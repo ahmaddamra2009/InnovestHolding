@@ -367,4 +367,18 @@ public static class MessageKeys
         public const string IconInvalid = "Admin_IconInvalid";
         public const string CustomSocialIncomplete = "Admin_CustomSocialIncomplete";
     }
+
+    /// <summary>C5 Admin/PageSections (show/hide, order, counts): admin messages.</summary>
+    public static class AdminSections
+    {
+        public const string LastVisible = "Admin_SectionLastVisible";
+        /// <summary>{0} = the section.</summary>
+        public const string Shown = "Admin_SectionShown";
+        /// <summary>{0} = the section.</summary>
+        public const string Hidden = "Admin_SectionHidden";
+        /// <summary>{0} = the section, {1} = its new position, {2} = the number of movable sections.</summary>
+        public const string Moved = "Admin_SectionMoved";
+        /// <summary>{0} = the count's label, {1} = its maximum.</summary>
+        public const string LimitInvalid = "Admin_SectionLimitInvalid";
+    }
 }

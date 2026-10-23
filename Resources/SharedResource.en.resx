@@ -339,4 +339,9 @@
   <data name="Admin_SocialExists" xml:space="preserve"><value>This network is already added.</value></data>
   <data name="Admin_IconInvalid" xml:space="preserve"><value>This icon is not available; pick one from the list.</value></data>
   <data name="Admin_CustomSocialIncomplete" xml:space="preserve"><value>A custom network needs a name and an icon from the list.</value></data>
+  <data name="Admin_SectionLastVisible" xml:space="preserve"><value>At least one section must stay visible.</value></data>
+  <data name="Admin_SectionShown" xml:space="preserve"><value>“{0}” is now shown on the site.</value></data>
+  <data name="Admin_SectionHidden" xml:space="preserve"><value>“{0}” is now hidden from the site.</value></data>
+  <data name="Admin_SectionMoved" xml:space="preserve"><value>“{0}” moved to position {1} of {2}.</value></data>
+  <data name="Admin_SectionLimitInvalid" xml:space="preserve"><value>“{0}”: enter a whole number from 1 to {1}. The value was not saved.</value></data>
 </root>

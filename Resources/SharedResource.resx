@@ -339,4 +339,9 @@
   <data name="Admin_SocialExists" xml:space="preserve"><value>هذه الشبكة مضافة بالفعل.</value></data>
   <data name="Admin_IconInvalid" xml:space="preserve"><value>الأيقونة غير متاحة، اختر من القائمة.</value></data>
   <data name="Admin_CustomSocialIncomplete" xml:space="preserve"><value>الشبكة الأخرى تحتاج اسماً وأيقونة من القائمة.</value></data>
+  <data name="Admin_SectionLastVisible" xml:space="preserve"><value>يجب أن يبقى قسم واحد على الأقل ظاهراً.</value></data>
+  <data name="Admin_SectionShown" xml:space="preserve"><value>أُظهر «{0}» في الموقع.</value></data>
+  <data name="Admin_SectionHidden" xml:space="preserve"><value>أُخفي «{0}» عن الموقع.</value></data>
+  <data name="Admin_SectionMoved" xml:space="preserve"><value>نُقل «{0}» إلى الموضع {1} من {2}.</value></data>
+  <data name="Admin_SectionLimitInvalid" xml:space="preserve"><value>«{0}»: أدخل رقماً صحيحاً من 1 إلى {1}. لم تُحفظ القيمة.</value></data>
 </root>
