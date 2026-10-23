@@ -27,7 +27,9 @@ public sealed class PublicTextLocalizer(IStringLocalizer inner, IHttpContextAcce
     private string? Override(string name)
     {
         if (http.HttpContext?.Items[PublicTextsMiddleware.ItemKey] is not IReadOnlyDictionary<string, TextPair> content) return null;
-        return PublicTexts.Find(name) is { } text ? PublicTexts.Override(content, text, Cultures.IsEnglishRequest) : null;
+        var value = PublicTexts.Find(name) is { } text ? PublicTexts.Override(content, text, Cultures.IsEnglishRequest) : null;
+        // Defence in depth for a row written outside the admin screen: an alignment/format part ({0,999999}) is ignored.
+        return PublicTexts.HasFormatSpec(value) ? null : value;
     }
 
     public LocalizedString this[string name] =>
@@ -58,8 +60,8 @@ public sealed class PublicTextLocalizer(IStringLocalizer inner, IHttpContextAcce
 /// <summary>
 /// Puts the cached content snapshot's SiteContents on every public request (after request localization, before the rate
 /// limiter so its 429 text is overridable too). Admin and login requests are skipped: their texts stay the resx.
-/// A cache hit costs no query; if the snapshot cannot be loaded the request continues with the resx texts (the error
-/// page must still render when the database is down).
+/// A cache hit costs no query; if loading the snapshot throws, the request continues without overrides (resx texts)
+/// instead of failing here (PublicTextsTests.Middleware_continues_with_resx_when_the_snapshot_cannot_be_loaded).
 /// </summary>
 public sealed class PublicTextsMiddleware(RequestDelegate next, ILogger<PublicTextsMiddleware> logger)
 {

@@ -103,16 +103,25 @@ public class PublicTextsTests(TestAppFactory f)
             Assert.Contains($"value=\"{ar}\"", screen);
             Assert.Contains($"placeholder=\"{Msg.En(key)}\"", screen);
 
-            // Per-field reset: the row is deleted, both languages show the resx again.
-            var reset = await c.PostAsync($"{Screen}/Reset?key={key}&tab=forms", Form(t));
+            // Per-field reset is a button of the same form: the row is deleted AND the other edits posted with it are saved.
+            var other = MessageKeys.Ui.ContactSocial;
+            var otherEn = Unique("Follow")[..20];
+            var reset = await c.PostAsync(Screen + "?tab=forms", Form(t, ("reset", key), (Ar(key), ar), (En(key), en), (En(other), otherEn)));
             Assert.Equal(HttpStatusCode.Redirect, reset.StatusCode);
+            Assert.EndsWith("#t-" + key.Replace("_", ""), reset.Headers.Location!.OriginalString);
             Assert.Equal(0, await RowsAsync(key));
+            Assert.Equal(otherEn, await f.DbAsync(db => db.SiteContents.Where(x => x.SectionKey == PublicTexts.Prefix + other).Select(x => x.ContentEn).SingleAsync()));
             Assert.Contains(Msg.Ar(key), await Html(anon, "/contact"));
             Assert.Contains(Msg.En(key), await Html(anon, "/en/contact"));
+
+            // Group reset (same form): every text of the group goes back to its default.
+            var group = await c.PostAsync(Screen, Form(t, ("resetGroup", "details")));
+            Assert.Equal(HttpStatusCode.Redirect, group.StatusCode);
+            Assert.Equal(0, await RowsAsync(other));
         }
         finally
         {
-            await DeleteRowsAsync(key);
+            await DeleteRowsAsync(key, MessageKeys.Ui.ContactSocial);
         }
     }
 
@@ -290,7 +299,175 @@ public class PublicTextsTests(TestAppFactory f)
         var admin = await f.SignedInClientAsync();
         Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync(Screen)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsync(Screen, Form((Ar(MessageKeys.Ui.ContactSocial), "x")))).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsync(Screen + "/Reset?key=" + MessageKeys.Ui.ContactSocial, Form())).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await admin.PostAsync(Screen, Form(("reset", MessageKeys.Ui.ContactSocial)))).StatusCode);
         Assert.Equal(0, await RowsAsync(MessageKeys.Ui.ContactSocial));
+    }
+    // ── Fix round (Yasser M-C5A-1, L-C5A-1; Hassan A1; A5) ──
+
+    [Theory]
+    [InlineData(MessageKeys.Required, "{0,999999} مطلوب")]
+    [InlineData(MessageKeys.Required, "{0:D9999999} مطلوب")]
+    [InlineData(MessageKeys.Ui.PageOf, "{0} / {1:D9999999}")]
+    [InlineData(MessageKeys.ContactSuccess, "شكراً {1:D9999999}")]
+    public async Task Admin_refuses_alignment_or_format_parts_in_placeholders(string key, string value)
+    {
+        var (c, t) = await AdminAsync();
+        try
+        {
+            var r = await c.PostAsync(Screen, Form(t, (Ar(key), value)));
+            Assert.Equal(HttpStatusCode.OK, r.StatusCode); // re-rendered, nothing saved
+            var html = WebUtility.HtmlDecode(await r.Content.ReadAsStringAsync());
+            Assert.Contains(Msg.Ar(MessageKeys.Admin.SiteTextFormatSpec, Msg.Ar(key), "ع"), html);
+            Assert.Equal(0, await RowsAsync(key));
+        }
+        finally
+        {
+            await DeleteRowsAsync(key);
+        }
+    }
+
+    [Fact]
+    public async Task A_format_part_written_outside_the_admin_is_ignored_and_the_reply_stays_small()
+    {
+        // Rows written straight to the database (not through the screen): the localizer must not format them.
+        await f.DbAsync(async db =>
+        {
+            db.SiteContents.Add(new Models.SiteContent { SectionKey = PublicTexts.Prefix + MessageKeys.Required, ContentAr = "{0,999999}", ContentEn = "{0:D9999999}" });
+            db.SiteContents.Add(new Models.SiteContent { SectionKey = PublicTexts.Prefix + MessageKeys.ContactSuccess, ContentAr = "{1:D9999999}", ContentEn = "{0,999999}" });
+            return await db.SaveChangesAsync();
+        });
+        try
+        {
+            foreach (var (page, post, english) in new[] { ("/contact", "/forms/contact", false), ("/en/contact", "/en/forms/contact", true) })
+            {
+                var client = f.NewClient();
+                var token = await client.GetTokenAsync(page);
+                var email = Unique("fs") + "@example.com";
+                var ok = await client.PostAsync(post, Form(token, Contact(email)));
+                var okBody = await ok.Content.ReadAsStringAsync();
+                Assert.True(okBody.Length < 400, $"reply of {okBody.Length} bytes");
+                Assert.Equal(english ? Msg.En(MessageKeys.ContactSuccess) : Msg.Ar(MessageKeys.ContactSuccess), (await ok.JsonAsync()).GetProperty("message").GetString());
+
+                var bad = await client.PostAsync(post, Form(token, Contact(email, "")));
+                var badBody = await bad.Content.ReadAsStringAsync();
+                Assert.Equal(HttpStatusCode.BadRequest, bad.StatusCode);
+                Assert.True(badBody.Length < 400, $"reply of {badBody.Length} bytes");
+                var field = english ? Msg.En(MessageKeys.Fields.FullName) : Msg.Ar(MessageKeys.Fields.FullName);
+                Assert.Equal(english ? Msg.En(MessageKeys.Required, field) : Msg.Ar(MessageKeys.Required, field), (await bad.JsonAsync()).GetProperty("message").GetString());
+            }
+        }
+        finally
+        {
+            await DeleteRowsAsync(MessageKeys.Required, MessageKeys.ContactSuccess);
+        }
+    }
+
+    [Theory]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("JavaScript :alert(1)")]
+    [InlineData("vbscript:msgbox")]
+    [InlineData("data:text/html,x")]
+    public async Task Admin_refuses_script_and_data_schemes(string value)
+    {
+        var key = MessageKeys.Ui.ViewAll;
+        var (c, t) = await AdminAsync();
+        try
+        {
+            var r = await c.PostAsync(Screen, Form(t, (En(key), value)));
+            Assert.Equal(HttpStatusCode.OK, r.StatusCode);
+            Assert.Equal(0, await RowsAsync(key));
+        }
+        finally
+        {
+            await DeleteRowsAsync(key);
+        }
+    }
+
+    [Fact]
+    public async Task Middleware_continues_with_resx_when_the_snapshot_cannot_be_loaded()
+    {
+        var called = false;
+        var middleware = new PublicTextsMiddleware(_ => { called = true; return Task.CompletedTask; },
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<PublicTextsMiddleware>.Instance);
+        var context = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+        context.Request.Path = "/contact";
+        await middleware.InvokeAsync(context, new ThrowingCache());
+        Assert.True(called);
+        Assert.False(context.Items.ContainsKey(PublicTextsMiddleware.ItemKey)); // no overrides: the localizer reads the resx
+    }
+
+    private sealed class ThrowingCache : ISiteContentCache
+    {
+        public Task<SiteSnapshot> GetAsync(CancellationToken cancellationToken = default) =>
+            throw new InvalidOperationException("database unavailable");
+        public void Invalidate() { }
+    }
+
+    /// <summary>Message keys the public code names that are deliberately NOT overridable (the login page's messages).</summary>
+    private static readonly HashSet<string> NotPublic = [MessageKeys.LoginLocked, MessageKeys.LoginInvalid];
+
+    /// <summary>The public source files: public controllers, public view models, validation attributes, form/site/SEO
+    /// infrastructure, the rate limiter, model-binding messages, and every view outside Admin/Account.</summary>
+    private static IEnumerable<string> PublicSources(string root)
+    {
+        var sep = Path.DirectorySeparatorChar.ToString();
+        IEnumerable<string> Files(string dir, string pattern) =>
+            Directory.Exists(Path.Combine(root, dir)) ? Directory.EnumerateFiles(Path.Combine(root, dir), pattern, SearchOption.AllDirectories) : [];
+        return Files("Controllers", "*.cs").Where(p => !p.Contains(sep + "Admin" + sep) && !p.EndsWith("AccountController.cs"))
+            .Concat(Files(Path.Combine("ViewModels", "Public"), "*.cs"))
+            .Concat(new[] { "LeadFormViewModels.cs", "SiteViewModels.cs", "HomeViewModel.cs" }.Select(n => Path.Combine(root, "ViewModels", n)))
+            .Concat(new[] { "RateLimitPolicies.cs", "HttpsUrlAttribute.cs", "MustBeTrueAttribute.cs", "SafeHrefAttribute.cs" }.Select(n => Path.Combine(root, "Infrastructure", n)))
+            .Concat(Files(Path.Combine("Infrastructure", "Forms"), "*.cs"))
+            .Concat(Files(Path.Combine("Infrastructure", "Site"), "*.cs"))
+            .Concat(Files(Path.Combine("Infrastructure", "Seo"), "*.cs"))
+            .Concat([Path.Combine(root, "Infrastructure", "Localization", "ModelBindingMessagesSetup.cs")])
+            .Concat(Files("Views", "*.cshtml").Where(p => !p.Contains(sep + "Admin" + sep) && !p.Contains(sep + "Account" + sep) && !p.EndsWith("_AdminLayout.cshtml")))
+            .Where(File.Exists).Distinct();
+    }
+
+    /// <summary>Every resx key the public source files name, resolved through the MessageKeys constants.</summary>
+    private static (IReadOnlyCollection<string> Keys, int Files) PublicKeysUsed()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "InnovestHolding.csproj"))) dir = dir.Parent;
+        Assert.NotNull(dir);
+        var constants = new Dictionary<string, string>(StringComparer.Ordinal);
+        void Add(Type type, string prefix)
+        {
+            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Static).Where(x => x.IsLiteral))
+                constants[prefix + field.Name] = (string)field.GetValue(null)!;
+        }
+        Add(typeof(MessageKeys), "");
+        Add(typeof(MessageKeys.Ui), "Ui.");
+        Add(typeof(MessageKeys.Fields), "Fields.");
+
+        var files = PublicSources(dir!.FullName).ToList();
+        var keys = new HashSet<string>(StringComparer.Ordinal);
+        var main = new System.Text.RegularExpressions.Regex(@"\b(?:MessageKeys|K)\.((?:Ui|Fields|Admin)\.)?([A-Z]\w*)");
+        var aliasF = new System.Text.RegularExpressions.Regex(@"\bF\.([A-Z]\w*)");
+        foreach (var file in files)
+        {
+            var text = File.ReadAllText(file);
+            foreach (System.Text.RegularExpressions.Match m in main.Matches(text))
+            {
+                if (m.Groups[1].Value == "Admin.") continue;
+                if (constants.TryGetValue(m.Groups[1].Value + m.Groups[2].Value, out var key)) keys.Add(key);
+            }
+            if (text.Contains("MessageKeys.Fields;", StringComparison.Ordinal))
+                foreach (System.Text.RegularExpressions.Match m in aliasF.Matches(text))
+                    if (constants.TryGetValue("Fields." + m.Groups[1].Value, out var key)) keys.Add(key);
+        }
+        return (keys, files.Count);
+    }
+
+    [Fact]
+    public void Every_message_and_field_key_named_by_public_code_is_overridable()
+    {
+        var (keys, files) = PublicKeysUsed();
+        Assert.True(files >= 40, $"only {files} public source files scanned"); // an empty scan cannot pass
+        Assert.Contains(MessageKeys.JoinSuccess, keys);                         // the scan sees the lead-form replies
+        Assert.Contains(MessageKeys.Fields.FullName, keys);                     // and the [Display] names
+        var missing = keys.Where(k => !NotPublic.Contains(k) && PublicTexts.Find(k) is null).Order().ToList();
+        Assert.True(missing.Count == 0, "Not overridable: " + string.Join(", ", missing));
     }
 }

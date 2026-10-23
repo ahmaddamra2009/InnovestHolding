@@ -237,7 +237,8 @@
   <data name="Admin_SiteTextReset" xml:space="preserve"><value>أُعيد النص إلى الافتراضي</value></data>
   <data name="Admin_SiteTextGroupReset" xml:space="preserve"><value>أُعيدت نصوص المجموعة كلها إلى الافتراضي</value></data>
   <data name="Admin_SiteTextPlaceholders" xml:space="preserve"><value>«{0}» ({1}): يجب أن يحتوي النص على {2} كما في النص الافتراضي، ولا شيء غيرها بين {{ }}</value></data>
-  <data name="Admin_SiteTextMarkup" xml:space="preserve"><value>«{0}» ({1}): لا يُسمح بالروابط أو الوسوم في هذا الحقل</value></data>
+  <data name="Admin_SiteTextMarkup" xml:space="preserve"><value>«{0}» ({1}): لا يُسمح بالروابط أو الوسوم (ولا javascript: أو data:) في هذا الحقل</value></data>
+  <data name="Admin_SiteTextFormatSpec" xml:space="preserve"><value>«{0}» ({1}): اكتب المتغيرات كما هي فقط، مثل {{0}}، بلا أي تنسيق أو عرض بعد الرقم (مثل {{0:…}} أو {{0,…}})</value></data>
   <data name="Field_JobTitle" xml:space="preserve"><value>المنصب</value></data>
   <data name="Field_JobTitleEn" xml:space="preserve"><value>المنصب (بالإنجليزية)</value></data>
   <data name="Field_Organization" xml:space="preserve"><value>الجهة</value></data>

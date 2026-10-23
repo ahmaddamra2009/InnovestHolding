@@ -246,6 +246,8 @@ public static class MessageKeys
         public const string SiteTextPlaceholders = "Admin_SiteTextPlaceholders";
         /// <summary>{0} = the text, {1} = the language.</summary>
         public const string SiteTextMarkup = "Admin_SiteTextMarkup";
+        /// <summary>{0} = the text, {1} = the language.</summary>
+        public const string SiteTextFormatSpec = "Admin_SiteTextFormatSpec";
     }
 
     public static class Ui

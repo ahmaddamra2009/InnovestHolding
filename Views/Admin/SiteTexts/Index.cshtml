@@ -37,7 +37,11 @@
 }
 else
 {
+    @* One form: «إعادة للافتراضي» and the group reset are submit buttons of this form (name=reset / resetGroup), so the
+   other edits on the page are saved with the reset instead of being lost. *@
     <form method="post" asp-action="Index" asp-route-tab="@Model.Tab" asp-route-q="@Model.Query" class="content-editor">
+        @* The form's default button (Enter in a field) must be Save, never a reset button: the first submit button wins. *@
+        <button type="submit" class="sr-only" tabindex="-1" aria-hidden="true">حفظ كل التغييرات</button>
         @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All" tabindex="-1"></div> }
 
         @foreach (var group in Model.Fields.GroupBy(f => f.Text.Group))
@@ -47,7 +51,7 @@ else
                     <span class="admin-card-title">@groupTitles[group.Key]</span>
                     @if (Model.CustomCounts.GetValueOrDefault(group.Key) > 0)
                     {
-                        <button type="submit" class="btn-admin btn-secondary btn-sm" formaction="@Url.Action("ResetGroup", new { group = group.Key })" formnovalidate
+                        <button type="submit" class="btn-admin btn-secondary btn-sm" name="resetGroup" value="@group.Key" formnovalidate
                                 data-confirm="إعادة كل نصوص «@groupTitles[group.Key]» إلى النص الافتراضي؟" onclick="return confirm(this.dataset.confirm)">إعادة المجموعة كلها للافتراضي</button>
                     }
                 </div>
@@ -87,12 +91,12 @@ else
                         {
                             if (longest > 60)
                             {
-                                <button type="submit" class="btn-admin btn-secondary btn-sm" formaction="@Url.Action("Reset", new { key, tab = Model.Tab, q = Model.Query })" formnovalidate
-                                        onclick="return confirm('إعادة هذا النص إلى الافتراضي؟ (تُفقد التعديلات غير المحفوظة في الصفحة)')">إعادة للافتراضي</button>
+                                <button type="submit" class="btn-admin btn-secondary btn-sm" name="reset" value="@key" formnovalidate
+                                        onclick="return confirm('إعادة هذا النص الطويل إلى الافتراضي؟')">إعادة للافتراضي</button>
                             }
                             else
                             {
-                                <button type="submit" class="btn-admin btn-secondary btn-sm" formaction="@Url.Action("Reset", new { key, tab = Model.Tab, q = Model.Query })" formnovalidate>إعادة للافتراضي</button>
+                                <button type="submit" class="btn-admin btn-secondary btn-sm" name="reset" value="@key" formnovalidate>إعادة للافتراضي</button>
                             }
                         }
                     </div>

@@ -60,15 +60,24 @@ public class SiteTextsController(AppDbContext db) : AdminControllerBase
 
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim().Replace("\r\n", " ").Replace('\n', ' ').Replace('\r', ' ');
 
+    /// <summary>
+    /// Saves every posted text. The per-field and per-group reset buttons are submit buttons of the SAME form
+    /// (<paramref name="reset"/> = a resx key, <paramref name="resetGroup"/> = a group id): the reset text(s) are treated
+    /// as empty (row deleted) and every other posted edit is saved with them, so a reset never loses unsaved edits
+    /// elsewhere on the page (no JS needed). An invalid edit elsewhere re-renders the page with every edit kept.
+    /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Index(SiteTextsInput input, string? tab, string? q)
+    public async Task<IActionResult> Index(SiteTextsInput input, string? tab, string? q, string? reset, string? resetGroup)
     {
         tab = TabOf(tab);
         q = Search(q);
+        var resetKeys = PublicTexts.All
+            .Where(t => t.ResxKey == reset || (resetGroup is not null && t.Group == resetGroup))
+            .Select(t => t.ResxKey).ToHashSet(StringComparer.Ordinal);
         // Only registry keys are considered (no over-posting); keys that were not posted are left unchanged.
         var posted = input.Texts
             .Select(p => (Text: PublicTexts.Find(p.Key), Value: p.Value ?? new BilingualValueInput()))
-            .Where(p => p.Text is not null)
+            .Where(p => p.Text is not null && !resetKeys.Contains(p.Text.ResxKey))
             .Select(p => (Text: p.Text!, Ar: Clean(p.Value.Ar), En: Clean(p.Value.En)))
             .ToList();
 
@@ -82,9 +91,11 @@ public class SiteTextsController(AppDbContext db) : AdminControllerBase
         {
             var stored = await RowsAsync(false);
             var values = input.Texts.ToDictionary(p => p.Key, p => p.Value ?? new BilingualValueInput(), StringComparer.Ordinal);
+            foreach (var key in resetKeys) values[key] = new BilingualValueInput(); // the reset asked for is shown, saved with the fix
             return View(ViewPath, Build(tab, q, stored, values));
         }
 
+        posted.AddRange(resetKeys.Select(k => (Text: PublicTexts.Find(k)!, Ar: (string?)null, En: (string?)null)));
         var rows = await RowsAsync(true);
         var now = DateTime.UtcNow;
         foreach (var (text, ar, en) in posted)
@@ -107,8 +118,10 @@ public class SiteTextsController(AppDbContext db) : AdminControllerBase
             }
         }
         await db.SaveChangesAsync(); // the interceptor drops the content snapshot
-        TempData["Success"] = L(MessageKeys.Admin.SiteTextsSaved);
-        return RedirectToAction(nameof(Index), new { tab, q });
+        TempData["Success"] = L(resetGroup is not null && resetKeys.Count > 0 ? MessageKeys.Admin.SiteTextGroupReset
+            : resetKeys.Count > 0 ? MessageKeys.Admin.SiteTextReset : MessageKeys.Admin.SiteTextsSaved);
+        var url = Url.Action(nameof(Index), new { tab, q });
+        return Redirect(reset is not null && resetKeys.Count > 0 ? url + "#t-" + Anchor(reset) : url!);
     }
 
     private void Validate(PublicText text, string? value, bool english)
@@ -122,44 +135,14 @@ public class SiteTextsController(AppDbContext db) : AdminControllerBase
             ModelState.AddModelError(field, L(MessageKeys.MaxLength, $"{label} ({language})", PublicTexts.MaxLength));
         if (PublicTexts.HasMarkupOrLink(value, defaultText))
             ModelState.AddModelError(field, L(MessageKeys.Admin.SiteTextMarkup, label, language));
-        if (!PublicTexts.PlaceholdersMatch(value, defaultText))
+        if (PublicTexts.HasFormatSpec(value))
+            ModelState.AddModelError(field, L(MessageKeys.Admin.SiteTextFormatSpec, label, language));
+        else if (!PublicTexts.PlaceholdersMatch(value, defaultText))
         {
             var expected = PublicTexts.Placeholders(defaultText);
             ModelState.AddModelError(field, L(MessageKeys.Admin.SiteTextPlaceholders, label, language,
                 expected.Count == 0 ? "—" : string.Join(" ", expected)));
         }
-    }
-
-    /// <summary>One text back to its resx default (both languages): the row is deleted.</summary>
-    [HttpPost]
-    public async Task<IActionResult> Reset(string? key, string? tab, string? q)
-    {
-        if (PublicTexts.Find(key) is { } text
-            && await db.SiteContents.FirstOrDefaultAsync(c => c.SectionKey == text.RowKey) is { } row)
-        {
-            db.SiteContents.Remove(row);
-            await db.SaveChangesAsync();
-        }
-        TempData["Success"] = L(MessageKeys.Admin.SiteTextReset);
-        return Redirect(Url.Action(nameof(Index), new { tab = TabOf(tab), q = Search(q) }) + (key is null ? "" : "#t-" + Anchor(key)));
-    }
-
-    /// <summary>Every text of one group back to its default.</summary>
-    [HttpPost]
-    public async Task<IActionResult> ResetGroup(string? group)
-    {
-        var keys = PublicTexts.All.Where(t => t.Group == group).Select(t => t.RowKey).ToList();
-        if (keys.Count > 0)
-        {
-            var rows = await db.SiteContents.Where(c => keys.Contains(c.SectionKey)).ToListAsync();
-            if (rows.Count > 0)
-            {
-                db.SiteContents.RemoveRange(rows);
-                await db.SaveChangesAsync();
-            }
-        }
-        TempData["Success"] = L(MessageKeys.Admin.SiteTextGroupReset);
-        return RedirectToAction(nameof(Index), new { tab = TabOf(group) });
     }
 
     /// <summary>The element id of a field (resx keys are letters, digits and "_").</summary>

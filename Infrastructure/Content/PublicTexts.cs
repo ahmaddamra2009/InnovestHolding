@@ -120,8 +120,21 @@ public static class PublicTexts
         }
     }
 
-    /// <summary>Markup, or a link the default does not have: these are plain words (encoded wherever they are shown).</summary>
+    private static readonly Regex FormatSpec = new(@"\{\s*\d+\s*[,:]", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+
+    /// <summary>
+    /// A placeholder with an alignment or format part ({0,999999}, {1:D9999999}): refused by the admin and ignored by the
+    /// localizer, so an override can never make a reply grow (only bare {n} placeholders are allowed).
+    /// </summary>
+    public static bool HasFormatSpec(string? value) => !string.IsNullOrEmpty(value) && FormatSpec.IsMatch(value);
+
+    private static readonly Regex Scheme = new(@"(?:java|vb)script\s*:|data\s*:", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
+
+    /// <summary>
+    /// Markup, a script/data URL scheme (javascript:, vbscript:, data:), or a link the default does not have: these are
+    /// plain words (encoded wherever they are shown).
+    /// </summary>
     public static bool HasMarkupOrLink(string value, string defaultText) =>
-        value.Contains('<') || value.Contains('>')
+        value.Contains('<') || value.Contains('>') || Scheme.IsMatch(value)
         || (value.Contains("://", StringComparison.Ordinal) && !defaultText.Contains("://", StringComparison.Ordinal));
 }
