@@ -37,7 +37,7 @@ public class ForumContentMigrationTests
         INSERT INTO PartnerGroups (NameAr, NameEn, SortOrder, IsActive, CreatedAt) VALUES (N'رعاة ذهبيون', N'Gold', 7, 1, '2026-10-01T10:00:00');
         INSERT INTO Partners (NameAr, NameEn, SortOrder, IsActive, ShowOnHome, CreatedAt, UpdatedAt) VALUES (N'جامعة الدول العربية', N'League (admin)', 4, 1, 1, '2026-10-01T10:00:00', '2026-10-01T10:00:00');
         INSERT INTO Events (Slug, TitleAr, DescriptionAr, EventDay, EventMonthAr, LocationAr, TimeAr, IsActive, SortOrder, CreatedAt, SummaryAr, CityAr, AddressAr, Status, AttendanceMode, RegistrationOpen, MetaTitleAr, MetaDescriptionAr, UpdatedAt)
-            VALUES ('admin-finale', N'ختام مسابقة Innovest', N'', 20, N'نوفمبر', N'', N'', 1, 6, '2026-10-01T10:00:00', N'', N'', N'', 0, 0, 1, N'', N'', '2026-10-01T10:00:00');
+            VALUES ('admin-finale', N'ختام مسابقة إنوفست', N'', 20, N'نوفمبر', N'', N'', 1, 6, '2026-10-01T10:00:00', N'', N'', N'', 0, 0, 1, N'', N'', '2026-10-01T10:00:00');
         INSERT INTO Events (Slug, TitleAr, DescriptionAr, EventDay, EventMonthAr, LocationAr, TimeAr, IsActive, SortOrder, CreatedAt, SummaryAr, CityAr, AddressAr, Status, AttendanceMode, RegistrationOpen, MetaTitleAr, MetaDescriptionAr, UpdatedAt)
             VALUES ('2026-12-annual-closing-arab-league', N'حفل الختام كما كتبه المشرف', N'', 15, N'ديسمبر', N'', N'', 1, 7, '2026-10-01T10:00:00', N'', N'', N'', 0, 0, 1, N'', N'', '2026-10-01T10:00:00');
         """;
@@ -104,7 +104,7 @@ public class ForumContentMigrationTests
             Assert.Equal(rows.Select(r => r.TextAr), await db.ContentItems.Where(i => i.Group == group).OrderBy(i => i.SortOrder).Select(i => i.TextAr).ToListAsync());
         Assert.Equal(("Patron (admin)", false), await db.PartnerGroups.Where(g => g.NameAr == "برعاية").Select(g => ValueTuple.Create(g.NameEn, g.ShowOnForumHub)).SingleAsync());
         Assert.Equal(6, await db.PartnerGroups.CountAsync());
-        Assert.True(await db.PartnerGroups.Where(g => g.NameAr == "تنظيم").Select(g => g.ShowOnForumHub).SingleAsync());
+        Assert.True(await db.PartnerGroups.Where(g => g.NameAr == "بتنظيم").Select(g => g.ShowOnForumHub).SingleAsync());
         // New groups sort before the admin's (min existing 5 → -4…0).
         Assert.True(await db.PartnerGroups.Where(g => g.NameAr == "شريك استراتيجي").Select(g => g.SortOrder).SingleAsync() < 5);
         Assert.Equal("League (admin)", await db.Partners.Where(p => p.NameAr == "جامعة الدول العربية").Select(p => p.NameEn).SingleAsync());
@@ -112,8 +112,8 @@ public class ForumContentMigrationTests
         Assert.Equal(7, partners.Count);
         Assert.All(partners, p => Assert.False(p.ShowOnHome));
         Assert.Equal(4, partners.Count(p => !p.IsActive && p.PartnerGroup!.NameAr == "بمشاركة"));
-        Assert.Equal("Qadroon Youth Foundation for Sustainable Development", partners.Single(p => p.PartnerGroup!.NameAr == "تنظيم").NameEn);
-        Assert.Equal(1, await db.Events.CountAsync(e => e.TitleAr == "ختام مسابقة Innovest"));
+        Assert.Equal("Qadroon Youth Foundation for Sustainable Development", partners.Single(p => p.PartnerGroup!.NameAr == "بتنظيم").NameEn);
+        Assert.Equal(1, await db.Events.CountAsync(e => e.TitleAr == "ختام مسابقة إنوفست"));
         Assert.Equal("حفل الختام كما كتبه المشرف", await db.Events.Where(e => e.Slug == "2026-12-annual-closing-arab-league").Select(e => e.TitleAr).SingleAsync());
         var events = await db.Events.AsNoTracking().Where(e => e.DateIsMonth).OrderBy(e => e.SortOrder).ToListAsync();
         Assert.Equal(7, events.Count);
@@ -239,7 +239,9 @@ public class ForumContentMigrationTests
 
     private static readonly string[] OldNames =
         ["هولدينغ", "منتدى إنوفست العربي", "منتدى الابتكار والاستثمار العربي", "منتدى الإبتكار والإستثمار العربي", "المنتدى العربي",
-         "Arab Forum", "ARAB FORUM", "[?]", "ملتقي ", "الإصنطاعي", "يوينو", "الأقليمية", "الإجتماعى", "الأولي ", "يُعكس"];
+         "Arab Forum", "ARAB FORUM", "[?]", "ملتقي ", "الإصنطاعي", "يوينو", "الأقليمية", "الإجتماعى", "الأولي ", "يُعكس",
+         // COPY-F10 B1–B7: the PDF's hamza on these masdars.
+         "الإستثمار", "الإبتكار", "إنطلاق", "الإقتصاد"];
 
     /// <summary>Every literal Up inserts or writes (not the frozen old components, which are only a guard and Down's restore).</summary>
     private static IEnumerable<string> InsertedLiterals() =>
@@ -261,6 +263,16 @@ public class ForumContentMigrationTests
         Assert.True(all.Count > 250, $"{all.Count} literals searched");
         var hits = all.SelectMany(s => OldNames.Where(o => s.Contains(o, StringComparison.Ordinal)).Select(o => $"{o} in «{s[..Math.Min(40, s.Length)]}»")).ToList();
         Assert.True(hits.Count == 0, string.Join(" ‖ ", hits));
+        // N8 (RenameHoldingAndForum, frozen, runs BEFORE this migration) never sees F10's rows: they must arrive renamed.
+        var n8 = all.SelectMany(s => RenameHoldingAndForum.Pairs.Where(p => s.Contains(p.Find, StringComparison.Ordinal))
+            .Select(p => $"{p.Find} in «{s[..Math.Min(40, s.Length)]}»")).ToList();
+        Assert.True(n8.Count == 0, "N8 old phrases: " + string.Join(" ‖ ", n8));
+        Assert.Contains(RenameHoldingAndForum.Pairs, p => p.Find == "هولدينغ"); // the pairs are the real list
+        // CTO D1: Western digits in all Arabic site text (Cultures.cs renders numbers so), edition titles and address included.
+        static bool Indic(char c) => c is >= '٠' and <= '٩' or >= '۰' and <= '۹';
+        var indic = all.Where(s => s.Any(Indic)).ToList();
+        Assert.True(indic.Count == 0, "Arabic-Indic digits in: " + string.Join(" ‖ ", indic));
+        Assert.All(ForumMediaImport.Editions, e => Assert.False(e.TitleAr.Any(Indic), e.TitleAr));
         // The negative control of the search itself: the frozen old components DO contain an old name.
         Assert.Contains(AddForumContent.OldComponents, c => c.TextAr.Contains("منتدى الابتكار والاستثمار العربي", StringComparison.Ordinal));
     }

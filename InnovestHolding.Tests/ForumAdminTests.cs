@@ -110,7 +110,7 @@ public class ForumAdminTests(TestAppFactory f)
     {
         var (c, t) = await AdminAsync();
         var list = await c.GetStringAsync(Index);
-        Assert.Contains("منتدى إنوفست ٢٠٢٥", list); // a row of the migration AddForumContent
+        Assert.Contains("منتدى إنوفست 2025", list); // a row of the migration AddForumContent
 
         var title = Unique("نسخة");
         var id = await CreateEditionAsync(c, t, title, "2022");

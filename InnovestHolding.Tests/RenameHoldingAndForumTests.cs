@@ -162,7 +162,8 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         Assert.Equal("Admin text: Innovest Holding hosts the Innovest Forum, the largest Arab forum.",
             await db.SiteContents.AsNoTracking().Where(c => c.SectionKey == "about_text_2").Select(c => c.ContentEn).SingleAsync());
         Assert.Equal(0, await CountAsync(db, "SELECT COUNT(*) AS [Value] FROM SiteContents WHERE ContentAr LIKE N'%الالقابضة%'"));
-        var ev = await db.Events.AsNoTracking().OrderBy(e => e.Id).FirstAsync();
+        // Projected: the database is at RenameHoldingAndForum, before F10's Events.DateIsMonth column.
+        var ev = await db.Events.AsNoTracking().OrderBy(e => e.Id).Select(e => new { e.DescriptionAr, e.DescriptionEn }).FirstAsync();
         Assert.Equal(("تنظمها إنوفست القابضة ضمن منتدى إنوفست.", "Organised by Innovest Holding as part of the Innovest Forum."),
             (ev.DescriptionAr, ev.DescriptionEn));
         // Other organisations' names and the forum's long name are not the brand: kept in both languages (H2).
@@ -262,7 +263,9 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
             }
 
         // Completeness, discovered from AppDbContext: every …Ar/…En text column of every content table is a target.
-        var expected = model.Where(m => !forbidden.Contains(m.Key))
+        // F10's ForumEditions table was created after this migration was frozen: AddForumContent runs AFTER the rename and
+        // inserts text that already uses the new names (ForumContentMigrationTests pins that), so N8's list stays as it is.
+        var expected = model.Where(m => !forbidden.Contains(m.Key) && m.Key != "ForumEditions")
             .SelectMany(m => m.Value.GetProperties().Where(p => p.ClrType == typeof(string) && Regex.IsMatch(p.GetColumnName(), "(Ar|En)$"))
                 .Select(p => m.Key + "." + p.GetColumnName()))
             .Append("SocialLinks.Label").Order().ToList();
@@ -275,7 +278,9 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
             // The forum identity's image keys (F9) were added after this migration was frozen; like every image key they
             // hold random FileKeys, never text, so the REPLACE can never touch them — the frozen list stays as it is.
             .Concat(SiteImages.All.Select(i => i.Key).Except(ForumIdentity.Images.Select(i => i.Key))).Append(BrandImages.ThemeColorKey)
-            .Append(ContentKeys.TimestampsUtcMarker).Append(ContentKeys.MediaInstance).Distinct().Order().ToList();
+            .Append(ContentKeys.TimestampsUtcMarker).Append(ContentKeys.MediaInstance)
+            // F10's keys come later too (AddForumContent inserts them already renamed): not part of the frozen list.
+            .Except(AddForumContent.NewKeys.Select(k => k[0])).Distinct().Order().ToList();
         Assert.Equal(nonText, RenameHoldingAndForum.NonTextKeys.Order().ToList());
 
         // Pairs never grow a value; a phrase contained in another comes after it (longest first).

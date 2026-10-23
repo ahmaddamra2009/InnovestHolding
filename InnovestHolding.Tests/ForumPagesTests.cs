@@ -121,10 +121,10 @@ public class ForumPagesTests(TestAppFactory f)
         Assert.DoesNotContain("href=\"innovest1", html);
         Assert.Contains("href=\"tel:&#x2B;201515204475\"", html); // "+" is encoded by the HTML encoder
 
-        // Patronage: groups flagged for the hub only (برعاية, تنظيم), not «بمشاركة» (the hidden ministries' group).
+        // Patronage: groups flagged for the hub only (برعاية, بتنظيم), not «بمشاركة» (the hidden ministries' group).
         var hub = html[html.IndexOf("sec-forum-patronage", StringComparison.Ordinal)..];
         hub = hub[..hub.IndexOf("</section>", StringComparison.Ordinal)];
-        Assert.Contains(english ? "Powered by" : "تنظيم", hub);
+        Assert.Contains(english ? "Powered by" : "بتنظيم", hub);
         Assert.DoesNotContain(english ? "With the Participation of" : "بمشاركة", hub);
     }
 

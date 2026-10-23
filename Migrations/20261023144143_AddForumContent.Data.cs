@@ -48,7 +48,7 @@ namespace InnovestHolding.Migrations
             "\n" +
             "شباب قادرون قررت إطلاق النسخ القادمة من المؤتمر تحت اسم: (Innovest Forum – منتدى إنوفست)\n" +
             "\n" +
-            "ليكون المظلة الكبرى التي تضم كل النسخ السابقة والمستقبلية من المؤتمر، ويستهدف هذا الحدث المتميز توسيع نطاقه ليشمل دولاً عربية أخرى، مُقدماً فرصاً أوسع في مجال ريادة الأعمال والإستثمار على المستوى العربي والشرق الأوسط.";
+            "ليكون المظلة الكبرى التي تضم كل النسخ السابقة والمستقبلية من المؤتمر، ويستهدف هذا الحدث المتميز توسيع نطاقه ليشمل دولًا عربية أخرى، مُقدِّمًا فرصًا أوسع في مجال ريادة الأعمال والاستثمار على المستوى العربي والشرق الأوسط.";
 
         public const string AboutTextEn =
             "The fifth edition of the Innovest Forum is launched at a time when innovation and entrepreneurship are increasingly recognised as a fundamental pillar of economic advancement and sustainable development in the Arab world.\n" +
@@ -60,9 +60,9 @@ namespace InnovestHolding.Migrations
             "It is to be the overarching umbrella for all past and future editions of the conference. This distinguished event aims to expand its reach to further Arab countries, offering wider opportunities in entrepreneurship and investment across the Arab region and the Middle East.";
 
         public const string PositioningTextAr =
-            "ليس مجرد مؤتمر، بل هو منصة للابتكار والإستثمار تهدف إلى تعزيز التعاون بين رواد الأعمال والمستثمرين في العالم العربي، وتوفير بيئة مثالية لطرح الأفكار، تبادل الخبرات، واكتشاف فرص جديدة.\n" +
+            "ليس مجرد مؤتمر، بل هو منصة للابتكار والاستثمار تهدف إلى تعزيز التعاون بين رواد الأعمال والمستثمرين في العالم العربي، وتوفير بيئة مثالية لطرح الأفكار، تبادل الخبرات، واكتشاف فرص جديدة.\n" +
             "\n" +
-            "تُمثّل Innovest منصة تكاملية تربط بين الدولة، رواد الأعمال، والمستثمرين لخلق اقتصاد قائم على الابتكار وتحقيق نمو مستدام.";
+            "تُمثّل إنوفست منصة تكاملية تربط بين الدولة، ورواد الأعمال، والمستثمرين لخلق اقتصاد قائم على الابتكار وتحقيق نمو مستدام.";
 
         public const string PositioningTextEn =
             "More than a conference, it is a platform for innovation and investment that aims to strengthen cooperation between entrepreneurs and investors in the Arab world, and to provide an ideal environment for presenting ideas, exchanging expertise and discovering new opportunities.\n" +
@@ -71,17 +71,17 @@ namespace InnovestHolding.Migrations
 
         public static readonly string[][] NewKeys =
         [
-            ["forum_tagline", "نحو منظومة عربية مبتكرة للإستثمار والفرص الواعدة.", "Towards an innovative Arab ecosystem for investment and promising opportunities."],
-            ["forum_edition_label", "النسخة الخامسة", "5th edition"],
+            ["forum_tagline", "نحو منظومة عربية مبتكرة للاستثمار والفرص الواعدة.", "Towards an innovative Arab ecosystem for investment and promising opportunities."],
+            ["forum_edition_label", "النسخة الخامسة", "Fifth Edition"],
             ["forum_about_lead", "شباب قادرون وإنوفست القابضة تطلقان منتدى إنوفست", "Qadroon Youth and Innovest Holding launch the Innovest Forum"],
             ["forum_about_text", AboutTextAr, AboutTextEn],
-            ["forum_positioning_title", "منتدى إنوفست", "INNOVEST FORUM"],
+            ["forum_positioning_title", "منتدى إنوفست", "Innovest Forum"],
             ["forum_positioning_text", PositioningTextAr, PositioningTextEn],
             ["forum_strategic_link_title", "الربط الاستراتيجي", "Strategic Link"],
-            ["forum_strategic_link_text", "Innovest يربط بين:\nالأفكار + المواهب + التمويل\nشركات ناجحة واستثمارات حقيقية",
+            ["forum_strategic_link_text", "إنوفست يربط بين:\nالأفكار + المواهب + التمويل\nشركات ناجحة واستثمارات حقيقية",
                 "Innovest connects:\nIdeas + Talent + Funding\nSuccessful companies and real investments"],
             ["forum_editions_title", "النسخ السابقة", "Past Editions"],
-            ["forum_editions_more_label", "كل النسخ السابقة", "All past editions"],
+            ["forum_editions_more_label", "عرض كل النسخ", "View all editions"],
             ["forum_patronage_title", "الجهات المنظمة", "Organising Bodies"],
             ["forum_contact_title", "طرق التواصل", "Contact Us"],
             ["forum_contact_phone_label", "للتواصل والحجز", "Contact and Booking"],
@@ -90,23 +90,24 @@ namespace InnovestHolding.Migrations
             ["forum_contact_social", "innovest1", null],
             ["forum_contact_website_label", "الموقع الرسمي للمنتدى", "Official Forum Website"],
             ["forum_contact_website", "https://www.innovest-arab.com", null],
-            ["forum_contact_address", "٥٥ ش جمال زين المنطقة الأولى – مدينة نصر – القاهرة – مصر.", "55 Gamal Zein St., First District, Nasr City, Cairo, Egypt."],
+            ["forum_contact_address", "55 شارع جمال زين، المنطقة الأولى، مدينة نصر، القاهرة، مصر.", "55 Gamal Zein St., First District, Nasr City, Cairo, Egypt."],
             ["forum_editions_limit", "3", null],
 
             // Headings, intros and notes of the forum lists (ContentItemGroups).
             ["section_forum_figures_title", "منظومة إنوفست للابتكار", "Innovest Innovation Ecosystem"],
-            ["section_forum_figures_intro", "", null],
-            ["section_forum_audiences_title", "التأثير على الأطراف الرئيسية", "Multi–Stakeholder Impact"],
+            ["section_forum_figures_intro", "منظومة إنوفست للابتكار والاستثمار ليست مجرد منتدى، بل منظومة اقتصادية متكاملة لبناء بيئة مستدامة للابتكار والاستثمار في العالم العربي.",
+                "The Innovest Innovation and Investment Ecosystem is more than a forum: it is an integrated economic ecosystem for building a sustainable environment for innovation and investment in the Arab world."],
+            ["section_forum_audiences_title", "التأثير على الأطراف الرئيسية", "Multi-Stakeholder Impact"],
             ["section_forum_audiences_intro", "", null],
             ["section_forum_pillars_title", "القطاعات الرئيسية", "Core Pillars"],
             ["section_forum_pillars_intro",
-                "منظومة Innovest للابتكار والاستثمار هي منصة ليست مجرد منتدى بل منظومة اقتصادية متكاملة لبناء بيئة مستدامة للابتكار والاستثمار في العالم العربي.",
-                "The Innovest Innovation and Investment Ecosystem is more than a forum: it is an integrated economic ecosystem for building a sustainable environment for innovation and investment in the Arab world."],
+                "",
+                null],
             ["section_forum_goals_title", "أهداف النسخة الخامسة", "Goals of the Fifth Edition"],
             ["section_forum_goals_intro", "", null],
             ["section_forum_goals_note",
-                "يعكس المؤتمر التزامه بتعزيز الابتكار والاستثمار في المنطقة العربية، ويوفر فرصاً ممتازة للتفاعل والتعاون من أجل تحقيق التنمية الاقتصادية والاجتماعية المستدامة.",
-                "The conference reflects its commitment to promoting innovation and investment in the Arab region, and offers excellent opportunities for interaction and cooperation towards sustainable economic and social development."],
+                "يعكس المنتدى التزامه بتعزيز الابتكار والاستثمار في المنطقة العربية، ويوفر فرصًا ممتازة للتفاعل والتعاون من أجل تحقيق التنمية الاقتصادية والاجتماعية المستدامة.",
+                "The Forum reflects its commitment to promoting innovation and investment in the Arab region, and offers excellent opportunities for interaction and cooperation towards sustainable economic and social development."],
             ["section_forum_sectors_title", "المحاور والقطاعات", "Focus Areas and Sectors"],
             ["section_forum_sectors_intro", "", null],
             ["section_forum_sectors_note",
@@ -124,15 +125,15 @@ namespace InnovestHolding.Migrations
             ("TitleAr", "النسخ السابقة"),
             ("TitleEn", "Past Editions"),
             ("SummaryAr", "محطات منتدى إنوفست منذ نسخته الأولى عام 2023."),
-            ("SummaryEn", "The Innovest Forum's editions since the first in 2023."),
+            ("SummaryEn", "Milestones of the Innovest Forum since its first edition in 2023."),
             ("IntroAr", "صور ومحطات من النسخ السابقة لمنتدى إنوفست والفعاليات المصاحبة لها."),
             ("IntroEn", "Photos and highlights from past editions of the Innovest Forum and their side events."),
             ("BodyAr", ""),
             ("BodyEn", null),
-            ("EmptyTextAr", "ستُنشر النسخ السابقة قريباً."),
+            ("EmptyTextAr", "ستُنشر النسخ السابقة قريبًا."),
             ("EmptyTextEn", "Past editions will be published soon."),
             ("MetaTitleAr", "النسخ السابقة لمنتدى إنوفست"),
-            ("MetaTitleEn", "Innovest Forum Past Editions"),
+            ("MetaTitleEn", "Past Editions of the Innovest Forum"),
             ("MetaDescriptionAr", "تعرّف على النسخ السابقة لمنتدى إنوفست منذ 2023: مؤتمرات ريادة الأعمال والاستثمار، وملتقيات الجامعات، وقمة الشباب العربي في الأردن."),
             ("MetaDescriptionEn", "Explore past editions of the Innovest Forum since 2023: entrepreneurship and investment conferences, university forums and the Arab youth summit in Jordan."),
         ];
@@ -174,32 +175,32 @@ namespace InnovestHolding.Migrations
                 new("+300", "300+", null, "استشارة ودراسة جدوى", "consultations and feasibility studies"),
                 new("+58", "58+", null, "شركة مدعومة", "companies supported"),
                 new("420 مليون", "420 million", null, "قيمة الشراكات", "in partnerships"),
-                new("50", "50", null, "شركة في جولة الاستثمار القادمة", "companies in the next investment round"),
+                new("50", "50", null, "شركة ضمن الاستثمار القادم", "companies in the next investment"),
             ]),
             ("forum_audiences",
             [
-                new("أولًا: الدولة", "First: The State", "building",
+                new("أولًا: الدولة", "For the State", "building",
                     "دعم التحول نحو اقتصاد المعرفة\nتعزيز بيئة الابتكار وريادة الأعمال\nجذب الاستثمارات المحلية والدولية\nخلق فرص عمل مستدامة للشباب\nدعم خطط التنمية الاقتصادية",
                     "Supporting the transition to a knowledge economy\nStrengthening the innovation and entrepreneurship environment\nAttracting local and international investment\nCreating sustainable jobs for young people\nSupporting economic development plans"),
-                new("ثانيًا: رواد الأعمال", "Second: Entrepreneurs", "rocket",
+                new("ثانيًا: رواد الأعمال", "For Entrepreneurs", "rocket",
                     "تحويل الأفكار إلى مشاريع قابلة للتنفيذ\nتوفير التدريب والتأهيل (Business + AI)\nالوصول إلى مستثمرين وشركاء\nاحتضان وتسريع نمو الشركات الناشئة\nفرص ظهور إعلامي وتسويقي",
                     "Turning ideas into viable projects\nTraining and capacity building (Business + AI)\nAccess to investors and partners\nIncubating startups and accelerating their growth\nMedia and marketing exposure"),
-                new("ثالثًا: المستثمرين", "Third: Investors", "coins",
+                new("ثالثًا: المستثمرون", "For Investors", "coins",
                     "الوصول إلى مشاريع جاهزة للاستثمار (Deal Flow قوي)\nتقليل مخاطر الاستثمار عبر التقييم والتأهيل\nفرص استثمار في قطاعات مبتكرة (Tech / AI)\nبناء شراكات استراتيجية مربحة\nتحقيق عوائد مالية مستدامة",
                     "Access to investment-ready projects (strong Deal Flow)\nLower investment risk through assessment and preparation\nInvestment opportunities in innovative sectors (Tech / AI)\nBuilding profitable strategic partnerships\nAchieving sustainable financial returns"),
             ]),
             ("forum_pillars",
             [
                 new("التدريب والاستشارات", "Training & Consulting", "book",
-                    "+2000 متدرب\n459 مستفيد من المسابقات\n+300 استشارة ودراسة جدوى\nحاضنة أعمال Innovest",
+                    "+2000 متدرب\n459 مستفيد من المسابقات\n+300 استشارة ودراسة جدوى\nحاضنة أعمال إنوفست",
                     "2000+ trainees\n459 competition beneficiaries\n300+ consultations and feasibility studies\nInnovest Business Incubator"),
-                new("الإعلام والتأثير", "Media", "mic",
+                new("الإعلام والتأثير", "Media & Influence", "mic",
                     "منصة إلكترونية عالمية\nبودكاست متخصص\nArab Innovest TV",
                     "A global online platform\nA specialised podcast\nArab Innovest TV"),
-                new("التكنولوجيا والابتكار", "Technology & Innovation", "cpu",
-                    "منصة Innovest الرقمية\nAI Youth Hub (مركز تأهيل شباب الذكاء الاصطناعي)\nحلول رقمية لدعم الشركات الناشئة\nبناء منتجات تقنية قابلة للاستثمار",
+                new("التكنولوجيا والابتكار", "Technology & Innovation", "idea",
+                    "منصة إنوفست الرقمية\nAI Youth Hub (مركز تأهيل شباب الذكاء الاصطناعي)\nحلول رقمية لدعم الشركات الناشئة\nبناء منتجات تقنية قابلة للاستثمار",
                     "The Innovest digital platform\nAI Youth Hub (an AI training centre for young people)\nDigital solutions supporting startups\nBuilding investable tech products"),
-                new("الفعاليات والمسابقات والجوائز", "Events Competitions & Awards", "calendar",
+                new("الفعاليات والمسابقات والجوائز", "Events, Competitions & Awards", "award",
                     "مؤتمرات عربية كبرى\nمعارض للشركات الناشئة\nملتقيات جامعية\nقمم إقليمية\nInnovest Awards (جوائز الابتكار والاستثمار العربي)\n" +
                     "تكريم أفضل المشاريع والشركات ورواد الأعمال وجائزة الشيخ/ محمد بن حمدان الجائزة العربية لريادة الأعمال والاستثمار",
                     "Major Arab conferences\nStartup exhibitions\nUniversity forums\nRegional summits\nInnovest Awards (Arab Innovation and Investment Awards)\n" +
@@ -247,10 +248,10 @@ namespace InnovestHolding.Migrations
         public static readonly Item[] NewComponents =
         [
             new("الجلسات الحوارية وورش العمل", "Panel Discussions and Workshops", "mic",
-                "بمشاركة نخبة من المفكرين ورواد الأعمال وصنّاع القرار العرب، تُناقش أبرز القضايا المرتبطة بالابتكار، ريادة الأعمال، الاقتصاد الرقمي، والاستثمار المستدام في العالم العربي وورش العمل تدعم مجالات الإبتكار وريادة الأعمال.",
+                "بمشاركة نخبة من المفكرين ورواد الأعمال وصنّاع القرار العرب، تُناقش أبرز القضايا المرتبطة بالابتكار، ريادة الأعمال، الاقتصاد الرقمي، والاستثمار المستدام في العالم العربي، وتدعم ورش العمل مجالات الابتكار وريادة الأعمال.",
                 "With a select group of Arab thinkers, entrepreneurs and decision-makers, the sessions discuss the key issues of innovation, entrepreneurship, the digital economy and sustainable investment in the Arab world, while the workshops support innovation and entrepreneurship."),
             new("مسابقة INNOVEST للابتكار وريادة الأعمال", "INNOVEST Innovation and Entrepreneurship Competition", "target",
-                "تُعد هذه المسابقة إحدى الركائز الأساسية للمنتدى، حيث تشمل المشاركين الذين تم تأهيلهم مسبقًا عبر برنامج تدريبي مكثف نُفذ قبل إنطلاق المنتدى، بالإضافة إلى المشاركين الذين تقدموا مباشرة للمسابقة دون حضور البرنامج. يتم خلال المسابقة عرض المشاريع الريادية أمام لجنة تحكيم متخصصة، ويُمنح الفائزون جوائز وفرص احتضان وتطوير لمشاريعهم.",
+                "تُعد هذه المسابقة إحدى الركائز الأساسية للمنتدى، حيث تشمل المشاركين الذين تم تأهيلهم مسبقًا عبر برنامج تدريبي مكثف نُفذ قبل انطلاق المنتدى، بالإضافة إلى المشاركين الذين تقدموا مباشرة للمسابقة دون حضور البرنامج. يتم خلال المسابقة عرض المشاريع الريادية أمام لجنة تحكيم متخصصة، ويُمنح الفائزون جوائز وفرص احتضان وتطوير لمشاريعهم.",
                 "This competition is one of the Forum's core pillars. It includes participants who were prepared in advance through an intensive training programme held before the Forum, as well as participants who applied directly without attending the programme. Entrepreneurial projects are presented to a specialised judging panel, and the winners receive prizes and incubation and development opportunities for their projects."),
             new("لقاءات المستثمرين (Meet the Investors)", "Meet the Investors", "briefcase",
                 "جلسات ثنائية مباشرة تجمع بين رواد الأعمال والمستثمرين، لعرض المشاريع الريادية واستكشاف فرص التمويل والاحتضان.",
@@ -261,7 +262,7 @@ namespace InnovestHolding.Migrations
             new("منصة الشراكات والتشبيك العربي", "Arab Partnerships and Networking Platform", "handshake",
                 "بيئة تفاعلية احترافية تُمكّن المشاركين من توقيع اتفاقيات تعاون، وبناء شراكات استراتيجية بين الجهات الداعمة للابتكار، إلى جانب تعزيز التواصل الفعّال وتبادل الخبرات وبناء علاقات مهنية تدعم استدامة منظومة الابتكار في العالم العربي.",
                 "A professional, interactive environment where participants sign cooperation agreements and build strategic partnerships among organisations that support innovation, while strengthening effective communication, exchanging expertise and building professional relationships that sustain the innovation ecosystem in the Arab world."),
-            new("معرض INNOVEST للابتكار", "INNOVEST Innovation Exhibition", "rocket",
+            new("معرض INNOVEST للابتكار", "INNOVEST Innovation Exhibition", "cpu",
                 "منصة لعرض الابتكارات، النماذج الأولية، والتقنيات الحديثة من الشركات الناشئة، والمراكز البحثية، والمؤسسات الداعمة للابتكار.",
                 "A showcase for innovations, prototypes and new technologies from startups, research centres and institutions that support innovation."),
             new("جوائز منتدى إنوفست", "Innovest Forum Awards", "award",
@@ -281,8 +282,8 @@ namespace InnovestHolding.Migrations
         [
             new("برعاية", "Under the Patronage of", true),
             new("بمشاركة", "With the Participation of", false),
-            new("تنظيم", "Powered by", true),
-            new("شريك حصري", "Exclusive Partnerships", false),
+            new("بتنظيم", "Powered by", true),
+            new("شريك حصري", "Exclusive Partner", false),
             new("شريك استراتيجي", "Strategic Partner", false),
         ];
 
@@ -295,7 +296,7 @@ namespace InnovestHolding.Migrations
             new("وزارة الشباب والرياضة", "Ministry of Youth and Sports", "بمشاركة", false),
             new("وزارة الصناعة", "Ministry of Industry", "بمشاركة", false),
             new("وزارة التخطيط والتنمية الاقتصادية", "Ministry of Planning and Economic Development", "بمشاركة", false),
-            new("مؤسسة شباب قادرون للتنمية المستدامة", "Qadroon Youth Foundation for Sustainable Development", "تنظيم", true),
+            new("مؤسسة شباب قادرون للتنمية المستدامة", "Qadroon Youth Foundation for Sustainable Development", "بتنظيم", true),
             new("كابيتال للعلوم والتكنولوجيا", "CAPITAL – Capital For Science & Technology", "شريك حصري", true),
             new("أكاديمية ألوندرا", "Alondra Academy", "شريك استراتيجي", true),
         ];
@@ -311,13 +312,13 @@ namespace InnovestHolding.Migrations
         public static readonly EventRow[] Events =
         [
             new("2026-06-first-preparatory-forum", "الملتقى التحضيري الأول", "First Preparatory Forum", 6, "يونيو", "June", "", null),
-            new("2026-06-ai-digital-economy-forum", "ملتقى الذكاء الاصطناعي والإقتصاد الرقمي", "Artificial Intelligence and Digital Economy Forum", 6, "يونيو", "June", "", null),
+            new("2026-06-ai-digital-economy-forum", "ملتقى الذكاء الاصطناعي والاقتصاد الرقمي", "Artificial Intelligence and Digital Economy Forum", 6, "يونيو", "June", "", null),
             new("2026-07-arab-women-entrepreneurship-forum", "ملتقى المرأة العربية لريادة الأعمال", "Arab Women Entrepreneurship Forum", 7, "يوليو", "July", "", null),
-            new("2026-08-innovest-upper-egypt-forum", "ملتقى Innovest صعيد مصر", "Innovest Upper Egypt Forum", 8, "أغسطس", "August", "صعيد مصر", "Upper Egypt"),
-            new("2026-09-innovest-universities-forum", "ملتقى Innovest الجامعات", "Innovest Universities Forum", 9, "سبتمبر", "September", "", null),
-            new("2026-10-regional-summit-libya", "ملتقى القمة الإقليمية ليبيا", "Regional Summit Forum – Libya", 10, "أكتوبر", "October", "ليبيا", "Libya"),
-            new("2026-11-innovest-competition-finale", "ختام مسابقة Innovest", "Innovest Competition Finale", 11, "نوفمبر", "November", "", null),
-            new("2026-11-regional-summit-bahrain", "ملتقى القمة الإقليمية بالبحرين", "Regional Summit Forum – Bahrain", 11, "نوفمبر", "November", "البحرين", "Bahrain"),
+            new("2026-08-innovest-upper-egypt-forum", "ملتقى إنوفست صعيد مصر", "Innovest Upper Egypt Forum", 8, "أغسطس", "August", "صعيد مصر", "Upper Egypt"),
+            new("2026-09-innovest-universities-forum", "ملتقى إنوفست الجامعات", "Innovest Universities Forum", 9, "سبتمبر", "September", "", null),
+            new("2026-10-regional-summit-libya", "ملتقى القمة الإقليمية – ليبيا", "Regional Summit – Libya", 10, "أكتوبر", "October", "ليبيا", "Libya"),
+            new("2026-11-innovest-competition-finale", "ختام مسابقة إنوفست", "Innovest Competition Finale", 11, "نوفمبر", "November", "", null),
+            new("2026-11-regional-summit-bahrain", "ملتقى القمة الإقليمية – البحرين", "Regional Summit – Bahrain", 11, "نوفمبر", "November", "البحرين", "Bahrain"),
             new("2026-12-annual-closing-arab-league", "الختام السنوي بجامعة الدول العربية", "Annual Closing at the Arab League", 12, "ديسمبر", "December", "جامعة الدول العربية", "Arab League"),
         ];
 
@@ -334,12 +335,12 @@ namespace InnovestHolding.Migrations
 
         public static readonly EditionRow[] Editions =
         [
-            new(2026, "النسخة الرابعة", "Fourth Edition", "منتدى إنوفست ٢٠٢٦", "Innovest Forum 2026", "", null),
-            new(2025, "النسخة الرابعة", "Fourth Edition", "قمة الابتكار والتكنولوجيا للشباب العربي – الأردن ٢٠٢٥", "Arab Youth Innovation and Technology Summit – Jordan 2025", "الأردن", "Jordan"),
+            new(2026, "النسخة الرابعة", "Fourth Edition", "منتدى إنوفست 2026", "Innovest Forum 2026", "", null),
+            new(2025, "النسخة الرابعة", "Fourth Edition", "قمة الابتكار والتكنولوجيا للشباب العربي – الأردن 2025", "Arab Youth Innovation and Technology Summit – Jordan 2025", "الأردن", "Jordan"),
             new(2025, "النسخة الرابعة", "Fourth Edition", "ملتقى Innovest Tech University", "Innovest Tech University Forum", "", null),
-            new(2025, "النسخة الثالثة", "Third Edition", "منتدى إنوفست ٢٠٢٥", "Innovest Forum 2025", "", null),
-            new(2024, "النسخة الثانية", "Second Edition", "مؤتمر ريادة الأعمال والإستثمار العربي ٢٠٢٤", "Arab Entrepreneurship and Investment Conference 2024", "", null),
-            new(2023, "النسخة الأولى", "First Edition", "مؤتمر ريادة الأعمال والتحول الرقمي ٢٠٢٣", "Entrepreneurship and Digital Transformation Conference 2023", "", null),
+            new(2025, "النسخة الثالثة", "Third Edition", "منتدى إنوفست 2025", "Innovest Forum 2025", "", null),
+            new(2024, "النسخة الثانية", "Second Edition", "مؤتمر ريادة الأعمال والاستثمار العربي 2024", "Arab Entrepreneurship and Investment Conference 2024", "", null),
+            new(2023, "النسخة الأولى", "First Edition", "مؤتمر ريادة الأعمال والتحول الرقمي 2023", "Entrepreneurship and Digital Transformation Conference 2023", "", null),
         ];
 
         /// <summary>The startup importer's marker (Infrastructure/Content/ForumMediaImport): Down removes it with the rows.</summary>

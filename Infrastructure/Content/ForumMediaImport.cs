@@ -58,7 +58,7 @@ public static class ForumMediaImport
 
     public static readonly EditionMedia[] Editions =
     [
-        new(2026, "منتدى إنوفست ٢٠٢٦",
+        new(2026, "منتدى إنوفست 2026",
         [
             new("photos/2026-forum-1.jpg", "صورة جماعية أمام مقر جامعة الدول العربية", "Group photo in front of the Arab League headquarters"),
             new("photos/2026-forum-2.jpg", "صورة جماعية على المسرح أمام شاشة إنوفست", "Group photo on stage at the Innovest screen"),
@@ -67,7 +67,7 @@ public static class ForumMediaImport
             new("photos/2026-forum-5.jpg", "جلسة حوارية على المسرح", "A panel session on stage"),
             new("photos/2026-forum-6.jpg", "الفائزون يحملون شيكات الجوائز", "Award winners holding their prize cheques"),
         ]),
-        new(2025, "قمة الابتكار والتكنولوجيا للشباب العربي – الأردن ٢٠٢٥",
+        new(2025, "قمة الابتكار والتكنولوجيا للشباب العربي – الأردن 2025",
         [
             new("photos/2025-jordan-summit-1.jpg", "جلسة حوارية على المسرح في قمة الأردن", "A panel on stage at the Jordan summit"),
             new("photos/2025-jordan-summit-2.jpg", "صورة جماعية أمام خلفية القمة", "Group photo at the summit backdrop"),
@@ -82,7 +82,7 @@ public static class ForumMediaImport
             new("photos/2025-tech-university-4.jpg", "الحضور في القاعة", "The audience in the auditorium"),
             new("photos/2025-tech-university-5.jpg", "مسؤولون يتجولون في المعرض", "Officials touring the exhibition"),
         ]),
-        new(2025, "منتدى إنوفست ٢٠٢٥",
+        new(2025, "منتدى إنوفست 2025",
         [
             new("photos/2025-forum-1.jpg", "صورة جماعية مسائية أمام خلفية إنوفست", "Evening group photo at the Innovest backdrop"),
             new("photos/2025-forum-2.jpg", "صورة جماعية في مقر جامعة الدول العربية", "Group photo at the Arab League headquarters"),
@@ -91,16 +91,16 @@ public static class ForumMediaImport
             new("photos/2025-forum-5.jpg", "اجتماع حول طاولة مستديرة", "A round-table meeting"),
             new("photos/2025-forum-6.jpg", "جلسة في الهواء الطلق تحت مظلة", "An outdoor session under a canopy"),
         ]),
-        new(2024, "مؤتمر ريادة الأعمال والإستثمار العربي ٢٠٢٤",
+        new(2024, "مؤتمر ريادة الأعمال والاستثمار العربي 2024",
         [
             new("photos/2024-conference-1.jpg", "صورة جماعية على المسرح", "Group photo on stage"),
-            new("photos/2024-conference-2.jpg", "المنصة الرئيسية في المؤتمر الصحفي", "The head table at the press conference"),
+            new("photos/2024-conference-2.jpg", "طاولة المتحدثين في المؤتمر الصحفي", "The speakers' table at the press conference"),
             new("photos/2024-conference-3.jpg", "الحضور حول الطاولات المستديرة", "The audience at round tables"),
             new("photos/2024-conference-4.jpg", "متحدث على المسرح", "A speaker on stage"),
             new("photos/2024-conference-5.jpg", "متحدث على منصة المؤتمر الصحفي", "A speaker at the press lectern"),
-            new("photos/2024-conference-6.jpg", "مقدّم على المسرح أمام خلفية شباب قادرون", "A presenter on stage at the Qadroon backdrop"),
+            new("photos/2024-conference-6.jpg", "مقدّم على المسرح أمام خلفية شباب قادرون", "A presenter on stage in front of the Qadroon backdrop"),
         ]),
-        new(2023, "مؤتمر ريادة الأعمال والتحول الرقمي ٢٠٢٣",
+        new(2023, "مؤتمر ريادة الأعمال والتحول الرقمي 2023",
         [
             new("photos/2023-conference-1.jpg", "لقاء مع أحد الوزراء", "A meeting with a minister"),
             new("photos/2023-conference-2.jpg", "صورة جماعية مع درع تكريمي", "Group photo with an honorary plaque"),
