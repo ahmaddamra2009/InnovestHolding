@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InnovestHolding.Models;
 
-public class Platform
+public class Platform : ISortable
 {
     public int Id { get; set; }
 
@@ -28,6 +28,11 @@ public class Platform
     public string? LinkUrl { get; set; }
 
     public bool ShowInFooter { get; set; } = true;
+
+    /// <summary>The admin's icon: a key of Infrastructure/Content/Icons (rendered from code). NULL = the legacy
+    /// <see cref="IconSvg"/>, else the brand bullet.</summary>
+    [MaxLength(40)]
+    public string? IconKey { get; set; }
 
     /// <summary>SVG markup written by the seeder only (no admin field) — rendered as trusted markup.</summary>
     public string IconSvg { get; set; } = string.Empty;

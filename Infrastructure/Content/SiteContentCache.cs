@@ -7,8 +7,8 @@ namespace InnovestHolding.Infrastructure.Content;
 // Immutable, culture-independent rows of everything the shell (header, footer, breadcrumbs) and the static pages show,
 // in both languages. Never EF entities: the snapshot is shared across requests and threads.
 public sealed record TextPair(string Ar, string? En);
-public sealed record NavSubRow(string TitleAr, string? TitleEn, string Href, string? IconSvg);
-public sealed record NavRow(string TitleAr, string? TitleEn, string Href, bool HasDropdown, bool ShowInFooter, IReadOnlyList<NavSubRow> SubItems);
+/// <summary>An active extra menu link. Header/drawer: <see cref="ShowInHeader"/>; the automatic footer lists every one.</summary>
+public sealed record NavRow(int Id, string TitleAr, string? TitleEn, string Href, bool ShowInHeader);
 /// <summary>An uploaded image as the pages need it (Infrastructure/Media).</summary>
 public sealed record MediaRef(string FileKey, string Format, int Width, int Height, string AltAr, string? AltEn)
 {
@@ -16,10 +16,11 @@ public sealed record MediaRef(string FileKey, string Format, int Width, int Heig
 }
 public sealed record PageRow(string Key, string TitleAr, string? TitleEn, string SummaryAr, string? SummaryEn, string IntroAr, string? IntroEn,
     string BodyAr, string? BodyEn, string EmptyTextAr, string? EmptyTextEn, string MetaTitleAr, string? MetaTitleEn,
-    string MetaDescriptionAr, string? MetaDescriptionEn, bool ShowInMenu, int SortOrder, DateTime UpdatedAt, MediaRef? Image = null);
+    string MetaDescriptionAr, string? MetaDescriptionEn, bool ShowInMenu, int SortOrder, DateTime UpdatedAt, MediaRef? Image = null,
+    bool IsPublished = true, bool ShowInFooter = true, string? EmptyActionPage = null);
 public sealed record ItemRow(string TextAr, string? TextEn, string? DescriptionAr, string? DescriptionEn, string? IconKey);
 public sealed record PlatformRow(string TitleAr, string? TitleEn, string DescriptionAr, string? DescriptionEn,
-    string? ShortTitleAr, string? ShortTitleEn, string? LinkUrl, bool ShowInFooter, string IconSvg);
+    string? ShortTitleAr, string? ShortTitleEn, string? LinkUrl, bool ShowInFooter, string IconSvg, string? IconKey = null);
 public sealed record StatRow(string LabelAr, string? LabelEn, string? ShortLabelAr, string? ShortLabelEn, int Value, string Suffix, string IconSvg);
 public sealed record NewsRow(string TitleAr, string? TitleEn, string SummaryAr, string? SummaryEn, string CategoryAr, string? CategoryEn,
     string NewsDateAr, string? NewsDateEn, string? LinkUrl, string Slug, MediaRef? Image);
@@ -30,7 +31,14 @@ public sealed record PartnerRow(string NameAr, string? NameEn, MediaRef? Logo, s
 public sealed record PartnerGroupRow(int Id, string NameAr, string? NameEn);
 public sealed record FaqRow(string QuestionAr, string? QuestionEn, string AnswerAr, string? AnswerEn);
 public sealed record InterestRow(int Id, string NameAr, string? NameEn);
-public sealed record SocialRow(string Network, string Url);
+/// <summary>An active link with a URL. <see cref="Label"/>/<see cref="IconKey"/> are set on "custom" rows only.</summary>
+public sealed record SocialRow(string Network, string Url, string? Label = null, string? IconKey = null);
+/// <summary>The admin's switch and order of one section of a page (Models/PageSection).</summary>
+public sealed record SectionRow(string Key, bool IsVisible, int SortOrder);
+/// <summary>A link of a customised footer column: a page key OR an extra menu link id.</summary>
+public sealed record FooterLinkRow(string? PageKey, int? NavItemId);
+/// <summary>A customised footer column, links in order. No row at all = the automatic footer.</summary>
+public sealed record FooterColumnRow(int Id, string TitleAr, string? TitleEn, IReadOnlyList<FooterLinkRow> Links);
 
 /// <summary>How many active rows a list page has, overall and with the English text its cards need.</summary>
 public sealed record ListCount(int Total, int English);
@@ -74,8 +82,32 @@ public sealed record SiteSnapshot(
     IReadOnlyList<PartnerGroupRow> PartnerGroups,
     MediaRef? FounderPhoto = null,
     EcosystemData? EcosystemData = null,
-    IReadOnlyDictionary<string, MediaRef>? Images = null)
+    IReadOnlyDictionary<string, MediaRef>? Images = null,
+    IReadOnlyDictionary<string, IReadOnlyList<SectionRow>>? SectionData = null,
+    IReadOnlyList<FooterColumnRow>? FooterData = null)
 {
+    private static readonly IReadOnlyDictionary<string, IReadOnlyList<SectionRow>> NoSections =
+        new Dictionary<string, IReadOnlyList<SectionRow>>(StringComparer.Ordinal);
+
+    /// <summary>Page key → its stored section rows, in stored order (SortOrder, Id). A page without rows is absent.</summary>
+    public IReadOnlyDictionary<string, IReadOnlyList<SectionRow>> Sections => SectionData ?? NoSections;
+
+    /// <summary>The customised footer columns in order; empty = the automatic footer.</summary>
+    public IReadOnlyList<FooterColumnRow> Footer => FooterData ?? [];
+
+    /// <summary>The stored section rows of a page (empty when none).</summary>
+    public IReadOnlyList<SectionRow> SectionsOf(string pageKey) => Sections.GetValueOrDefault(pageKey) ?? [];
+
+    /// <summary>
+    /// The page and every ancestor in the route table are published (a page without a Pages row counts as published;
+    /// the home page always is). Unknown keys are not published.
+    /// </summary>
+    public bool IsPublished(string key)
+    {
+        if (!Site.SiteRoutes.IsKey(key)) return false;
+        return Site.SiteRoutes.Chain(key).All(p => p.Key == Site.PageKeys.Home || (Page(p.Key)?.IsPublished ?? true));
+    }
+
     /// <summary>Counts of the ecosystem lists and the sponsorship packages (empty when not loaded).</summary>
     public EcosystemData Ecosystem => EcosystemData ?? EcosystemData.None;
 
@@ -153,7 +185,8 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
             .Select(p => new PageRow(p.Key, p.TitleAr, p.TitleEn, p.SummaryAr, p.SummaryEn, p.IntroAr, p.IntroEn, p.BodyAr, p.BodyEn,
                 p.EmptyTextAr, p.EmptyTextEn, p.MetaTitleAr, p.MetaTitleEn, p.MetaDescriptionAr, p.MetaDescriptionEn,
                 p.ShowInMenu, p.SortOrder, p.UpdatedAt,
-                p.Image == null ? null : new MediaRef(p.Image.FileKey, p.Image.Format, p.Image.Width, p.Image.Height, p.Image.AltAr, p.Image.AltEn)))
+                p.Image == null ? null : new MediaRef(p.Image.FileKey, p.Image.Format, p.Image.Width, p.Image.Height, p.Image.AltAr, p.Image.AltEn),
+                p.IsPublished, p.ShowInFooter, p.EmptyActionPage))
             .ToDictionaryAsync(p => p.Key, StringComparer.Ordinal, ct);
 
         var itemRows = await db.ContentItems.AsNoTracking()
@@ -170,19 +203,18 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
         var nav = await db.NavItems.AsNoTracking()
             .Where(n => n.IsActive)
             .OrderBy(n => n.SortOrder).ThenBy(n => n.Id)
-            .Select(n => new NavRow(n.TitleAr, n.TitleEn, n.Href, n.HasDropdown, n.ShowInFooter,
-                n.SubItems.OrderBy(s => s.SortOrder).ThenBy(s => s.Id)
-                    .Select(s => new NavSubRow(s.TitleAr, s.TitleEn, s.Href, s.IconSvg)).ToList()))
+            .Select(n => new NavRow(n.Id, n.TitleAr, n.TitleEn, n.Href, n.ShowInHeader))
             .ToListAsync(ct);
 
         var platforms = await db.Platforms.AsNoTracking()
             .Where(p => p.IsActive)
             .OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
             .Select(p => new PlatformRow(p.TitleAr, p.TitleEn, p.DescriptionAr, p.DescriptionEn, p.ShortTitleAr,
-                p.ShortTitleEn, p.LinkUrl, p.ShowInFooter, p.IconSvg))
+                p.ShortTitleEn, p.LinkUrl, p.ShowInFooter, p.IconSvg, p.IconKey))
             .ToListAsync(ct);
 
         var stats = await db.Stats.AsNoTracking()
+            .Where(s => s.IsActive)
             .OrderBy(s => s.SortOrder).ThenBy(s => s.Id)
             .Select(s => new StatRow(s.LabelAr, s.LabelEn, s.ShortLabelAr, s.ShortLabelEn, s.Value, s.Suffix, s.IconSvg))
             .ToListAsync(ct);
@@ -258,8 +290,36 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
         var socials = await db.SocialLinks.AsNoTracking()
             .Where(s => s.IsActive && s.Url != null && s.Url != "")
             .OrderBy(s => s.SortOrder).ThenBy(s => s.Id)
-            .Select(s => new SocialRow(s.Network, s.Url!))
+            .Select(s => new SocialRow(s.Network, s.Url!, s.Label, s.IconKey))
             .ToListAsync(ct);
+
+        // ~75 rows: loaded whole, grouped per page in stored order.
+        var sectionRows = await db.PageSections.AsNoTracking()
+            .OrderBy(x => x.PageKey).ThenBy(x => x.SortOrder).ThenBy(x => x.Id)
+            .Select(x => new { x.PageKey, x.SectionKey, x.IsVisible, x.SortOrder })
+            .ToListAsync(ct);
+        var sections = sectionRows
+            .GroupBy(x => x.PageKey, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key,
+                g => (IReadOnlyList<SectionRow>)g.Select(x => new SectionRow(x.SectionKey, x.IsVisible, x.SortOrder)).ToList(),
+                StringComparer.Ordinal);
+
+        // Customised footer (at most 4 columns × 8 links); no column on a database the admin has not customised, and
+        // then no second query.
+        var columns = await db.FooterColumns.AsNoTracking()
+            .OrderBy(c => c.SortOrder).ThenBy(c => c.Id)
+            .Select(c => new { c.Id, c.TitleAr, c.TitleEn })
+            .ToListAsync(ct);
+        var footerLinks = columns.Count == 0
+            ? []
+            : await db.FooterLinks.AsNoTracking()
+                .OrderBy(l => l.FooterColumnId).ThenBy(l => l.SortOrder).ThenBy(l => l.Id)
+                .Select(l => new { l.FooterColumnId, l.PageKey, l.NavItemId })
+                .ToListAsync(ct);
+        var footer = columns
+            .Select(c => new FooterColumnRow(c.Id, c.TitleAr, c.TitleEn,
+                footerLinks.Where(l => l.FooterColumnId == c.Id).Select(l => new FooterLinkRow(l.PageKey, l.NavItemId)).ToList()))
+            .ToList();
 
         var ecosystem = await LoadEcosystemAsync(db, ct);
 
@@ -270,7 +330,9 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
             partnerGroups,
             founderPhoto,
             ecosystem,
-            images);
+            images,
+            sections,
+            footer);
     }
 
     /// <summary>

@@ -40,7 +40,7 @@ public class SiteRefinementTests(TestAppFactory f)
             Assert.True((description?.Length ?? 0) <= 160, $"{page.Key}: description {description?.Length} «{description}»");
             checkedPages++;
         }
-        Assert.Equal(19, checkedPages);
+        Assert.Equal(20, checkedPages); // + privacy (C5)
     }
 
     [Fact] // a node referenced by @id (isPartOf, publisher, about, parentOrganization) is in the same page's graph

@@ -368,6 +368,75 @@ namespace InnovestHolding.Migrations
                     b.ToTable("Faqs");
                 });
 
+            modelBuilder.Entity("InnovestHolding.Models.FooterColumn", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TitleEn")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FooterColumns");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.FooterLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FooterColumnId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("NavItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PageKey")
+                        .HasMaxLength(60)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NavItemId");
+
+                    b.HasIndex("FooterColumnId", "SortOrder");
+
+                    b.ToTable("FooterLinks", t =>
+                        {
+                            t.HasCheckConstraint("CK_FooterLinks_Target", "([PageKey] IS NULL AND [NavItemId] IS NOT NULL) OR ([PageKey] IS NOT NULL AND [NavItemId] IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("InnovestHolding.Models.InterestOption", b =>
                 {
                     b.Property<int>("Id")
@@ -589,6 +658,9 @@ namespace InnovestHolding.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("ShowInFooter")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("ShowInHeader")
                         .HasColumnType("bit");
 
                     b.Property<int>("SortOrder")
@@ -952,6 +1024,11 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("BodyEn")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EmptyActionPage")
+                        .HasMaxLength(60)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(60)");
+
                     b.Property<string>("EmptyTextAr")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -972,6 +1049,9 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("IntroEn")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Key")
                         .IsRequired()
@@ -996,6 +1076,9 @@ namespace InnovestHolding.Migrations
                     b.Property<string>("MetaTitleEn")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("ShowInFooter")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("ShowInMenu")
                         .HasColumnType("bit");
@@ -1034,6 +1117,45 @@ namespace InnovestHolding.Migrations
                         .IsUnique();
 
                     b.ToTable("Pages");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.PageSection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PageKey")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(60)");
+
+                    b.Property<string>("SectionKey")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(40)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PageKey", "SectionKey")
+                        .IsUnique();
+
+                    b.ToTable("PageSections");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.Partner", b =>
@@ -1142,6 +1264,11 @@ namespace InnovestHolding.Migrations
 
                     b.Property<string>("DescriptionEn")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IconKey")
+                        .HasMaxLength(40)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(40)");
 
                     b.Property<string>("IconSvg")
                         .IsRequired()
@@ -1394,8 +1521,17 @@ namespace InnovestHolding.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("IconKey")
+                        .HasMaxLength(40)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(40)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
 
                     b.Property<string>("Network")
                         .IsRequired()
@@ -1412,7 +1548,8 @@ namespace InnovestHolding.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Network")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Network] <> N'custom'");
 
                     b.ToTable("SocialLinks");
                 });
@@ -1677,6 +1814,9 @@ namespace InnovestHolding.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LabelAr")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1706,6 +1846,8 @@ namespace InnovestHolding.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsActive", "SortOrder");
 
                     b.ToTable("Stats");
                 });
@@ -1966,6 +2108,24 @@ namespace InnovestHolding.Migrations
                     b.Navigation("Speaker");
                 });
 
+            modelBuilder.Entity("InnovestHolding.Models.FooterLink", b =>
+                {
+                    b.HasOne("InnovestHolding.Models.FooterColumn", "FooterColumn")
+                        .WithMany("Links")
+                        .HasForeignKey("FooterColumnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InnovestHolding.Models.NavItem", "NavItem")
+                        .WithMany()
+                        .HasForeignKey("NavItemId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("FooterColumn");
+
+                    b.Navigation("NavItem");
+                });
+
             modelBuilder.Entity("InnovestHolding.Models.InvestmentOpportunity", b =>
                 {
                     b.HasOne("InnovestHolding.Models.MediaFile", "Image")
@@ -2115,6 +2275,11 @@ namespace InnovestHolding.Migrations
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Photo");
+                });
+
+            modelBuilder.Entity("InnovestHolding.Models.FooterColumn", b =>
+                {
+                    b.Navigation("Links");
                 });
 
             modelBuilder.Entity("InnovestHolding.Models.NavItem", b =>

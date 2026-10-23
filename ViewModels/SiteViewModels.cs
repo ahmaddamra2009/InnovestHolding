@@ -28,6 +28,9 @@ public sealed class ShellVm
     public required IReadOnlyList<BreadcrumbVm> Breadcrumbs { get; init; }
     public required IReadOnlyList<SocialVm> Socials { get; init; }
 
+    /// <summary>The footer's link columns and legal link (Infrastructure/Site/FooterBuilder).</summary>
+    public FooterVm Footer { get; init; } = FooterVm.Empty;
+
     /// <summary>The uploaded brand images (null = the bundled files / the drawn triangle).</summary>
     public BrandImagesVm Brand { get; init; } = new(null, null);
 
@@ -35,6 +38,18 @@ public sealed class ShellVm
     public bool OverHero => CurrentKey == Infrastructure.Site.PageKeys.Home;
 
     public string OtherLang => IsEnglish ? Cultures.ArabicName : Cultures.EnglishName;
+}
+
+/// <summary>A footer link column, resolved for the page language.</summary>
+public sealed record FooterColumnVm(LText Title, IReadOnlyList<LinkVm> Links);
+
+/// <summary>
+/// The footer's link columns (automatic, or the admin's customised ones) and the privacy link (null while the policy has
+/// no body or the page is unpublished). Built by Infrastructure/Site/FooterBuilder.
+/// </summary>
+public sealed record FooterVm(IReadOnlyList<FooterColumnVm> Columns, LinkVm? Privacy)
+{
+    public static readonly FooterVm Empty = new([], null);
 }
 
 /// <summary>Everything the &lt;head&gt; needs. Absolute URLs are null when no base URL is known (then omitted).</summary>

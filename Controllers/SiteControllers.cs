@@ -72,6 +72,10 @@ public class SitePagesController : PublicControllerBase
             faqs.Count == 0 ? null : new FaqBlock(v.Header("faq", SiteViews.BadgeQuestion), faqs),
         ]);
     }
+
+    /// <summary>The privacy policy: the page's own texts only. (C5 contract stub by Dev 1 — Dev 2 owns this action.)</summary>
+    [AcceptVerbs("GET", "HEAD")]
+    public async Task<IActionResult> Privacy() => Page(PageKeys.Privacy, await ViewsAsync(), []);
 }
 
 public class ForumController(AppDbContext db, TimeProvider time) : PublicControllerBase

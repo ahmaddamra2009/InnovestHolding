@@ -37,6 +37,9 @@ public class AppDbContext : DbContext
     public DbSet<NetworkApplication> NetworkApplications => Set<NetworkApplication>();
     public DbSet<SponsorshipEnquiry> SponsorshipEnquiries => Set<SponsorshipEnquiry>();
     public DbSet<OpportunityInterest> OpportunityInterests => Set<OpportunityInterest>();
+    public DbSet<PageSection> PageSections => Set<PageSection>();
+    public DbSet<FooterColumn> FooterColumns => Set<FooterColumn>();
+    public DbSet<FooterLink> FooterLinks => Set<FooterLink>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -152,12 +155,18 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<InterestOption>().HasIndex(o => new { o.IsActive, o.SortOrder });
         modelBuilder.Entity<RegisterBenefit>().HasIndex(b => new { b.IsActive, b.SortOrder });
-        modelBuilder.Entity<SocialLink>().HasIndex(s => s.Network).IsUnique();
+        // The known networks are unique; "custom" rows may repeat (C5). The filtered index keeps the existing name.
+        modelBuilder.Entity<SocialLink>(e =>
+        {
+            e.HasIndex(s => s.Network).IsUnique().HasFilter("[Network] <> N'" + SocialLink.Custom + "'");
+            e.Property(s => s.IconKey).IsUnicode(false);
+        });
 
         modelBuilder.Entity<Page>(e =>
         {
             e.HasIndex(p => p.Key).IsUnique();
             e.Property(p => p.Key).IsUnicode(false);
+            e.Property(p => p.EmptyActionPage).IsUnicode(false);
             e.Property(p => p.UpdatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
         });
 
@@ -252,6 +261,36 @@ public class AppDbContext : DbContext
             e.HasIndex(i => i.IsRead).HasFilter(UnreadOnly);
             // Deleting an opportunity keeps the interest (OpportunityTitle is a snapshot).
             e.HasOne(i => i.Opportunity).WithMany().HasForeignKey(i => i.OpportunityId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ── Admin control (C5) ──
+        // New bool flags have no model default (EF would skip an explicit false on insert); AddAdminControl gives the
+        // existing rows 1 through the column default.
+        modelBuilder.Entity<Platform>().Property(p => p.IconKey).IsUnicode(false);
+        modelBuilder.Entity<Stat>().HasIndex(s => new { s.IsActive, s.SortOrder });
+
+        modelBuilder.Entity<PageSection>(e =>
+        {
+            e.HasIndex(x => new { x.PageKey, x.SectionKey }).IsUnique();
+            e.Property(x => x.PageKey).IsUnicode(false);
+            e.Property(x => x.SectionKey).IsUnicode(false);
+            e.Property(x => x.UpdatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+        });
+
+        modelBuilder.Entity<FooterColumn>(e =>
+        {
+            Timestamps(e);
+            e.HasMany(c => c.Links).WithOne(l => l.FooterColumn).HasForeignKey(l => l.FooterColumnId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<FooterLink>(e =>
+        {
+            e.HasIndex(l => new { l.FooterColumnId, l.SortOrder });
+            e.Property(l => l.PageKey).IsUnicode(false);
+            // Deleting an extra menu link removes it from the customised columns.
+            e.HasOne(l => l.NavItem).WithMany().HasForeignKey(l => l.NavItemId).OnDelete(DeleteBehavior.Cascade);
+            e.ToTable(t => t.HasCheckConstraint("CK_FooterLinks_Target",
+                "([PageKey] IS NULL AND [NavItemId] IS NOT NULL) OR ([PageKey] IS NOT NULL AND [NavItemId] IS NULL)"));
         });
     }
 

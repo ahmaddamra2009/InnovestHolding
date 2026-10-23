@@ -207,8 +207,7 @@ public class SiteStructureTests(TestAppFactory f)
     [InlineData("/forum/speakers")]
     [InlineData("/en/forum/speakers")]
     [InlineData("/angel-network/opportunities")]
-    [InlineData("/tv/episodes")]
-    [InlineData("/tv")]
+    [InlineData("/tv/episodes")] // (/tv has its intro since C5 AddAdminControl: indexable)
     public async Task A_page_with_no_content_yet_is_200_with_its_empty_text_and_noindex_follow(string path)
     {
         var r = await f.NewClient().GetAsync(path);
@@ -252,7 +251,9 @@ public class SiteStructureTests(TestAppFactory f)
         Assert.Contains($"{Base}/forum/events", locs);
         Assert.Contains($"{Base}/en/forum/events", locs);
         Assert.DoesNotContain($"{Base}/forum/speakers", locs);
-        Assert.DoesNotContain($"{Base}/tv", locs);
+        // C5 AddAdminControl: the TV hub has its intro and the privacy page its body → both listed (intended change).
+        Assert.Contains($"{Base}/tv", locs);
+        Assert.Contains($"{Base}/privacy", locs);
         Assert.DoesNotContain(locs, l => l.Contains("/Admin", StringComparison.OrdinalIgnoreCase) || l.Contains("/forms"));
         // Each listed URL answers 200 without a noindex header.
         foreach (var loc in locs)

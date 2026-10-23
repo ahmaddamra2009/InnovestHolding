@@ -55,7 +55,7 @@ public class CultureRoutingTests(TestAppFactory f)
     [InlineData("/ar/x")]
     [InlineData("/en/Account/Login")]
     [InlineData("/en/Admin/Dashboard")]
-    [InlineData("/en/Privacy")]
+    [InlineData("/en/Home/Privacy")] // the template's action (the privacy page is /en/privacy since C5)
     public async Task Unknown_language_paths_are_404(string path) =>
         Assert.Equal(HttpStatusCode.NotFound, (await f.NewClient().GetAsync(path)).StatusCode);
 

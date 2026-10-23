@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InnovestHolding.Models;
 
-public class Partner
+public class Partner : ISortable
 {
     public int Id { get; set; }
 

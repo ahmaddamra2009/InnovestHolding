@@ -7,7 +7,7 @@ namespace InnovestHolding.Models;
 /// (Infrastructure/Site/SiteRoutes): the page's URL is code, every visible text is here. The rows are owned by the
 /// migrations (one per non-detail route); the admin edits them but cannot add or remove a page.
 /// </summary>
-public class Page
+public class Page : ISortable
 {
     public int Id { get; set; }
 
@@ -61,6 +61,19 @@ public class Page
 
     /// <summary>Listed in the header, the drawer and the footer. A hidden page stays reachable by its URL.</summary>
     public bool ShowInMenu { get; set; } = true;
+
+    /// <summary>
+    /// Off = the page (and every page under it, and their detail pages) answers the branded 404 and leaves the menus,
+    /// the footer, the hub cards, the CTA links, the 404 links and the sitemap. The home page is always published.
+    /// </summary>
+    public bool IsPublished { get; set; } = true;
+
+    /// <summary>Listed in the automatic footer (AddAdminControl initialised it from <see cref="ShowInMenu"/>).</summary>
+    public bool ShowInFooter { get; set; } = true;
+
+    /// <summary>The page the empty state's button opens (a key of SiteRoutes); NULL = the code default.</summary>
+    [MaxLength(60)]
+    public string? EmptyActionPage { get; set; }
 
     /// <summary>Order among the pages of the same parent.</summary>
     public int SortOrder { get; set; }
