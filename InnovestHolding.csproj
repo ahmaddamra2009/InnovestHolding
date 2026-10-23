@@ -20,6 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- F10: the forum photos and logos imported once at startup (Infrastructure/Content/ForumMediaImport). Copied next to
+         the app (build and publish), never into wwwroot: they are served only after the import, from /media. -->
+    <None Include="Data/SeedMedia/**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- The LocalDB connection string is for developer machines only; it is never published. -->
     <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
   </ItemGroup>

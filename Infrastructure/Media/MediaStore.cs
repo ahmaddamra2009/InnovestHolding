@@ -88,6 +88,25 @@ public sealed partial class MediaStore
             data = buffer.ToArray();
         }
 
+        return await StoreAsync(data, byExtension.Value, byType.Value, altAr, altEn, use, ct);
+    }
+
+    /// <summary>
+    /// F10: the same checks and write as <see cref="SaveAsync"/> for bytes the app itself holds (the bundled forum media,
+    /// Infrastructure/Content/ForumMediaImport): size cap of <paramref name="use"/>, the extension of
+    /// <paramref name="fileName"/> must agree with the signature, then inspection, dimensions, sanitising and a new random
+    /// key written with CreateNew (no existing file is ever opened for writing). The row is not saved.
+    /// </summary>
+    public Task<MediaSaveResult> SaveBytesAsync(byte[] data, string fileName, ImageUse use, string? altAr, string? altEn, CancellationToken ct)
+    {
+        if (data.Length <= 0 || data.Length > use.MaxBytes) return Task.FromResult(new MediaSaveResult(null, ImageProblem.Size));
+        if (ImageInspector.FromExtension(fileName) is not { } byExtension) return Task.FromResult(new MediaSaveResult(null, ImageProblem.Type));
+        return StoreAsync(data, byExtension, byExtension, altAr, altEn, use, ct);
+    }
+
+    private async Task<MediaSaveResult> StoreAsync(byte[] data, ImageFormat byExtension, ImageFormat byType, string? altAr, string? altEn,
+        ImageUse use, CancellationToken ct)
+    {
         var sniffed = ImageInspector.Sniff(data);
         if (sniffed is null) return new(null, ImageProblem.Type);
         if (sniffed != byExtension || sniffed != byType) return new(null, ImageProblem.Mismatch);
