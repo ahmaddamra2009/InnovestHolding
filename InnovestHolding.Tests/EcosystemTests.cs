@@ -448,7 +448,13 @@ public class EcosystemTests(TestAppFactory f)
                 Assert.Equal(5, node.GetProperty("episodeNumber").GetInt32());
                 Assert.Equal(2, node.GetProperty("partOfSeason").GetProperty("seasonNumber").GetInt32());
                 Assert.Equal("2026-09-01", node.GetProperty("datePublished").GetString());
-                Assert.Equal($"{Base}/tv#tvseries", node.GetProperty("partOfSeries").GetProperty("@id").GetString());
+                // Noor L3: the series reference uses the hub of the page language and names itself.
+                var english = path.StartsWith("/en/", StringComparison.Ordinal);
+                var series = node.GetProperty("partOfSeries");
+                Assert.Equal(english ? $"{Base}/en/tv#tvseries" : $"{Base}/tv#tvseries", series.GetProperty("@id").GetString());
+                Assert.Equal(english ? $"{Base}/en/tv" : $"{Base}/tv", series.GetProperty("url").GetString());
+                Assert.Equal("TVSeries", series.GetProperty("@type").GetString());
+                Assert.False(string.IsNullOrWhiteSpace(series.GetProperty("name").GetString()));
                 Assert.Equal(2, node.GetProperty("actor").GetArrayLength());
                 var video = node.GetProperty("video");
                 Assert.Equal("VideoObject", video.GetProperty("@type").GetString());
@@ -459,6 +465,10 @@ public class EcosystemTests(TestAppFactory f)
             // The TV hub carries the series node the episodes point at.
             var hub = Node(await f.NewClient().GetStringAsync("/tv"), "TVSeries");
             Assert.Equal($"{Base}/tv#tvseries", hub.GetProperty("@id").GetString());
+            Assert.Equal($"{Base}/en/tv#tvseries", Node(await f.NewClient().GetStringAsync("/en/tv"), "TVSeries").GetProperty("@id").GetString());
+
+            // Noor L2 polarity: a person without a photo gets no image (the site banner is not their picture).
+            Assert.False(Node(await f.NewClient().GetStringAsync("/tv/guests/" + g1), "Person").TryGetProperty("image", out _));
 
             // The guest's page lists the episode.
             Assert.Contains($"href=\"/tv/episodes/{episode.Slug}\"", await f.NewClient().GetStringAsync("/tv/guests/" + g1));
@@ -572,9 +582,12 @@ public class EcosystemTests(TestAppFactory f)
         try
         {
             var ar = await f.NewClient().GetStringAsync("/tv/sponsorship");
-            Assert.Contains(tv, ar);
+            Assert.Contains($">{tv}</h3>", ar);   // the positive anchor of the card markup the next negative check relies on
             Assert.Contains("<li>ميزة 2</li>", ar);
-            Assert.DoesNotContain(forum, ar);
+            // The Forum package is not in the TV page's packages block; the enquiry form offers it only in the Forum group
+            // of its package select (C4 integration), and the inactive one nowhere.
+            Assert.DoesNotContain($">{forum}</h3>", ar);
+            Assert.Matches($"<optgroup label=\"[^\"]*\" data-unit=\"forum\">\\s*<option value=\"{ids[1]}\"[^>]*>{forum}</option>", ar);
             Assert.DoesNotContain(off, ar);
             var en = await f.NewClient().GetStringAsync("/en/tv/sponsorship");
             Assert.Contains("Gold TV", en);

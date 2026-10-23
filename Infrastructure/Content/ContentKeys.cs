@@ -84,6 +84,9 @@ public static class ContentKeys
     /// photo form (not a text field of the registry).</summary>
     public const string FounderPhoto = "founder_photo";
 
+    /// <summary>The consent sentence next to the required checkbox of every lead form.</summary>
+    public const string FormsConsent = "forms_consent";
+
     /// <summary>Internal marker of the one-time timestamp conversion — never shown in the admin.</summary>
     public const string TimestampsUtcMarker = "sys_timestamps_utc";
 
@@ -101,6 +104,7 @@ public static class ContentKeys
         ("pages", "عناوين أقسام الصفحات"),
         ("founder", "كلمة المؤسس (تُخفى ما دام نص الكلمة فارغاً)"),
         ("register", "قسم التسجيل"),
+        ("forms", "نماذج الطلبات (الانضمام، الرعاية، الاهتمام بالفرص)"),
         ("contact", "معلومات التواصل"),
         ("footer", "الفوتر"),
         ("seo", "SEO وبيانات الموقع"),
@@ -199,10 +203,20 @@ public static class ContentKeys
         new("founder_message", "founder", "نص الكلمة (فارغ = القسم مخفي)", Multiline: true, AllowEmpty: true),
 
         // Headings of the lists (ContentItems) on the pages: one title + optional lead sentence per group.
-        .. ContentItemGroups.All.Where(g => g.TitleKey != "values_title").Select(g =>
+        .. ContentItemGroups.All.Where(g => !g.FormOptions && g.TitleKey != "values_title").Select(g =>
             new ContentKey(g.TitleKey, "pages", $"{g.Label} — العنوان (المميز بين {{ }})", 200, ContentFormat.Highlight)),
-        .. ContentItemGroups.All.Select(g =>
+        .. ContentItemGroups.All.Where(g => !g.FormOptions).Select(g =>
             new ContentKey(g.IntroKey!, "pages", $"{g.Label} — النص التمهيدي (اختياري)", 500, AllowEmpty: true)),
+
+        // The lead forms (Forum registration, Join the Network, sponsorship, opportunity interest): AddLeadForms inserts them.
+        new(FormsConsent, "forms", "نص الموافقة بجانب مربع الاختيار (إلزامي في نماذج الطلبات)", 500, Multiline: true),
+        new("join_kind_title", "forms", "نموذج الانضمام — سؤال نوع الطلب", 200),
+        new("join_side_title", "forms", "نموذج الانضمام — عنوان العمود الجانبي (المميز بين { })", 200, ContentFormat.Highlight),
+        new("join_side_text", "forms", "نموذج الانضمام — نص العمود الجانبي", 1000, Multiline: true),
+        new("sponsorship_form_title", "forms", "نموذج الرعاية — العنوان (المميز بين { })", 200, ContentFormat.Highlight),
+        new("sponsorship_form_text", "forms", "نموذج الرعاية — النص", 1000, Multiline: true),
+        new("interest_form_title", "forms", "نموذج «أبدِ اهتمامك» (صفحة الفرص) — العنوان (المميز بين { })", 200, ContentFormat.Highlight),
+        new("interest_form_text", "forms", "نموذج «أبدِ اهتمامك» — النص", 1000, Multiline: true),
     ];
 
     private static readonly Dictionary<string, ContentKey> ByKey = All.ToDictionary(k => k.Key);

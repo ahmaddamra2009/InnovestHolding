@@ -34,6 +34,9 @@ public class AppDbContext : DbContext
     public DbSet<TvEpisodeGuest> TvEpisodeGuests => Set<TvEpisodeGuest>();
     public DbSet<InvestmentOpportunity> InvestmentOpportunities => Set<InvestmentOpportunity>();
     public DbSet<SponsorshipPackage> SponsorshipPackages => Set<SponsorshipPackage>();
+    public DbSet<NetworkApplication> NetworkApplications => Set<NetworkApplication>();
+    public DbSet<SponsorshipEnquiry> SponsorshipEnquiries => Set<SponsorshipEnquiry>();
+    public DbSet<OpportunityInterest> OpportunityInterests => Set<OpportunityInterest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -213,6 +216,43 @@ public class AppDbContext : DbContext
             e.Property(x => x.Unit).IsUnicode(false);
             Timestamps(e);
         });
+
+        // ── Lead forms ──
+        // The read-state indexes hold only UNREAD rows (filtered): the badge counts on every admin page read just those,
+        // so their cost follows the unread backlog, not the table size (C4 review F2). Kind is included where the counts
+        // split by kind, so no lookup is needed.
+        // Existing registrations came from the quick form: the column default gives them "quick".
+        modelBuilder.Entity<Registration>(e =>
+        {
+            e.Property(r => r.Kind).IsUnicode(false).HasDefaultValue(Registration.Quick);
+            // Deleting an event keeps the registrations (EventTitle is a snapshot).
+            e.HasOne(r => r.Event).WithMany().HasForeignKey(r => r.EventId).OnDelete(DeleteBehavior.SetNull);
+            e.HasIndex(r => r.IsRead).HasFilter(UnreadOnly).IncludeProperties(r => r.Kind);
+        });
+        modelBuilder.Entity<ContactMessage>().HasIndex(m => m.IsRead).HasFilter(UnreadOnly);
+
+        modelBuilder.Entity<NetworkApplication>(e =>
+        {
+            e.Property(a => a.Kind).IsUnicode(false);
+            e.HasIndex(a => new { a.Kind, a.CreatedAt });
+            e.HasIndex(a => a.CreatedAt);
+            e.HasIndex(a => a.IsRead).HasFilter(UnreadOnly).IncludeProperties(a => a.Kind);
+        });
+        modelBuilder.Entity<SponsorshipEnquiry>(e =>
+        {
+            e.Property(s => s.Unit).IsUnicode(false);
+            e.HasIndex(s => s.CreatedAt);
+            e.HasIndex(s => s.IsRead).HasFilter(UnreadOnly);
+            // Deleting a package keeps the enquiry (PackageTitle is a snapshot).
+            e.HasOne(s => s.Package).WithMany().HasForeignKey(s => s.PackageId).OnDelete(DeleteBehavior.SetNull);
+        });
+        modelBuilder.Entity<OpportunityInterest>(e =>
+        {
+            e.HasIndex(i => i.CreatedAt);
+            e.HasIndex(i => i.IsRead).HasFilter(UnreadOnly);
+            // Deleting an opportunity keeps the interest (OpportunityTitle is a snapshot).
+            e.HasOne(i => i.Opportunity).WithMany().HasForeignKey(i => i.OpportunityId).OnDelete(DeleteBehavior.SetNull);
+        });
     }
 
     private static void Timestamps<T>(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<T> e) where T : class
@@ -232,4 +272,5 @@ public class AppDbContext : DbContext
             Timestamps(e);
             e.HasOne(x => x.Photo).WithMany().HasForeignKey(x => x.PhotoId).OnDelete(DeleteBehavior.NoAction);
         });
+    private const string UnreadOnly = "[IsRead] = 0";
 }

@@ -1,0 +1,155 @@
+@model InnovestHolding.Controllers.Admin.LeadsIndexVm
+@using InnovestHolding.Infrastructure.Leads
+@using InnovestHolding.Controllers.Admin
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "الطلبات";
+    var list = Model.List;
+    var f = Model.Filter;
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    string Query(string? type, string? read, string? status, int? page = null) =>
+        QueryString.Create(new[]
+        {
+            new KeyValuePair<string, string?>("type", type),
+            new KeyValuePair<string, string?>("read", read),
+            new KeyValuePair<string, string?>("status", status),
+            new KeyValuePair<string, string?>("page", page > 1 ? page.Value.ToString(inv) : null),
+        }.Where(p => p.Value is not null)).ToString();
+    var statusKey = f.Status is { } fs ? LeadStatuses.Key(fs) : null;
+}
+@functions {
+    // The list filter, sent with every POST of a row so the redirect returns to it.
+    private void FilterFields(LeadsController.Filter f, int listPage)
+    {
+        <input type="hidden" name="listType" value="@f.Type">
+        <input type="hidden" name="read" value="@f.Read">
+        <input type="hidden" name="status" value="@(f.Status is { } s ? LeadStatuses.Key(s) : null)">
+        <input type="hidden" name="page" value="@(listPage)">
+    }
+}
+
+<div class="stats-cards" style="margin-bottom:24px;">
+    @foreach (var (key, label) in LeadInbox.Types)
+    {
+        var unread = Model.Unread.Of(key);
+        <a class="stat-card-admin lead-type-card@(unread > 0 ? " has-unread" : "")" href="/Admin/Leads@(Query(key, unread > 0 ? LeadsController.Unread : null, null))">
+            <div class="stat-card-info"><h3>@unread</h3><p>@label — غير مقروء</p></div>
+        </a>
+    }
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <span class="admin-card-title">@(f.Type is null ? "كل الطلبات" : LeadInbox.Label(f.Type)) (@list.TotalCount)</span>
+        <a class="btn-admin btn-secondary btn-sm" href="/Admin/Leads/Export@(Query(f.Type, f.Read, statusKey))" download>تصدير إلى Excel (CSV)</a>
+    </div>
+
+    <form method="get" action="/Admin/Leads" class="inline-form lead-filter">
+        <div class="form-group">
+            <label for="lead-type">النوع</label>
+            <select id="lead-type" name="type" class="form-control">
+                <option value="">الكل</option>
+                @foreach (var (key, label) in LeadInbox.Types)
+                {
+                    <option value="@key" selected="@(f.Type == key)">@label</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="lead-status">الحالة</label>
+            <select id="lead-status" name="status" class="form-control">
+                <option value="">الكل</option>
+                @foreach (var s in LeadStatuses.All)
+                {
+                    <option value="@LeadStatuses.Key(s)" selected="@(f.Status == s)">@L[LeadStatuses.LabelKey(s)]</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="lead-read">القراءة</label>
+            <select id="lead-read" name="read" class="form-control">
+                <option value="">الكل</option>
+                <option value="@LeadsController.Unread" selected="@(f.Read == LeadsController.Unread)">غير مقروء</option>
+                <option value="@LeadsController.Read" selected="@(f.Read == LeadsController.Read)">مقروء</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-admin btn-primary">عرض</button>
+    </form>
+
+    @if (list.TotalCount == 0)
+    {
+        <p style="text-align:center;color:var(--admin-text-muted);padding:40px 0;">لا توجد طلبات بهذا الاختيار</p>
+    }
+    else
+    {
+        <div class="table-scroll">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>القراءة</th>
+                    <th>الحالة</th>
+                    <th>النوع</th>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>التفاصيل</th>
+                    <th>اللغة</th>
+                    <th>التاريخ</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in list.Items)
+            {
+                <tr class="@(item.IsRead ? null : "is-unread")">
+                    <td>
+                        @if (!item.IsRead)
+                        {
+                            <span class="badge-new">غير مقروء</span>
+                        }
+                        else
+                        {
+                            <span class="badge-active">مقروء</span>
+                        }
+                    </td>
+                    <td><span class="lead-status lead-status-@LeadStatuses.Key(item.Status)">@L[LeadStatuses.LabelKey(item.Status)]</span>@if (!string.IsNullOrWhiteSpace(item.Note)) { <span class="lead-note-mark" title="توجد ملاحظة داخلية">✎</span> }</td>
+                    <td>@LeadInbox.Label(item.Type)</td>
+                    <td><a href="/Admin/Leads/Details/@item.Id@QueryString.Create(new[] { new KeyValuePair<string, string?>("type", item.Type), new KeyValuePair<string, string?>("listType", f.Type), new KeyValuePair<string, string?>("read", f.Read), new KeyValuePair<string, string?>("status", statusKey), new KeyValuePair<string, string?>("page", list.Page > 1 ? list.Page.ToString(inv) : null) }.Where(p => p.Value is not null))"><strong dir="auto">@item.Name</strong></a></td>
+                    <td class="cell-ltr">@item.Email</td>
+                    <td>@item.Summary</td>
+                    <td>@(item.Culture == "en" ? "English" : "العربية")</td>
+                    <td style="font-size:0.82rem;color:var(--admin-text-muted);">@TimeDisplay.Utc(item.CreatedAt)</td>
+                    <td class="actions">
+                        <form method="post" asp-action="ToggleRead" asp-controller="Leads" style="display:inline;">
+                            <input type="hidden" name="type" value="@item.Type">
+                            <input type="hidden" name="id" value="@item.Id">
+                            @{ FilterFields(f, list.Page); }
+                            <button type="submit" class="btn-admin btn-sm @(item.IsRead ? "btn-secondary" : "btn-primary")">@(item.IsRead ? "غير مقروء" : "مقروء ✓")</button>
+                        </form>
+                        <form method="post" asp-action="Delete" asp-controller="Leads" style="display:inline;">
+                            <input type="hidden" name="type" value="@item.Type">
+                            <input type="hidden" name="id" value="@item.Id">
+                            @{ FilterFields(f, list.Page); }
+                            <button type="submit" class="btn-admin btn-danger btn-sm" onclick="return confirm('حذف هذا الطلب نهائياً؟')">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+        @if (list.TotalPages > 1)
+        {
+            <nav class="pager" aria-label="الصفحات">
+                @if (list.HasPrevious)
+                {
+                    <a class="btn-admin btn-secondary btn-sm" href="/Admin/Leads@(Query(f.Type, f.Read, statusKey, list.Page - 1))">السابق</a>
+                }
+                <span class="pager-info">صفحة @list.Page من @list.TotalPages</span>
+                @if (list.HasNext)
+                {
+                    <a class="btn-admin btn-secondary btn-sm" href="/Admin/Leads@(Query(f.Type, f.Read, statusKey, list.Page + 1))">التالي</a>
+                }
+            </nav>
+        }
+    }
+</div>

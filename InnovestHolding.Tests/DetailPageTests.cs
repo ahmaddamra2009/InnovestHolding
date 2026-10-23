@@ -324,6 +324,26 @@ public class DetailPageTests(TestAppFactory f)
         Assert.Contains("<meta property=\"og:type\" content=\"article\">", html);
     }
 
+    private static string Meta(string html, string attribute, string name) =>
+        Regex.Match(html, $"<meta {attribute}=\"{Regex.Escape(name)}\" content=\"([^\"]*)\">").Groups[1].Value;
+
+    [Theory] // Noor L2: an article without its own image names the share image in JSON-LD; L6: twitter:title / twitter:image
+    [InlineData("/news/news-1")]
+    [InlineData("/en/news/news-1")]
+    public async Task Article_without_an_image_uses_the_share_image_and_twitter_tags(string path)
+    {
+        Assert.Null(await f.DbAsync(db => db.News.Where(n => n.Slug == "news-1").Select(n => n.ImageId).SingleAsync()));
+        var html = await f.NewClient().GetStringAsync(path);
+        var og = Meta(html, "property", "og:image");
+        Assert.StartsWith($"{Base}/", og);
+        var image = Node(html, "NewsArticle").GetProperty("image");
+        Assert.Equal(og, Assert.Single(image.EnumerateArray()).GetString());
+        Assert.Equal(og, Meta(html, "name", "twitter:image"));
+        var title = Meta(html, "property", "og:title");
+        Assert.False(string.IsNullOrEmpty(title));
+        Assert.Equal(title, Meta(html, "name", "twitter:title"));
+    }
+
     [Fact] // Event: dates with the event's own offset, status, mode, place; past events lose the register button
     public async Task Event_detail_carries_dates_with_offset_and_its_state()
     {
@@ -353,6 +373,8 @@ public class DetailPageTests(TestAppFactory f)
             Assert.Equal("https://schema.org/EventPostponed", e.GetProperty("eventStatus").GetString());
             Assert.Equal("https://schema.org/MixedEventAttendanceMode", e.GetProperty("eventAttendanceMode").GetString());
             Assert.Equal(2, e.GetProperty("location").GetArrayLength());
+            // Noor L2: no image of its own → the share image (same URL as og:image).
+            Assert.Equal(Meta(html, "property", "og:image"), Assert.Single(e.GetProperty("image").EnumerateArray()).GetString());
             Assert.Contains("10:00 – 17:30 (UTC+03:00)", html);
             Assert.Contains("Tuesday 5 November 2030", html);
             Assert.Contains("href=\"/en/forum/registration\"", ActionCard(html));

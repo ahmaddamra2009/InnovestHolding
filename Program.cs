@@ -68,6 +68,11 @@ builder.Services.Configure<MediaOptions>(builder.Configuration.GetSection(MediaO
 builder.Services.AddSingleton<MediaStore>();
 builder.Services.AddStaticAssetCompression();
 
+// What a lead may refer to (C3's published opportunities and active sponsorship packages), read from the database.
+builder.Services.AddScoped<InnovestHolding.Infrastructure.Forms.ILeadReferences, InnovestHolding.Infrastructure.Forms.DbLeadReferences>();
+// The global cap of the lead forms (all visitors together), beside the per-IP rate limit.
+builder.Services.AddSingleton<InnovestHolding.Infrastructure.Forms.LeadVolumeGuard>();
+
 // AppDbContext + the site content cache and its invalidation interceptor (one helper, shared with the tests).
 builder.Services.AddAppDbContext(connectionString);
 

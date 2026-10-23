@@ -6,7 +6,9 @@ namespace InnovestHolding.Infrastructure.Content;
 /// <param name="IntroKey">SiteContents key of the optional lead sentence (null: none).</param>
 /// <param name="UsesDescription">The admin form shows the description fields.</param>
 /// <param name="UsesIcon">The admin form shows the icon picker.</param>
-public sealed record ContentItemGroup(string Key, string Label, string TitleKey, string? IntroKey, bool UsesDescription, bool UsesIcon);
+/// <param name="FormOptions">The choices of a public form's select (not a section of a page: no heading keys).</param>
+public sealed record ContentItemGroup(string Key, string Label, string TitleKey, string? IntroKey, bool UsesDescription, bool UsesIcon,
+    bool FormOptions = false);
 
 /// <summary>
 /// The lists an admin can edit in «القوائم» (ContentItems). Only these groups are accepted by the admin actions (no
@@ -28,6 +30,14 @@ public static class ContentItemGroups
     public const string PartnersInSuccess = "partners_in_success";
     public const string NetworkSteps = "network_steps";
 
+    // Choices of the «Join the Network» form (the migration AddLeadForms inserts them). Sectors reuse Sectors above.
+    public const string InvestorTypes = "investor_types";
+    public const string TicketSizes = "ticket_sizes";
+    public const string StartupStages = "startup_stages";
+    public const string FundingRanges = "funding_ranges";
+
+    private static ContentItemGroup Options(string key, string label) => new(key, label, "", null, false, false, FormOptions: true);
+
     private static ContentItemGroup G(string key, string label, bool description = false, bool icon = true, string? titleKey = null) =>
         new(key, label, titleKey ?? $"section_{key}_title", $"section_{key}_intro", description, icon);
 
@@ -46,6 +56,10 @@ public static class ContentItemGroups
         G(PartnerTypes, "الجهات التي نعمل معها"),
         G(PartnersInSuccess, "شركاء النجاح"),
         G(NetworkSteps, "خطوات الانضمام إلى الشبكة", description: true),
+        Options(InvestorTypes, "نموذج الانضمام — أنواع المستثمرين"),
+        Options(TicketSizes, "نموذج الانضمام — حجم الاستثمار"),
+        Options(StartupStages, "نموذج الانضمام — مراحل الشركة الناشئة"),
+        Options(FundingRanges, "نموذج الانضمام — التمويل المطلوب"),
     ];
 
     private static readonly Dictionary<string, ContentItemGroup> ByKey = All.ToDictionary(g => g.Key, StringComparer.Ordinal);

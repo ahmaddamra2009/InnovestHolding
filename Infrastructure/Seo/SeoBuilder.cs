@@ -125,7 +125,9 @@ public static class SeoBuilder
         Put(node, "@id", canonical is null ? null : canonical + "#" + node["@type"].ToString()!.ToLowerInvariant());
         Put(node, "url", canonical);
         Put(node, "inLanguage", english && englishAvailable ? "en" : "ar");
-        if (image is not null && og.Url is not null) node["image"] = new[] { og.Url };
+        // An article or event always names an image (Google asks for one): its own, else the same fallback as og:image
+        // (list page, then site default). A person keeps only their own photo (a site banner is not their image).
+        if (og.Url is not null && (image is not null || node["@type"] is "NewsArticle" or "Event")) node["image"] = new[] { og.Url };
         graph.Add(node);
 
         var crumbs = SiteRoutes.Chain(route.Parent)
@@ -157,9 +159,25 @@ public static class SeoBuilder
     public static Dictionary<string, object>? OrganizationRef(string? baseUrl) =>
         baseUrl is null ? null : new Dictionary<string, object> { ["@id"] = baseUrl + "/#organization" };
 
-    /// <summary>A node reference to the TV programme (the TVSeries node of the TV hub page), or null without a base URL.</summary>
-    public static Dictionary<string, object>? TvSeriesRef(string? baseUrl) =>
-        baseUrl is null ? null : new Dictionary<string, object> { ["@id"] = baseUrl + CultureUrls.Page(PageKeys.Tv, false) + "#tvseries" };
+    /// <summary>
+    /// The @id of the TV programme (the TVSeries node of the TV hub page in the page language: <c>/tv#tvseries</c> or
+    /// <c>/en/tv#tvseries</c>), or null without a base URL.
+    /// </summary>
+    public static string? TvSeriesId(string? baseUrl, bool english) =>
+        baseUrl is null ? null : baseUrl + CultureUrls.Page(PageKeys.Tv, english) + "#tvseries";
+
+    /// <summary>
+    /// The TV programme as an episode's <c>partOfSeries</c>: the hub's @id in the page language plus its name and URL, so
+    /// the reference reads on its own even when the hub page is not indexed. Null without a base URL.
+    /// </summary>
+    public static Dictionary<string, object>? TvSeriesRef(SiteViews v, string? baseUrl)
+    {
+        if (TvSeriesId(baseUrl, v.English) is not { } id) return null;
+        var series = new Dictionary<string, object> { ["@type"] = "TVSeries", ["@id"] = id };
+        Put(series, "name", v.Title(PageKeys.Tv).Value);
+        series["url"] = baseUrl + CultureUrls.Page(PageKeys.Tv, v.English);
+        return series;
+    }
 
     /// <summary>Sets <paramref name="key"/> unless the value is empty (the JSON-LD never carries empty values).</summary>
     public static void Set(Dictionary<string, object> d, string key, object? value) => Put(d, key, value);
@@ -322,11 +340,11 @@ public static class SeoBuilder
             graph.Add(unit);
         }
 
-        // The TV programme: its hub page describes the series that every episode is part of (one @id in both languages).
+        // The TV programme: its hub page describes the series that every episode is part of (one @id per language).
         if (page.Key == PageKeys.Tv)
         {
             var series = new Dictionary<string, object> { ["@type"] = "TVSeries" };
-            Put(series, "@id", TvSeriesRef(baseUrl)?["@id"]);
+            Put(series, "@id", TvSeriesId(baseUrl, english));
             Put(series, "name", v.Title(page.Key).Value);
             Put(series, "url", pageUrl);
             Put(series, "description", v.Summary(page.Key).Value);

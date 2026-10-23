@@ -6,13 +6,18 @@ namespace InnovestHolding.Infrastructure.Content;
 
 /// <summary>
 /// Every SaveChanges that adds, changes or deletes a content row drops the site snapshot — controllers cannot
-/// forget it. Users, registrations and contact messages are not page content and do not invalidate.
+/// forget it. Users and the leads of the public forms (registrations, contact messages, network applications,
+/// sponsorship enquiries, opportunity interests) are not page content and do not invalidate.
 /// Reviewer rule: ExecuteUpdate / ExecuteDelete / raw SQL bypass interceptors — call ISiteContentCache.Invalidate()
 /// next to any such statement on a content table.
 /// </summary>
 public sealed class ContentCacheInvalidationInterceptor(ISiteContentCache cache) : SaveChangesInterceptor
 {
-    private static readonly HashSet<Type> NotContent = [typeof(AppUser), typeof(Registration), typeof(ContactMessage)];
+    private static readonly HashSet<Type> NotContent =
+    [
+        typeof(AppUser), typeof(Registration), typeof(ContactMessage),
+        typeof(NetworkApplication), typeof(SponsorshipEnquiry), typeof(OpportunityInterest),
+    ];
 
     // Per-context flag between SavingChanges (entries still visible) and SavedChanges (the write committed).
     private readonly System.Runtime.CompilerServices.ConditionalWeakTable<DbContext, object> _pending = new();

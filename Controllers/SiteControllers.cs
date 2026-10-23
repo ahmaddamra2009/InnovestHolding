@@ -1,6 +1,8 @@
+using System.Globalization;
 using InnovestHolding.Data;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure;
+using InnovestHolding.Infrastructure.Forms;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Infrastructure.Seo;
 using InnovestHolding.Infrastructure.Site;
@@ -8,6 +10,7 @@ using InnovestHolding.Models;
 using InnovestHolding.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using C = InnovestHolding.Infrastructure.Content.ContentItemGroups;
 
 namespace InnovestHolding.Controllers;
@@ -282,7 +285,8 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     public async Task<IActionResult> Registration()
     {
         var v = await ViewsAsync();
-        return Page(PageKeys.ForumRegistration, v, [new RegisterBlock(v.RegisterForm("forum-reg"))]);
+        var events = await LeadFormChoices.EventsAsync(db, HttpContext.RequestAborted);
+        return Page(PageKeys.ForumRegistration, v, [new LeadFormBlock(v.ForumRegistrationForm(events, v.Content.Text("cta_register")))]);
     }
 
     internal static PagerVm? Pager(int total, int size, int page, string url)
@@ -292,16 +296,25 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
     }
 }
 
-public class NetworkController(AppDbContext db) : PublicControllerBase
+public class NetworkController(AppDbContext db, IStringLocalizer<SharedResource> l) : PublicControllerBase
 {
-    private static LinkVm Join(SiteViews v) => new(v.Url(PageKeys.NetworkJoin), v.Title(PageKeys.NetworkJoin));
+    /// <summary>The Join page, with the applicant type pre-selected when <paramref name="type"/> is given (?type=).</summary>
+    private static LinkVm Join(SiteViews v, string? type = null) =>
+        new(v.Url(PageKeys.NetworkJoin) + (type is null ? "" : "?type=" + type), v.Title(PageKeys.NetworkJoin));
 
     /// <summary>
-    /// The "express interest" action of an opportunity page. There is no interest form yet, so it goes to the contact
-    /// page; this method is the one place to point it at that form (<paramref name="slug"/> is unused until then: the
-    /// form will pre-select the opportunity from it).
+    /// The "express interest" action of an opportunity page: the interest form under the opportunities list (its section
+    /// anchor) with this opportunity pre-selected (?opportunity=id; the list page offers only open, published ones).
     /// </summary>
-    private LinkVm InterestAction(SiteViews v, string slug) => new(v.Url(PageKeys.Contact), Ui(MessageKeys.Ui.ExpressInterest));
+    private LinkVm InterestAction(SiteViews v, int id) =>
+        new(v.Url(PageKeys.NetworkOpportunities) + "?" + OpportunityQuery + "=" + id.ToString(CultureInfo.InvariantCulture)
+            + "#" + InterestFormId + "-section", Ui(MessageKeys.Ui.ExpressInterest));
+
+    /// <summary>The id prefix of the interest form (LeadFormViews.InterestForm).</summary>
+    private const string InterestFormId = "interest";
+
+    /// <summary>The query parameter that pre-selects an opportunity in the interest form.</summary>
+    public const string OpportunityQuery = "opportunity";
 
     [AcceptVerbs("GET", "HEAD")]
     public async Task<IActionResult> Index()
@@ -321,7 +334,7 @@ public class NetworkController(AppDbContext db) : PublicControllerBase
     {
         var v = await ViewsAsync();
         return Page(PageKeys.NetworkInvestors, v,
-            [v.ItemsSection(C.InvestorServices), new CtaBlock(v.Title(PageKeys.NetworkJoin), v.Summary(PageKeys.NetworkJoin), [Join(v)])]);
+            [v.ItemsSection(C.InvestorServices), new CtaBlock(v.Title(PageKeys.NetworkJoin), v.Summary(PageKeys.NetworkJoin), [Join(v, Models.NetworkApplication.Investor)])]);
     }
 
     [AcceptVerbs("GET", "HEAD")]
@@ -332,15 +345,25 @@ public class NetworkController(AppDbContext db) : PublicControllerBase
         [
             v.ItemsSection(C.StartupServices),
             v.ItemsSection(C.Sectors, compact: true),
-            new CtaBlock(v.Title(PageKeys.NetworkJoin), v.Summary(PageKeys.NetworkJoin), [Join(v)]),
+            new CtaBlock(v.Title(PageKeys.NetworkJoin), v.Summary(PageKeys.NetworkJoin), [Join(v, Models.NetworkApplication.Startup)]),
         ]);
     }
 
     [AcceptVerbs("GET", "HEAD")]
-    public Task<IActionResult> Opportunities() =>
-        EntityListAsync(PageKeys.NetworkOpportunities,
+    public async Task<IActionResult> Opportunities()
+    {
+        // ?opportunity=id pre-selects an open opportunity in the form; any other value selects nothing (never an error).
+        var query = Request.Query[OpportunityQuery];
+        int? selected = query.Count == 1 && int.TryParse(query[0], NumberStyles.None, CultureInfo.InvariantCulture, out var id) ? id : null;
+        return await EntityListAsync(PageKeys.NetworkOpportunities,
             EcosystemQueries.OpportunitiesOrdered(db.InvestmentOpportunities.AsNoTracking().Where(o => o.IsActive)).Select(EcosystemQueries.OpportunityCard),
-            OpportunityCard, false, Join);
+            OpportunityCard, false, v => Join(v),
+            // The "express interest" form under the list (not content: an empty list stays noindex).
+            // Its select comes from the cached snapshot (open + published, invalidated on every admin save); the POST
+            // re-checks the chosen id against the database (ILeadReferences.OpenOpportunityAsync).
+            v => new LeadFormBlock(v.InterestForm(v.Snapshot.Ecosystem.OpenOpportunityChoices, selected,
+                new LText(l[MessageKeys.Ui.FormSubmitInterest].Value, false)), IsContent: false));
+    }
 
     /// <summary>
     /// GET /angel-network/opportunities/{slug} (and /en/…): a published opportunity (a draft is 404); an old slug 301s.
@@ -353,7 +376,7 @@ public class NetworkController(AppDbContext db) : PublicControllerBase
         var o = await db.InvestmentOpportunities.AsNoTracking().Where(x => x.Slug == slug && x.IsActive)
             .Select(x => new
             {
-                x.Slug, x.TitleAr, x.TitleEn, x.SummaryAr, x.SummaryEn, x.BodyAr, x.BodyEn, x.StageTextAr, x.StageTextEn,
+                x.Id, x.Slug, x.TitleAr, x.TitleEn, x.SummaryAr, x.SummaryEn, x.BodyAr, x.BodyEn, x.StageTextAr, x.StageTextEn,
                 x.AskTextAr, x.AskTextEn, x.IsOpen, x.MetaTitleAr, x.MetaTitleEn, x.MetaDescriptionAr, x.MetaDescriptionEn,
                 SectorAr = x.SectorItem == null ? null : x.SectorItem.TextAr,
                 SectorEn = x.SectorItem == null ? null : x.SectorItem.TextEn,
@@ -376,7 +399,7 @@ public class NetworkController(AppDbContext db) : PublicControllerBase
         if (!ask.IsEmpty) facts.Add(new FactVm("coins", Ui(MessageKeys.Ui.Ask), ask));
 
         var actions = new List<LinkVm>();
-        if (o.IsOpen) actions.Add(InterestAction(v, o.Slug));
+        if (o.IsOpen) actions.Add(InterestAction(v, o.Id));
         actions.Add(Join(v));
 
         var route = SiteRoutes.Detail(DetailKeys.NetworkOpportunity);
@@ -407,13 +430,14 @@ public class NetworkController(AppDbContext db) : PublicControllerBase
     public async Task<IActionResult> Join()
     {
         var v = await ViewsAsync();
-        // The application form arrives in a later phase: until then the page sends visitors to the contact form.
+        var choices = await LeadFormChoices.LoadAsync(db, HttpContext.RequestAborted);
+        var type = Request.Query["type"].Count == 1 ? Request.Query["type"][0] : null;
         return Page(PageKeys.NetworkJoin, v,
-            [new CtaBlock(v.Title(PageKeys.Contact), v.Summary(PageKeys.Contact), [new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact))])]);
+            [new LeadFormBlock(v.JoinForm(choices, type, new LText(l[MessageKeys.Ui.FormSubmitApplication].Value, false)))]);
     }
 }
 
-public class TvController(AppDbContext db) : PublicControllerBase
+public class TvController(AppDbContext db, IStringLocalizer<SharedResource> l) : PublicControllerBase
 {
     private static LinkVm Sponsor(SiteViews v) => new(v.Url(PageKeys.TvSponsorship), v.Title(PageKeys.TvSponsorship));
 
@@ -480,7 +504,7 @@ public class TvController(AppDbContext db) : PublicControllerBase
         if (e.Number is { } number) node["episodeNumber"] = number;
         if (e.Season is { } season) node["partOfSeason"] = new Dictionary<string, object> { ["@type"] = "TVSeason", ["seasonNumber"] = season };
         if (e.AiredOn is { } on) node["datePublished"] = on.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-        SeoBuilder.Set(node, "partOfSeries", SeoBuilder.TvSeriesRef(baseUrl));
+        SeoBuilder.Set(node, "partOfSeries", SeoBuilder.TvSeriesRef(v, baseUrl));
         if (guests.Count > 0) node["actor"] = PersonRefs(baseUrl, guests);
         if (video is not null)
         {
@@ -535,11 +559,15 @@ public class TvController(AppDbContext db) : PublicControllerBase
     public async Task<IActionResult> Sponsorship()
     {
         var v = await ViewsAsync();
-        var contact = new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact));
-        var packages = Packages(v, SponsorshipUnits.Tv);
-        return Page(PageKeys.TvSponsorship, v,
-            [packages, packages is null ? null : new CtaBlock(v.Title(PageKeys.Contact), v.Summary(PageKeys.Contact), [contact])],
-            contact);
+        var unit = Request.Query["unit"].Count == 1 ? Request.Query["unit"][0] : null;
+        // The package select comes from the cached snapshot (the packages block above uses the same rows): 0 queries
+        // when warm. The POST re-checks the chosen package against the database (ILeadReferences.PackagesAsync).
+        var packages = v.Snapshot.Ecosystem;
+        var form = v.SponsorshipForm(unit, packages.PackageChoices(Models.SponsorshipEnquiry.Forum),
+            packages.PackageChoices(Models.SponsorshipEnquiry.Tv), new LText(l[MessageKeys.Ui.FormSubmitEnquiry].Value, false));
+        // The TV packages (when published), then the enquiry form.
+        return Page(PageKeys.TvSponsorship, v, [Packages(v, SponsorshipUnits.Tv), new LeadFormBlock(form)],
+            new LinkVm(v.Url(PageKeys.Contact), v.Title(PageKeys.Contact)));
     }
 }
 

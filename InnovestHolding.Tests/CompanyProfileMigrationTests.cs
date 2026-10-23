@@ -42,7 +42,8 @@ public class CompanyProfileMigrationTests
         await One(db, "SELECT (SELECT Id, TitleAr, TitleEn, SummaryAr, SummaryEn, CategoryAr, CategoryEn, NewsDateAr, NewsDateEn, LinkUrl, SortOrder, IsActive, CreatedAt FROM News ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
         await One(db, "SELECT (SELECT Id, NameAr, NameEn, SortOrder FROM Partners ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
         await One(db, "SELECT (SELECT * FROM Faqs ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
-        await One(db, "SELECT (SELECT * FROM Registrations ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
+        // Frozen column list: the columns before the lead forms (AddLeadForms adds its own).
+        await One(db, "SELECT (SELECT Id, FullName, Email, Phone, Interest, InterestOptionId, Culture, IsRead, CreatedAt FROM Registrations ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
         await One(db, "SELECT (SELECT * FROM ContactMessages ORDER BY Id FOR JSON PATH, INCLUDE_NULL_VALUES) AS [Value]"),
     ];
 
@@ -107,8 +108,9 @@ public class CompanyProfileMigrationTests
 
         // New reference rows.
         Assert.Equal(19, await db.Pages.CountAsync());
-        Assert.Equal(13, await db.ContentItems.Select(i => i.Group).Distinct().CountAsync());
-        Assert.Equal(101, await db.ContentItems.CountAsync());
+        // 13 page lists (AddSiteStructure, 101 rows) + the 4 choice lists of the Join form (AddLeadForms, 18 rows).
+        Assert.Equal(17, await db.ContentItems.Select(i => i.Group).Distinct().CountAsync());
+        Assert.Equal(119, await db.ContentItems.CountAsync());
         Assert.Equal("https://linktr.ee/Innovest.HoldingOfficial", await db.SocialLinks.Where(x => x.Network == "linktree").Select(x => x.Url).SingleAsync());
 
         // A second run of both migrations' SQL changes nothing (every write is guarded).

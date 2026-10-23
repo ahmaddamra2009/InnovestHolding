@@ -12,7 +12,8 @@ public static class CultureUrls
     public const string EnglishHome = SiteRoutes.EnglishPrefix;
 
     /// <summary>The form endpoints (POST only): /forms/{name} and /en/forms/{name}.</summary>
-    public static readonly IReadOnlyList<string> FormNames = ["register", "contact"];
+    public static readonly IReadOnlyList<string> FormNames =
+        ["register", "contact", "forum-registration", "join", "sponsorship", "opportunity-interest"];
 
     public static string Home(bool english) => english ? EnglishHome : ArabicHome;
 

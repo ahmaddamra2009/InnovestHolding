@@ -40,6 +40,14 @@ public sealed class RateLimitOptions
     public TimeSpan PublicFormWindow { get; set; } = TimeSpan.FromMinutes(10);
     public int LoginPermitLimit { get; set; } = 30;
     public TimeSpan LoginWindow { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Lead forms (Forum registration, Join, sponsorship, opportunity interest): stored submissions per form from ALL
+    /// visitors together within <see cref="LeadFormGlobalWindow"/> — a cap on database growth that the per-IP limit alone
+    /// cannot give (many addresses). Over it the form answers 429 until the window ends.
+    /// </summary>
+    public int LeadFormGlobalPermitLimit { get; set; } = 300;
+    public TimeSpan LeadFormGlobalWindow { get; set; } = TimeSpan.FromHours(1);
 }
 
 /// <summary>Column mirrors and product limits for input validation (allowed technical constants).</summary>

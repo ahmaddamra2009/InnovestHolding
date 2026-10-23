@@ -16,7 +16,7 @@
     </div>
     <div class="stat-card-admin">
         <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-        <div class="stat-card-info"><h3>@Model.TotalPlatforms</h3><p>المنصات</p></div>
+        <div class="stat-card-info"><h3>@Model.TotalPlatforms</h3><p>الخدمات</p></div>
     </div>
     <div class="stat-card-admin">
         <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
@@ -24,7 +24,7 @@
     </div>
     <div class="stat-card-admin">
         <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
-        <div class="stat-card-info"><h3>@Model.TotalNavItems</h3><p>عناصر القائمة</p></div>
+        <div class="stat-card-info"><h3>@Model.TotalNavItems</h3><p>روابط إضافية في القائمة</p></div>
     </div>
     <div class="stat-card-admin" style="@(Model.UnreadRegistrations > 0 ? "border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.02);" : "")">
         <div class="stat-card-icon" style="@(Model.UnreadRegistrations > 0 ? "background:linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));" : "")"><svg viewBox="0 0 24 24" fill="none" stroke="@(Model.UnreadRegistrations > 0 ? "#ef4444" : "currentColor")" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div>
@@ -36,11 +36,30 @@
     </div>
 </div>
 
+@if (Model.UnreadLeads is { } leads)
+{
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <span class="admin-card-title">الطلبات غير المقروءة (@leads.Leads)</span>
+            <a href="/Admin/Leads" class="btn-admin btn-secondary btn-sm">كل الطلبات</a>
+        </div>
+        <div class="stats-cards">
+            @foreach (var (key, label) in InnovestHolding.Infrastructure.Leads.LeadInbox.Types)
+            {
+                var count = leads.Of(key);
+                <a class="stat-card-admin lead-type-card@(count > 0 ? " has-unread" : "")" href="/Admin/Leads?type=@key&amp;status=unread">
+                    <div class="stat-card-info"><h3>@count</h3><p>@label — غير مقروء</p></div>
+                </a>
+            }
+        </div>
+    </div>
+}
+
 <div class="admin-card">
     <div class="admin-card-header">
         <span class="admin-card-title">مرحباً بك في لوحة التحكم</span>
     </div>
     <p style="color:var(--admin-text-muted);line-height:2;">
-        من هنا يمكنك إدارة كل محتوى موقع <strong>إنوفست هولدينغ</strong>. استخدم القائمة الجانبية للتنقل بين الأقسام المختلفة. يمكنك تعديل الصفحة الرئيسية، إدارة الفعاليات والأخبار، تعديل القائمة الرئيسية وإضافة عناصر فرعية، وغير ذلك الكثير.
+        من هنا يمكنك إدارة كل محتوى موقع <strong>إنوفست هولدينغ</strong> باللغتين. استخدم القائمة الجانبية للتنقل بين الأقسام: صفحات الموقع (ومنها إظهار الصفحة في القائمة)، النصوص العامة والقوائم، الخدمات والأرقام والأسئلة الشائعة، منتدى إنوفست العربي وشبكة المستثمرين الملائكيين والبرنامج التلفزيوني، الأخبار، والطلبات ورسائل التواصل الواردة من النماذج.
     </p>
 </div>

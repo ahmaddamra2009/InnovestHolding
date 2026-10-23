@@ -43,6 +43,11 @@
     <meta property="og:image:alt" content="@Model.OgImageAlt">
 }
 <meta name="twitter:card" content="@Model.TwitterCard">
+<meta name="twitter:title" content="@Model.Title">
+@if (Model.OgImage is not null)
+{
+    <meta name="twitter:image" content="@Model.OgImage">
+}
 @if (!string.IsNullOrEmpty(Model.JsonLd))
 {
     @* <!script> opts this element out of tag-helper processing (which would entity-encode the "+" of the type). *@

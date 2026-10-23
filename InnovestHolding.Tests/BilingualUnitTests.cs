@@ -64,22 +64,22 @@ public class BilingualUnitTests
     public void Normalizer_targets(string path, string? target) =>
         Assert.Equal(target, CultureUrlNormalizer.Target(path));
 
-    // ── IPv6 /64 keying: one subscriber holds a whole /64 and can rotate the low 64 bits ──
+    // ── IPv6 /48 keying: one site allocation holds 65,536 /64s and could fan out over them (C4 M1) ──
     [Theory]
     [InlineData("203.0.113.7", "203.0.113.7")]
     [InlineData("::ffff:203.0.113.7", "203.0.113.7")]
-    [InlineData("2001:db8:1:2:aaaa:bbbb:cccc:dddd", "2001:db8:1:2::/64")]
-    [InlineData("2001:db8:1:2::1", "2001:db8:1:2::/64")]
-    [InlineData("::1", "::/64")]
-    public void Client_key_is_the_ipv4_address_or_the_ipv6_slash_64(string ip, string key) =>
+    [InlineData("2001:db8:1:2:aaaa:bbbb:cccc:dddd", "2001:db8:1::/48")]
+    [InlineData("2001:db8:1:2::1", "2001:db8:1::/48")]
+    [InlineData("::1", "::/48")]
+    public void Client_key_is_the_ipv4_address_or_the_ipv6_slash_48(string ip, string key) =>
         Assert.Equal(key, RateLimitPolicies.ClientKey(IPAddress.Parse(ip)));
 
     [Fact]
-    public void Two_addresses_of_one_ipv6_slash_64_share_a_key_and_another_prefix_does_not()
+    public void Addresses_of_different_slash_64s_in_one_slash_48_share_a_key_and_another_slash_48_does_not()
     {
         var a = RateLimitPolicies.ClientKey(IPAddress.Parse("2001:db8:aa:bb:1::1"));
-        var b = RateLimitPolicies.ClientKey(IPAddress.Parse("2001:db8:aa:bb:ffff:ffff:ffff:fffe"));
-        var c = RateLimitPolicies.ClientKey(IPAddress.Parse("2001:db8:aa:bc:1::1"));
+        var b = RateLimitPolicies.ClientKey(IPAddress.Parse("2001:db8:aa:ffff:ffff:ffff:ffff:fffe"));   // another /64 of the same /48
+        var c = RateLimitPolicies.ClientKey(IPAddress.Parse("2001:db8:ab:bb:1::1"));
         Assert.Equal(a, b);
         Assert.NotEqual(a, c);
     }

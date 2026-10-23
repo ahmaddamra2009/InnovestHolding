@@ -359,12 +359,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = form.querySelector('button[type="submit"]');
     const label = btn ? btn.querySelector('span') : null;
     const idleText = label ? label.textContent : '';
+    let hideTimer = 0;
 
     function show(ok, text) {
       msg.hidden = false;
       msg.classList.toggle('is-ok', ok);
       msg.classList.toggle('is-error', !ok);
       msg.textContent = text;
+    }
+    // Several field errors (the lead forms): one line each, in the form's field order (textContent only, no markup).
+    function showList(texts) {
+      show(false, '');
+      const list = document.createElement('ul');
+      texts.forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = t;
+        list.appendChild(li);
+      });
+      msg.appendChild(list);
+    }
+    function fieldNamed(name) {
+      const wanted = String(name).toLowerCase();
+      return Array.from(form.elements).find(el => el.name && el.name.toLowerCase() === wanted && !el.disabled);
     }
     function idle() {
       btn.disabled = false;
@@ -387,10 +403,32 @@ document.addEventListener('DOMContentLoaded', () => {
           return r.json();
         })
         .then(data => {
-          show(!!data.success, data.message || form.dataset.msgError);
-          if (data.success) form.reset();
+          form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.removeAttribute('aria-invalid'));
+          const errors = !data.success && Array.isArray(data.errors) ? data.errors : [];
+          if (errors.length > 1) {
+            showList(errors.map(e => e.message));
+          } else {
+            show(!!data.success, data.message || form.dataset.msgError);
+          }
+          if (data.success) {
+            form.reset();
+          } else {
+            // The lead forms name the fields the messages are about (in field order): mark each, focus the first.
+            const named = errors.length ? errors.map(e => e.field) : (data.field ? [data.field] : []);
+            let first = null;
+            named.forEach(name => {
+              const field = name ? fieldNamed(name) : null;
+              if (!field) return;
+              field.setAttribute('aria-invalid', 'true');
+              if (!first) first = field;
+            });
+            if (first) first.focus();
+          }
           idle();
-          setTimeout(() => { msg.hidden = true; }, 5000);
+          // One timer per form: a reply that arrives later must not be hidden by the previous reply's timer.
+          clearTimeout(hideTimer);
+          // A list of field errors stays until the next submit (it is longer than a 5-second read).
+          if (errors.length <= 1) hideTimer = setTimeout(() => { msg.hidden = true; }, 5000);
         })
         .catch(() => {
           show(false, form.dataset.msgError);
@@ -399,6 +437,46 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   document.querySelectorAll('form.js-ajax-form').forEach(bindAjaxForm);
+
+  // Join the Network: the chosen type (investor / startup) shows its own fields; the other set is hidden AND disabled,
+  // so it is neither validated by the browser nor posted. Without JavaScript both sets stay visible and the server
+  // ignores the other type's fields. Fields marked data-required="true" become required only while their set is shown
+  // (any other value, or none, leaves the field optional).
+  document.querySelectorAll('form.js-kind-form').forEach(form => {
+    const sets = form.querySelectorAll('fieldset.kind-fields');
+    function apply() {
+      const checked = form.querySelector('input[name="kind"]:checked');
+      const kind = checked ? checked.value : '';
+      sets.forEach(set => {
+        const on = set.dataset.kind === kind;
+        set.hidden = !on;
+        set.disabled = !on;
+        set.querySelectorAll('[data-required="true"]').forEach(el => { el.required = on; });
+      });
+    }
+    form.querySelectorAll('input[name="kind"]').forEach(r => r.addEventListener('change', apply));
+    form.addEventListener('reset', () => setTimeout(apply, 0));
+    apply();
+  });
+
+  // Sponsorship enquiry: only the packages of the chosen unit can be picked (the other unit's group is disabled and a
+  // choice from it is cleared). Without JavaScript every group stays enabled and the server refuses a package of the
+  // other unit with a 400 naming the package field.
+  document.querySelectorAll('select[name="unit"]').forEach(unit => {
+    const form = unit.form;
+    const packages = form ? form.querySelector('select[name="packageId"]') : null;
+    if (!packages) return;
+    function apply() {
+      packages.querySelectorAll('optgroup[data-unit]').forEach(group => {
+        group.disabled = group.dataset.unit !== unit.value;
+      });
+      const chosen = packages.selectedOptions[0];
+      if (chosen && chosen.parentElement.tagName === 'OPTGROUP' && chosen.parentElement.disabled) packages.value = '';
+    }
+    unit.addEventListener('change', apply);
+    form.addEventListener('reset', () => setTimeout(apply, 0));
+    apply();
+  });
 
   // Unit tab bar: on a narrow screen the current tab may sit outside the scrollable strip — bring it into view
   // (only the strip scrolls; the page does not move).

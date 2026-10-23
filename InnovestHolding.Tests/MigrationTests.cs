@@ -111,7 +111,10 @@ public class MigrationTests(TestAppFactory f)
         // Every key of the registry except those the later migration ApplyCompanyProfile adds.
         string[] later = ["brand_positioning", "header_cta_label", "header_cta_page", "contact_whatsapp", "contact_website",
             "list_page_size", "ecosystem_badge", "ecosystem_title", "ecosystem_subtitle", "cta_band_title", "cta_band_text",
-            "impact_title", "impact_intro", "default_utc_offset"];
+            "impact_title", "impact_intro", "default_utc_offset",
+            // AddLeadForms
+            "forms_consent", "join_kind_title", "join_side_title", "join_side_text", "sponsorship_form_title",
+            "sponsorship_form_text", "interest_form_title", "interest_form_text"];
         Assert.Empty(ContentKeys.All.Select(k => k.Key)
             .Where(k => !later.Contains(k) && !k.StartsWith("section_") && !k.StartsWith("founder_"))
             .Except(keys.Select(k => k.SectionKey)));
@@ -141,7 +144,8 @@ public class MigrationTests(TestAppFactory f)
 
         // Only the later migrations (multi-page site) are still pending.
         Assert.Equal(["20261022152940_AddSiteStructure", "20261022153329_ApplyCompanyProfile", "20261022172550_RefineSiteStructure",
-            "20261022200000_CorrectCoreValuesEnglish", "20261022202359_AddMediaAndDetailPages", "20261022213309_AddEcosystemEntities"], await db.Database.GetPendingMigrationsAsync());
+            "20261022200000_CorrectCoreValuesEnglish", "20261022202359_AddMediaAndDetailPages", "20261022213309_AddEcosystemEntities",
+            "20261022221815_AddLeadForms"], await db.Database.GetPendingMigrationsAsync());
     }
 
     [Fact] // a fresh install (migration + DbSeeder) equals an upgraded old install, row by row

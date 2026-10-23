@@ -27,8 +27,10 @@ public static class RateLimitPolicies
 
     /// <summary>
     /// The key of every per-IP control (public-form and login rate limits, login IP lockout). IPv4 (and IPv4-mapped
-    /// IPv6) is the full address. IPv6 is its /64 prefix: one subscriber normally holds a whole /64 and can rotate the
-    /// low 64 bits at will, so keying on the full address would hand out a fresh budget per address.
+    /// IPv6) is the full address. IPv6 is its /48 prefix: one subscriber normally holds a whole /64 and can rotate the
+    /// low 64 bits at will, and a /48 (a site allocation, free from tunnel brokers) holds 65,536 /64s, so keying on the
+    /// address or on the /64 would hand out a fresh budget per address or per /64 (C4 review M1: fanning out over a /48
+    /// could fill the lead forms' global cap). Trade-off: hosts of one /48 share one budget.
     /// </summary>
     public static string ClientIp(HttpContext context) => ClientKey(context.Connection.RemoteIpAddress);
 
@@ -39,8 +41,8 @@ public static class RateLimitPolicies
         if (address.AddressFamily != AddressFamily.InterNetworkV6) return address.ToString();
 
         var bytes = address.GetAddressBytes();
-        Array.Clear(bytes, 8, 8);
-        return new IPAddress(bytes).ToString() + "/64";
+        Array.Clear(bytes, 6, 10);
+        return new IPAddress(bytes).ToString() + "/48";
     }
 
     private static ControllerActionDescriptor? Action(HttpContext context) =>

@@ -1,5 +1,9 @@
+@inject InnovestHolding.Data.AppDbContext AdminDb
 @{
     var current = ViewContext.RouteData.Values["controller"]?.ToString();
+    // Unread leads and messages: one query per admin page (the badges of the inbox links), shared with the controller.
+    var unread = await InnovestHolding.Infrastructure.Leads.LeadInbox.UnreadForRequestAsync(Context, AdminDb);
+    var badges = new Dictionary<string, int> { ["Leads"] = unread.Leads, ["Messages"] = unread.Messages };
     // The sidebar: groups of admin screens. Every link is under /Admin/… (the root default route serves only the
     // public site and the login page).
     (string Title, (string Controller, string Action, string Label, string Icon)[] Links)[] groups =
@@ -37,7 +41,9 @@
             ("SponsorshipPackages", "", "باقات الرعاية", "<polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/>"),
         ]),
         ("الأخبار", [("News", "", "الأخبار", "<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/><polyline points=\"14 2 14 8 20 8\"/>")]),
-        ("الوارد", [("Messages", "", "رسائل التواصل", "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\"/>")]),
+        ("الوارد", [
+            ("Leads", "", "الطلبات (كل النماذج)", "<path d=\"M22 12h-6l-2 3h-4l-2-3H2\"/><path d=\"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"/>"),
+            ("Messages", "", "رسائل التواصل", "<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\"/>")]),
     ];
 }
 <!DOCTYPE html>
@@ -73,6 +79,10 @@
                         <a href="@href" class="sidebar-link@(active ? " active" : "")" aria-current="@(active ? "page" : null)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">@Html.Raw(link.Icon)</svg>
                             @link.Label
+                            @if (badges.GetValueOrDefault(link.Controller) is > 0 and var count)
+                            {
+                                <span class="sidebar-badge">@count</span>
+                            }
                         </a>
                     }
                 </details>

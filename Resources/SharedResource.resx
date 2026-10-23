@@ -25,6 +25,7 @@
   <data name="Msg_RegistrationSuccess" xml:space="preserve"><value>تم التسجيل بنجاح! سنتواصل معك قريباً</value></data>
   <data name="Msg_ContactSuccess" xml:space="preserve"><value>تم إرسال رسالتك بنجاح! سنرد عليك في أقرب وقت</value></data>
   <data name="Msg_TooManyRequests" xml:space="preserve"><value>عدد كبير من الطلبات، يرجى المحاولة لاحقاً</value></data>
+  <data name="Msg_LeadFormFull" xml:space="preserve"><value>نستقبل عدداً كبيراً من الطلبات حالياً. يرجى المحاولة لاحقاً، أو مراسلتنا مباشرة على {0}</value></data>
   <data name="Msg_LoginInvalid" xml:space="preserve"><value>اسم المستخدم أو كلمة المرور غير صحيحة</value></data>
   <data name="Msg_LoginLocked" xml:space="preserve"><value>محاولات كثيرة، حاول لاحقاً</value></data>
   <data name="Msg_ErrorTitle" xml:space="preserve"><value>حدث خطأ</value></data>
@@ -253,4 +254,79 @@
   <data name="Msg_SlugReserved" xml:space="preserve"><value>الشكل «{0}-رقم» محجوز للروابط التلقائية — اختر رابطاً مختصراً آخر.</value></data>
   <data name="Ui_WatchOnYouTube" xml:space="preserve"><value>المشاهدة على يوتيوب</value></data>
   <data name="Ui_ExternalLink" xml:space="preserve"><value>(يفتح موقعاً آخر)</value></data>
+  <data name="Msg_ForumRegistrationSuccess" xml:space="preserve"><value>تم استلام تسجيلك في المنتدى! سنتواصل معك بتفاصيل الفعاليات</value></data>
+  <data name="Msg_JoinSuccess" xml:space="preserve"><value>تم استلام طلب الانضمام! سيراجعه فريقنا ويتواصل معك</value></data>
+  <data name="Msg_SponsorshipSuccess" xml:space="preserve"><value>تم استلام استفسار الرعاية! سيتواصل معك فريقنا بالتفاصيل</value></data>
+  <data name="Msg_InterestSuccess" xml:space="preserve"><value>تم تسجيل اهتمامك! سيتواصل معك فريق الشبكة</value></data>
+  <data name="Msg_ConsentRequired" xml:space="preserve"><value>يرجى تحديد مربع الموافقة لإرسال الطلب</value></data>
+  <data name="Msg_OptionInvalid" xml:space="preserve"><value>يرجى اختيار {0} من القائمة</value></data>
+  <data name="Field_Consent" xml:space="preserve"><value>الموافقة</value></data>
+  <data name="Field_Country" xml:space="preserve"><value>الدولة</value></data>
+  <data name="Field_Event" xml:space="preserve"><value>الفعالية</value></data>
+  <data name="Field_ApplicantType" xml:space="preserve"><value>نوع الطلب</value></data>
+  <data name="Field_StartupName" xml:space="preserve"><value>اسم الشركة الناشئة</value></data>
+  <data name="Field_InvestorType" xml:space="preserve"><value>نوع المستثمر</value></data>
+  <data name="Field_TicketSize" xml:space="preserve"><value>حجم الاستثمار</value></data>
+  <data name="Field_Sectors" xml:space="preserve"><value>القطاعات</value></data>
+  <data name="Field_Sector" xml:space="preserve"><value>القطاع</value></data>
+  <data name="Field_FundingSought" xml:space="preserve"><value>التمويل المطلوب</value></data>
+  <data name="Field_WebsiteUrl" xml:space="preserve"><value>الموقع الإلكتروني أو رابط العرض التقديمي</value></data>
+  <data name="Field_Pitch" xml:space="preserve"><value>النبذة المختصرة</value></data>
+  <data name="Field_CompanyName" xml:space="preserve"><value>اسم الشركة</value></data>
+  <data name="Field_Unit" xml:space="preserve"><value>الجهة المراد رعايتها</value></data>
+  <data name="Field_Package" xml:space="preserve"><value>الباقة</value></data>
+  <data name="Field_Opportunity" xml:space="preserve"><value>الفرصة</value></data>
+  <data name="Ui_FormRequiredNote" xml:space="preserve"><value>الحقول المعلّمة بـ * إلزامية</value></data>
+  <data name="Ui_FormChoose" xml:space="preserve"><value>اختر…</value></data>
+  <data name="Ui_FormOrganization" xml:space="preserve"><value>الجهة أو الشركة</value></data>
+  <data name="Ui_FormJobTitle" xml:space="preserve"><value>المسمى الوظيفي</value></data>
+  <data name="Ui_FormCountry" xml:space="preserve"><value>الدولة</value></data>
+  <data name="Ui_FormEvent" xml:space="preserve"><value>الفعالية</value></data>
+  <data name="Ui_FormEventAny" xml:space="preserve"><value>أي فعالية قادمة</value></data>
+  <data name="Ui_FormKindInvestor" xml:space="preserve"><value>مستثمر</value></data>
+  <data name="Ui_FormKindStartup" xml:space="preserve"><value>شركة ناشئة</value></data>
+  <data name="Ui_FormInvestorDetails" xml:space="preserve"><value>بيانات المستثمر</value></data>
+  <data name="Ui_FormStartupDetails" xml:space="preserve"><value>بيانات الشركة الناشئة</value></data>
+  <data name="Ui_FormInvestorType" xml:space="preserve"><value>نوع المستثمر</value></data>
+  <data name="Ui_FormTicketSize" xml:space="preserve"><value>حجم الاستثمار</value></data>
+  <data name="Ui_FormSectors" xml:space="preserve"><value>القطاعات التي تهمك</value></data>
+  <data name="Ui_FormStartupName" xml:space="preserve"><value>اسم الشركة الناشئة</value></data>
+  <data name="Ui_FormSector" xml:space="preserve"><value>القطاع</value></data>
+  <data name="Ui_FormStage" xml:space="preserve"><value>مرحلة الشركة</value></data>
+  <data name="Ui_FormFunding" xml:space="preserve"><value>التمويل المطلوب</value></data>
+  <data name="Ui_FormWebsite" xml:space="preserve"><value>الموقع الإلكتروني أو رابط العرض التقديمي</value></data>
+  <data name="Ui_FormLinkedIn" xml:space="preserve"><value>رابط LinkedIn أو الموقع</value></data>
+  <data name="Ui_FormPitch" xml:space="preserve"><value>نبذة مختصرة عن الشركة</value></data>
+  <data name="Ui_FormCompanyName" xml:space="preserve"><value>اسم الشركة</value></data>
+  <data name="Ui_FormContactName" xml:space="preserve"><value>اسم مسؤول التواصل</value></data>
+  <data name="Ui_FormUnit" xml:space="preserve"><value>ماذا تريد أن ترعى؟</value></data>
+  <data name="Ui_FormPackage" xml:space="preserve"><value>الباقة</value></data>
+  <data name="Ui_FormPackageAny" xml:space="preserve"><value>لم أحدد بعد</value></data>
+  <data name="Ui_FormOpportunityAny" xml:space="preserve"><value>الفرص الاستثمارية عموماً</value></data>
+  <data name="Ui_FormSubmitApplication" xml:space="preserve"><value>أرسل الطلب</value></data>
+  <data name="Ui_FormSubmitEnquiry" xml:space="preserve"><value>أرسل الاستفسار</value></data>
+  <data name="Ui_FormSubmitInterest" xml:space="preserve"><value>سجّل اهتمامي</value></data>
+  <data name="Admin_LeadDeleted" xml:space="preserve"><value>تم حذف الطلب</value></data>
+  <data name="Admin_LeadUpdated" xml:space="preserve"><value>تم حفظ حالة الطلب والملاحظة</value></data>
+  <data name="Admin_LeadStatusNew" xml:space="preserve"><value>جديد</value></data>
+  <data name="Admin_LeadStatusContacted" xml:space="preserve"><value>تم التواصل</value></data>
+  <data name="Admin_LeadStatusClosed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="Admin_CsvType" xml:space="preserve"><value>النوع</value></data>
+  <data name="Admin_CsvId" xml:space="preserve"><value>الرقم</value></data>
+  <data name="Admin_CsvDate" xml:space="preserve"><value>التاريخ (UTC)</value></data>
+  <data name="Admin_CsvName" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Admin_CsvEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Admin_CsvPhone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="Admin_CsvDetails" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="Admin_CsvStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Admin_CsvRead" xml:space="preserve"><value>مقروء</value></data>
+  <data name="Admin_CsvCulture" xml:space="preserve"><value>لغة الصفحة</value></data>
+  <data name="Admin_CsvNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>
+  <data name="Admin_CsvYes" xml:space="preserve"><value>نعم</value></data>
+  <data name="Admin_CsvNo" xml:space="preserve"><value>لا</value></data>
+  <data name="Admin_CsvArabic" xml:space="preserve"><value>العربية</value></data>
+  <data name="Admin_CsvEnglish" xml:space="preserve"><value>الإنجليزية</value></data>
+  <data name="Admin_CsvReference" xml:space="preserve"><value>المرجع (الفرصة / الباقة / الفعالية)</value></data>
+  <data name="Admin_CsvReferenceId" xml:space="preserve"><value>رقم المرجع</value></data>
+  <data name="Field_AdminNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>
 </root>

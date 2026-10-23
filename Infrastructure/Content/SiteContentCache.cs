@@ -35,13 +35,23 @@ public sealed record SocialRow(string Network, string Url);
 /// <summary>How many active rows a list page has, overall and with the English text its cards need.</summary>
 public sealed record ListCount(int Total, int English);
 
-/// <summary>The published speakers, guests, episodes and opportunities (counted, never loaded) and the active packages.</summary>
+/// <summary>
+/// The published speakers, guests, episodes and opportunities (counted, never loaded), the active packages, and the
+/// published opportunities open for interest (id + title only: the interest form's select).
+/// </summary>
 public sealed record EcosystemData(ListCount Speakers, ListCount Guests, ListCount Episodes, ListCount Opportunities,
-    IReadOnlyList<PackageRow> Packages)
+    IReadOnlyList<PackageRow> Packages, IReadOnlyList<Forms.FormChoice>? OpenOpportunities = null)
 {
     public static readonly EcosystemData None = new(new(0, 0), new(0, 0), new(0, 0), new(0, 0), []);
 
     public IReadOnlyList<PackageRow> PackagesOf(string unit) => Packages.Where(p => p.Unit == unit).ToList();
+
+    /// <summary>The active packages of a unit as form choices, in display order (the GET of the enquiry form).</summary>
+    public IReadOnlyList<Forms.FormChoice> PackageChoices(string unit) =>
+        Packages.Where(p => p.Unit == unit).Select(p => new Forms.FormChoice(p.Id, p.TitleAr, p.TitleEn)).ToList();
+
+    /// <summary>IsActive AND IsOpen opportunities in the public list's order (the GET of the interest form).</summary>
+    public IReadOnlyList<Forms.FormChoice> OpenOpportunityChoices => OpenOpportunities ?? [];
 }
 
 public sealed record SiteSnapshot(
@@ -279,8 +289,13 @@ public sealed class SiteContentCache(IMemoryCache cache, IServiceScopeFactory sc
         var packages = await db.SponsorshipPackages.AsNoTracking()
             .Where(p => p.IsActive)
             .OrderBy(p => p.SortOrder).ThenBy(p => p.Id)
-            .Select(p => new PackageRow(p.Unit, p.TitleAr, p.TitleEn, p.PriceTextAr, p.PriceTextEn, p.BenefitsAr, p.BenefitsEn))
+            .Select(p => new PackageRow(p.Id, p.Unit, p.TitleAr, p.TitleEn, p.PriceTextAr, p.PriceTextEn, p.BenefitsAr, p.BenefitsEn))
             .ToListAsync(ct);
-        return new EcosystemData(speakers, guests, episodes, opportunities, packages);
+        // The interest form offers every open, published opportunity (the select is not paged like the list), so its
+        // short id + title rows are cached here; an admin save on InvestmentOpportunities drops the snapshot.
+        var open = await EcosystemQueries.OpportunitiesOrdered(db.InvestmentOpportunities.AsNoTracking().Where(o => o.IsActive && o.IsOpen))
+            .Select(o => new Forms.FormChoice(o.Id, o.TitleAr, o.TitleEn))
+            .ToListAsync(ct);
+        return new EcosystemData(speakers, guests, episodes, opportunities, packages, open);
     }
 }
