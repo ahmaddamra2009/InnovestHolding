@@ -19,6 +19,9 @@ public static class CultureUrls
     /// <summary>The URL of a page of the route table in the requested language.</summary>
     public static string Page(string key, bool english) => SiteRoutes.PathFor(SiteRoutes.Get(key), english);
 
+    /// <summary>The URL of a detail page (news item, event) in the requested language.</summary>
+    public static string Detail(string key, string slug, bool english) => SiteRoutes.DetailPath(SiteRoutes.Detail(key), slug, english);
+
     /// <summary>The same page in the other language.</summary>
     public static string Alternate(string key, bool english) => Page(key, !english);
 

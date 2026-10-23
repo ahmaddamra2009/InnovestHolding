@@ -21,6 +21,10 @@
         var card = Model.Cards[i];
         <article class="unit-card reveal@(HomeViewModel.Delay(i + 1))">
           <span class="card-corner" aria-hidden="true"></span>
+          @if (card.Image is { } img)
+          {
+            <img class="unit-card-img" src="@img.Src" width="@img.Width" height="@img.Height" alt="" loading="lazy" decoding="async">
+          }
           <span class="unit-num">@card.Number.ToString("00", inv)</span>
           <h3><a href="@card.Href" lang="@card.Title.Lang" dir="@card.Title.Dir">@card.Title</a></h3>
           @if (!card.Summary.IsEmpty)

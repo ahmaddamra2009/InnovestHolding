@@ -37,8 +37,40 @@ public class FaqEditInput : FaqInput
     public int SortOrder { get; set; }
 }
 
-public class NewsInput
+public class NewsInput : ImageFieldsInput
 {
+    [Display(Name = F.Slug)]
+    [StringLength(Infrastructure.Site.Slugs.MaxLength, ErrorMessage = K.MaxLength)]
+    public string? Slug { get; set; }
+
+    [Display(Name = F.Body)]
+    [StringLength(InputLimits.BodyTextMax, ErrorMessage = K.MaxLength)]
+    public string? BodyAr { get; set; }
+
+    [Display(Name = F.BodyEn)]
+    [StringLength(InputLimits.BodyTextMax, ErrorMessage = K.MaxLength)]
+    public string? BodyEn { get; set; }
+
+    [Display(Name = F.NewsDate)]
+    public DateOnly? PublishedOn { get; set; }
+
+    [Display(Name = F.MetaTitle)]
+    [StringLength(200, ErrorMessage = K.MaxLength)]
+    public string? MetaTitleAr { get; set; }
+
+    [Display(Name = F.MetaTitleEn)]
+    [StringLength(200, ErrorMessage = K.MaxLength)]
+    public string? MetaTitleEn { get; set; }
+
+    [Display(Name = F.MetaDescription)]
+    [StringLength(300, ErrorMessage = K.MaxLength)]
+    public string? MetaDescriptionAr { get; set; }
+
+    [Display(Name = F.MetaDescriptionEn)]
+    [StringLength(300, ErrorMessage = K.MaxLength)]
+    public string? MetaDescriptionEn { get; set; }
+
+
     [Display(Name = F.Title)]
     [Required(ErrorMessage = K.Required)]
     [StringLength(200, ErrorMessage = K.MaxLength)]

@@ -25,17 +25,17 @@ public static class BrandAssets
 
 /// <summary>
 /// The &lt;head&gt; of a public page: title, description, canonical, hreflang (only when both languages are indexable),
-/// Open Graph, robots and one JSON-LD @graph. Robots comes from <see cref="SeoPolicy.Decide"/>, the same function the
-/// sitemap uses.
+/// Open Graph, robots and one JSON-LD @graph. Robots comes from <see cref="SeoPolicy.Decide"/> (pages) or
+/// <see cref="SeoPolicy.DecideDetail"/> (news items, events), the same functions the sitemap uses.
 /// </summary>
 public static class SeoBuilder
 {
     private static readonly JsonSerializerOptions Json = new() { Encoder = JavaScriptEncoder.Create(System.Text.Unicode.UnicodeRanges.All) };
 
-    /// <param name="listedNames">The names of the list rows the page renders (one page of a paged list); the JSON-LD
-    /// ItemList describes exactly those.</param>
+    /// <param name="listedNames">The rows the page renders (one page of a paged list), with their detail URL when they
+    /// have one; the JSON-LD ItemList describes exactly those.</param>
     public static SeoVm Build(SitePage page, SiteViews v, string? baseUrl, RobotsDecision? overrideRobots = null,
-        IReadOnlyList<string>? listedNames = null)
+        IReadOnlyList<(string Name, string? Url)>? listedNames = null)
     {
         var s = v.Snapshot;
         var english = v.English;
@@ -56,9 +56,7 @@ public static class SeoBuilder
 
         string? Abs(string path) => baseUrl is null ? null : baseUrl + path;
         var canonical = Abs(CultureUrls.Page(page.Key, english));
-        var ogPath = c.Neutral("seo_og_image");
-        var ogImage = SiteUrl.IsSitePath(ogPath) ? Abs(ogPath) : null;
-        var isDefaultOg = ogPath == BrandAssets.OgDefault;
+        var og = ShareImage(v, baseUrl, row?.Image);
 
         return new SeoVm(
             Lang: english ? Cultures.EnglishName : Cultures.ArabicName,
@@ -70,14 +68,93 @@ public static class SeoBuilder
             AlternateEn: alternates ? Abs(CultureUrls.Page(page.Key, true)) : null,
             OgLocale: english ? "en_US" : "ar_AR",
             OgLocaleAlternate: alternates ? (english ? "ar_AR" : "en_US") : null,
-            OgImage: ogImage,
-            OgImageAlt: c.Text("seo_og_image_alt").Value,
+            OgImage: og.Url,
+            OgImageAlt: og.Alt ?? c.Text("seo_og_image_alt").Value,
             JsonLd: BuildJsonLd(page, v, baseUrl, fullTitle, description, listedNames),
             Robots: robots,
-            TwitterCard: ogImage is not null && isDefaultOg ? "summary_large_image" : "summary",
-            OgImageWidth: ogImage is not null && isDefaultOg ? BrandAssets.OgDefaultWidth : null,
-            OgImageHeight: ogImage is not null && isDefaultOg ? BrandAssets.OgDefaultHeight : null);
+            TwitterCard: og.Width >= 1200 ? "summary_large_image" : "summary",
+            OgImageWidth: og.Width,
+            OgImageHeight: og.Height);
     }
+
+    private readonly record struct Share(string? Url, int? Width, int? Height, string? Alt);
+
+    /// <summary>The share image: the first uploaded candidate (item, then page), else the site default (seo_og_image).</summary>
+    private static Share ShareImage(SiteViews v, string? baseUrl, params MediaRef?[] candidates)
+    {
+        if (baseUrl is null) return default;
+        foreach (var m in candidates)
+        {
+            if (m is null) continue;
+            var alt = v.P(m.AltAr, m.AltEn).Value;
+            return new Share(baseUrl + m.Url, m.Width, m.Height, string.IsNullOrWhiteSpace(alt) ? null : alt);
+        }
+        var path = v.Content.Neutral("seo_og_image");
+        if (!SiteUrl.IsSitePath(path)) return default;
+        return path == BrandAssets.OgDefault
+            ? new Share(baseUrl + path, BrandAssets.OgDefaultWidth, BrandAssets.OgDefaultHeight, null)
+            : new Share(baseUrl + path, null, null, null);
+    }
+
+    /// <summary>
+    /// The head of a detail page (news item, event). The English page of an item without English text renders with
+    /// the Arabic fallback but is <c>noindex,follow</c>, canonical to the Arabic URL and has no hreflang (CTO
+    /// decision 2); the two language URLs are paired only when the English text exists. The share image is the
+    /// item's, else its list page's, else the site default.
+    /// </summary>
+    /// <param name="node">The item's schema.org node (NewsArticle / Event) without @id, url, inLanguage and image.</param>
+    public static SeoVm BuildDetail(DetailRoute route, string slug, SiteViews v, string? baseUrl, bool englishAvailable,
+        LText title, string metaTitle, string description, MediaRef? image, string ogType, Dictionary<string, object> node)
+    {
+        var english = v.English;
+        var siteName = v.Content.Text("site_name").Value;
+        var name = string.IsNullOrWhiteSpace(metaTitle) ? title.Value : metaTitle.Trim();
+        var fullTitle = $"{name} | {siteName}";
+        var robots = SeoPolicy.DecideDetail(english, englishAvailable);
+
+        string? Abs(string path) => baseUrl is null ? null : baseUrl + path;
+        var own = CultureUrls.Detail(route.Key, slug, english);
+        var canonical = Abs(robots == RobotsDecision.Index ? own : CultureUrls.Detail(route.Key, slug, false));
+        var og = ShareImage(v, baseUrl, image, v.Snapshot.Page(route.Parent)?.Image);
+
+        var graph = BaseGraph(v, baseUrl);
+        Put(node, "@id", canonical is null ? null : canonical + "#" + node["@type"].ToString()!.ToLowerInvariant());
+        Put(node, "url", canonical);
+        Put(node, "inLanguage", english && englishAvailable ? "en" : "ar");
+        if (image is not null && og.Url is not null) node["image"] = new[] { og.Url };
+        graph.Add(node);
+
+        var crumbs = SiteRoutes.Chain(route.Parent)
+            .Select(p => (v.Title(p.Key).Value, Abs(CultureUrls.Page(p.Key, english))))
+            .Append((title.Value, (string?)null)).ToList();
+        graph.Add(Breadcrumbs(crumbs));
+
+        return new SeoVm(
+            Lang: english ? Cultures.EnglishName : Cultures.ArabicName,
+            Title: fullTitle,
+            Description: Shorten(description),
+            SiteName: siteName,
+            Canonical: canonical,
+            AlternateAr: englishAvailable ? Abs(CultureUrls.Detail(route.Key, slug, false)) : null,
+            AlternateEn: englishAvailable ? Abs(CultureUrls.Detail(route.Key, slug, true)) : null,
+            OgLocale: english ? "en_US" : "ar_AR",
+            OgLocaleAlternate: englishAvailable ? (english ? "ar_AR" : "en_US") : null,
+            OgImage: og.Url,
+            OgImageAlt: og.Alt ?? title.Value,
+            JsonLd: JsonSerializer.Serialize(new Dictionary<string, object> { ["@context"] = "https://schema.org", ["@graph"] = graph }, Json),
+            Robots: robots,
+            OgType: ogType,
+            TwitterCard: og.Width >= 1200 ? "summary_large_image" : "summary",
+            OgImageWidth: og.Width,
+            OgImageHeight: og.Height);
+    }
+
+    /// <summary>A node reference ({"@id": …}) to the site's Organization, or null without a base URL.</summary>
+    public static Dictionary<string, object>? OrganizationRef(string? baseUrl) =>
+        baseUrl is null ? null : new Dictionary<string, object> { ["@id"] = baseUrl + "/#organization" };
+
+    /// <summary>Sets <paramref name="key"/> unless the value is empty (the JSON-LD never carries empty values).</summary>
+    public static void Set(Dictionary<string, object> d, string key, object? value) => Put(d, key, value);
 
     /// <summary>At most 155 characters, cut at a word boundary, no ellipsis.</summary>
     public static string Shorten(string text, int max = 155)
@@ -92,25 +169,43 @@ public static class SeoBuilder
     {
         if (value is null) return;
         if (value is string str && string.IsNullOrWhiteSpace(str)) return;
-        if (value is Dictionary<string, object> nested && nested.Count <= 1) return; // only "@type" left
+        if (value is Dictionary<string, object> nested && (nested.Count == 0 || (nested.Count == 1 && nested.ContainsKey("@type")))) return; // only "@type" left
         if (value is Array array && array.Length == 0) return;
         if (value is System.Collections.ICollection { Count: 0 }) return;
         d[key] = value;
     }
+
+    private static Dictionary<string, object> Breadcrumbs(IReadOnlyList<(string Name, string? Url)> crumbs) => new()
+    {
+        ["@type"] = "BreadcrumbList",
+        ["itemListElement"] = crumbs.Select((x, i) =>
+        {
+            var li = new Dictionary<string, object> { ["@type"] = "ListItem", ["position"] = i + 1, ["name"] = x.Name };
+            if (i < crumbs.Count - 1) Put(li, "item", x.Url);
+            return li;
+        }).ToList(),
+    };
 
     /// <summary>
     /// One @graph per page, serialised by System.Text.Json (its encoder always escapes &lt; and &gt;, so a value containing
     /// &lt;/script&gt; cannot close the tag). Empty values are omitted; only what the page shows is described.
     /// </summary>
     public static string BuildJsonLd(SitePage page, SiteViews v, string? baseUrl, string fullTitle, string description,
-        IReadOnlyList<string>? listedNames = null)
+        IReadOnlyList<(string Name, string? Url)>? listedNames = null)
+    {
+        var graph = BaseGraph(v, baseUrl);
+        if (page.Key != PageKeys.Home) AddPageNodes(graph, page, v, baseUrl, fullTitle, description, listedNames);
+        return JsonSerializer.Serialize(new Dictionary<string, object> { ["@context"] = "https://schema.org", ["@graph"] = graph }, Json);
+    }
+
+    /// <summary>The Organization and WebSite nodes every page carries (so each page's references resolve in its own graph).</summary>
+    private static List<object> BaseGraph(SiteViews v, string? baseUrl)
     {
         var c = v.Content;
         var english = v.English;
         string? Abs(string path) => baseUrl is null ? null : baseUrl + path;
         var orgId = baseUrl is null ? null : baseUrl + "/#organization";
         var siteId = baseUrl is null ? null : baseUrl + "/#website";
-        var pageUrl = Abs(CultureUrls.Page(page.Key, english));
         var graph = new List<object>();
 
         // Organization (the same node on every page: NAP from the same keys as the footer and the contact page).
@@ -152,77 +247,74 @@ public static class SeoBuilder
         Put(site, "inLanguage", english ? "en" : "ar");
         if (orgId is not null) site["publisher"] = new Dictionary<string, object> { ["@id"] = orgId };
         graph.Add(site);
+        return graph;
+    }
 
-        if (page.Key != PageKeys.Home)
+    private static void AddPageNodes(List<object> graph, SitePage page, SiteViews v, string? baseUrl, string fullTitle,
+        string description, IReadOnlyList<(string Name, string? Url)>? listedNames)
+    {
+        var english = v.English;
+        string? Abs(string path) => baseUrl is null ? null : baseUrl + path;
+        var orgId = baseUrl is null ? null : baseUrl + "/#organization";
+        var siteId = baseUrl is null ? null : baseUrl + "/#website";
+        var pageUrl = Abs(CultureUrls.Page(page.Key, english));
+
+        var type = page.Key switch
         {
-            var type = page.Key switch
+            PageKeys.About => "AboutPage",
+            PageKeys.Contact => "ContactPage",
+            PageKeys.Ecosystem => "CollectionPage",
+            _ when page.Kind == PageKind.List => "CollectionPage",
+            _ => "WebPage",
+        };
+        var webPage = new Dictionary<string, object> { ["@type"] = type };
+        Put(webPage, "@id", pageUrl is null ? null : pageUrl + "#webpage");
+        Put(webPage, "url", pageUrl);
+        Put(webPage, "name", fullTitle);
+        Put(webPage, "description", description);
+        Put(webPage, "inLanguage", english ? "en" : "ar");
+        if (siteId is not null) webPage["isPartOf"] = new Dictionary<string, object> { ["@id"] = siteId };
+        if (orgId is not null && type is "AboutPage" or "ContactPage") webPage["about"] = new Dictionary<string, object> { ["@id"] = orgId };
+
+        // The visible list of the page (the ecosystem lists its units). A paged list passes the rows it renders, so
+        // the ItemList never names a row of another page; rows with a detail page carry its URL.
+        var listItems = listedNames is not null
+            ? listedNames.Select(x => (x.Name, x.Url is null ? null : Abs(x.Url))).ToList()
+            : page.Key switch
             {
-                PageKeys.About => "AboutPage",
-                PageKeys.Contact => "ContactPage",
-                PageKeys.Ecosystem => "CollectionPage",
-                _ when page.Kind == PageKind.List => "CollectionPage",
-                _ => "WebPage",
+                PageKeys.Ecosystem => v.Cards(PageKeys.Ecosystem, false).Select(x => (x.Title.Value, Abs(x.Href))).ToList(),
+                PageKeys.ForumPartners => v.Partners().Select(p => (p.Name.Value, (string?)null)).ToList(),
+                _ => [],
             };
-            var webPage = new Dictionary<string, object> { ["@type"] = type };
-            Put(webPage, "@id", pageUrl is null ? null : pageUrl + "#webpage");
-            Put(webPage, "url", pageUrl);
-            Put(webPage, "name", fullTitle);
-            Put(webPage, "description", description);
-            Put(webPage, "inLanguage", english ? "en" : "ar");
-            if (siteId is not null) webPage["isPartOf"] = new Dictionary<string, object> { ["@id"] = siteId };
-            if (orgId is not null && type is "AboutPage" or "ContactPage") webPage["about"] = new Dictionary<string, object> { ["@id"] = orgId };
-
-            // The visible list of the page, by name (events and partners have no detail pages yet; the ecosystem lists its
-            // units). A paged list passes the rows it renders, so the ItemList never names a row of another page.
-            var listItems = listedNames is not null
-                ? listedNames.Select(name => (name, (string?)null)).ToList()
-                : page.Key switch
-                {
-                    PageKeys.Ecosystem => v.Cards(PageKeys.Ecosystem, false).Select(x => (x.Title.Value, Abs(x.Href))).ToList(),
-                    PageKeys.ForumPartners => v.Partners().Select(p => (p.Value, (string?)null)).ToList(),
-                    _ => [],
-                };
-            if (listItems.Count > 0)
+        if (listItems.Count > 0)
+        {
+            webPage["mainEntity"] = new Dictionary<string, object>
             {
-                webPage["mainEntity"] = new Dictionary<string, object>
+                ["@type"] = "ItemList",
+                ["itemListElement"] = listItems.Select((x, i) =>
                 {
-                    ["@type"] = "ItemList",
-                    ["itemListElement"] = listItems.Select((x, i) =>
-                    {
-                        var li = new Dictionary<string, object> { ["@type"] = "ListItem", ["position"] = i + 1, ["name"] = x.Item1 };
-                        Put(li, "url", x.Item2);
-                        return li;
-                    }).ToList(),
-                };
-            }
-            graph.Add(webPage);
-
-            // Forum and Network are brands of the company.
-            if (page.Key is PageKeys.Forum or PageKeys.Network)
-            {
-                var unit = new Dictionary<string, object> { ["@type"] = "Organization" };
-                Put(unit, "@id", pageUrl is null ? null : pageUrl + "#organization");
-                Put(unit, "name", v.Title(page.Key).Value);
-                Put(unit, "url", pageUrl);
-                Put(unit, "description", v.Summary(page.Key).Value);
-                if (orgId is not null) unit["parentOrganization"] = new Dictionary<string, object> { ["@id"] = orgId };
-                graph.Add(unit);
-            }
-
-            // BreadcrumbList = the visible breadcrumb (same route-table chain, same labels).
-            var crumbs = SiteRoutes.Chain(page.Key);
-            graph.Add(new Dictionary<string, object>
-            {
-                ["@type"] = "BreadcrumbList",
-                ["itemListElement"] = crumbs.Select((p, i) =>
-                {
-                    var li = new Dictionary<string, object> { ["@type"] = "ListItem", ["position"] = i + 1, ["name"] = v.Title(p.Key).Value };
-                    if (i < crumbs.Count - 1) Put(li, "item", Abs(CultureUrls.Page(p.Key, english)));
+                    var li = new Dictionary<string, object> { ["@type"] = "ListItem", ["position"] = i + 1, ["name"] = x.Item1 };
+                    Put(li, "url", x.Item2);
                     return li;
                 }).ToList(),
-            });
+            };
+        }
+        graph.Add(webPage);
+
+        // Forum and Network are brands of the company.
+        if (page.Key is PageKeys.Forum or PageKeys.Network)
+        {
+            var unit = new Dictionary<string, object> { ["@type"] = "Organization" };
+            Put(unit, "@id", pageUrl is null ? null : pageUrl + "#organization");
+            Put(unit, "name", v.Title(page.Key).Value);
+            Put(unit, "url", pageUrl);
+            Put(unit, "description", v.Summary(page.Key).Value);
+            if (orgId is not null) unit["parentOrganization"] = new Dictionary<string, object> { ["@id"] = orgId };
+            graph.Add(unit);
         }
 
-        return JsonSerializer.Serialize(new Dictionary<string, object> { ["@context"] = "https://schema.org", ["@graph"] = graph }, Json);
+        // BreadcrumbList = the visible breadcrumb (same route-table chain, same labels).
+        graph.Add(Breadcrumbs(SiteRoutes.Chain(page.Key)
+            .Select(p => (v.Title(p.Key).Value, Abs(CultureUrls.Page(p.Key, english)))).ToList()));
     }
 }

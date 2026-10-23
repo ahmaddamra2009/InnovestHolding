@@ -60,6 +60,14 @@ public static class SeoPolicy
         return RobotsDecision.Index;
     }
 
+    /// <summary>
+    /// A published detail page (news item, event): the Arabic page is indexable; the English page only when the item
+    /// has its English text (<see cref="EventQueries"/>). Otherwise the English URL still renders, with the Arabic
+    /// fallback, as <see cref="RobotsDecision.NoIndexFollow"/> (CTO decision 2). Unpublished items are 404.
+    /// </summary>
+    public static RobotsDecision DecideDetail(bool english, bool englishAvailable) =>
+        !english || englishAvailable ? RobotsDecision.Index : RobotsDecision.NoIndexFollow;
+
     /// <summary>hreflang pairs only when both languages are indexable.</summary>
     public static bool HasAlternates(SitePage page, SiteSnapshot s) =>
         Decide(page, false, s) == RobotsDecision.Index && Decide(page, true, s) == RobotsDecision.Index;

@@ -18,11 +18,10 @@ namespace InnovestHolding.Tests;
 [Collection("App")]
 public class MigrationTests(TestAppFactory f)
 {
-    public const string Database = "InnovestHolding_MigrationTests";
+    public static readonly string Database = TestDb.Name("InnovestHolding_MigrationTests");
     private const string Initial = "20260601163804_InitialCreate";
     public const string Bilingual = "20261022120642_AddBilingualContent";
-    private static readonly string Cs =
-        $@"Server=(localdb)\InnovestLocal;Database={Database};Trusted_Connection=True;TrustServerCertificate=True";
+    private static readonly string Cs = TestDb.ConnectionString(Database);
 
     internal static AppDbContext NewContext()
     {
@@ -56,7 +55,7 @@ public class MigrationTests(TestAppFactory f)
         all.AddRange((await db.Events.AsNoTracking().Where(n => n.Id <= 3).OrderBy(n => n.Id).ToListAsync()).Select(e => $"Ev|{e.TitleAr}|{e.TitleEn}|{e.DescriptionAr}|{e.DescriptionEn}|{e.EventMonthAr}|{e.EventMonthEn}|{e.LocationAr}|{e.LocationEn}|{e.TimeAr}|{e.TimeEn}"));
         all.AddRange((await db.Partners.AsNoTracking().Where(n => n.Id <= 10).OrderBy(n => n.Id).ToListAsync()).Select(p => $"Pa|{p.NameAr}|{p.NameEn}|{p.IsActive}"));
         all.AddRange((await db.Faqs.AsNoTracking().Where(n => n.Id <= 6).OrderBy(n => n.Id).ToListAsync()).Select(q => $"Fq|{q.QuestionAr}|{q.QuestionEn}|{q.AnswerAr}|{q.AnswerEn}"));
-        all.AddRange((await db.SiteContents.AsNoTracking().Where(c => c.SectionKey != ContentKeys.TimestampsUtcMarker).OrderBy(c => c.SectionKey).ToListAsync())
+        all.AddRange((await db.SiteContents.AsNoTracking().Where(c => c.SectionKey != ContentKeys.TimestampsUtcMarker && c.SectionKey != ContentKeys.MediaInstance).OrderBy(c => c.SectionKey).ToListAsync())
             .Select(c => $"Sc|{c.SectionKey}|{c.ContentAr}|{c.ContentEn}"));
         all.AddRange((await db.InterestOptions.AsNoTracking().Where(o => o.Id <= 6).OrderBy(o => o.Id).ToListAsync()).Select(o => $"Io|{o.NameAr}|{o.NameEn}|{o.SortOrder}"));
         all.AddRange((await db.RegisterBenefits.AsNoTracking().OrderBy(o => o.Id).ToListAsync()).Select(o => $"Rb|{o.TextAr}|{o.TextEn}"));
@@ -112,7 +111,7 @@ public class MigrationTests(TestAppFactory f)
         // Every key of the registry except those the later migration ApplyCompanyProfile adds.
         string[] later = ["brand_positioning", "header_cta_label", "header_cta_page", "contact_whatsapp", "contact_website",
             "list_page_size", "ecosystem_badge", "ecosystem_title", "ecosystem_subtitle", "cta_band_title", "cta_band_text",
-            "impact_title", "impact_intro"];
+            "impact_title", "impact_intro", "default_utc_offset"];
         Assert.Empty(ContentKeys.All.Select(k => k.Key)
             .Where(k => !later.Contains(k) && !k.StartsWith("section_") && !k.StartsWith("founder_"))
             .Except(keys.Select(k => k.SectionKey)));
@@ -141,7 +140,8 @@ public class MigrationTests(TestAppFactory f)
         Assert.Equal(new DateTime(2026, 7, 1, 12, 0, 0), await db.Registrations.Select(r => r.CreatedAt).SingleAsync());
 
         // Only the later migrations (multi-page site) are still pending.
-        Assert.Equal(["20261022152940_AddSiteStructure", "20261022153329_ApplyCompanyProfile", "20261022172550_RefineSiteStructure", "20261022200000_CorrectCoreValuesEnglish"], await db.Database.GetPendingMigrationsAsync());
+        Assert.Equal(["20261022152940_AddSiteStructure", "20261022153329_ApplyCompanyProfile", "20261022172550_RefineSiteStructure",
+            "20261022200000_CorrectCoreValuesEnglish", "20261022202359_AddMediaAndDetailPages"], await db.Database.GetPendingMigrationsAsync());
     }
 
     [Fact] // a fresh install (migration + DbSeeder) equals an upgraded old install, row by row
@@ -200,8 +200,8 @@ public class MigrationTests(TestAppFactory f)
     public async Task The_model_and_the_migrated_schema_agree()
     {
         // EnsureCreated builds the schema straight from the model; Migrate builds it from the migrations.
-        const string modelDb = "InnovestHolding_MigrationTests_Model";
-        var modelCs = Cs.Replace(Database, modelDb);
+        var modelDb = TestDb.Name("InnovestHolding_MigrationTests_Model");
+        var modelCs = TestDb.ConnectionString(modelDb);
         await using var model = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(modelCs).Options);
         await model.Database.EnsureDeletedAsync();
         await model.Database.EnsureCreatedAsync();

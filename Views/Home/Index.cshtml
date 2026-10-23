@@ -263,12 +263,12 @@
         <div class="marquee-track">
           @foreach (var partner in Model.Partners)
           {
-            <div class="partner-logo"><span lang="@partner.Lang" dir="@partner.Dir">@partner</span></div>
+            <div class="partner-logo"><partial name="Blocks/_PartnerMark" model="partner" /></div>
           }
-          @* Second copy for the seamless loop — hidden from assistive technology. *@
+          @* Second copy for the seamless loop — hidden from assistive technology (and from the tab order). *@
           @foreach (var partner in Model.Partners)
           {
-            <div class="partner-logo" aria-hidden="true"><span lang="@partner.Lang" dir="@partner.Dir">@partner</span></div>
+            <div class="partner-logo" aria-hidden="true" inert><partial name="Blocks/_PartnerMark" model="partner" /></div>
           }
         </div>
       </div>

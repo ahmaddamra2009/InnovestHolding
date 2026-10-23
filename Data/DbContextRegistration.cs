@@ -14,6 +14,8 @@ public static class DbContextRegistration
     public static IServiceCollection AddAppDbContext(this IServiceCollection services, string? connectionString)
     {
         services.AddMemoryCache();
+        // SiteContentCache (C2) needs a TimeProvider; TryAdd keeps Program.cs's and the test fixture's own registration.
+        services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<ISiteContentCache, SiteContentCache>();
         services.TryAddSingleton<ContentCacheInvalidationInterceptor>();
         services.TryAddSingleton<ProductionDbGuardInterceptor>();

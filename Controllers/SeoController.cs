@@ -5,11 +5,12 @@ using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Infrastructure.Seo;
 using InnovestHolding.Infrastructure.Site;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace InnovestHolding.Controllers;
 
 /// <summary>robots.txt and sitemap.xml, generated because both depend on the stored base URL and on the content.</summary>
-public class SeoController(ISiteContentCache cache, IWebHostEnvironment environment) : Controller
+public class SeoController(ISiteContentCache cache, IWebHostEnvironment environment, Data.AppDbContext db) : Controller
 {
     [HttpGet("/robots.txt")]
     public async Task<IActionResult> Robots()
@@ -29,7 +30,9 @@ public class SeoController(ISiteContentCache cache, IWebHostEnvironment environm
 
     /// <summary>
     /// Every page URL whose robots decision is Index (<see cref="SeoPolicy.Decide"/> — the same function the pages use),
-    /// each with its hreflang pair only when both languages are indexable.
+    /// each with its hreflang pair only when both languages are indexable; then every published news item and event
+    /// (<see cref="SeoPolicy.DecideDetail"/>): the Arabic URL always, the English URL and the pair only when the item
+    /// has its English text.
     /// </summary>
     [HttpGet("/sitemap.xml")]
     public async Task<IActionResult> Sitemap()
@@ -37,6 +40,15 @@ public class SeoController(ISiteContentCache cache, IWebHostEnvironment environm
         var snapshot = await cache.GetAsync(HttpContext.RequestAborted);
         var baseUrl = SiteUrl.Resolve(snapshot.Content.GetValueOrDefault(SiteUrl.ContentKey)?.Ar, environment, Request);
         if (baseUrl is null) return NotFound();
+
+        var ct = HttpContext.RequestAborted;
+        var news = (await db.News.AsNoTracking().Where(n => n.IsActive).OrderBy(n => n.SortOrder).ThenBy(n => n.Id)
+                .Select(n => new { n.Slug, n.UpdatedAt, n.TitleEn, n.SummaryEn }).ToListAsync(ct))
+            .Select(n => (Key: DetailKeys.NewsItem, n.Slug, n.UpdatedAt, En: EventQueries.NewsHasEnglish(n.TitleEn, n.SummaryEn)));
+        var events = (await db.Events.AsNoTracking().Where(e => e.IsActive).OrderBy(e => e.SortOrder).ThenBy(e => e.Id)
+                .Select(e => new { e.Slug, e.UpdatedAt, e.TitleEn, e.SummaryEn, e.DescriptionEn }).ToListAsync(ct))
+            .Select(e => (Key: DetailKeys.ForumEvent, e.Slug, e.UpdatedAt, En: EventQueries.HasEnglish(e.TitleEn, e.SummaryEn, e.DescriptionEn)));
+        var details = news.Concat(events).ToList();
 
         const string ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
         const string xhtml = "http://www.w3.org/1999/xhtml";
@@ -63,6 +75,29 @@ public class SeoController(ISiteContentCache cache, IWebHostEnvironment environm
                                  {
                                      ("ar", CultureUrls.Page(page.Key, false)), ("en", CultureUrls.Page(page.Key, true)),
                                      ("x-default", CultureUrls.Page(page.Key, false)),
+                                 })
+                        {
+                            w.WriteStartElement("xhtml", "link", xhtml);
+                            w.WriteAttributeString("rel", "alternate");
+                            w.WriteAttributeString("hreflang", lang);
+                            w.WriteAttributeString("href", baseUrl + href);
+                            w.WriteEndElement();
+                        }
+                    }
+                    w.WriteEndElement();
+                }
+                foreach (var d in details)
+                {
+                    if (SeoPolicy.DecideDetail(english, d.En) != RobotsDecision.Index) continue;
+                    w.WriteStartElement("url", ns);
+                    w.WriteElementString("loc", ns, baseUrl + CultureUrls.Detail(d.Key, d.Slug, english));
+                    w.WriteElementString("lastmod", ns, d.UpdatedAt.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+                    if (d.En)
+                    {
+                        foreach (var (lang, href) in new[]
+                                 {
+                                     ("ar", CultureUrls.Detail(d.Key, d.Slug, false)), ("en", CultureUrls.Detail(d.Key, d.Slug, true)),
+                                     ("x-default", CultureUrls.Detail(d.Key, d.Slug, false)),
                                  })
                         {
                             w.WriteStartElement("xhtml", "link", xhtml);

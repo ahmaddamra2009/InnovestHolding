@@ -1,9 +1,65 @@
 @model EventInput
+@{
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    string? Local(DateTime? d) => d?.ToString("yyyy-MM-dd'T'HH:mm", inv);
+}
 <lang-pair label="عنوان الفعالية" name-ar="TitleAr" name-en="TitleEn" value-ar="@Model.TitleAr" value-en="@Model.TitleEn" max="200" required="true" />
-<lang-pair label="الوصف" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@Model.DescriptionAr" value-en="@Model.DescriptionEn" max="4000" rows="3" />
-<div style="display:grid;grid-template-columns:1fr 3fr;gap:16px;align-items:start;">
-    <div class="form-group"><label>اليوم</label><input asp-for="EventDay" type="number" class="form-control" min="1" max="31" required><span asp-validation-for="EventDay" class="field-error"></span></div>
-    <lang-pair label="الشهر" name-ar="EventMonthAr" name-en="EventMonthEn" value-ar="@Model.EventMonthAr" value-en="@Model.EventMonthEn" max="50" required="true" placeholder="July" />
+<div class="form-group">
+    <label for="Slug">الرابط المختصر <span class="lang-chip">ع · EN</span></label>
+    <input id="Slug" name="Slug" value="@Model.Slug" class="form-control ltr-input" dir="ltr" maxlength="100" placeholder="innovest-forum-2026">
+    <span class="field-hint">عنوان الصفحة: /forum/events/الرابط-المختصر (أحرف إنجليزية صغيرة وأرقام وشرطات). فارغ عند الإضافة = من العنوان الإنجليزي. تغييره لاحقاً يُبقي الرابط القديم يحوّل إلى الجديد.</span>
+    <span asp-validation-for="Slug" class="field-error"></span>
 </div>
-<lang-pair label="المكان" name-ar="LocationAr" name-en="LocationEn" value-ar="@Model.LocationAr" value-en="@Model.LocationEn" max="200" />
-<lang-pair label="الوقت" name-ar="TimeAr" name-en="TimeEn" value-ar="@Model.TimeAr" value-en="@Model.TimeEn" max="100" placeholder="9:00 AM - 5:00 PM" />
+<lang-pair label="الملخص (البطاقة ووصف محركات البحث)" name-ar="SummaryAr" name-en="SummaryEn" value-ar="@Model.SummaryAr" value-en="@Model.SummaryEn" max="500" rows="2" />
+<lang-pair label="الوصف (نص صفحة الفعالية، سطر فارغ = فقرة جديدة)" name-ar="DescriptionAr" name-en="DescriptionEn" value-ar="@Model.DescriptionAr" value-en="@Model.DescriptionEn" max="4000" rows="5" />
+
+<fieldset class="image-field">
+    <legend>الموعد</legend>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+        <div class="form-group"><label for="StartsAtLocal">البدء (بتوقيت مكان الفعالية)</label><input id="StartsAtLocal" name="StartsAtLocal" type="datetime-local" class="form-control" value="@Local(Model.StartsAtLocal)"><span asp-validation-for="StartsAtLocal" class="field-error"></span></div>
+        <div class="form-group"><label for="EndsAtLocal">الانتهاء (اختياري)</label><input id="EndsAtLocal" name="EndsAtLocal" type="datetime-local" class="form-control" value="@Local(Model.EndsAtLocal)"><span asp-validation-for="EndsAtLocal" class="field-error"></span></div>
+        <div class="form-group"><label for="UtcOffset">فرق التوقيت عن UTC</label><input id="UtcOffset" name="UtcOffset" class="form-control ltr-input" dir="ltr" maxlength="6" value="@Model.UtcOffset" placeholder="+02:00"><span asp-validation-for="UtcOffset" class="field-error"></span></div>
+    </div>
+    <p class="field-hint">مع التاريخ يُحسب اليوم والشهر تلقائياً، وتُعرض الفعاليات القادمة قبل المنتهية. للفعاليات القديمة بلا تاريخ: اترك البدء فارغاً واكتب اليوم والشهر نصاً.</p>
+    <div style="display:grid;grid-template-columns:1fr 3fr;gap:16px;align-items:start;">
+        <div class="form-group"><label>اليوم (نص بديل)</label><input asp-for="EventDay" type="number" class="form-control" min="1" max="31"><span asp-validation-for="EventDay" class="field-error"></span></div>
+        <lang-pair label="الشهر (نص بديل)" name-ar="EventMonthAr" name-en="EventMonthEn" value-ar="@Model.EventMonthAr" value-en="@Model.EventMonthEn" max="50" placeholder="July" />
+    </div>
+    <lang-pair label="الوقت كما يظهر (اختياري — فارغ = من التاريخ)" name-ar="TimeAr" name-en="TimeEn" value-ar="@Model.TimeAr" value-en="@Model.TimeEn" max="100" placeholder="9:00 AM - 5:00 PM" />
+</fieldset>
+
+<fieldset class="image-field">
+    <legend>المكان والحالة</legend>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+        <div class="form-group">
+            <label for="Status">الحالة</label>
+            <select id="Status" name="Status" class="form-control">
+                <option value="Scheduled" selected="@(Model.Status == EventStatus.Scheduled)">في موعدها</option>
+                <option value="Postponed" selected="@(Model.Status == EventStatus.Postponed)">مؤجلة</option>
+                <option value="Cancelled" selected="@(Model.Status == EventStatus.Cancelled)">ملغاة</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="AttendanceMode">طريقة الحضور</label>
+            <select id="AttendanceMode" name="AttendanceMode" class="form-control">
+                <option value="Offline" selected="@(Model.AttendanceMode == AttendanceMode.Offline)">حضوري</option>
+                <option value="Online" selected="@(Model.AttendanceMode == AttendanceMode.Online)">عن بُعد</option>
+                <option value="Mixed" selected="@(Model.AttendanceMode == AttendanceMode.Mixed)">حضوري وعن بُعد</option>
+            </select>
+        </div>
+    </div>
+    <lang-pair label="اسم المكان" name-ar="LocationAr" name-en="LocationEn" value-ar="@Model.LocationAr" value-en="@Model.LocationEn" max="200" />
+    <lang-pair label="المدينة" name-ar="CityAr" name-en="CityEn" value-ar="@Model.CityAr" value-en="@Model.CityEn" max="100" />
+    <lang-pair label="العنوان" name-ar="AddressAr" name-en="AddressEn" value-ar="@Model.AddressAr" value-en="@Model.AddressEn" max="300" />
+    <lang-pair label="رابط الحضور عن بُعد (https — للفعاليات عن بُعد أو المختلطة)" name-ar="OnlineUrl" value-ar="@Model.OnlineUrl" max="500" ltr="true" placeholder="https://" />
+    <div class="form-check"><input type="checkbox" id="RegistrationOpen" name="RegistrationOpen" value="true" @(Model.RegistrationOpen ? "checked" : "")> <label for="RegistrationOpen">التسجيل مفتوح (زر التسجيل في صفحة الفعالية؛ يختفي تلقائياً بعد انتهائها أو إلغائها)</label></div>
+    <input type="hidden" name="RegistrationOpen" value="false">
+</fieldset>
+
+@{ ViewData["ImageLabel"] = "صورة الفعالية"; }
+<partial name="~/Views/Admin/Shared/_ImageField.cshtml" model="Model" view-data="ViewData" />
+<details class="row-editor" style="margin-bottom:16px;">
+    <summary>محركات البحث (اختياري — فارغ = العنوان والملخص)</summary>
+    <lang-pair label="عنوان محركات البحث" name-ar="MetaTitleAr" name-en="MetaTitleEn" value-ar="@Model.MetaTitleAr" value-en="@Model.MetaTitleEn" max="200" />
+    <lang-pair label="وصف محركات البحث" name-ar="MetaDescriptionAr" name-en="MetaDescriptionEn" value-ar="@Model.MetaDescriptionAr" value-en="@Model.MetaDescriptionEn" max="300" rows="2" />
+</details>

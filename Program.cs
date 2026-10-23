@@ -4,6 +4,7 @@ using InnovestHolding.Data;
 using InnovestHolding.Infrastructure;
 using InnovestHolding.Infrastructure.Content;
 using InnovestHolding.Infrastructure.Localization;
+using InnovestHolding.Infrastructure.Media;
 using InnovestHolding.Infrastructure.Seo;
 using InnovestHolding.Infrastructure.Site;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -61,6 +62,10 @@ builder.Services.AddAntiforgery(options =>
 });
 
 builder.Services.AddInnovestRateLimiting();
+
+// Uploaded images (Infrastructure/Media): root from Uploads:RootPath (env Uploads__RootPath), default App_Data/uploads.
+builder.Services.Configure<MediaOptions>(builder.Configuration.GetSection(MediaOptions.SectionName));
+builder.Services.AddSingleton<MediaStore>();
 builder.Services.AddStaticAssetCompression();
 
 // AppDbContext + the site content cache and its invalidation interceptor (one helper, shared with the tests).
@@ -139,6 +144,21 @@ using (var scope = app.Services.CreateScope())
     // One-time: timestamps written by the old code in the server's local time become UTC (marker-guarded).
     await TimestampUtcConversion.RunAsync(db, TimeZoneInfo.Local, app.Logger);
 
+    // Uploads: the folder exists (a missing one would only break uploads, never the public site), and orphans of a
+    // failed delete or an interrupted save are moved to the quarantine (never deleted: MediaStore.SweepAsync).
+    var media = scope.ServiceProvider.GetRequiredService<MediaStore>();
+    try
+    {
+        Directory.CreateDirectory(media.Root);
+        var sweep = await media.SweepAsync(db);
+        app.Logger.LogInformation("Uploads folder ready. Orphan sweep: {Outcome}; {Moved} of {Candidates} file(s) moved to the quarantine.",
+            sweep.Outcome, sweep.Moved, sweep.Candidates);
+    }
+    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+    {
+        app.Logger.LogError(ex, "The uploads folder is not usable: image uploads will fail until the app pool can write to it.");
+    }
+
     if (!app.Environment.IsDevelopment()
         && !SiteUrl.TryNormalize(await db.SiteContents.Where(c => c.SectionKey == SiteUrl.ContentKey)
                .Select(c => c.ContentAr).FirstOrDefaultAsync(), out _))
@@ -161,6 +181,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseSecurityHeaders();
 app.UseRobotsHeader();
+app.UseMediaFiles();     // /media/{key}.{ext}: uploaded images, before anything else can answer that path
 app.UseStaticAssets();   // compression for static paths only; immutable caching for versioned URLs
 app.UseCultureUrlNormalizer();
 app.UseRouting();
@@ -184,6 +205,17 @@ foreach (var page in SiteRoutes.All)
     var defaults = new { controller = page.Controller, action = page.Action };
     app.MapControllerRoute(page.Key + ".ar", path, defaults);
     app.MapControllerRoute(page.Key + ".en", path.Length == 0 ? "en" : "en/" + path, defaults);
+}
+
+// Detail pages: /news/{slug}, /forum/events/{slug} and their /en twins; the slug must already be canonical (lower-case
+// words joined by hyphens — the normaliser 301s other spellings first).
+foreach (var detail in SiteRoutes.Details)
+{
+    var prefix = detail.Prefix.Trim('/');
+    var defaults = new { controller = detail.Controller, action = detail.Action };
+    var constraints = new { slug = new Microsoft.AspNetCore.Routing.Constraints.RegexRouteConstraint(Slugs.RouteRegex) };
+    app.MapControllerRoute(detail.Key + ".ar", prefix + "/{slug}", defaults, constraints);
+    app.MapControllerRoute(detail.Key + ".en", "en/" + prefix + "/{slug}", defaults, constraints);
 }
 
 // Conventional routes reach ONLY Home (Error, and /Home → 301 by the normaliser) and Account (login/logout). Admin

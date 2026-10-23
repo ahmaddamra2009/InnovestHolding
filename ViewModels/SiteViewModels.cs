@@ -97,7 +97,7 @@ public sealed record ItemVm(LText Text, LText Description, string? IconSvg);
 
 /// <summary>Links to pages: the three units (with their sub-pages as chips) or a hub's sub-pages.</summary>
 public sealed record CardsBlock(LText Title, LText Intro, IReadOnlyList<CardVm> Cards, bool Dark) : BlockVm;
-public sealed record CardVm(int Number, LText Title, LText Summary, string Href, IReadOnlyList<LinkVm> Chips);
+public sealed record CardVm(int Number, LText Title, LText Summary, string Href, IReadOnlyList<LinkVm> Chips, ImageVm? Image = null);
 
 public sealed record VisionBlock(IReadOnlyList<(LText Title, LText Text, string IconSvg)> Cards) : BlockVm;
 
@@ -108,7 +108,10 @@ public sealed record StatsBlock(LText Title, LText Intro, IReadOnlyList<StatVm> 
 
 public sealed record EventsBlock(IReadOnlyList<EventCardVm> Events, PagerVm? Pager, LinkVm? Action) : BlockVm;
 public sealed record NewsBlock(IReadOnlyList<NewsCardVm> News, PagerVm? Pager, LText ReadMore) : BlockVm;
-public sealed record PartnersBlock(LText Title, IReadOnlyList<LText> Partners) : BlockVm;
+public sealed record PartnersBlock(LText Title, IReadOnlyList<PartnerGroupVm> Groups) : BlockVm;
+public sealed record PartnerVm(LText Name, ImageVm? Logo, string? Url, int? GroupId);
+/// <summary>A heading (empty for the partners with no group) and its partners.</summary>
+public sealed record PartnerGroupVm(LText Name, IReadOnlyList<PartnerVm> Partners);
 
 /// <summary>The admin-managed "coming soon" state of a page with no content yet, with one useful next action.</summary>
 public sealed record EmptyBlock(LText Text, LinkVm? Action) : BlockVm;
@@ -116,7 +119,7 @@ public sealed record EmptyBlock(LText Text, LinkVm? Action) : BlockVm;
 public sealed record RegisterBlock(RegisterFormVm Form) : BlockVm;
 public sealed record ContactBlock(ContactFormVm Form) : BlockVm;
 public sealed record FaqBlock(SectionHeaderVm Header, IReadOnlyList<FaqVm> Faqs) : BlockVm;
-public sealed record FounderBlock(LText Heading, LText Name, LText Title, LText Message) : BlockVm;
+public sealed record FounderBlock(LText Heading, LText Name, LText Title, LText Message, ImageVm? Photo = null) : BlockVm;
 public sealed record CtaBlock(LText Title, LText Text, IReadOnlyList<LinkVm> Buttons) : BlockVm;
 
 public sealed record PagerVm(int Page, int PageCount, string BaseUrl)
@@ -154,8 +157,37 @@ public sealed record NotFoundVm(ShellVm Shell, SeoVm Seo, IReadOnlyList<LinkVm> 
 
 // Records shared with the home page.
 public sealed record StatVm(int Value, string Suffix, LText Label, LText ShortLabel, string IconSvg);
-public sealed record NewsCardVm(LText Title, LText Summary, LText Category, LText Date, string? LinkUrl);
-public sealed record EventCardVm(int Day, LText Month, LText Title, LText Description, LText Location, LText Time);
+public sealed record NewsCardVm(LText Title, LText Summary, LText Category, LText Date, string Href, ImageVm? Image);
+public sealed record EventCardVm(int Day, LText Month, LText Title, LText Description, LText Location, LText Time,
+    string Href, ImageVm? Image, bool Past, Models.EventStatus Status);
+
+/// <summary>An uploaded image, ready for an &lt;img&gt; (src, intrinsic size, alt in the page language).</summary>
+public sealed record ImageVm(string Src, int Width, int Height, LText Alt);
+
+/// <summary>One line of a detail page's facts row (date, time, place…): an icon key of Infrastructure/Content/Icons.</summary>
+public sealed record FactVm(string Icon, LText Label, LText Text, string? Href = null);
+
+/// <summary>A news item or an event page (Views/Site/Detail.cshtml).</summary>
+public sealed class DetailPageVm
+{
+    /// <summary>Set by the controller's Detail() helper (breadcrumb with the item as its last step).</summary>
+    public ShellVm Shell { get; set; } = default!;
+    public required SeoVm Seo { get; init; }
+    public required string Kind { get; init; }
+    public required LText Title { get; init; }
+    public required LText Lead { get; init; }
+    public required IReadOnlyList<LText> Body { get; init; }
+    public ImageVm? Image { get; init; }
+    /// <summary>Category of a news item, status of an event (past, cancelled, postponed).</summary>
+    public LText Badge { get; init; }
+    public IReadOnlyList<FactVm> Facts { get; init; } = [];
+    public IReadOnlyList<LinkVm> Actions { get; init; } = [];
+    /// <summary>A line above the text (e.g. "This event has ended").</summary>
+    public LText Notice { get; init; }
+    /// <summary>The English page shows the Arabic text (no English yet).</summary>
+    public bool ArabicOnly { get; init; }
+    public required LinkVm Back { get; init; }
+}
 public sealed record FaqVm(LText Question, LText Answer);
 public sealed record InterestChoiceVm(int Id, LText Name);
 

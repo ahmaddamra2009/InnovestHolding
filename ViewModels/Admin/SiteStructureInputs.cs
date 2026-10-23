@@ -9,7 +9,7 @@ namespace InnovestHolding.ViewModels.Admin;
 /// The texts of one page (Admin/Pages/Edit). The page key comes from the route, never from the form, and must be a
 /// key of the route table; the lengths mirror the columns.
 /// </summary>
-public class PageEditInput
+public class PageEditInput : ImageFieldsInput
 {
     [Display(Name = F.Title)]
     [Required(ErrorMessage = K.Required)]

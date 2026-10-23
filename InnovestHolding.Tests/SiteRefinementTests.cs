@@ -78,7 +78,7 @@ public class SiteRefinementTests(TestAppFactory f)
                 var html = await PageAsync(path);
                 var list = Graph(html).EnumerateArray().Single(n => n.TryGetProperty("mainEntity", out _)).GetProperty("mainEntity");
                 var items = list.GetProperty("itemListElement").EnumerateArray().Select(i => i.GetProperty("name").GetString()!).ToList();
-                var rendered = Regex.Matches(html, "<div class=\"event-info\">\\s*<h3[^>]*>(.*?)</h3>").Select(m => WebUtility.HtmlDecode(m.Groups[1].Value)).ToList();
+                var rendered = Regex.Matches(html, "<div class=\"event-info\">\\s*<h3[^>]*><a [^>]*>(.*?)</a>").Select(m => WebUtility.HtmlDecode(m.Groups[1].Value)).ToList();
                 Assert.Single(items);
                 Assert.Equal(rendered, items);
                 names.Add(items[0]);

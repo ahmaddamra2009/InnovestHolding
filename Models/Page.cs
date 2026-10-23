@@ -67,4 +67,8 @@ public class Page
 
     /// <summary>UTC; the sitemap's lastmod.</summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>The page's card image (hub cards) and share image (og:image).</summary>
+    public int? ImageId { get; set; }
+    public MediaFile? Image { get; set; }
 }

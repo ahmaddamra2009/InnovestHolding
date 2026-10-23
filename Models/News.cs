@@ -38,5 +38,35 @@ public class News
 
     public bool IsActive { get; set; } = true;
 
+    /// <summary>Address of the detail page (/news/{slug}): ASCII, lower-case, unique, shared by both languages.</summary>
+    [Required, MaxLength(100)]
+    public string Slug { get; set; } = string.Empty;
+
+    /// <summary>Main text of the detail page: plain text, a blank line starts a new paragraph.</summary>
+    public string BodyAr { get; set; } = string.Empty;
+
+    public string? BodyEn { get; set; }
+
+    public int? ImageId { get; set; }
+    public MediaFile? Image { get; set; }
+
+    /// <summary>Publication date (NewsArticle datePublished); the free-text date above stays what the cards show.</summary>
+    public DateOnly? PublishedOn { get; set; }
+
+    [MaxLength(200)]
+    public string MetaTitleAr { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string? MetaTitleEn { get; set; }
+
+    [MaxLength(300)]
+    public string MetaDescriptionAr { get; set; } = string.Empty;
+
+    [MaxLength(300)]
+    public string? MetaDescriptionEn { get; set; }
+
+    /// <summary>UTC; the sitemap's lastmod and NewsArticle dateModified.</summary>
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

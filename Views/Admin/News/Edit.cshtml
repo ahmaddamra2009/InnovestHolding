@@ -1,7 +1,7 @@
 @model NewsEditInput
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "تعديل الخبر"; }
 <div class="admin-card">
-    <form method="post" asp-action="Edit" asp-controller="News">
+    <form method="post" asp-action="Edit" asp-controller="News" enctype="multipart/form-data">
         @if (!ViewData.ModelState.IsValid) { <div class="form-errors" asp-validation-summary="All"></div> }
         <input type="hidden" asp-for="Id">
         <partial name="~/Views/Admin/News/_Fields.cshtml" model="Model" />

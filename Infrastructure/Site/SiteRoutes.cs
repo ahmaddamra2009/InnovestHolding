@@ -16,6 +16,21 @@ public enum PageKind
 /// <param name="Parent">Key of the parent page (breadcrumbs, menus); null for the home page.</param>
 public sealed record SitePage(string Key, string Path, string? Parent, string Controller, string Action, PageKind Kind);
 
+/// <summary>
+/// A detail page: <see cref="Prefix"/> + slug (Arabic) and "/en" + prefix + slug (English). Kept apart from
+/// <see cref="SiteRoutes.All"/> (which lists the fixed pages that menus, the sitemap's page part and the Pages admin
+/// iterate); its parent is the list page it belongs to.
+/// </summary>
+/// <param name="EntityType">The <c>SlugRedirects.EntityType</c> of its items.</param>
+public sealed record DetailRoute(string Key, string Parent, string Prefix, string Controller, string Action, string EntityType);
+
+/// <summary>Keys of the detail routes.</summary>
+public static class DetailKeys
+{
+    public const string NewsItem = "news.item";
+    public const string ForumEvent = "forum.event";
+}
+
 /// <summary>Page keys (code constants: the structure of the site is code, its texts are data).</summary>
 public static class PageKeys
 {
@@ -71,6 +86,33 @@ public static class SiteRoutes
         new(PageKeys.News, "/news", PageKeys.Home, "Newsroom", "Index", PageKind.List),
         new(PageKeys.Contact, "/contact", PageKeys.Home, "SitePages", "Contact", PageKind.Form),
     ];
+
+    public static readonly IReadOnlyList<DetailRoute> Details =
+    [
+        new(DetailKeys.NewsItem, PageKeys.News, "/news/", "Newsroom", "Item", Models.SlugTypes.News),
+        new(DetailKeys.ForumEvent, PageKeys.ForumEvents, "/forum/events/", "Forum", "Event", Models.SlugTypes.Event),
+    ];
+
+    public static DetailRoute Detail(string key) => Details.Single(d => d.Key == key);
+
+    public static string DetailPath(DetailRoute route, string slug, bool english) =>
+        (english ? EnglishPrefix : "") + route.Prefix + slug;
+
+    /// <summary>True when <paramref name="path"/> is exactly a detail URL (either language) with a well-formed slug.</summary>
+    public static bool MatchesDetail(string path) => ParseDetail(path) is not null;
+
+    /// <summary>The detail route, slug and language of a canonical detail path, else null.</summary>
+    public static (DetailRoute Route, string Slug, bool English)? ParseDetail(string path)
+    {
+        var english = path.StartsWith(EnglishPrefix + "/", StringComparison.Ordinal);
+        if (english) path = path[EnglishPrefix.Length..];
+        foreach (var d in Details)
+        {
+            if (path.StartsWith(d.Prefix, StringComparison.Ordinal) && Slugs.Pattern().IsMatch(path[d.Prefix.Length..]))
+                return (d, path[d.Prefix.Length..], english);
+        }
+        return null;
+    }
 
     private static readonly Dictionary<string, SitePage> ByKey = All.ToDictionary(p => p.Key, StringComparer.Ordinal);
 

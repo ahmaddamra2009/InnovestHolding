@@ -1,0 +1,30 @@
+@model ImageFieldsInput
+@* An image field of an admin form (the form must be enctype="multipart/form-data"). ViewData["ImageLabel"] names the
+   field, ViewData["ImagePrefix"] makes the ids unique when one page repeats the field (inline list forms). *@
+@{
+    var label = ViewData["ImageLabel"] as string ?? "الصورة";
+    var prefix = ViewData["ImagePrefix"] as string ?? "";
+    var logo = ViewData["ImageUse"] as string == "logo";
+    var errors = ViewData.ModelState.TryGetValue("Image", out var entry) ? entry.Errors.Select(e => e.ErrorMessage).ToList() : [];
+}
+<fieldset class="image-field">
+    <legend>@label</legend>
+    @if (Model.Current is { } current)
+    {
+        <div class="image-current">
+            <img src="@current.Url" width="@current.Width" height="@current.Height" alt="" loading="lazy">
+            <span class="field-hint" dir="ltr">@current.Width × @current.Height</span>
+            <label class="form-check"><input type="checkbox" name="RemoveImage" value="true" id="@(prefix)RemoveImage"> حذف الصورة الحالية</label>
+        </div>
+    }
+    <div class="form-group">
+        <label for="@(prefix)Image">@(Model.Current is null ? "اختر صورة" : "استبدال الصورة")</label>
+        <input type="file" id="@(prefix)Image" name="Image" class="form-control@(errors.Count > 0 ? " is-invalid" : "")" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+        <span class="field-hint image-hint">@L[logo ? K.Admin.ImageHintLogo : K.Admin.ImageHintGeneral]</span>
+        @foreach (var error in errors)
+        {
+            <span class="field-error">@error</span>
+        }
+    </div>
+    <lang-pair label="النص البديل (وصف الصورة لقارئ الشاشة — فارغ = العنوان)" name-ar="ImageAltAr" name-en="ImageAltEn" value-ar="@Model.ImageAltAr" value-en="@Model.ImageAltEn" max="200" id-prefix="@prefix" />
+</fieldset>

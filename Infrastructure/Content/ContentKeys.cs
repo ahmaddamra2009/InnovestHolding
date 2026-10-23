@@ -31,6 +31,8 @@ public enum ContentRule
     PageKey,
     /// <summary>An international phone number as digits only (8–15), e.g. 201141410808 — used in https://wa.me/….</summary>
     Digits,
+    /// <summary>A UTC offset written ±hh:mm (−14:00 … +14:00), e.g. +02:00.</summary>
+    UtcOffset,
 }
 
 /// <param name="Key">SiteContents.SectionKey.</param>
@@ -73,8 +75,21 @@ public static class ContentKeys
 
     public const int ListPageSizeFallback = 12;
 
+    /// <summary>The UTC offset a new event's date form starts with (events keep their own offset).</summary>
+    public const string DefaultUtcOffset = "default_utc_offset";
+
+    public const string DefaultUtcOffsetFallback = "+02:00";
+
+    /// <summary>The founder block's photo: the FileKey of an uploaded image, written only by the Content editor's
+    /// photo form (not a text field of the registry).</summary>
+    public const string FounderPhoto = "founder_photo";
+
     /// <summary>Internal marker of the one-time timestamp conversion — never shown in the admin.</summary>
     public const string TimestampsUtcMarker = "sys_timestamps_utc";
+
+    /// <summary>Internal: a random id of THIS database (created by the first orphan sweep), written into the uploads
+    /// folder's marker so the sweep can tell its own folder from another database's. Never shown in the admin.</summary>
+    public const string MediaInstance = "sys_media_instance";
 
     public static readonly IReadOnlyList<(string Id, string Title)> Groups =
     [
@@ -143,6 +158,7 @@ public static class ContentKeys
         new("cta_band_title", "sections", "شريط الدعوة في أسفل الصفحات — العنوان (المميز بين { })", 200, ContentFormat.Highlight),
         new("cta_band_text", "sections", "شريط الدعوة — النص", 500, Multiline: true),
         new(ListPageSize, "sections", "عدد العناصر في كل صفحة من القوائم (الأخبار، الفعاليات…) (1–50)", 2, Rule: ContentRule.Count, Neutral: true),
+        new(DefaultUtcOffset, "sections", "فرق التوقيت الافتراضي للفعاليات الجديدة عن UTC (مثال: ‎+02:00)", 6, Rule: ContentRule.UtcOffset, Neutral: true),
 
         new("impact_title", "pages", "الأثر المتوقع — العنوان (المميز بين { })", 200, ContentFormat.Highlight),
         new("impact_intro", "pages", "الأثر المتوقع — النص التمهيدي (اختياري)", 500, AllowEmpty: true),
