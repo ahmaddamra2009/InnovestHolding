@@ -44,7 +44,7 @@ public class ContentController : AdminControllerBase
     private async Task SetSiteImagesAsync()
     {
         var forms = new List<(SiteImage Image, SiteImageInput Input)>();
-        foreach (var image in SiteImages.All)
+        foreach (var image in SiteImages.ContentEditor)
         {
             var m = await SiteImageRowAsync(image.Key, false);
             forms.Add((image, new SiteImageInput { Key = image.Key, Current = MediaRefs.Of(m), ImageAltAr = m?.AltAr, ImageAltEn = m?.AltEn }));
@@ -61,7 +61,8 @@ public class ContentController : AdminControllerBase
     [HttpPost]
     public async Task<IActionResult> SiteImage(SiteImageInput input)
     {
-        var image = SiteImages.Find(input.Key);
+        // A brand asset is refused here: its slot rules (format, size, alpha) live on Admin/Brand only.
+        var image = SiteImages.Find(input.Key) is { IsBrand: false } found ? found : null;
         if (image is null)
             ModelState.AddModelError(nameof(input.Key), L(MessageKeys.InvalidValueNoField));
         if (!ModelState.IsValid || image is null) return InvalidRedirectToEdit();

@@ -79,11 +79,15 @@ public static class SeoBuilder
 
     private readonly record struct Share(string? Url, int? Width, int? Height, string? Alt);
 
-    /// <summary>The share image: the first uploaded candidate (item, then page), else the site default (seo_og_image).</summary>
+    /// <summary>
+    /// The share image: the first uploaded candidate (item, then page), else the uploaded site default (Admin, Brand),
+    /// else the legacy path key seo_og_image (the bundled image by default). The JSON-LD image of an article or event
+    /// uses the same result.
+    /// </summary>
     private static Share ShareImage(SiteViews v, string? baseUrl, params MediaRef?[] candidates)
     {
         if (baseUrl is null) return default;
-        foreach (var m in candidates)
+        foreach (var m in candidates.Append(v.Snapshot.Image(BrandImages.OgDefault)))
         {
             if (m is null) continue;
             var alt = v.P(m.AltAr, m.AltEn).Value;

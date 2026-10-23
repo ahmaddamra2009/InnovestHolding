@@ -309,3 +309,17 @@ select.form-control { cursor: pointer; }
 .site-text-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 8px; }
 .site-text-head code { font-size: 0.72rem; }
 @media (max-width: 768px) { .site-text .btn-sm { width: 100%; } }
+
+/* Brand screen (Admin/Brand): preview beside the form, stacked on a phone. */
+.brand-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 24px; }
+.brand-form { flex: 1 1 280px; min-width: 0; }
+.brand-preview { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px; border-radius: 10px; background: var(--admin-bg); font-size: 0.78rem; color: var(--admin-text-muted); text-align: center; }
+.brand-preview img { display: block; object-fit: contain; }
+.brand-preview--icon img { width: 32px; height: 32px; image-rendering: auto; }
+.brand-preview--apple img { width: 90px; height: 90px; border-radius: 20px; }
+.brand-preview--og { flex: 1 1 320px; max-width: 480px; }
+.brand-preview--og img { width: 100%; height: auto; aspect-ratio: 1200 / 630; object-fit: cover; border-radius: 8px; }
+.brand-ok { display: block; color: #16a34a; }
+.brand-warning { margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: #a16207; font-size: 0.85rem; }
+.brand-swatch { inline-size: 48px; block-size: 48px; border-radius: 10px; border: 1px solid var(--admin-border, rgba(0,0,0,0.1)); flex: none; }
+@media (max-width: 640px) { .brand-preview--og { max-width: 100%; } }

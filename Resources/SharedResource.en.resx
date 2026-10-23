@@ -199,6 +199,11 @@
   <data name="Admin_GroupUpdated" xml:space="preserve"><value>Group updated</value></data>
   <data name="Admin_GroupDeleted" xml:space="preserve"><value>Group deleted (its partners now have no group)</value></data>
   <data name="Admin_PhotoSaved" xml:space="preserve"><value>Image saved</value></data>
+  <data name="Admin_BrandSaved" xml:space="preserve"><value>“{0}” saved. The browser may take a while to show the new icon.</value></data>
+  <data name="Admin_BrandReverted" xml:space="preserve"><value>“{0}” is back to the bundled default file.</value></data>
+  <data name="Admin_ThemeColorInvalid" xml:space="preserve"><value>Invalid colour: write it as #RRGGBB (e.g. #111145), or leave it empty for the default colour.</value></data>
+  <data name="Admin_ThemeColorSaved" xml:space="preserve"><value>Browser colour saved.</value></data>
+  <data name="Admin_LoginSiteName" xml:space="preserve"><value>Innovest Holding</value></data>
   <data name="Ui_EventDate" xml:space="preserve"><value>Date</value></data>
   <data name="Ui_EventTime" xml:space="preserve"><value>Time</value></data>
   <data name="Ui_EventVenue" xml:space="preserve"><value>Venue</value></data>
