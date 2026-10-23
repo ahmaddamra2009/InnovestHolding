@@ -357,4 +357,14 @@
   <data name="Admin_SectionFixedHint" xml:space="preserve"><value>المحتوى الرئيسي للصفحة: يظهر دائماً ولا يُخفى.</value></data>
   <data name="Admin_SectionVisible" xml:space="preserve"><value>ظاهر</value></data>
   <data name="Admin_SectionsScreenTitle" xml:space="preserve"><value>أقسام الصفحات</value></data>
+  <data name="Admin_ForumImageSaved" xml:space="preserve"><value>تم حفظ «{0}».</value></data>
+  <data name="Admin_ForumImageRemoved" xml:space="preserve"><value>تم حذف «{0}» والعودة إلى الافتراضي.</value></data>
+  <data name="Admin_ForumSaved" xml:space="preserve"><value>تم حفظ التغييرات.</value></data>
+  <data name="Admin_ForumColorInvalid" xml:space="preserve"><value>قيمة غير صالحة: اكتب اللون بالصيغة #RRGGBB (مثل #D21E33) أو اترك الحقل فارغاً للون الافتراضي.</value></data>
+  <data name="Admin_ForumFontInvalid" xml:space="preserve"><value>اختر خطاً من القائمة.</value></data>
+  <data name="Admin_ForumFieldsRefused" xml:space="preserve"><value>لم يُحفظ شيء: صحّح الحقول المعلَّمة.</value></data>
+  <data name="Admin_ForumContrastRefused" xml:space="preserve"><value>لم يُحفظ شيء: بعض الألوان لا تحقق حد التباين المطلوب لقراءة النص (WCAG AA). غيّر أحد لوني كل زوج أدناه.</value></data>
+  <data name="Admin_ForumColorsSaved" xml:space="preserve"><value>تم حفظ ألوان المنتدى وخطوطه.</value></data>
+  <data name="Admin_ForumResetNothing" xml:space="preserve"><value>الألوان والخطوط على الافتراضي أصلاً.</value></data>
+  <data name="Admin_ForumResetDone" xml:space="preserve"><value>تمت استعادة الألوان والخطوط الافتراضية ({0} قيمة).</value></data>
 </root>

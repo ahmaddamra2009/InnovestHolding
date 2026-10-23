@@ -228,7 +228,7 @@ public class ForumController(AppDbContext db, TimeProvider time) : PublicControl
             if (online is not null) locations.Add(new Dictionary<string, object> { ["@type"] = "VirtualLocation", ["url"] = online });
             if (locations.Count == 1) node["location"] = locations[0];
             else if (locations.Count > 1) node["location"] = locations;
-            SeoBuilder.Set(node, "organizer", SeoBuilder.OrganizationRef(baseUrl));
+            SeoBuilder.Set(node, "organizer", SeoBuilder.ForumOrganizationRef(baseUrl, English));
         }
 
         // The event's published speakers, in the order of the speakers list (the admin's picker shows that order).

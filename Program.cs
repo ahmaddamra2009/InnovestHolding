@@ -71,6 +71,7 @@ builder.Services.AddInnovestRateLimiting();
 // Uploaded images (Infrastructure/Media): root from Uploads:RootPath (env Uploads__RootPath), default App_Data/uploads.
 builder.Services.Configure<MediaOptions>(builder.Configuration.GetSection(MediaOptions.SectionName));
 builder.Services.AddSingleton<MediaStore>();
+builder.Services.AddSingleton<InnovestHolding.Infrastructure.Content.ForumThemeStylesheet>();
 builder.Services.AddStaticAssetCompression();
 
 // What a lead may refer to (C3's published opportunities and active sponsorship packages), read from the database.

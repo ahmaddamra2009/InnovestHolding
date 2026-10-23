@@ -1,0 +1,175 @@
+@model ForumIdentityPageVm
+@using InnovestHolding.Infrastructure.Content
+@{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewData["Title"] = "هوية المنتدى"; }
+
+<div class="admin-card">
+    <div class="admin-card-header"><span class="admin-card-title">هوية المنتدى</span></div>
+    <p class="form-hint">
+        ألوان صفحات المنتدى وخطوطها وشعاره وصورة شريط العنوان وصورة المشاركة. تُطبَّق على صفحة المنتدى وكل الصفحات تحتها
+        (الفعاليات والمتحدثون والشركاء والتسجيل وصفحات التفاصيل) بالعربية والإنجليزية فقط؛ بقية الموقع يبقى بهوية إنوفست.
+        كل حقل فارغ = القيمة الافتراضية المرفقة مع الموقع. هوية إنوفست نفسها في
+        <a asp-controller="Brand" asp-action="Index">الهوية البصرية</a>.
+    </p>
+</div>
+
+@foreach (var s in Model.Slots)
+{
+    var slot = s.Slot;
+    var current = s.Input.Current;
+    var prefix = slot.Key + "-";
+    // The on-dark logo is previewed on the header's navy, the light one on white; the pictures as a share image.
+    var previewClass = slot.Key == ForumIdentity.LogoOnDark ? "brand-preview brand-preview--logo brand-preview--dark"
+        : slot.Key == ForumIdentity.LogoOnLight ? "brand-preview brand-preview--logo" : "brand-preview brand-preview--og";
+    <form method="post" asp-controller="ForumIdentity" asp-action="Image" enctype="multipart/form-data" class="admin-card" id="forum-@slot.Key">
+        <div class="admin-card-header"><span class="admin-card-title">@slot.Label</span></div>
+        <input type="hidden" name="Key" value="@slot.Key">
+        <p class="form-hint">@slot.Guidance</p>
+        <div class="brand-row">
+            <figure class="@previewClass">
+                @if (current is not null)
+                {
+                    <img src="@current.Url" width="@current.Width" height="@current.Height" alt="" loading="lazy">
+                    <figcaption>
+                        <span dir="ltr">@current.Width × @current.Height</span> · <span dir="ltr">@((s.Bytes ?? 0) / 1024) KB</span>
+                        @if (s.Advice is null)
+                        {
+                            <span class="brand-ok">✓ مطابقة للتوصيات</span>
+                        }
+                    </figcaption>
+                }
+                else if (slot.DefaultPath.Length > 0)
+                {
+                    <img src="@slot.DefaultPath" alt="" loading="lazy">
+                    <figcaption>الافتراضي المرفق · <span dir="ltr">@slot.DefaultSize</span></figcaption>
+                }
+                else
+                {
+                    <figcaption>لا صورة مرفوعة</figcaption>
+                }
+            </figure>
+            <div class="brand-form">
+                @if (s.Advice is not null)
+                {
+                    <p class="brand-warning" role="status">@s.Advice</p>
+                }
+                <div class="form-group">
+                    <label for="@(prefix)Image">@(current is null ? "اختر ملفاً" : "استبدال الملف")</label>
+                    <input type="file" id="@(prefix)Image" name="Image" class="form-control@(s.Error is null ? "" : " is-invalid")" accept="@BrandImages.Accept(slot)"
+                           aria-describedby="@(prefix)hint@(s.Error is null ? "" : " " + prefix + "error")">
+                    <span class="field-hint" id="@(prefix)hint">الحجم الأقصى @(slot.MaxBytes >= 1024 * 1024 ? $"{slot.MaxBytes / (1024 * 1024)} MB" : $"{slot.MaxBytes / 1024} KB").</span>
+                    @if (s.Error is not null)
+                    {
+                        <span class="field-error" id="@(prefix)error" role="alert">@s.Error</span>
+                    }
+                </div>
+                @if (slot.HasAlt)
+                {
+                    <lang-pair label="النص البديل (فارغ = اسم المنتدى)" name-ar="ImageAltAr" name-en="ImageAltEn" value-ar="@s.Input.ImageAltAr" value-en="@s.Input.ImageAltEn" max="200" id-prefix="@prefix" />
+                }
+                @if (current is not null)
+                {
+                    <label class="form-check"><input type="checkbox" name="RemoveImage" value="true" id="@(prefix)RemoveImage"> حذف والعودة إلى الافتراضي</label>
+                }
+                <div class="inline-actions">
+                    <button type="submit" class="btn-admin btn-primary">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </form>
+}
+
+<form method="post" asp-controller="ForumIdentity" asp-action="Colors" class="admin-card" id="forum-colors">
+    <div class="admin-card-header"><span class="admin-card-title">الألوان والخطوط</span></div>
+    <p class="form-hint">
+        كل لون بالصيغة #RRGGBB؛ فارغ = لون المنتدى الافتراضي (المكتوب في الحقل). عند الحفظ يُقاس التباين بين كل لون نص
+        وخلفيته كما ستظهر في الصفحات، ويُرفض الحفظ كله إن لم يحقق أي زوج الحد المطلوب (4.5:1 للنص، 3:1 للعناوين الكبيرة
+        والعناصر الرسومية). رأس الموقع وتذييله يبقيان بألوان إنوفست.
+    </p>
+    @if (Model.ColorsError is not null)
+    {
+        <div class="field-error" role="alert">
+            <p>@Model.ColorsError</p>
+            @if (Model.Failures.Count > 0)
+            {
+                <ul>
+                    @foreach (var f in Model.Failures)
+                    {
+                        <li>@f.Pair.Where: <span dir="ltr">@f.Foreground</span> على <span dir="ltr">@f.Background</span> = <span dir="ltr">@f.Ratio.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture):1</span> (المطلوب <span dir="ltr">@f.Pair.Min.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture):1</span>)</li>
+                    }
+                </ul>
+            }
+        </div>
+    }
+    @foreach (var row in Model.Colors)
+    {
+        var id = "Colors_" + row.Color.Key;
+        <div class="brand-row">
+            <span class="brand-swatch" style="background:@row.Effective" aria-hidden="true"></span>
+            <div class="form-group">
+                <label for="@id">@row.Color.Label</label>
+                <input type="text" id="@id" name="Colors[@row.Color.Key]" dir="ltr" maxlength="7" class="form-control@(row.Error is null ? "" : " is-invalid")"
+                       value="@row.Value" placeholder="@row.Color.Default" pattern="#[0-9A-Fa-f]{6}" autocomplete="off" aria-describedby="@(id)-hint">
+                <span class="field-hint" id="@(id)-hint">@row.Color.Hint</span>
+                @if (row.Error is not null)
+                {
+                    <span class="field-error" role="alert">@row.Error</span>
+                }
+            </div>
+        </div>
+    }
+    <div class="form-group">
+        <label for="FontAr">خط الصفحات العربية</label>
+        <select id="FontAr" name="FontAr" class="form-control@(Model.FontError is null ? "" : " is-invalid")">
+            <option value="">الافتراضي (خط الموقع)</option>
+            @foreach (var font in ForumIdentity.Fonts)
+            {
+                <option value="@font.Key" selected="@(Model.FontAr == font.Key)">@font.Label</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="FontEn">خط الصفحات الإنجليزية</label>
+        <select id="FontEn" name="FontEn" class="form-control@(Model.FontError is null ? "" : " is-invalid")">
+            <option value="">الافتراضي (خط الموقع)</option>
+            @foreach (var font in ForumIdentity.Fonts)
+            {
+                <option value="@font.Key" selected="@(Model.FontEn == font.Key)">@font.Label</option>
+            }
+        </select>
+        <span class="field-hint">الخطوط المتاحة هي المحمَّلة في الموقع أصلاً (لا طلب إضافي).</span>
+        @if (Model.FontError is not null)
+        {
+            <span class="field-error" role="alert">@Model.FontError</span>
+        }
+    </div>
+    <div class="inline-actions">
+        <button type="submit" class="btn-admin btn-primary">حفظ الألوان والخطوط</button>
+    </div>
+</form>
+
+<div class="admin-card" id="forum-contrast">
+    <div class="admin-card-header"><span class="admin-card-title">التباين الحالي</span></div>
+    <table class="admin-table">
+        <thead><tr><th>الموضع</th><th>النص</th><th>الخلفية</th><th>النسبة</th><th>الحد</th></tr></thead>
+        <tbody>
+            @foreach (var c in Model.Contrast)
+            {
+                <tr>
+                    <td>@c.Pair.Where</td>
+                    <td dir="ltr">@c.Foreground</td>
+                    <td dir="ltr">@c.Background</td>
+                    <td dir="ltr">@c.Ratio.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture):1 @(c.Passes ? "✓" : "✗")</td>
+                    <td dir="ltr">@c.Pair.Min.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture):1</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<form method="post" asp-controller="ForumIdentity" asp-action="Reset" class="admin-card" id="forum-reset">
+    <div class="admin-card-header"><span class="admin-card-title">استعادة الافتراضي</span></div>
+    <p class="form-hint">يحذف كل الألوان والخطوط المحفوظة فتعود صفحات المنتدى إلى ألوانها الافتراضية. الصور لا تُحذف (لكل صورة زر حذف في نموذجها).</p>
+    <div class="inline-actions">
+        <button type="submit" class="btn-admin btn-danger" onclick="return confirm('استعادة ألوان المنتدى وخطوطه الافتراضية؟')">استعادة الافتراضي</button>
+    </div>
+</form>

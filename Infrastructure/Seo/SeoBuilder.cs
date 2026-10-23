@@ -56,7 +56,7 @@ public static class SeoBuilder
 
         string? Abs(string path) => baseUrl is null ? null : baseUrl + path;
         var canonical = Abs(CultureUrls.Page(page.Key, english));
-        var og = ShareImage(v, baseUrl, row?.Image);
+        var og = ShareImage(v, baseUrl, ForumIdentity.IsForumPage(page.Key), row?.Image);
 
         return new SeoVm(
             Lang: english ? Cultures.EnglishName : Cultures.ArabicName,
@@ -80,17 +80,20 @@ public static class SeoBuilder
     private readonly record struct Share(string? Url, int? Width, int? Height, string? Alt);
 
     /// <summary>
-    /// The share image: the first uploaded candidate (item, then page), else the uploaded site default (Admin, Brand),
-    /// else the legacy path key seo_og_image (the bundled image by default). The JSON-LD image of an article or event
-    /// uses the same result.
+    /// The share image: the first uploaded candidate (item, then page), then on a forum page the forum's share image
+    /// (Admin, هوية المنتدى — its alt, else the forum's name), else the uploaded site default (Admin, Brand), else the
+    /// legacy path key seo_og_image (the bundled image by default). The JSON-LD image of an article or event uses the
+    /// same result.
     /// </summary>
-    private static Share ShareImage(SiteViews v, string? baseUrl, params MediaRef?[] candidates)
+    private static Share ShareImage(SiteViews v, string? baseUrl, bool forum, params MediaRef?[] candidates)
     {
         if (baseUrl is null) return default;
-        foreach (var m in candidates.Append(v.Snapshot.Image(BrandImages.OgDefault)))
+        var forumOg = forum ? ForumIdentity.Image(v.Snapshot, ForumIdentity.OgDefault) : null;
+        foreach (var m in candidates.Append(forumOg).Append(v.Snapshot.Image(BrandImages.OgDefault)))
         {
             if (m is null) continue;
             var alt = v.P(m.AltAr, m.AltEn).Value;
+            if (string.IsNullOrWhiteSpace(alt) && ReferenceEquals(m, forumOg)) alt = v.Title(PageKeys.Forum).Value;
             return new Share(baseUrl + m.Url, m.Width, m.Height, string.IsNullOrWhiteSpace(alt) ? null : alt);
         }
         var path = v.Content.Neutral("seo_og_image");
@@ -123,9 +126,11 @@ public static class SeoBuilder
         string? Abs(string path) => baseUrl is null ? null : baseUrl + path;
         var own = CultureUrls.Detail(route.Key, slug, english);
         var canonical = Abs(robots == RobotsDecision.Index ? own : CultureUrls.Detail(route.Key, slug, false));
-        var og = ShareImage(v, baseUrl, image, v.Snapshot.Page(route.Parent)?.Image);
+        var forum = ForumIdentity.IsForumPage(route.Parent);
+        var og = ShareImage(v, baseUrl, forum, image, v.Snapshot.Page(route.Parent)?.Image);
 
         var graph = BaseGraph(v, baseUrl);
+        if (forum && ForumOrganization(v, baseUrl) is { } forumOrg) graph.Add(forumOrg);
         Put(node, "@id", canonical is null ? null : canonical + "#" + node["@type"].ToString()!.ToLowerInvariant());
         Put(node, "url", canonical);
         Put(node, "inLanguage", english && englishAvailable ? "en" : "ar");
@@ -157,6 +162,34 @@ public static class SeoBuilder
             TwitterCard: og.Width >= 1200 ? "summary_large_image" : "summary",
             OgImageWidth: og.Width,
             OgImageHeight: og.Height);
+    }
+
+    /// <summary>The @id of the forum's Organization node (<c>/forum#organization</c>, <c>/en/forum#organization</c>), or null
+    /// without a base URL.</summary>
+    public static string? ForumOrganizationId(string? baseUrl, bool english) =>
+        baseUrl is null ? null : baseUrl + CultureUrls.Page(PageKeys.Forum, english) + "#organization";
+
+    /// <summary>A node reference to the forum's Organization (the organizer of the forum's events), or null.</summary>
+    public static Dictionary<string, object>? ForumOrganizationRef(string? baseUrl, bool english) =>
+        ForumOrganizationId(baseUrl, english) is { } id ? new Dictionary<string, object> { ["@id"] = id } : null;
+
+    /// <summary>
+    /// The forum as a brand of the company, carried by every forum page (hub, lists, registration, details): its name
+    /// and description from the forum page (content), its logo for light backgrounds (uploaded, else the bundled one),
+    /// parentOrganization = the company. Null without a base URL.
+    /// </summary>
+    private static Dictionary<string, object>? ForumOrganization(SiteViews v, string? baseUrl)
+    {
+        if (ForumOrganizationId(baseUrl, v.English) is not { } id) return null;
+        var forumUrl = baseUrl + CultureUrls.Page(PageKeys.Forum, v.English);
+        var unit = new Dictionary<string, object> { ["@type"] = "Organization" };
+        Put(unit, "@id", id);
+        Put(unit, "name", v.Title(PageKeys.Forum).Value);
+        Put(unit, "url", forumUrl);
+        Put(unit, "description", v.Summary(PageKeys.Forum).Value);
+        Put(unit, "logo", baseUrl + (ForumIdentity.Image(v.Snapshot, ForumIdentity.LogoOnLight)?.Url ?? ForumAssets.LogoOnLight));
+        unit["parentOrganization"] = new Dictionary<string, object> { ["@id"] = baseUrl + "/#organization" };
+        return unit;
     }
 
     /// <summary>A node reference ({"@id": …}) to the site's Organization, or null without a base URL.</summary>
@@ -336,8 +369,11 @@ public static class SeoBuilder
         }
         graph.Add(webPage);
 
-        // Forum and Network are brands of the company.
-        if (page.Key is PageKeys.Forum or PageKeys.Network)
+        // The forum is a brand of the company: its node is on every forum page (so the events' organizer resolves).
+        if (ForumIdentity.IsForumPage(page.Key) && ForumOrganization(v, baseUrl) is { } forumOrg) graph.Add(forumOrg);
+
+        // The Network is a brand of the company too.
+        if (page.Key is PageKeys.Network)
         {
             var unit = new Dictionary<string, object> { ["@type"] = "Organization" };
             Put(unit, "@id", pageUrl is null ? null : pageUrl + "#organization");

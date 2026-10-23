@@ -46,11 +46,22 @@ public sealed class ShellVm
     /// <summary>The uploaded brand images (null = the bundled files / the drawn triangle).</summary>
     public BrandImagesVm Brand { get; init; } = new(null, null);
 
+    /// <summary>Set on the forum's pages only (Infrastructure/Content/ForumIdentity.IsForumPage): the page gets the
+    /// forum theme (body class theme-forum, /forum-theme.css) and the header the forum sub-brand.</summary>
+    public ForumBrandVm? Forum { get; init; }
+
     /// <summary>The header starts transparent over a dark hero (home) instead of solid.</summary>
     public bool OverHero => CurrentKey == Infrastructure.Site.PageKeys.Home;
 
     public string OtherLang => IsEnglish ? Cultures.ArabicName : Cultures.EnglishName;
 }
+
+/// <summary>The forum sub-brand of the header on forum pages: a link to the forum hub with the uploaded forum logo, or
+/// (none uploaded) the bundled forum symbol, in one bounded image slot (no text in the bar).</summary>
+/// <param name="Name">The forum hub's page title in the page language (content, not code): the symbol's alt.</param>
+/// <param name="Logo">The admin's forum logo for dark backgrounds, or null.</param>
+/// <param name="LogoAlt">The uploaded logo's alt in the page language (English falls back to Arabic), else <paramref name="Name"/>.</param>
+public sealed record ForumBrandVm(string Href, LText Name, Infrastructure.Content.MediaRef? Logo, LText LogoAlt);
 
 /// <summary>A footer link column, resolved for the page language.</summary>
 public sealed record FooterColumnVm(LText Title, IReadOnlyList<LinkVm> Links);

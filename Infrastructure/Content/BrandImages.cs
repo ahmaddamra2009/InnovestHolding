@@ -68,7 +68,17 @@ public static partial class BrandImages
     public static string ThemeColor(string? stored) =>
         stored is not null && HexColor().IsMatch(stored.Trim()) ? stored.Trim().ToLowerInvariant() : DefaultThemeColor;
 
-    private static string FormatList(BrandImage slot) => string.Join(" أو ", slot.Formats.Select(f => f == ImageFormat.Jpeg ? "JPG" : "PNG"));
+    private static string FormatList(BrandImage slot) => string.Join(" أو ", slot.Formats.Select(FormatName));
+
+    private static string FormatName(ImageFormat f) => f switch { ImageFormat.Jpeg => "JPG", ImageFormat.WebP => "WebP", _ => "PNG" };
+
+    /// <summary>The file input's accept list for a slot (extensions and media types of its formats).</summary>
+    public static string Accept(BrandImage slot) => string.Join(",", slot.Formats.SelectMany(f => f switch
+    {
+        ImageFormat.Jpeg => new[] { ".jpg", ".jpeg", "image/jpeg" },
+        ImageFormat.WebP => new[] { ".webp", "image/webp" },
+        _ => new[] { ".png", "image/png" },
+    }));
 
     private static string Bytes(int bytes) => bytes >= 1024 * 1024 ? $"{bytes / (1024 * 1024)} MB" : $"{bytes / 1024} KB";
 
@@ -143,7 +153,7 @@ public static partial class BrandImages
     {
         if (slot.Key == Favicon && width % 48 != 0)
             return "يُفضّل أن تكون الأبعاد من مضاعفات 48 (مثل 48 أو 96 أو 192) لتظهر الأيقونة في نتائج بحث Google.";
-        if (slot.Key == OgDefault)
+        if (slot.Key is OgDefault or ForumIdentity.OgDefault)
         {
             var ratio = (double)width / height;
             if (ratio < 1.8 || ratio > 2.0)

@@ -391,6 +391,24 @@ public static class MessageKeys
     }
 
     /// <summary>C5 Admin/PageSections (show/hide, order, counts): admin messages.</summary>
+    /// <summary>Admin › هوية المنتدى (F9).</summary>
+    public static class AdminForum
+    {
+        /// <summary>{0} = the slot label.</summary>
+        public const string ImageSaved = "Admin_ForumImageSaved";
+        /// <summary>{0} = the slot label.</summary>
+        public const string ImageRemoved = "Admin_ForumImageRemoved";
+        public const string Saved = "Admin_ForumSaved";
+        public const string ColorInvalid = "Admin_ForumColorInvalid";
+        public const string FontInvalid = "Admin_ForumFontInvalid";
+        public const string FieldsRefused = "Admin_ForumFieldsRefused";
+        public const string ContrastRefused = "Admin_ForumContrastRefused";
+        public const string ColorsSaved = "Admin_ForumColorsSaved";
+        public const string ResetNothing = "Admin_ForumResetNothing";
+        /// <summary>{0} = the number of values removed.</summary>
+        public const string ResetDone = "Admin_ForumResetDone";
+    }
+
     public static class AdminSections
     {
         public const string LastVisible = "Admin_SectionLastVisible";

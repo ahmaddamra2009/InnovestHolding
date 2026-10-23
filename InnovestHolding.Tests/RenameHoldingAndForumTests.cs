@@ -272,7 +272,9 @@ public class RenameHoldingAndForumTests(TestAppFactory f)
         // SiteContents: the non-text keys cover every key with a rule or marked neutral, every image, the markers —
         // and no plain text key is excluded.
         var nonText = ContentKeys.All.Where(k => k.Neutral || k.Rule != ContentRule.None).Select(k => k.Key)
-            .Concat(SiteImages.All.Select(i => i.Key)).Append(BrandImages.ThemeColorKey)
+            // The forum identity's image keys (F9) were added after this migration was frozen; like every image key they
+            // hold random FileKeys, never text, so the REPLACE can never touch them — the frozen list stays as it is.
+            .Concat(SiteImages.All.Select(i => i.Key).Except(ForumIdentity.Images.Select(i => i.Key))).Append(BrandImages.ThemeColorKey)
             .Append(ContentKeys.TimestampsUtcMarker).Append(ContentKeys.MediaInstance).Distinct().Order().ToList();
         Assert.Equal(nonText, RenameHoldingAndForum.NonTextKeys.Order().ToList());
 

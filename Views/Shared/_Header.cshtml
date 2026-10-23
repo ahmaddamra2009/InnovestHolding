@@ -22,6 +22,20 @@
         </picture>
       }
     </a>
+    @if (Model.Forum is { } forum)
+    {
+    @* Forum pages: the forum sub-brand beside the company logo (which still links to the company home). *@
+    <a href="@forum.Href" class="forum-subbrand">
+      @if (forum.Logo is { } forumLogo)
+      {
+      <img src="@forumLogo.Url" alt="@forum.LogoAlt" lang="@forum.LogoAlt.Lang" dir="@forum.LogoAlt.Dir" class="forum-logo-img" width="@forumLogo.Width" height="@forumLogo.Height">
+      }
+      else
+      {
+      <img src="@Context.Versioned(InnovestHolding.Infrastructure.Content.ForumAssets.Symbol)" alt="@forum.Name" lang="@forum.Name.Lang" dir="@forum.Name.Dir" class="forum-symbol" width="@InnovestHolding.Infrastructure.Content.ForumAssets.SymbolWidth" height="@InnovestHolding.Infrastructure.Content.ForumAssets.SymbolHeight">
+      }
+    </a>
+    }
 
     <nav class="nav-links" aria-label="@L[K.Ui.NavAria]">
       @foreach (var item in Model.Menu)

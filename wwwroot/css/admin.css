@@ -319,6 +319,8 @@ select.form-control { cursor: pointer; }
 .brand-preview--icon img { width: 32px; height: 32px; image-rendering: auto; }
 .brand-preview--apple img { width: 90px; height: 90px; border-radius: 20px; }
 .brand-preview--og { flex: 1 1 320px; max-width: 480px; }
+.brand-preview--logo img { width: auto; height: auto; max-width: 240px; max-height: 96px; }
+.brand-preview--dark { background: #111145; color: #d9dcf0; }
 .brand-preview--og img { width: 100%; height: auto; aspect-ratio: 1200 / 630; object-fit: cover; border-radius: 8px; }
 .brand-ok { display: block; color: #16a34a; }
 .brand-warning { margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: #a16207; font-size: 0.85rem; }

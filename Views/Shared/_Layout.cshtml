@@ -26,8 +26,9 @@
     <link rel="stylesheet" href="~/css/style.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/sections.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/pages.css" asp-append-version="true">
+    @if (shell?.Forum is not null) { Write(await Component.InvokeAsync("ForumTheme")); }
 </head>
-<body class="@(shell?.OverHero == true ? "has-hero" : "has-solid-header")">
+<body class="@(shell?.OverHero == true ? "has-hero" : "has-solid-header")@(shell?.Forum is null ? "" : " theme-forum")">
     @if (shell is not null)
     {
         <a class="skip-link" href="#main">@L[K.Ui.SkipToContent]</a>
