@@ -1,9 +1,13 @@
+using System.Globalization;
+using System.Text;
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Leads;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 
 namespace InnovestHolding.Controllers.Admin;
 
@@ -27,6 +31,41 @@ public class MessagesController : AdminControllerBase
         {
             Items = items, Page = current, PageSize = PageSize, TotalCount = total, UnreadCount = unread
         });
+    }
+
+    /// <summary>
+    /// Every contact message as CSV for Excel (UTF-8 with a BOM), newest first, with the full message text (the list
+    /// shows the first 80 characters). A GET behind the admin role that changes nothing; cells go through
+    /// <see cref="LeadCsv"/> (quoted, formula-like values prefixed) and rows are streamed as they are read.
+    /// </summary>
+    public async Task Export()
+    {
+        var rows = _db.ContactMessages.AsNoTracking()
+            .OrderByDescending(m => m.CreatedAt).ThenByDescending(m => m.Id).AsAsyncEnumerable();
+        Response.ContentType = "text/csv; charset=utf-8";
+        Response.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+        {
+            FileName = $"messages-{DateTime.UtcNow.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture)}.csv",
+        }.ToString();
+        Response.Headers.CacheControl = "no-store";
+
+        var ct = HttpContext.RequestAborted;
+        await Response.Body.WriteAsync(Encoding.UTF8.GetPreamble(), ct);
+        await using var writer = new StreamWriter(Response.Body, new UTF8Encoding(false), 16 * 1024, leaveOpen: true);
+        await writer.WriteAsync(LeadCsv.Row(new[]
+        {
+            MessageKeys.Admin.CsvId, MessageKeys.Admin.CsvDate, MessageKeys.Admin.CsvName, MessageKeys.Admin.CsvEmail,
+            MessageKeys.Admin.CsvSubject, MessageKeys.Admin.CsvMessage, MessageKeys.Admin.CsvRead, MessageKeys.Admin.CsvCulture,
+        }.Select(k => L(k))));
+        await foreach (var m in rows.WithCancellation(ct))
+            await writer.WriteAsync(LeadCsv.Row(new[]
+            {
+                m.Id.ToString(CultureInfo.InvariantCulture), m.CreatedAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
+                m.FullName, m.Email, m.Subject, m.Message,
+                L(m.IsRead ? MessageKeys.Admin.CsvYes : MessageKeys.Admin.CsvNo),
+                L(m.Culture == "en" ? MessageKeys.Admin.CsvEnglish : MessageKeys.Admin.CsvArabic),
+            }));
+        await writer.FlushAsync(ct);
     }
 
     [HttpPost]

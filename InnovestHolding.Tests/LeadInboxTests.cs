@@ -400,6 +400,69 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.DoesNotContain(email, await (await client.GetAsync("/Admin/Leads/Export?type=interest&status=new")).Content.ReadAsStringAsync());
     }
 
+    [Fact] // Anas 2026-11-09: «ضيف ع كل الجداول export» — contact messages export whole (the list cuts them at 80 characters)
+    public async Task Messages_export_is_admin_only_csv_with_the_full_message_and_neutralised_formulas()
+    {
+        var email = Unique("msgcsv") + "@example.com";
+        var longMessage = "=SUM(1)" + new string('x', 120) + " النهاية";
+        await f.DbAsync(async db =>
+        {
+            db.ContactMessages.Add(new ContactMessage { FullName = "+Name", Email = email, Subject = "s \"q\"", Message = longMessage, Culture = "en", CreatedAt = DateTime.UtcNow });
+            return await db.SaveChangesAsync();
+        });
+        try
+        {
+            var anon = await f.NewClient().GetAsync("/Admin/Messages/Export");
+            Assert.Equal(HttpStatusCode.Redirect, anon.StatusCode);
+            Assert.Contains("/Account/Login", anon.Headers.Location!.OriginalString);
+
+            var client = await f.SignedInClientAsync();
+            Assert.Contains("href=\"/Admin/Messages/Export\"", await client.GetStringAsync("/Admin/Messages"));
+            var r = await client.GetAsync("/Admin/Messages/Export");
+            Assert.Equal(HttpStatusCode.OK, r.StatusCode);
+            Assert.Equal("text/csv", r.Content.Headers.ContentType!.MediaType);
+            Assert.StartsWith("attachment", r.Content.Headers.ContentDisposition!.ToString());
+            Assert.Equal("no-store", r.Headers.CacheControl!.ToString());
+            var bytes = await r.Content.ReadAsByteArrayAsync();
+            Assert.Equal(new byte[] { 0xEF, 0xBB, 0xBF }, bytes[..3]);
+            var text = System.Text.Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
+            Assert.StartsWith("\"" + Msg.Ar(MessageKeys.Admin.CsvId) + "\",", text);
+            Assert.Contains("\"" + Msg.Ar(MessageKeys.Admin.CsvMessage) + "\"", text);
+            Assert.Contains("\"'" + longMessage + "\"", text);       // whole, not the list's 80 characters; formula neutralised
+            Assert.Contains("\"'+Name\"", text);
+            Assert.Contains("\"s \"\"q\"\"\"", text);                 // quotes doubled
+            Assert.Contains("\"" + Msg.Ar(MessageKeys.Admin.CsvEnglish) + "\"", text);
+        }
+        finally
+        {
+            await f.DbAsync(db => db.ContactMessages.Where(m => m.Email == email).ExecuteDeleteAsync());
+        }
+    }
+
+    [Fact] // the generic table export (admin-table-export.js) is on every admin page; the server-exported tables opt out
+    public async Task Every_admin_page_loads_the_table_export_and_server_exported_tables_opt_out()
+    {
+        await AddSponsorshipAsync();
+        var client = await f.SignedInClientAsync();
+        foreach (var path in new[] { "/Admin/Dashboard", "/Admin/News", "/Admin/Partners", "/Admin/Speakers" })
+            Assert.Contains("/js/admin-table-export.js", await client.GetStringAsync(path));
+        Assert.Contains("<table class=\"admin-table lead-table\" data-export=\"server\">", await client.GetStringAsync("/Admin/Leads"));
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/js/admin-table-export.js")).StatusCode);
+    }
+
+    [Fact] // Nader F11 obs 1 and 3: the type in any letter case is that form, and a form's own list has no type column
+    public async Task Form_type_is_case_insensitive_and_a_form_inbox_has_no_type_column()
+    {
+        var (id, _) = await AddSponsorshipAsync();
+        var client = await f.SignedInClientAsync();
+        var upper = await client.GetStringAsync("/Admin/Leads?type=SPONSORSHIP");
+        Assert.True(IsActive(upper, "/Admin/Leads?type=sponsorship"));
+        Assert.Contains("<input type=\"hidden\" name=\"type\" value=\"sponsorship\">", upper);
+        Assert.DoesNotContain("<th>النوع</th>", upper);
+        Assert.Contains("<th>النوع</th>", await client.GetStringAsync("/Admin/Leads"));
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/Admin/Leads/Details/{id}?type=Sponsorship")).StatusCode);
+    }
+
     [Theory]
     [InlineData("=1+1", "\"'=1+1\"")]
     [InlineData("+20 100", "\"'+20 100\"")]

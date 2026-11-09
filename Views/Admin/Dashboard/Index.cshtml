@@ -43,7 +43,7 @@
             @foreach (var (key, label) in InnovestHolding.Infrastructure.Leads.LeadInbox.Types)
             {
                 var count = leads.Of(key);
-                <a class="stat-card-admin lead-type-card@(count > 0 ? " has-unread" : "")" href="/Admin/Leads?type=@key&amp;read=unread">
+                <a class="stat-card-admin lead-type-card@(count > 0 ? " has-unread" : "")" href="/Admin/Leads?type=@key@(count > 0 ? "&read=unread" : "")">
                     <div class="stat-card-info"><h3>@count</h3><p>@label — غير مقروء</p></div>
                 </a>
             }

@@ -209,6 +209,8 @@ public static class MessageKeys
         public const string CsvNo = "Admin_CsvNo";
         public const string CsvArabic = "Admin_CsvArabic";
         public const string CsvEnglish = "Admin_CsvEnglish";
+        public const string CsvSubject = "Admin_CsvSubject";
+        public const string CsvMessage = "Admin_CsvMessage";
         public const string CsvReference = "Admin_CsvReference";
         public const string CsvReferenceId = "Admin_CsvReferenceId";
         public const string OptionAdded = "Admin_OptionAdded";

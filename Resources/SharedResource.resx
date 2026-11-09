@@ -336,6 +336,8 @@
   <data name="Admin_CsvNo" xml:space="preserve"><value>لا</value></data>
   <data name="Admin_CsvArabic" xml:space="preserve"><value>العربية</value></data>
   <data name="Admin_CsvEnglish" xml:space="preserve"><value>الإنجليزية</value></data>
+  <data name="Admin_CsvSubject" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="Admin_CsvMessage" xml:space="preserve"><value>الرسالة</value></data>
   <data name="Admin_CsvReference" xml:space="preserve"><value>المرجع (الفرصة / الباقة / الفعالية)</value></data>
   <data name="Admin_CsvReferenceId" xml:space="preserve"><value>رقم المرجع</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>

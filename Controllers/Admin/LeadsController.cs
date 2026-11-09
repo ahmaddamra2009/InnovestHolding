@@ -36,10 +36,12 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
         };
     }
 
-    public static Filter Clean(string? type, string? read, string? status) => new(
-        LeadInbox.IsType(type) ? type : null,
-        read is Unread or Read ? read : null,
-        LeadStatuses.Parse(status));
+    /// <summary>The filter from the query; a form type in any letter case (?type=FORUM) is that form.</summary>
+    public static Filter Clean(string? type, string? read, string? status)
+    {
+        type = type?.ToLowerInvariant();
+        return new(LeadInbox.IsType(type) ? type : null, read is Unread or Read ? read : null, LeadStatuses.Parse(status));
+    }
 
     private static IQueryable<LeadRow> Apply(IQueryable<LeadRow> query, Filter f)
     {
@@ -69,6 +71,7 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
     /// <param name="listType">The list filter to return to (another value than <paramref name="type"/> when the list shows all types).</param>
     public async Task<IActionResult> Details(string? type, int id, string? listType, string? read, string? status, int? page)
     {
+        type = type?.ToLowerInvariant();
         var detail = LeadInbox.IsType(type) ? await LoadAsync(type!, id) : null;
         if (detail is null) return NotFound();
         return View("~/Views/Admin/Leads/Details.cshtml", detail with { Back = Clean(listType, read, status), Page = page > 1 ? page : null });

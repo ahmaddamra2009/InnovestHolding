@@ -1,7 +1,8 @@
 @model (int Page, int TotalPages, string BasePath)
 @if (Model.TotalPages > 1)
 {
-    <nav class="pager" aria-label="الصفحات">
+    @* data-pages / data-base: the table export reads every page of the list (admin-table-export.js). *@
+    <nav class="pager" aria-label="الصفحات" data-pages="@Model.TotalPages" data-base="@Model.BasePath">
         @if (Model.Page > 1)
         {
             <a class="btn-admin btn-secondary btn-sm" href="@(Model.BasePath)?page=@(Model.Page - 1)">السابق</a>
