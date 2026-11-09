@@ -38,7 +38,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
   (اختصار إلى بطاقة «صفحات المنتدى» في «النصوص العامة»). مجموعة «الموقع» تضم:
   صفحات الموقع، النصوص العامة، القوائم، الخدمات، أرقام الأثر، الأسئلة الشائعة، روابط التواصل الاجتماعي، أقسام الصفحات،
   رسائل وأزرار الموقع، القائمة والفوتر، الهوية البصرية، الإعدادات.
-- **تصدير إلى Excel (CSV):** كل قائمة في اللوحة (كل جدول، وقوائم البطاقات مثل «القوائم» و«خيارات مجال الاهتمام» و«مزايا التسجيل») فيها زر **«تصدير إلى Excel (CSV)»**. الملف يضم القيم **المحفوظة** التي تعرضها القائمة (لا التعديلات غير المحفوظة)، دون عمود الأزرار؛ والقائمة المتعددة الصفحات تُصدَّر كاملة. الصفحة التي فيها قائمتان (مثل «الشركاء والرعاة») تعطي ملفين مرقّمين `-1` و`-2`. القائمة الفارغة لا يظهر فيها الزر. الملف يُفتح في Excel بالعربية الصحيحة، والخلية التي تبدأ بـ `=` أو `+` أو `-` أو `@` أو `|` تُكتب نصاً.
+- **تصدير إلى Excel (CSV):** كل قائمة في اللوحة (كل جدول، وقوائم البطاقات مثل «القوائم» و«خيارات مجال الاهتمام» و«مزايا التسجيل»، وقائمة «رسائل وأزرار الموقع» بملف واحد فيه المجموعة والمفتاح والنص العربي والإنجليزي الذي يظهر في الموقع) فيها زر **«تصدير إلى Excel (CSV)»**. الملف يضم القيم **المحفوظة** التي تعرضها القائمة (لا التعديلات غير المحفوظة)، دون عمود الأزرار؛ والقائمة المتعددة الصفحات تُصدَّر كاملة. الصفحة التي فيها قائمتان (مثل «الشركاء والرعاة») تعطي ملفين مرقّمين `-1` و`-2`. القائمة الفارغة لا يظهر فيها الزر. الملف يُفتح في Excel بالعربية الصحيحة، والخلية التي تبدأ بـ `=` أو `+` أو `-` أو `@` أو `|` تُكتب نصاً.
 
 ## 2. بنية الموقع
 
@@ -591,7 +591,7 @@ which language you are typing.
   and **forum page content** («محتوى صفحة المنتدى», a shortcut to the «صفحات المنتدى» card of the general texts). The
   «الموقع» group holds: site pages, general texts, lists, services, impact figures, FAQ, social links, page sections («أقسام الصفحات»),
   site messages and buttons, menu and footer, brand identity, settings.
-- **Export to Excel (CSV):** every list in the admin (each table, and the lists of edit cards such as «القوائم», «خيارات مجال الاهتمام» and «مزايا التسجيل») has an **«تصدير إلى Excel (CSV)»** button. The file holds the **saved** values the list shows (not unsaved edits), without the buttons column; a list with several pages is exported whole. A page with two lists (e.g. «الشركاء والرعاة») gives two files numbered `-1` and `-2`. An empty list has no button. The file opens in Excel with Arabic shown correctly; a cell that starts with `=`, `+`, `-`, `@` or `|` is written as text.
+- **Export to Excel (CSV):** every list in the admin (each table, and the lists of edit cards such as «القوائم», «خيارات مجال الاهتمام» and «مزايا التسجيل», and «رسائل وأزرار الموقع» as one file with the group, key and the Arabic and English text the site shows) has an **«تصدير إلى Excel (CSV)»** button. The file holds the **saved** values the list shows (not unsaved edits), without the buttons column; a list with several pages is exported whole. A page with two lists (e.g. «الشركاء والرعاة») gives two files numbered `-1` and `-2`. An empty list has no button. The file opens in Excel with Arabic shown correctly; a cell that starts with `=`, `+`, `-`, `@` or `|` is written as text.
 
 ## 2. Site structure
 

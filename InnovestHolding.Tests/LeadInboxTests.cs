@@ -449,6 +449,20 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.Contains("<table class=\"admin-table lead-table\" data-export=\"server\">", await client.GetStringAsync("/Admin/Leads"));
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/js/admin-table-export.js")).StatusCode);
 
+        // «رسائل وأزرار الموقع» is a list of editors, not a table: the view marks its rows for the export.
+        var texts = await client.GetStringAsync("/Admin/SiteTexts");
+        Assert.Contains("data-export-list", texts);
+        Assert.Contains("data-export-group=\"", texts);
+        Assert.Contains("data-export-row", texts);
+        Assert.Contains("data-export-col=\"المفتاح\"", texts);
+        // After a refused save the fields hold what was typed, not what is saved: no export then (F12 review R2).
+        var refused = await client.PostAsync("/Admin/SiteTexts", Form(await client.GetTokenAsync("/Admin/SiteTexts"),
+            ($"texts[{MessageKeys.Ui.ContactSocial}].Ar", new string('x', 400))));
+        Assert.Equal(HttpStatusCode.OK, refused.StatusCode);
+        var refusedHtml = await refused.Content.ReadAsStringAsync();
+        Assert.Contains("data-export-row", refusedHtml);
+        Assert.DoesNotContain("data-export-list", refusedHtml);
+
         var email = Unique("msgtable") + "@example.com";
         await f.DbAsync(async db =>
         {
