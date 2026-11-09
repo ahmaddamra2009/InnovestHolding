@@ -449,6 +449,13 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.Contains("<table class=\"admin-table lead-table\" data-export=\"server\">", await client.GetStringAsync("/Admin/Leads"));
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/js/admin-table-export.js")).StatusCode);
 
+        // «رسائل وأزرار الموقع» is a list of editors, not a table: the view marks its rows for the export.
+        var texts = await client.GetStringAsync("/Admin/SiteTexts");
+        Assert.Contains("data-export-list", texts);
+        Assert.Contains("data-export-group=\"", texts);
+        Assert.Contains("data-export-row", texts);
+        Assert.Contains("data-export-col=\"المفتاح\"", texts);
+
         var email = Unique("msgtable") + "@example.com";
         await f.DbAsync(async db =>
         {

@@ -191,4 +191,28 @@
         if (forms.length === 0 || card.querySelector('table.admin-table')) return;
         addButton(card, forms[0], true, async () => formListRows(forms));
     });
+
+    // A list of editors the view marks itself ([data-export-list] → [data-export-row] items, «رسائل وأزرار الموقع»):
+    // the group ([data-export-group]), each [data-export-col] text, then each field's value as the site shows it —
+    // the saved value, or the default (its placeholder) when the field is empty.
+    function markedRows(list) {
+        const columns = [];
+        const rows = [...list.querySelectorAll('[data-export-row]')].map(item => {
+            const row = new Map();
+            const put = (name, value) => { if (!columns.includes(name)) columns.push(name); row.set(name, value); };
+            const group = item.closest('[data-export-group]')?.dataset.exportGroup;
+            if (group !== undefined) put('المجموعة', clean(group));
+            item.querySelectorAll('[data-export-col]').forEach(c => put(c.dataset.exportCol, clean(c.textContent)));
+            item.querySelectorAll(FIELDS).forEach(f => put(fieldLabel(f), fieldValue(f) || clean(f.getAttribute('placeholder'))));
+            return row;
+        });
+        return [columns, ...rows.map(r => columns.map(c => r.get(c) ?? ''))];
+    }
+
+    document.querySelectorAll('[data-export-list]').forEach(list => {
+        const first = list.querySelector('[data-export-row]');
+        if (!first) return;
+        const top = first.closest('[data-export-group]') ?? first;
+        addButton(null, top, false, async () => markedRows(list));
+    });
 })();
