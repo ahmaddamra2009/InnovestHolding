@@ -137,6 +137,62 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.Contains($"<span class=\"sidebar-badge\">{counts.Leads}</span>", await client.GetStringAsync("/Admin/Dashboard"));
     }
 
+    /// <summary>The sidebar link of one inbox: its opening tag (active or not) and its whole markup up to the badge.</summary>
+    private static System.Text.RegularExpressions.Match SidebarLink(string html, string href) =>
+        System.Text.RegularExpressions.Regex.Match(html, $"<a href=\"{System.Text.RegularExpressions.Regex.Escape(href)}\" class=\"sidebar-link( active)?\"[^>]*>(.*?)</a>",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+
+    [Fact] // Anas 2026-11-09: every public form has its own place in the dashboard, with its own unread count
+    public async Task Every_form_has_its_own_sidebar_inbox_with_its_own_badge()
+    {
+        await AddSponsorshipAsync();
+        var counts = await f.DbAsync(db => LeadInbox.UnreadAsync(db));
+        var client = await f.SignedInClientAsync();
+
+        var dashboard = await client.GetStringAsync("/Admin/Dashboard");
+        foreach (var (key, label) in LeadInbox.Types)
+        {
+            var link = SidebarLink(dashboard, "/Admin/Leads?type=" + key);
+            Assert.True(link.Success, key);
+            Assert.False(link.Groups[1].Success, key);                       // not current on another screen
+            Assert.Contains(label, link.Groups[2].Value);
+            var unread = counts.Of(key);
+            if (unread > 0) Assert.Contains($"<span class=\"sidebar-badge\">{unread}</span>", link.Groups[2].Value);
+            else Assert.DoesNotContain("sidebar-badge", link.Groups[2].Value);
+        }
+        Assert.True(SidebarLink(dashboard, "/Admin/Leads").Success);        // all forms together stays
+        Assert.False(SidebarLink(dashboard, "/Admin/Registrations").Success); // the old mixed registrations link is gone
+
+        // A form's own inbox: its link is current (not the all-forms one), and the page shows that form only.
+        var own = await client.GetStringAsync("/Admin/Leads?type=sponsorship");
+        Assert.True(SidebarLink(own, "/Admin/Leads?type=sponsorship").Groups[1].Success);
+        Assert.False(SidebarLink(own, "/Admin/Leads").Groups[1].Success);
+        Assert.False(SidebarLink(own, "/Admin/Leads?type=investor").Groups[1].Success);
+        Assert.DoesNotContain("id=\"lead-type\"", own);
+        Assert.Contains("<input type=\"hidden\" name=\"type\" value=\"sponsorship\">", own);
+
+        // The all-forms list: its link is current and it keeps the type filter.
+        var all = await client.GetStringAsync("/Admin/Leads");
+        Assert.True(SidebarLink(all, "/Admin/Leads").Groups[1].Success);
+        Assert.False(SidebarLink(all, "/Admin/Leads?type=sponsorship").Groups[1].Success);
+        Assert.Contains("id=\"lead-type\"", all);
+
+        // An unknown type is not a form: the all-forms link is current.
+        Assert.True(SidebarLink(await client.GetStringAsync("/Admin/Leads?type=nonsense"), "/Admin/Leads").Groups[1].Success);
+    }
+
+    [Fact]
+    public async Task A_lead_opened_from_a_form_inbox_keeps_that_form_current()
+    {
+        var (id, _) = await AddSponsorshipAsync();
+        var client = await f.SignedInClientAsync();
+        var fromForm = await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship&listType=sponsorship");
+        Assert.True(SidebarLink(fromForm, "/Admin/Leads?type=sponsorship").Groups[1].Success);
+        var fromAll = await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship");
+        Assert.True(SidebarLink(fromAll, "/Admin/Leads").Groups[1].Success);
+        Assert.False(SidebarLink(fromAll, "/Admin/Leads?type=sponsorship").Groups[1].Success);
+    }
+
     private async Task<int> AddQuickAsync(string email) => await f.DbAsync(async db =>
     {
         var r = new Registration { FullName = "Quick Row", Email = email, Culture = "ar", CreatedAt = DateTime.UtcNow };

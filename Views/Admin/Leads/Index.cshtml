@@ -3,9 +3,10 @@
 @using InnovestHolding.Controllers.Admin
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "الطلبات";
     var list = Model.List;
     var f = Model.Filter;
+    // One form's own inbox (its sidebar link) or all forms together.
+    ViewData["Title"] = f.Type is null ? "كل الطلبات" : LeadInbox.Label(f.Type);
     var inv = System.Globalization.CultureInfo.InvariantCulture;
     string Query(string? type, string? read, string? status, int? page = null) =>
         QueryString.Create(new[]
@@ -28,15 +29,18 @@
     }
 }
 
-<div class="stats-cards" style="margin-bottom:24px;">
-    @foreach (var (key, label) in LeadInbox.Types)
-    {
-        var unread = Model.Unread.Of(key);
-        <a class="stat-card-admin lead-type-card@(unread > 0 ? " has-unread" : "")" href="/Admin/Leads@(Query(key, unread > 0 ? LeadsController.Unread : null, null))">
-            <div class="stat-card-info"><h3>@unread</h3><p>@label — غير مقروء</p></div>
-        </a>
-    }
-</div>
+@if (f.Type is null)
+{
+    <div class="stats-cards" style="margin-bottom:24px;">
+        @foreach (var (key, label) in LeadInbox.Types)
+        {
+            var unread = Model.Unread.Of(key);
+            <a class="stat-card-admin lead-type-card@(unread > 0 ? " has-unread" : "")" href="/Admin/Leads@(Query(key, unread > 0 ? LeadsController.Unread : null, null))">
+                <div class="stat-card-info"><h3>@unread</h3><p>@label — غير مقروء</p></div>
+            </a>
+        }
+    </div>
+}
 
 <div class="admin-card">
     <div class="admin-card-header">
@@ -45,16 +49,24 @@
     </div>
 
     <form method="get" action="/Admin/Leads" class="inline-form lead-filter">
-        <div class="form-group">
-            <label for="lead-type">النوع</label>
-            <select id="lead-type" name="type" class="form-control">
-                <option value="">الكل</option>
-                @foreach (var (key, label) in LeadInbox.Types)
-                {
-                    <option value="@key" selected="@(f.Type == key)">@label</option>
-                }
-            </select>
-        </div>
+        @if (f.Type is null)
+        {
+            <div class="form-group">
+                <label for="lead-type">النوع</label>
+                <select id="lead-type" name="type" class="form-control">
+                    <option value="">الكل</option>
+                    @foreach (var (key, label) in LeadInbox.Types)
+                    {
+                        <option value="@key">@label</option>
+                    }
+                </select>
+            </div>
+        }
+        else
+        {
+            @* A form's own inbox keeps its form through the status and read filters. *@
+            <input type="hidden" name="type" value="@f.Type">
+        }
         <div class="form-group">
             <label for="lead-status">الحالة</label>
             <select id="lead-status" name="status" class="form-control">
