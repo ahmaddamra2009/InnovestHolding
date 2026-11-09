@@ -98,7 +98,6 @@
   <data name="Admin_StatUpdated" xml:space="preserve"><value>Statistic updated</value></data>
   <data name="Admin_PasswordChanged" xml:space="preserve"><value>Password changed</value></data>
   <data name="Admin_MessageDeleted" xml:space="preserve"><value>Message deleted</value></data>
-  <data name="Admin_RegistrationDeleted" xml:space="preserve"><value>Registration deleted</value></data>
   <data name="Admin_OptionAdded" xml:space="preserve"><value>Option added</value></data>
   <data name="Admin_OptionUpdated" xml:space="preserve"><value>Option updated</value></data>
   <data name="Admin_OptionDeleted" xml:space="preserve"><value>Option deleted</value></data>

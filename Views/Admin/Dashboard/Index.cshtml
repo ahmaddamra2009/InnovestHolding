@@ -26,10 +26,6 @@
         <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
         <div class="stat-card-info"><h3>@Model.TotalNavItems</h3><p>روابط إضافية في القائمة</p></div>
     </div>
-    <div class="stat-card-admin" style="@(Model.UnreadRegistrations > 0 ? "border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.02);" : "")">
-        <div class="stat-card-icon" style="@(Model.UnreadRegistrations > 0 ? "background:linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));" : "")"><svg viewBox="0 0 24 24" fill="none" stroke="@(Model.UnreadRegistrations > 0 ? "#ef4444" : "currentColor")" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div>
-        <div class="stat-card-info"><h3>@Model.TotalRegistrations</h3><p>التسجيلات @(Model.UnreadRegistrations > 0 ? $"({Model.UnreadRegistrations} جديد)" : "")</p></div>
-    </div>
     <div class="stat-card-admin" style="@(Model.UnreadMessages > 0 ? "border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.02);" : "")">
         <div class="stat-card-icon" style="@(Model.UnreadMessages > 0 ? "background:linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));" : "")"><svg viewBox="0 0 24 24" fill="none" stroke="@(Model.UnreadMessages > 0 ? "#ef4444" : "currentColor")" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
         <div class="stat-card-info"><h3>@Model.TotalMessages</h3><p>رسائل التواصل @(Model.UnreadMessages > 0 ? $"({Model.UnreadMessages} جديد)" : "")</p></div>
@@ -47,7 +43,7 @@
             @foreach (var (key, label) in InnovestHolding.Infrastructure.Leads.LeadInbox.Types)
             {
                 var count = leads.Of(key);
-                <a class="stat-card-admin lead-type-card@(count > 0 ? " has-unread" : "")" href="/Admin/Leads?type=@key&amp;status=unread">
+                <a class="stat-card-admin lead-type-card@(count > 0 ? " has-unread" : "")" href="/Admin/Leads?type=@key&amp;read=unread">
                     <div class="stat-card-info"><h3>@count</h3><p>@label — غير مقروء</p></div>
                 </a>
             }

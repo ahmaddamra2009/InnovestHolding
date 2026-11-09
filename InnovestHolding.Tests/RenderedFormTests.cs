@@ -154,7 +154,6 @@ public class RenderedFormTests(TestAppFactory f)
     // ── Messages / Registrations: «مقروء» toggle (posts the id only; the server flips the flag) ──
     [Theory]
     [InlineData("Messages")]
-    [InlineData("Registrations")]
     public async Task Mark_read_as_rendered_flips_both_ways(string page)
     {
         var client = await f.SignedInClientAsync();

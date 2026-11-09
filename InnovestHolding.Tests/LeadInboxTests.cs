@@ -49,6 +49,8 @@ public class LeadInboxTests(TestAppFactory f)
     [Theory]
     [InlineData("/Admin/Leads")]
     [InlineData("/Admin/Leads/Details/1?type=sponsorship")]
+    [InlineData("/Admin/Leads?type=forum")]
+    [InlineData("/Admin/Registrations")]           // F11: the old screen only redirects, and only for the Admin
     public async Task Anonymous_is_sent_to_the_login_page(string path)
     {
         var r = await f.NewClient().GetAsync(path);
@@ -105,7 +107,7 @@ public class LeadInboxTests(TestAppFactory f)
     }
 
     [Fact]
-    public async Task Registrations_keep_their_page_and_join_the_inbox_by_kind()
+    public async Task Registrations_join_the_inbox_by_kind_and_the_old_page_redirects()
     {
         var quick = Unique("quick") + "@example.com";
         var forum = Unique("forumreg") + "@example.com";
@@ -116,9 +118,10 @@ public class LeadInboxTests(TestAppFactory f)
             return await db.SaveChangesAsync();
         });
         var client = await f.SignedInClientAsync();
-        var page = await client.GetStringAsync("/Admin/Registrations");
-        Assert.Contains(quick, page);
-        Assert.Contains(forum, page);
+        // F11: the old mixed «التسجيلات» screen sends an old bookmark to all the forms' leads.
+        var old = await client.GetAsync("/Admin/Registrations");
+        Assert.Equal(HttpStatusCode.Redirect, old.StatusCode);
+        Assert.Equal("/Admin/Leads", old.Headers.Location!.OriginalString);
         Assert.Contains(quick, await client.GetStringAsync("/Admin/Leads?type=quick"));
         Assert.DoesNotContain(forum, await client.GetStringAsync("/Admin/Leads?type=quick"));
         Assert.Contains(forum, await client.GetStringAsync("/Admin/Leads?type=forum"));
@@ -142,6 +145,14 @@ public class LeadInboxTests(TestAppFactory f)
         System.Text.RegularExpressions.Regex.Match(html, $"<a href=\"{System.Text.RegularExpressions.Regex.Escape(href)}\" class=\"sidebar-link( active)?\"[^>]*>(.*?)</a>",
             System.Text.RegularExpressions.RegexOptions.Singleline);
 
+    /// <summary>Whether that sidebar link is the current one; fails when the link is missing, so "not current" proves it is there.</summary>
+    private static bool IsActive(string html, string href)
+    {
+        var link = SidebarLink(html, href);
+        Assert.True(link.Success, href);
+        return link.Groups[1].Success;
+    }
+
     [Fact] // Anas 2026-11-09: every public form has its own place in the dashboard, with its own unread count
     public async Task Every_form_has_its_own_sidebar_inbox_with_its_own_badge()
     {
@@ -162,23 +173,29 @@ public class LeadInboxTests(TestAppFactory f)
         }
         Assert.True(SidebarLink(dashboard, "/Admin/Leads").Success);        // all forms together stays
         Assert.False(SidebarLink(dashboard, "/Admin/Registrations").Success); // the old mixed registrations link is gone
+        // The dashboard's unread cards open that form's unread leads (it once sent status=unread, which filtered nothing).
+        Assert.Contains("href=\"/Admin/Leads?type=sponsorship&amp;read=unread\"", dashboard);
 
         // A form's own inbox: its link is current (not the all-forms one), and the page shows that form only.
         var own = await client.GetStringAsync("/Admin/Leads?type=sponsorship");
-        Assert.True(SidebarLink(own, "/Admin/Leads?type=sponsorship").Groups[1].Success);
-        Assert.False(SidebarLink(own, "/Admin/Leads").Groups[1].Success);
-        Assert.False(SidebarLink(own, "/Admin/Leads?type=investor").Groups[1].Success);
+        Assert.True(IsActive(own, "/Admin/Leads?type=sponsorship"));
+        Assert.False(IsActive(own, "/Admin/Leads"));
+        Assert.False(IsActive(own, "/Admin/Leads?type=investor"));
         Assert.DoesNotContain("id=\"lead-type\"", own);
         Assert.Contains("<input type=\"hidden\" name=\"type\" value=\"sponsorship\">", own);
+        Assert.DoesNotContain("lead-type-card", own);                        // no cards of the other forms
+        Assert.Contains("<title>استفسار رعاية - ", own);
+        Assert.Contains("href=\"/Admin/Leads/Export?type=sponsorship\"", own);  // the export keeps the form
 
         // The all-forms list: its link is current and it keeps the type filter.
         var all = await client.GetStringAsync("/Admin/Leads");
-        Assert.True(SidebarLink(all, "/Admin/Leads").Groups[1].Success);
-        Assert.False(SidebarLink(all, "/Admin/Leads?type=sponsorship").Groups[1].Success);
+        Assert.True(IsActive(all, "/Admin/Leads"));
+        Assert.False(IsActive(all, "/Admin/Leads?type=sponsorship"));
         Assert.Contains("id=\"lead-type\"", all);
+        Assert.Contains("lead-type-card", all);
 
         // An unknown type is not a form: the all-forms link is current.
-        Assert.True(SidebarLink(await client.GetStringAsync("/Admin/Leads?type=nonsense"), "/Admin/Leads").Groups[1].Success);
+        Assert.True(IsActive(await client.GetStringAsync("/Admin/Leads?type=nonsense"), "/Admin/Leads"));
     }
 
     [Fact]
@@ -187,10 +204,14 @@ public class LeadInboxTests(TestAppFactory f)
         var (id, _) = await AddSponsorshipAsync();
         var client = await f.SignedInClientAsync();
         var fromForm = await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship&listType=sponsorship");
-        Assert.True(SidebarLink(fromForm, "/Admin/Leads?type=sponsorship").Groups[1].Success);
+        Assert.True(IsActive(fromForm, "/Admin/Leads?type=sponsorship"));
+        Assert.False(IsActive(fromForm, "/Admin/Leads"));
+        Assert.Contains("href=\"/Admin/Leads?type=sponsorship\" class=\"btn-admin btn-secondary btn-sm\">→ العودة", fromForm); // back to that inbox
+        // A forged listType is not a form: the all-forms link stays current.
+        Assert.True(IsActive(await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship&listType=%22%3E%3Cscript%3E"), "/Admin/Leads"));
         var fromAll = await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship");
-        Assert.True(SidebarLink(fromAll, "/Admin/Leads").Groups[1].Success);
-        Assert.False(SidebarLink(fromAll, "/Admin/Leads?type=sponsorship").Groups[1].Success);
+        Assert.True(IsActive(fromAll, "/Admin/Leads"));
+        Assert.False(IsActive(fromAll, "/Admin/Leads?type=sponsorship"));
     }
 
     private async Task<int> AddQuickAsync(string email) => await f.DbAsync(async db =>

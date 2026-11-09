@@ -4,6 +4,7 @@
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = LeadInbox.Label(Model.Type);
+    ViewData["LeadType"] = Model.Back.Type;   // the sidebar keeps the inbox this lead was opened from current
     // The list filter this screen was opened from: the back link and every form below carry it (kept after save/mark).
     var backStatus = Model.Back.Status is { } listStatus ? LeadStatuses.Key(listStatus) : null;
     var back = "/Admin/Leads" + QueryString.Create(new[]

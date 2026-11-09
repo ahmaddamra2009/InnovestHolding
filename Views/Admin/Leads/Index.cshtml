@@ -5,8 +5,10 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     var list = Model.List;
     var f = Model.Filter;
-    // One form's own inbox (its sidebar link) or all forms together.
-    ViewData["Title"] = f.Type is null ? "كل الطلبات" : LeadInbox.Label(f.Type);
+    // One form's own inbox (its sidebar link, current through LeadType) or all forms together.
+    var title = f.Type is null ? "كل الطلبات" : LeadInbox.Label(f.Type);
+    ViewData["Title"] = title;
+    ViewData["LeadType"] = f.Type;
     var inv = System.Globalization.CultureInfo.InvariantCulture;
     string Query(string? type, string? read, string? status, int? page = null) =>
         QueryString.Create(new[]
@@ -44,7 +46,7 @@
 
 <div class="admin-card">
     <div class="admin-card-header">
-        <span class="admin-card-title">@(f.Type is null ? "كل الطلبات" : LeadInbox.Label(f.Type)) (@list.TotalCount)</span>
+        <span class="admin-card-title">@title (@list.TotalCount)</span>
         <a class="btn-admin btn-secondary btn-sm" href="/Admin/Leads/Export@(Query(f.Type, f.Read, statusKey))" download>تصدير إلى Excel (CSV)</a>
     </div>
 

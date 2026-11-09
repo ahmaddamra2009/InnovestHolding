@@ -14,10 +14,10 @@ using Microsoft.Net.Http.Headers;
 namespace InnovestHolding.Controllers.Admin;
 
 /// <summary>
-/// «الطلبات» — the applications inbox: every lead of the public forms in one list (filter by type, read state and
-/// workflow status; newest first, paged), a detail screen per lead with its status and an internal note, mark
-/// read/unread, delete, and a CSV export of the current filter. Leads are personal data: admin-only, never logged.
-/// The quick registrations stay listed in «التسجيلات» and contact messages in «رسائل التواصل» as before.
+/// «الوارد» — the applications inbox: each public form has its own list (its sidebar link, ?type=…) and «كل الطلبات»
+/// shows them together (filter by type, read state and workflow status; newest first, paged), a detail screen per
+/// lead with its status and an internal note, mark read/unread, delete, and a CSV export of the current filter.
+/// Leads are personal data: admin-only, never logged. Contact messages keep their own inbox («رسائل التواصل»).
 /// </summary>
 public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminControllerBase
 {

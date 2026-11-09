@@ -21,8 +21,6 @@ public class DashboardController : AdminControllerBase
             TotalFaqs = await _db.Faqs.CountAsync(),
             TotalPlatforms = await _db.Platforms.CountAsync(),
             TotalNavItems = await _db.NavItems.CountAsync(),
-            TotalRegistrations = await _db.Registrations.CountAsync(),
-            UnreadRegistrations = await _db.Registrations.CountAsync(r => !r.IsRead),
             TotalMessages = await _db.ContactMessages.CountAsync(),
             UnreadMessages = await _db.ContactMessages.CountAsync(m => !m.IsRead),
             UnreadLeads = await Infrastructure.Leads.LeadInbox.UnreadForRequestAsync(HttpContext, _db),

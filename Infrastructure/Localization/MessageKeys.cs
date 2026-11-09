@@ -188,7 +188,6 @@ public static class MessageKeys
         public const string StatUpdated = "Admin_StatUpdated";
         public const string PasswordChanged = "Admin_PasswordChanged";
         public const string MessageDeleted = "Admin_MessageDeleted";
-        public const string RegistrationDeleted = "Admin_RegistrationDeleted";
         public const string LeadDeleted = "Admin_LeadDeleted";
         public const string LeadUpdated = "Admin_LeadUpdated";
         public const string LeadStatusNew = "Admin_LeadStatusNew";

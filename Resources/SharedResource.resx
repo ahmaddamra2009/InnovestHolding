@@ -98,7 +98,6 @@
   <data name="Admin_StatUpdated" xml:space="preserve"><value>تم تحديث الإحصائية بنجاح</value></data>
   <data name="Admin_PasswordChanged" xml:space="preserve"><value>تم تغيير كلمة المرور بنجاح</value></data>
   <data name="Admin_MessageDeleted" xml:space="preserve"><value>تم حذف الرسالة بنجاح</value></data>
-  <data name="Admin_RegistrationDeleted" xml:space="preserve"><value>تم حذف التسجيل بنجاح</value></data>
   <data name="Admin_OptionAdded" xml:space="preserve"><value>تمت إضافة الخيار بنجاح</value></data>
   <data name="Admin_OptionUpdated" xml:space="preserve"><value>تم تحديث الخيار بنجاح</value></data>
   <data name="Admin_OptionDeleted" xml:space="preserve"><value>تم حذف الخيار بنجاح</value></data>

@@ -105,7 +105,7 @@ public class AdminAuthTests(TestAppFactory f)
     [
         "/Admin/Dashboard", "/Admin/Content/Edit", "/Admin/Events", "/Admin/Events/Create", "/Admin/Faq",
         "/Admin/Faq/Create", "/Admin/Messages", "/Admin/Nav", "/Admin/News", "/Admin/News/Create",
-        "/Admin/Partners", "/Admin/Platforms", "/Admin/Registrations", "/Admin/Settings", "/Admin/Stats",
+        "/Admin/Partners", "/Admin/Platforms", "/Admin/Settings", "/Admin/Stats",
         "/Admin/InterestOptions", "/Admin/RegisterBenefits", "/Admin/SocialLinks",
         "/Admin/Pages", "/Admin/Pages/Edit/about", "/Admin/ContentItems", "/Admin/ContentItems?group=values",
         "/Admin/SiteTexts", "/Admin/SiteTexts?tab=messages", "/Admin/Brand",
