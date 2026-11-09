@@ -86,12 +86,30 @@ public static class LeadCsv
     /// Writes the BOM, the header and every row to <paramref name="body"/> as the rows arrive from the database (never
     /// the whole file in memory: C4 review F5).
     /// </summary>
-    public static async Task WriteAsync(Stream body, IAsyncEnumerable<LeadRow> rows, Func<string, string> text, CancellationToken ct)
+    public static Task WriteAsync(Stream body, IAsyncEnumerable<LeadRow> rows, Func<string, string> text, CancellationToken ct) =>
+        WriteAsync(body, HeaderKeys.Select(text), rows, r => Row(r, text), ct);
+
+    /// <summary>
+    /// Any admin CSV (leads, contact messages): the BOM, the header cells, then each row as it arrives from the database
+    /// (streamed, never the whole file in memory). Every cell goes through <see cref="Cell"/>.
+    /// </summary>
+    public static async Task WriteAsync<T>(Stream body, IEnumerable<string?> header, IAsyncEnumerable<T> rows, Func<T, string> row, CancellationToken ct)
     {
         await body.WriteAsync(Encoding.UTF8.GetPreamble(), ct);
         await using var writer = new StreamWriter(body, new UTF8Encoding(false), 16 * 1024, leaveOpen: true);
-        await writer.WriteAsync(Header(text));
-        await foreach (var r in rows.WithCancellation(ct)) await writer.WriteAsync(Row(r, text));
+        await writer.WriteAsync(Row(header));
+        await foreach (var r in rows.WithCancellation(ct)) await writer.WriteAsync(row(r));
         await writer.FlushAsync(ct);
+    }
+
+    /// <summary>The response of an admin CSV download: an attachment named <c>{prefix}-{UTC time}.csv</c>, never cached.</summary>
+    public static void Attach(HttpResponse response, string prefix)
+    {
+        response.ContentType = "text/csv; charset=utf-8";
+        response.Headers.ContentDisposition = new Microsoft.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+        {
+            FileName = $"{prefix}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture)}.csv",
+        }.ToString();
+        response.Headers.CacheControl = "no-store";
     }
 }

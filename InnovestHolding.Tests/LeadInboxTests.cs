@@ -448,6 +448,38 @@ public class LeadInboxTests(TestAppFactory f)
             Assert.Contains("/js/admin-table-export.js", await client.GetStringAsync(path));
         Assert.Contains("<table class=\"admin-table lead-table\" data-export=\"server\">", await client.GetStringAsync("/Admin/Leads"));
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/js/admin-table-export.js")).StatusCode);
+
+        var email = Unique("msgtable") + "@example.com";
+        await f.DbAsync(async db =>
+        {
+            db.ContactMessages.Add(new ContactMessage { FullName = "QA", Email = email, Subject = "s", Message = "m", CreatedAt = DateTime.UtcNow });
+            return await db.SaveChangesAsync();
+        });
+        try
+        {
+            Assert.Contains("<table class=\"admin-table\" data-export=\"server\">", await client.GetStringAsync("/Admin/Messages"));
+        }
+        finally
+        {
+            await f.DbAsync(db => db.ContactMessages.Where(m => m.Email == email).ExecuteDeleteAsync());
+        }
+    }
+
+    [Fact] // Nader F11 obs 2: a form's unread card opens its unread leads, or the whole form when none is unread — on both pages
+    public async Task Unread_cards_link_alike_on_the_dashboard_and_the_inbox()
+    {
+        await AddSponsorshipAsync();
+        var counts = await f.DbAsync(db => LeadInbox.UnreadAsync(db));
+        var client = await f.SignedInClientAsync();
+        var dashboard = await client.GetStringAsync("/Admin/Dashboard");
+        var inbox = await client.GetStringAsync("/Admin/Leads");
+        Assert.True(counts.Of(LeadInbox.Sponsorship) > 0);   // at least one card takes the unread branch
+        foreach (var (key, _) in LeadInbox.Types)
+        {
+            var href = $"href=\"/Admin/Leads?type={key}{(counts.Of(key) > 0 ? "&amp;read=unread" : "")}\"";
+            Assert.Contains(href, dashboard);
+            Assert.Contains(href, inbox);
+        }
     }
 
     [Fact] // Nader F11 obs 1 and 3: the type in any letter case is that form, and a form's own list has no type column

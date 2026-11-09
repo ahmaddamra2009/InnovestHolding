@@ -123,16 +123,14 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
     /// prefixed with an apostrophe); headers and words come from the resx of the current culture. The rows are streamed
     /// to the response as they are read (no row cap needed: memory stays flat whatever the inbox size).
     /// </summary>
+    [HttpGet]
     public async Task Export(string? type, string? read, string? status)
     {
         var filter = Clean(type, read, status);
         var rows = Apply(LeadInbox.Query(db, filter.Type), filter)
             .OrderByDescending(r => r.CreatedAt).ThenByDescending(r => r.Id).AsAsyncEnumerable();
 
-        var name = $"leads-{filter.Type ?? "all"}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture)}.csv";
-        Response.ContentType = "text/csv; charset=utf-8";
-        Response.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = name }.ToString();
-        Response.Headers.CacheControl = "no-store";
+        LeadCsv.Attach(Response, "leads-" + (filter.Type ?? "all"));
         await LeadCsv.WriteAsync(Response.Body, rows, key => L(key), HttpContext.RequestAborted);
     }
 

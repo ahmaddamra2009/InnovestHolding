@@ -47,7 +47,10 @@
 <div class="admin-card">
     <div class="admin-card-header">
         <span class="admin-card-title">@title (@list.TotalCount)</span>
-        <a class="btn-admin btn-secondary btn-sm" href="/Admin/Leads/Export@(Query(f.Type, f.Read, statusKey))" download>تصدير إلى Excel (CSV)</a>
+        @if (list.TotalCount > 0)
+        {
+            <a class="btn-admin btn-secondary btn-sm" href="/Admin/Leads/Export@(Query(f.Type, f.Read, statusKey))" download>تصدير إلى Excel (CSV)</a>
+        }
     </div>
 
     <form method="get" action="/Admin/Leads" class="inline-form lead-filter">

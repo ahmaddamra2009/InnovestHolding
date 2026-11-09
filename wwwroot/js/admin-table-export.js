@@ -26,10 +26,14 @@
 
     const clean = s => (s || '').replace(/\s+/g, ' ').trim();
 
+    // The SAVED value of a field (what the page was rendered with), never an unsaved edit in progress.
     function fieldValue(field) {
-        if (field.type === 'checkbox' || field.type === 'radio') return field.checked ? 'نعم' : 'لا';
-        if (field.tagName === 'SELECT') return clean(field.selectedOptions[0]?.textContent);
-        return clean(field.value);
+        if (field.type === 'checkbox' || field.type === 'radio') return field.defaultChecked ? 'نعم' : 'لا';
+        if (field.tagName === 'SELECT') {
+            const options = [...field.options];
+            return clean((options.find(o => o.defaultSelected) ?? options[0])?.textContent);
+        }
+        return clean(field.defaultValue);
     }
 
     // A field's name as its label shows it, without the field's own text, hints and the required star (a label not
@@ -42,20 +46,23 @@
         return clean(copy.textContent);
     }
 
-    // The text of one table cell: an inline edit form by its fields (one field: its value; several: "label: value |
-    // …", empty ones left out), an image by its alt text, else the visible words. Buttons of symbols only (move ▲ ▼)
-    // are left out; a worded button («ظاهر») is the cell's value.
+    // The text of one table cell as the list shows it: a folded inline editor (details.row-editor, «تعديل») is left
+    // out, so a row exports its visible name, not the editor's fields. What stays: the visible words (buttons of
+    // symbols only, like move ▲ ▼, left out; a worded button such as «ظاهر» is the value), then any field still
+    // shown in the cell as "label: value" (empty ones left out), else an image's alt text.
     function cellText(td) {
-        const fields = [...td.querySelectorAll(FIELDS)];
-        if (fields.length === 1) return fieldValue(fields[0]);
-        if (fields.length > 1) return fields.filter(f => fieldValue(f) !== '')
-            .map(f => `${fieldLabel(f)}: ${fieldValue(f)}`).join(' | ');
         const copy = td.cloneNode(true);
-        copy.querySelectorAll('script, style, .sr-only').forEach(n => n.remove());
+        copy.querySelectorAll('details.row-editor, script, style, .sr-only').forEach(n => n.remove());
         copy.querySelectorAll('button').forEach(b => { if (!/[\p{L}\p{N}]/u.test(b.textContent)) b.remove(); });
+
+        const fields = [...td.querySelectorAll(FIELDS)].filter(f => !f.closest('details.row-editor'));
+        const parts = fields.map(f => [fieldLabel(f), fieldValue(f)]).filter(([, v]) => v !== '');
+        copy.querySelectorAll(`${FIELDS}, label, .field-hint`).forEach(n => n.remove());
         const text = clean(copy.textContent);
-        if (text) return text;
-        return clean(td.querySelector('img')?.getAttribute('alt'));
+
+        if (fields.length === 1 && !text) return fieldValue(fields[0]);
+        const out = [text, ...parts.map(([l, v]) => l ? `${l}: ${v}` : v)].filter(Boolean).join(' | ');
+        return out || clean(td.querySelector('img')?.getAttribute('alt'));
     }
 
     // Columns to leave out: the actions column (its header, or cells marked .actions) and any th[data-export=skip].
@@ -124,7 +131,7 @@
 
     function download(lines, name) {
         const csv = lines.map(r => r.map(cell).join(',')).join('\r\n') + '\r\n';
-        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = name;
