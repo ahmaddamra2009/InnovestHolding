@@ -43,7 +43,7 @@
         if (!label) return clean(field.getAttribute('aria-label') || field.name);
         const copy = label.cloneNode(true);
         copy.querySelectorAll('input, select, textarea, .req, .field-hint').forEach(n => n.remove());
-        return clean(copy.textContent);
+        return clean(copy.textContent).replace(/[:：]$/, '').trim();   // a label written with its own colon
     }
 
     // The text of one table cell as the list shows it: a folded inline editor (details.row-editor, «تعديل») is left
@@ -54,13 +54,15 @@
     function cellText(td) {
         const copy = td.cloneNode(true);
         copy.querySelectorAll('details.row-editor, script, style, .sr-only').forEach(n => n.remove());
+        // A space after each element, so two lines of a cell (15 / يوليو, name / key) do not run together.
+        copy.querySelectorAll('*').forEach(n => n.append(' '));
 
         const fields = [...td.querySelectorAll(FIELDS)].filter(f => !f.closest('details.row-editor'));
         copy.querySelectorAll('button').forEach(b => {
             if (fields.length || !/[\p{L}\p{N}]/u.test(b.textContent)) b.remove();
         });
         const parts = fields.map(f => [fieldLabel(f), fieldValue(f)]).filter(([, v]) => v !== '');
-        copy.querySelectorAll(`${FIELDS}, label, .field-hint`).forEach(n => n.remove());
+        copy.querySelectorAll(`${FIELDS}, form label, form .field-hint`).forEach(n => n.remove());
         const text = clean(copy.textContent);
 
         if (fields.length === 1 && !text) return fieldValue(fields[0]);

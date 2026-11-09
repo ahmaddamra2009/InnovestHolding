@@ -469,16 +469,24 @@ public class LeadInboxTests(TestAppFactory f)
     public async Task Unread_cards_link_alike_on_the_dashboard_and_the_inbox()
     {
         await AddSponsorshipAsync();
+        // One form with nothing unread, so the zero branch runs too.
+        await f.DbAsync(db => db.OpportunityInterests.ExecuteUpdateAsync(s => s.SetProperty(x => x.IsRead, true)));
         var counts = await f.DbAsync(db => LeadInbox.UnreadAsync(db));
         var client = await f.SignedInClientAsync();
         var dashboard = await client.GetStringAsync("/Admin/Dashboard");
         var inbox = await client.GetStringAsync("/Admin/Leads");
-        Assert.True(counts.Of(LeadInbox.Sponsorship) > 0);   // at least one card takes the unread branch
+        Assert.True(counts.Of(LeadInbox.Sponsorship) > 0);
+        Assert.Equal(0, counts.Of(LeadInbox.Interest));
         foreach (var (key, _) in LeadInbox.Types)
         {
-            var href = $"href=\"/Admin/Leads?type={key}{(counts.Of(key) > 0 ? "&amp;read=unread" : "")}\"";
-            Assert.Contains(href, dashboard);
-            Assert.Contains(href, inbox);
+            var unreadHref = $"href=\"/Admin/Leads?type={key}&amp;read=unread\"";
+            foreach (var page in new[] { dashboard, inbox })
+            {
+                // The sidebar has href="/Admin/Leads?type=x" on every page, so the zero case is pinned by the absence
+                // of the unread link (no card may send a form with nothing unread to an empty unread list).
+                if (counts.Of(key) > 0) Assert.Contains(unreadHref, page);
+                else Assert.DoesNotContain(unreadHref, page);
+            }
         }
     }
 
