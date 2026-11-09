@@ -91,7 +91,7 @@ public class CultureRoutingTests(TestAppFactory f)
         });
         try
         {
-            var html = await Html(await client.GetAsync("/Admin/Registrations"));
+            var html = await Html(await client.GetAsync("/Admin/Leads?type=quick"));
             Assert.Contains("<time class=\"utc-time\" datetime=\"2099-03-04T05:06:07Z\">2099/03/04 05:06 UTC</time>", html);
             Assert.Contains("local-time.js", html);
         }
@@ -643,12 +643,12 @@ public class NewAdminScreenTests(TestAppFactory f)
         try
         {
             var client = await f.SignedInClientAsync();
-            var p1 = await client.GetStringAsync("/Admin/Registrations");
-            var p2 = await client.GetStringAsync("/Admin/Registrations?page=2");
+            var p1 = await client.GetStringAsync("/Admin/Leads?type=quick");
+            var p2 = await client.GetStringAsync("/Admin/Leads?type=quick&page=2");
             Assert.Equal(50, Regex.Matches(p1, Regex.Escape(marker)).Count);
             Assert.Equal(5, Regex.Matches(p2, Regex.Escape(marker)).Count);
-            Assert.Contains("?page=2", p1);
-            var far = await client.GetAsync("/Admin/Registrations?page=99999");
+            Assert.Contains("type=quick&amp;page=2", p1);       // the pager keeps the form
+            var far = await client.GetAsync("/Admin/Leads?type=quick&page=99999");
             Assert.Equal(HttpStatusCode.OK, far.StatusCode);
         }
         finally

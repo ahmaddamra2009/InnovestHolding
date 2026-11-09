@@ -326,3 +326,10 @@ select.form-control { cursor: pointer; }
 .brand-warning { margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: #a16207; font-size: 0.85rem; }
 .brand-swatch { inline-size: 48px; block-size: 48px; border-radius: 10px; border: 1px solid var(--admin-border, rgba(0,0,0,0.1)); flex: none; }
 @media (max-width: 640px) { .brand-preview--og { max-width: 100%; } }
+
+/* ── F11: table export button, and a leads table that fits its card ── */
+.table-export { display: flex; justify-content: flex-end; margin: 4px 0 10px; }
+.admin-card-header:has(.table-export-btn) { justify-content: flex-start; gap: 8px; }
+.admin-card-header:has(.table-export-btn) > :first-child { margin-inline-end: auto; }
+.lead-table td.cell-ltr { overflow-wrap: anywhere; min-width: 14ch; }
+.lead-table td.actions { flex-wrap: wrap; }

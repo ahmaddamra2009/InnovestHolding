@@ -9,15 +9,14 @@ using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Net.Http.Headers;
 
 namespace InnovestHolding.Controllers.Admin;
 
 /// <summary>
-/// «الطلبات» — the applications inbox: every lead of the public forms in one list (filter by type, read state and
-/// workflow status; newest first, paged), a detail screen per lead with its status and an internal note, mark
-/// read/unread, delete, and a CSV export of the current filter. Leads are personal data: admin-only, never logged.
-/// The quick registrations stay listed in «التسجيلات» and contact messages in «رسائل التواصل» as before.
+/// «الوارد» — the applications inbox: each public form has its own list (its sidebar link, ?type=…) and «كل الطلبات»
+/// shows them together (filter by type, read state and workflow status; newest first, paged), a detail screen per
+/// lead with its status and an internal note, mark read/unread, delete, and a CSV export of the current filter.
+/// Leads are personal data: admin-only, never logged. Contact messages keep their own inbox («رسائل التواصل»).
 /// </summary>
 public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminControllerBase
 {
@@ -36,10 +35,12 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
         };
     }
 
-    public static Filter Clean(string? type, string? read, string? status) => new(
-        LeadInbox.IsType(type) ? type : null,
-        read is Unread or Read ? read : null,
-        LeadStatuses.Parse(status));
+    /// <summary>The filter from the query; a form type in any letter case (?type=FORUM) is that form.</summary>
+    public static Filter Clean(string? type, string? read, string? status)
+    {
+        type = type?.ToLowerInvariant();
+        return new(LeadInbox.IsType(type) ? type : null, read is Unread or Read ? read : null, LeadStatuses.Parse(status));
+    }
 
     private static IQueryable<LeadRow> Apply(IQueryable<LeadRow> query, Filter f)
     {
@@ -69,6 +70,7 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
     /// <param name="listType">The list filter to return to (another value than <paramref name="type"/> when the list shows all types).</param>
     public async Task<IActionResult> Details(string? type, int id, string? listType, string? read, string? status, int? page)
     {
+        type = type?.ToLowerInvariant();
         var detail = LeadInbox.IsType(type) ? await LoadAsync(type!, id) : null;
         if (detail is null) return NotFound();
         return View("~/Views/Admin/Leads/Details.cshtml", detail with { Back = Clean(listType, read, status), Page = page > 1 ? page : null });
@@ -120,16 +122,14 @@ public class LeadsController(AppDbContext db, ISiteContentCache cache) : AdminCo
     /// prefixed with an apostrophe); headers and words come from the resx of the current culture. The rows are streamed
     /// to the response as they are read (no row cap needed: memory stays flat whatever the inbox size).
     /// </summary>
+    [HttpGet]
     public async Task Export(string? type, string? read, string? status)
     {
         var filter = Clean(type, read, status);
         var rows = Apply(LeadInbox.Query(db, filter.Type), filter)
             .OrderByDescending(r => r.CreatedAt).ThenByDescending(r => r.Id).AsAsyncEnumerable();
 
-        var name = $"leads-{filter.Type ?? "all"}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmm", CultureInfo.InvariantCulture)}.csv";
-        Response.ContentType = "text/csv; charset=utf-8";
-        Response.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = name }.ToString();
-        Response.Headers.CacheControl = "no-store";
+        LeadCsv.Attach(Response, "leads-" + (filter.Type ?? "all"));
         await LeadCsv.WriteAsync(Response.Body, rows, key => L(key), HttpContext.RequestAborted);
     }
 

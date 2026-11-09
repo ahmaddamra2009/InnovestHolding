@@ -151,33 +151,24 @@ public class RenderedFormTests(TestAppFactory f)
         }
     }
 
-    // ── Messages / Registrations: «مقروء» toggle (posts the id only; the server flips the flag) ──
-    [Theory]
-    [InlineData("Messages")]
-    [InlineData("Registrations")]
-    public async Task Mark_read_as_rendered_flips_both_ways(string page)
+    // ── Messages: «مقروء» toggle (posts the id only; the server flips the flag). Leads have their own tests. ──
+    [Fact]
+    public async Task Mark_read_as_rendered_flips_both_ways()
     {
         var client = await f.SignedInClientAsync();
         var email = Unique("qa") + "@example.com";
         var id = await f.DbAsync(async db =>
         {
-            if (page == "Messages")
-            {
-                var m = new ContactMessage { FullName = "QA", Email = email, Subject = "s", Message = "m", CreatedAt = DateTime.MaxValue.AddYears(-1) };
-                db.ContactMessages.Add(m); await db.SaveChangesAsync(); return m.Id;
-            }
-            var r = new Registration { FullName = "QA", Email = email, Interest = "x", CreatedAt = DateTime.MaxValue.AddYears(-1) };
-            db.Registrations.Add(r); await db.SaveChangesAsync(); return r.Id;
+            var m = new ContactMessage { FullName = "QA", Email = email, Subject = "s", Message = "m", CreatedAt = DateTime.MaxValue.AddYears(-1) };
+            db.ContactMessages.Add(m); await db.SaveChangesAsync(); return m.Id;
         });
-        Task<bool> IsRead() => f.DbAsync(db => page == "Messages"
-            ? db.ContactMessages.Where(x => x.Id == id).Select(x => x.IsRead).SingleAsync()
-            : db.Registrations.Where(x => x.Id == id).Select(x => x.IsRead).SingleAsync());
+        Task<bool> IsRead() => f.DbAsync(db => db.ContactMessages.Where(x => x.Id == id).Select(x => x.IsRead).SingleAsync());
 
         try
         {
             foreach (var expected in new[] { true, false })
             {
-                var form = FormFor(await Html(client, $"/Admin/{page}"), $"/Admin/{page}/MarkRead", id);
+                var form = FormFor(await Html(client, "/Admin/Messages"), "/Admin/Messages/MarkRead", id);
                 Assert.Equal(HttpStatusCode.Redirect, (await client.PostAsync(form.Action, Submit(form))).StatusCode);
                 Assert.Equal(expected, await IsRead());
             }
@@ -185,9 +176,7 @@ public class RenderedFormTests(TestAppFactory f)
         finally
         {
             // Far-future CreatedAt keeps the row on the first page; remove it so other tests' listings are unaffected.
-            await f.DbAsync(db => page == "Messages"
-                ? db.ContactMessages.Where(x => x.Id == id).ExecuteDeleteAsync()
-                : db.Registrations.Where(x => x.Id == id).ExecuteDeleteAsync());
+            await f.DbAsync(db => db.ContactMessages.Where(x => x.Id == id).ExecuteDeleteAsync());
         }
     }
 

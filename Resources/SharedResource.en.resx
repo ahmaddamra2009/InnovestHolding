@@ -98,7 +98,6 @@
   <data name="Admin_StatUpdated" xml:space="preserve"><value>Statistic updated</value></data>
   <data name="Admin_PasswordChanged" xml:space="preserve"><value>Password changed</value></data>
   <data name="Admin_MessageDeleted" xml:space="preserve"><value>Message deleted</value></data>
-  <data name="Admin_RegistrationDeleted" xml:space="preserve"><value>Registration deleted</value></data>
   <data name="Admin_OptionAdded" xml:space="preserve"><value>Option added</value></data>
   <data name="Admin_OptionUpdated" xml:space="preserve"><value>Option updated</value></data>
   <data name="Admin_OptionDeleted" xml:space="preserve"><value>Option deleted</value></data>
@@ -337,6 +336,8 @@
   <data name="Admin_CsvNo" xml:space="preserve"><value>No</value></data>
   <data name="Admin_CsvArabic" xml:space="preserve"><value>Arabic</value></data>
   <data name="Admin_CsvEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="Admin_CsvSubject" xml:space="preserve"><value>Subject</value></data>
+  <data name="Admin_CsvMessage" xml:space="preserve"><value>Message</value></data>
   <data name="Admin_CsvReference" xml:space="preserve"><value>Reference (opportunity / package / event)</value></data>
   <data name="Admin_CsvReferenceId" xml:space="preserve"><value>Reference ID</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>Internal note</value></data>

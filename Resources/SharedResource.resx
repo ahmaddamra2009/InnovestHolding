@@ -98,7 +98,6 @@
   <data name="Admin_StatUpdated" xml:space="preserve"><value>تم تحديث الإحصائية بنجاح</value></data>
   <data name="Admin_PasswordChanged" xml:space="preserve"><value>تم تغيير كلمة المرور بنجاح</value></data>
   <data name="Admin_MessageDeleted" xml:space="preserve"><value>تم حذف الرسالة بنجاح</value></data>
-  <data name="Admin_RegistrationDeleted" xml:space="preserve"><value>تم حذف التسجيل بنجاح</value></data>
   <data name="Admin_OptionAdded" xml:space="preserve"><value>تمت إضافة الخيار بنجاح</value></data>
   <data name="Admin_OptionUpdated" xml:space="preserve"><value>تم تحديث الخيار بنجاح</value></data>
   <data name="Admin_OptionDeleted" xml:space="preserve"><value>تم حذف الخيار بنجاح</value></data>
@@ -337,6 +336,8 @@
   <data name="Admin_CsvNo" xml:space="preserve"><value>لا</value></data>
   <data name="Admin_CsvArabic" xml:space="preserve"><value>العربية</value></data>
   <data name="Admin_CsvEnglish" xml:space="preserve"><value>الإنجليزية</value></data>
+  <data name="Admin_CsvSubject" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="Admin_CsvMessage" xml:space="preserve"><value>الرسالة</value></data>
   <data name="Admin_CsvReference" xml:space="preserve"><value>المرجع (الفرصة / الباقة / الفعالية)</value></data>
   <data name="Admin_CsvReferenceId" xml:space="preserve"><value>رقم المرجع</value></data>
   <data name="Field_AdminNote" xml:space="preserve"><value>الملاحظة الداخلية</value></data>

@@ -15,6 +15,10 @@
 <div class="admin-card">
     <div class="admin-card-header">
         <span class="admin-card-title">جميع رسائل التواصل</span>
+        @if (Model.TotalCount > 0)
+        {
+            <a class="btn-admin btn-secondary btn-sm" href="/Admin/Messages/Export" download>تصدير إلى Excel (CSV)</a>
+        }
     </div>
 
     @if (Model.TotalCount == 0)
@@ -23,7 +27,8 @@
     }
     else
     {
-        <table class="admin-table">
+        @* The full messages are exported by the server (the header link); the table shows them cut at 80 characters. *@
+        <table class="admin-table" data-export="server">
             <thead>
                 <tr>
                     <th>الحالة</th>

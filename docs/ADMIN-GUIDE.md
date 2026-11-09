@@ -23,7 +23,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 - **الإنجليزية الحالية مسودة** وتحتاج مراجعة قبل اعتمادها (ما لم يكن للنص العربي مقابل في ملف الشركة، فالإنجليزي ترجمة
   تقريبية)؛ عدّلوها من الشاشات أدناه.
 - **الحقول المحايدة** (الهاتف، البريد، الروابط) لها قيمة واحدة للغتين وتُكتب من اليسار إلى اليمين.
-- **الأوقات** في «التسجيلات» و«رسائل التواصل» تُحفظ بتوقيت UTC وتُعرض بتوقيت **المتصفح الخاص بمن يفتح الصفحة**
+- **الأوقات** في صناديق «الوارد» (الطلبات) و«رسائل التواصل» تُحفظ بتوقيت UTC وتُعرض بتوقيت **المتصفح الخاص بمن يفتح الصفحة**
   وبلغة الصفحة. إن كان JavaScript معطّلاً تظهر القيمة بتوقيت UTC مع كلمة UTC. مرّر المؤشر على الوقت لترى قيمة UTC.
 - **الروابط:** روابط التواصل الاجتماعي ورابط الجهة المطوّرة يجب أن تبدأ بـ `https://`. روابط القائمة والخدمات
   والأخبار تقبل `#قسم` أو `/مسار` أو `https://…`، وتُرفض `javascript:` وما شابهه. اتركوا الحقل فارغاً إن لم يوجد رابط.
@@ -34,10 +34,11 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
   ولا النطاق ولا الطلبات المستلمة. **نص تكتبونه بعد ذلك بالاسم القديم لا يُصحَّح تلقائياً**: استعملوا الأسماء الجديدة.
 - **القائمة الجانبية مجمّعة:** «نظرة عامة»، «الموقع»، «منتدى الإبتكار والإستثمار العربي»، «شبكة المستثمرين الملائكيين»، «البرنامج
   التلفزيوني»، «الأخبار»، «الوارد». اضغطوا عنوان المجموعة لطيّها أو فتحها؛ يتذكر المتصفح اختياركم. مجموعة «منتدى الإبتكار والإستثمار العربي» تضم:
-  الفعاليات، المتحدثون، الشركاء والرعاة، التسجيلات، خيارات مجال الاهتمام، مزايا التسجيل، **هوية المنتدى**، **النسخ السابقة**، **محتوى صفحة المنتدى**
+  الفعاليات، المتحدثون، الشركاء والرعاة، خيارات مجال الاهتمام، مزايا التسجيل، **هوية المنتدى**، **النسخ السابقة**، **محتوى صفحة المنتدى**
   (اختصار إلى بطاقة «صفحات المنتدى» في «النصوص العامة»). مجموعة «الموقع» تضم:
   صفحات الموقع، النصوص العامة، القوائم، الخدمات، أرقام الأثر، الأسئلة الشائعة، روابط التواصل الاجتماعي، أقسام الصفحات،
   رسائل وأزرار الموقع، القائمة والفوتر، الهوية البصرية، الإعدادات.
+- **تصدير إلى Excel (CSV):** كل قائمة في اللوحة (كل جدول، وقوائم البطاقات مثل «القوائم» و«خيارات مجال الاهتمام» و«مزايا التسجيل») فيها زر **«تصدير إلى Excel (CSV)»**. الملف يضم القيم **المحفوظة** التي تعرضها القائمة (لا التعديلات غير المحفوظة)، دون عمود الأزرار؛ والقائمة المتعددة الصفحات تُصدَّر كاملة. الصفحة التي فيها قائمتان (مثل «الشركاء والرعاة») تعطي ملفين مرقّمين `-1` و`-2`. القائمة الفارغة لا يظهر فيها الزر. الملف يُفتح في Excel بالعربية الصحيحة، والخلية التي تبدأ بـ `=` أو `+` أو `-` أو `@` أو `|` تُكتب نصاً.
 
 ## 2. بنية الموقع
 
@@ -187,7 +188,7 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
   (القسم 9ب)، وتبقى بنص «قريباً» ما دام لا عنصر منشور فيها؛ أما إن كتبتم لها نصاً تمهيدياً أو رئيسياً فتُعامَل صفحة عادية.
 - لإخفاء صفحة فارغة من القائمة كلياً استعملوا «في القائمة» (القسم 3).
 - قسم «كلمة المؤسس» في «من نحن» **مخفي ما دام نص الكلمة فارغاً** («النصوص العامة» ← «كلمة المؤسس»).
-- صفحتا «الانضمام» و«الرعاية» تعرضان نموذجيهما (طلب الانضمام واستفسار الرعاية)، وتصل طلباتهما إلى «الطلبات (كل النماذج)» (القسم 14).
+- صفحتا «الانضمام» و«الرعاية» تعرضان نموذجيهما (طلب الانضمام واستفسار الرعاية)، وتصل طلباتهما إلى صندوق نموذجهما في «الوارد» (القسم 14).
 
 ## 6. النصوص العامة (`/Admin/Content/Edit`)
 
@@ -497,20 +498,19 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 ▲▼؛ و«حذف» للشبكات الأخرى فقط (الشبكة المعروفة تُخفى أو يُفرَّغ رابطها). **الشبكة بلا رابط لا تظهر** في الفوتر ولا في قسم
 التواصل. تُضاف الروابط المفعّلة أيضاً إلى البيانات المنظمة (`sameAs`) للموقع.
 
-## 14. صندوق الطلبات والتسجيلات ورسائل التواصل
+## 14. صناديق الوارد: الطلبات ورسائل التواصل
 
-### «الطلبات (كل النماذج)» (`/Admin/Leads`)
-القائمة الجانبية ← «الوارد» ← «الطلبات (كل النماذج)». صندوق واحد لكل ما يرسله الزوار عبر نماذج الموقع، **الأحدث أولاً، 50 في الصفحة**
-مع تنقل بين الصفحات. بجانب «الطلبات» و«رسائل التواصل» في القائمة شارة بعدد **غير المقروء**، وفي «نظرة عامة» بطاقة بأعداد غير
-المقروء لكل نوع.
-- **الأنواع** (مرشّح «النوع»): تسجيل في المنتدى · انضمام — مستثمر · انضمام — شركة ناشئة · استفسار رعاية · اهتمام بالفرص · تسجيل
+### «كل الطلبات» (`/Admin/Leads`) وصناديق النماذج
+القائمة الجانبية ← «الوارد»: لكل نموذج من نماذج الموقع رابط خاص به وشارة بعدد **غير المقروء** الخاصة به، بهذا الترتيب: «تسجيل في المنتدى»، «انضمام — مستثمر»، «انضمام — شركة ناشئة»، «استفسار رعاية»، «اهتمام بالفرص»، «تسجيل سريع (الرئيسية)»، ثم «كل الطلبات» (كل النماذج معاً)، ثم «رسائل التواصل». فتح رابط أي نموذج يعرض طلباته وحدها، **الأحدث أولاً، 50 في الصفحة**
+مع تنقل بين الصفحات؛ مرشّحات الحالة والقراءة والتصدير إلى Excel تبقى على ذلك النموذج. في «نظرة عامة» بطاقة لكل نموذج بعدد غير المقروء، والضغط عليها يفتح طلبات ذلك النموذج غير المقروءة، وإن لم يكن فيه طلب غير مقروء يفتح كل طلباته. ويعمل رابط النموذج مهما كانت حالة أحرف اسمه في العنوان.
+- **مرشّح «النوع»** يظهر في «كل الطلبات» فقط: تسجيل في المنتدى · انضمام — مستثمر · انضمام — شركة ناشئة · استفسار رعاية · اهتمام بالفرص · تسجيل
   سريع (الرئيسية). **مرشّح «القراءة»:** الكل / غير مقروء / مقروء، و**مرشّح «الحالة»:** الكل / جديد / تم التواصل / مغلق. تُجمع المرشّحات الثلاثة معاً، وتبقى بعد تعليم الطلب أو حفظه أو حذفه.
-- **الجدول:** القراءة («غير مقروء» أو «مقروء»)، شارة **الحالة** (جديد / تم التواصل / مغلق)، علامة ✎ إن وُجدت ملاحظة، النوع، الاسم، البريد، التفاصيل (جهة أو نوع أو فعالية…)، لغة الصفحة التي أُرسل منها النموذج،
+- **الجدول:** القراءة («غير مقروء» أو «مقروء»)، شارة **الحالة** (جديد / تم التواصل / مغلق)، علامة ✎ إن وُجدت ملاحظة، النوع (في «كل الطلبات» فقط)، الاسم، البريد، التفاصيل (جهة أو نوع أو فعالية…)، لغة الصفحة التي أُرسل منها النموذج،
   التاريخ (بتوقيت متصفحكم؛ مرّروا المؤشر لترى UTC)، والإجراءات.
 - **التفاصيل:** تفتح كل حقول الطلب. زر **«مقروء/غير مقروء»** يبدّل الحالة (لا يُعلَّم الطلب مقروءاً تلقائياً عند فتحه)، وزر **الحذف**
   بعد تأكيد؛ **الحذف نهائي**.
 - **حالة المتابعة والملاحظة الداخلية** (في شاشة التفاصيل): اختاروا الحالة — **جديد** (كل الطلبات عند وصولها وكل الطلبات القديمة) ثم **تم التواصل** ثم **مغلق** — واكتبوا **ملاحظة داخلية** (حتى 2000 حرف، مثل «اتصلنا به يوم الاثنين») ثم «حفظ». الحالة والملاحظة **لا يراها الزائر أبداً** ولا يمكن إرسالهما من نماذج الموقع، وهما منفصلتان عن «مقروء/غير مقروء». كل تغيير يُحفظ بزر واحد.
-- **التصدير إلى Excel (CSV):** رابط «تصدير إلى Excel (CSV)» في رأس القائمة ينزّل ملف `leads-<النوع أو all>-<التاريخ>.csv` يضم **الطلبات التي يطابقها المرشّح الحالي** (النوع والقراءة والحالة) من الأحدث إلى الأقدم، دون ترقيم صفحات. الأعمدة: النوع، الرقم، التاريخ (UTC)، الاسم، البريد، الهاتف، التفاصيل، الحالة، مقروء، لغة الصفحة، الملاحظة الداخلية، المرجع (الفرصة / الباقة / الفعالية)، رقم المرجع (فارغ إن لم يُختر شيء أو حُذف المرجع بعد الإرسال). يُحفظ الملف بترميز UTF-8 مع BOM فيُفتح بالعربية الصحيحة بنقرتين في Excel، وكل خلية بين علامتي اقتباس. **القيمة التي تبدأ بـ `=` أو `+` أو `-` أو `@` أو `|` (أو بصيغها العريضة ＝ ＋ － ＠، ولو سبقتها مسافات أو مسافة جدولة) تُسبَق بعلامة `'`** حتى لا تُنفَّذ كصيغة في Excel؛ ستراها في الخلية بعلامة `'` في أولها (مثل `'=SUM(1)`) وهذا مقصود. التواريخ نص بتوقيت UTC. الملف المنزَّل **بيانات شخصية**: عاملوه كقاعدة البيانات، ولا تتركوه في مجلد التنزيلات أو تُرسلوه بقناة غير آمنة.
+- **التصدير إلى Excel (CSV):** رابط «تصدير إلى Excel (CSV)» في رأس القائمة ينزّل ملف `leads-<النوع أو all>-<التاريخ>.csv` يضم **الطلبات التي يطابقها المرشّح الحالي** (النوع والقراءة والحالة) من الأحدث إلى الأقدم، دون ترقيم صفحات. لا يظهر الرابط إن كانت القائمة فارغة. الأعمدة: النوع، الرقم، التاريخ (UTC)، الاسم، البريد، الهاتف، التفاصيل، الحالة، مقروء، لغة الصفحة، الملاحظة الداخلية، المرجع (الفرصة / الباقة / الفعالية)، رقم المرجع (فارغ إن لم يُختر شيء أو حُذف المرجع بعد الإرسال). يُحفظ الملف بترميز UTF-8 مع BOM فيُفتح بالعربية الصحيحة بنقرتين في Excel، وكل خلية بين علامتي اقتباس. **القيمة التي تبدأ بـ `=` أو `+` أو `-` أو `@` أو `|` (أو بصيغها العريضة ＝ ＋ － ＠، ولو سبقتها مسافات أو مسافة جدولة) تُسبَق بعلامة `'`** حتى لا تُنفَّذ كصيغة في Excel؛ ستراها في الخلية بعلامة `'` في أولها (مثل `'=SUM(1)`) وهذا مقصود. التواريخ نص بتوقيت UTC. الملف المنزَّل **بيانات شخصية**: عاملوه كقاعدة البيانات، ولا تتركوه في مجلد التنزيلات أو تُرسلوه بقناة غير آمنة.
 - **مربع الموافقة** في نماذج الطلبات الأربعة يحمل رابط **«سياسة الخصوصية»** (يُفتح في تبويب جديد) ما دامت الصفحة منشورة ونصّها العربي غير
   فارغ (القسم 7ب). **هاتف الزائر في النماذج** يقبل الأرقام و`+` و`-` والمسافات والأقواس والنقطة فقط (حتى 50 حرفاً) وإلا يُرفض برسالة تحت الحقل؛ و**الدولة** نص حر حتى 100 حرف (إلزامية في الانضمام). القواعد الأشد (7–15 رقماً، رمز ISO من حرفين) خاصة بهاتف الموقع ورمز دولته في «النصوص العامة» (القسم 6).
   **إخفاء قسم النموذج أو إلغاء نشر صفحته يجعل الخادم يرفض الإرسال بالخطأ 404** (القسم 3ب).
@@ -536,11 +536,13 @@ This guide describes the site up to branch `feature/10-forum-content` (the new n
 
 ### بيانات شخصية (PII)
 الطلبات بيانات شخصية: **تظهر لمن يدخل اللوحة فقط** ولا تظهر في الموقع العام. لا يسجّل التطبيق أي بيانات من النماذج في سجلاته. لا يُحفظ عنوان
-IP ولا متصفح الزائر مع الطلب. احذفوا ما لم تعد تحتاجونه، ولا تنسخوه إلى قنوات غير آمنة. التصدير إلى CSV متاح للمدير فقط (انظر أعلاه).
+IP ولا متصفح الزائر مع الطلب. احذفوا ما لم تعد تحتاجونه، ولا تنسخوه إلى قنوات غير آمنة. التصدير إلى CSV متاح للمدير فقط (انظر أعلاه). يشمل ذلك ملف «رسائل التواصل» المُصدَّر (الرسائل كاملة): احتفظوا به على جهاز محمي، ولا تُرسلوه أو تحوّلوه إلى أحد، واحذفوه حين تنتهون منه.
 
-### «التسجيلات» و«رسائل التواصل»
-«التسجيلات» تعرض كل التسجيلات (مع عمود «النموذج»: سريع أو منتدى) و«رسائل التواصل» رسائل صفحة التواصل: الأحدث أولاً، **50 في الصفحة**. تظهر
+### «رسائل التواصل» والتسجيلات
+لم تعد للتسجيلات شاشة مستقلة: تسجيلات المنتدى في «تسجيل في المنتدى»، والتسجيلات السريعة في «تسجيل سريع (الرئيسية)». الرابط القديم `/Admin/Registrations` يفتح «كل الطلبات». «رسائل التواصل» رسائل صفحة التواصل: الأحدث أولاً، **50 في الصفحة**. تظهر
 لغة الصفحة (عربي/إنجليزي). يمكن تعليم الرسالة «مقروء» أو حذفها، والحذف نهائي. النماذج تُرسَل إلى `/forms/…` (أو `/en/forms/…`).
+
+زر **«تصدير إلى Excel (CSV)»** في «رسائل التواصل» يُنزّل كل الرسائل، الأحدث أولاً، **بنصها الكامل** (القائمة تعرض أول 80 حرفاً فقط)، في ملف `messages-<التاريخ>.csv`. الأعمدة: الرقم، التاريخ (UTC)، الاسم، البريد الإلكتروني، الموضوع، الرسالة، مقروء، لغة الصفحة. الملف **بيانات شخصية** (انظر «بيانات شخصية» أعلاه).
 
 ## 15. تغيير كلمة المرور
 
@@ -572,7 +574,7 @@ which language you are typing.
 - **The current English text is a draft** pending review (where the company profile has no English, it is an
   approximate gloss); edit it from the screens below.
 - **Neutral fields** (phone, e-mail, URLs) have one value for both languages and are typed left-to-right.
-- **Times** in «التسجيلات» and «رسائل التواصل» are stored in UTC and shown in **the time zone of the viewer's
+- **Times** in the request inboxes («الوارد») and «رسائل التواصل» are stored in UTC and shown in **the time zone of the viewer's
   browser**, in the page's language. With JavaScript off the UTC value is shown, labelled UTC. Hover over a time to
   see its UTC value.
 - **Links:** social-media links and the developer-credit link must start with `https://`. Menu, service and news
@@ -585,10 +587,11 @@ which language you are typing.
   the domain or the requests already received. **Text you type afterwards with an old name is not corrected automatically:** use the new names.
 - **The sidebar is grouped:** «نظرة عامة», «الموقع», «منتدى الإبتكار والإستثمار العربي», «شبكة المستثمرين الملائكيين», «البرنامج
   التلفزيوني», «الأخبار», «الوارد». Click a group title to collapse or open it; the browser remembers your choice. The
-  «منتدى الإبتكار والإستثمار العربي» group holds: events, speakers, partners and sponsors, registrations, interest options, register benefits, **forum identity** («هوية المنتدى»), **past editions** («النسخ السابقة»)
+  «منتدى الإبتكار والإستثمار العربي» group holds: events, speakers, partners and sponsors, interest options, register benefits, **forum identity** («هوية المنتدى»), **past editions** («النسخ السابقة»)
   and **forum page content** («محتوى صفحة المنتدى», a shortcut to the «صفحات المنتدى» card of the general texts). The
   «الموقع» group holds: site pages, general texts, lists, services, impact figures, FAQ, social links, page sections («أقسام الصفحات»),
   site messages and buttons, menu and footer, brand identity, settings.
+- **Export to Excel (CSV):** every list in the admin (each table, and the lists of edit cards such as «القوائم», «خيارات مجال الاهتمام» and «مزايا التسجيل») has an **«تصدير إلى Excel (CSV)»** button. The file holds the **saved** values the list shows (not unsaved edits), without the buttons column; a list with several pages is exported whole. A page with two lists (e.g. «الشركاء والرعاة») gives two files numbered `-1` and `-2`. An empty list has no button. The file opens in Excel with Arabic shown correctly; a cell that starts with `=`, `+`, `-`, `@` or `|` is written as text.
 
 ## 2. Site structure
 
@@ -742,7 +745,7 @@ events, news or partners) show **the «coming soon» text you write** in «edit 
 - To hide an empty page from the menu altogether use «in menu» (section 3).
 - The «founder's message» block on About **stays hidden while the message text is empty** («النصوص العامة» → «كلمة المؤسس»).
 - The Join and Sponsorship pages show their forms (network application and sponsorship enquiry); their leads arrive in
-  «الطلبات (كل النماذج)» (section 14).
+  the form's own inbox under «الوارد» (section 14).
 
 ## 6. General texts (`/Admin/Content/Edit`)
 
@@ -1077,21 +1080,19 @@ from the fixed grid (no SVG upload), **up to 10 other networks** in all (at the 
 URL, shown/hidden, order ▲▼; «حذف» for other networks only (a known network is hidden or its URL emptied). **A network with
 no URL is not shown** in the footer or the contact block. Active links are also added to the structured data (`sameAs`).
 
-## 14. Applications inbox, registrations and contact messages
+## 14. Request inboxes: applications and contact messages
 
-### «الطلبات (كل النماذج)» (`/Admin/Leads`)
-Sidebar → «الوارد» → «الطلبات (كل النماذج)». One inbox for everything visitors send through the site's forms, **newest first, 50
-per page** with paging. A badge with the **unread** count sits beside «الطلبات» and «رسائل التواصل» in the sidebar, and the
-«نظرة عامة» dashboard has a card with the unread count per type.
-- **Types** («النوع» filter): forum registration · join — investor · join — startup · sponsorship enquiry · interest in
+### «كل الطلبات» (`/Admin/Leads`) and the form inboxes
+Sidebar → «الوارد». Each public form has its own link with its own **unread** badge, in this order: «تسجيل في المنتدى» (forum registration), «انضمام — مستثمر» (join — investor), «انضمام — شركة ناشئة» (join — startup), «استفسار رعاية» (sponsorship enquiry), «اهتمام بالفرص» (interest in opportunities), «تسجيل سريع (الرئيسية)» (quick registration, home page); then «كل الطلبات» (all requests: every form together), then «رسائل التواصل» (contact messages). Opening a form's link shows only that form's requests, **newest first, 50 per page** with paging; the status and read filters and the CSV export stay on that form. The «نظرة عامة» (dashboard) has a card per form with its unread count; clicking it opens that form's unread requests, or all its requests when none is unread. The request link works whatever the letter case of the form name in the address.
+- **Types** («النوع» filter, on «كل الطلبات» only): forum registration · join — investor · join — startup · sponsorship enquiry · interest in
   opportunities · quick registration (home page). **«القراءة» filter:** all / unread / read, and **«الحالة» filter:** all / new / contacted / closed. The three filters combine and are kept after you mark, save or
   delete a lead.
-- **The table:** read state («غير مقروء» (unread) or «مقروء» (read)), a **status** badge (new / contacted / closed), a ✎ mark when a note exists, type, name, e-mail, details (organisation, type, event...), the language of the
+- **The table:** read state («غير مقروء» (unread) or «مقروء» (read)), a **status** badge (new / contacted / closed), a ✎ mark when a note exists, type (on «كل الطلبات» only), name, e-mail, details (organisation, type, event...), the language of the
   page the form was sent from, the date (in your browser's time zone; hover for UTC), and actions.
 - **Details:** opens every field of the lead. The **read/unread** button toggles the status (a lead is not marked read just by
   opening it), and **delete** asks for confirmation; **deletion is permanent**.
 - **Follow-up status and internal note** (on the details screen): choose the status — **new** (every lead on arrival and every old lead), then **contacted**, then **closed** — and type an **internal note** (up to 2000 characters, e.g. "called him on Monday"), then save. The status and the note are **never visible to visitors** and cannot be sent from the public forms; they are separate from read/unread. One button saves both.
-- **Export to Excel (CSV):** the «تصدير إلى Excel (CSV)» link in the list header downloads `leads-<type or all>-<date>.csv` with **the leads that match the current filters** (type, read state, status), newest first, without paging. Columns: type, id, date (UTC), name, e-mail, phone, details, status, read, page language, internal note, reference (opportunity / package / event), reference ID (empty when nothing was chosen or the referenced record was deleted after submission). The file is UTF-8 **with a BOM**, so Excel opens the Arabic correctly with a double-click, and every cell is quoted. **A value that starts with `=`, `+`, `-`, `@` or `|` (or their fullwidth forms ＝ ＋ － ＠, also after leading spaces or a tab) is prefixed with a `'`** so Excel never runs it as a formula; you will see the `'` at the start of such a cell (e.g. `'=SUM(1)`), which is intended. Dates are UTC text. The downloaded file is **personal data**: treat it like the database, and do not leave it in Downloads or send it over an insecure channel.
+- **Export to Excel (CSV):** the «تصدير إلى Excel (CSV)» link in the list header downloads `leads-<type or all>-<date>.csv` with **the leads that match the current filters** (type, read state, status), newest first, without paging. The link is hidden when the list is empty. Columns: type, id, date (UTC), name, e-mail, phone, details, status, read, page language, internal note, reference (opportunity / package / event), reference ID (empty when nothing was chosen or the referenced record was deleted after submission). The file is UTF-8 **with a BOM**, so Excel opens the Arabic correctly with a double-click, and every cell is quoted. **A value that starts with `=`, `+`, `-`, `@` or `|` (or their fullwidth forms ＝ ＋ － ＠, also after leading spaces or a tab) is prefixed with a `'`** so Excel never runs it as a formula; you will see the `'` at the start of such a cell (e.g. `'=SUM(1)`), which is intended. Dates are UTC text. The downloaded file is **personal data**: treat it like the database, and do not leave it in Downloads or send it over an insecure channel.
 - The **consent checkbox** of the four lead forms carries a **«سياسة الخصوصية»** link (opens in a new tab) while the page is published and
   its Arabic text is not empty (section 7b). A **visitor's phone in the forms** accepts only digits, `+`, `-`, spaces, brackets and a dot (up to 50 characters) and is otherwise refused with a message under the field; the **country** is free text up to 100 characters (required on Join). The stricter rules (7–15 digits, ISO code) apply to the site's own phone and country code in «النصوص العامة» (section 6).
   **Hiding the form's section or unpublishing its page makes the server refuse the submission with a 404** (section 3b).
@@ -1120,12 +1121,14 @@ per page** with paging. A badge with the **unread** count sits beside «الطل
 ### Personal data (PII)
 Leads are personal data: **visible only to signed-in admins** and never on the public site. The application writes nothing from
 the forms to its logs. The visitor's IP address and browser are not stored with the lead. Delete what you no longer need and do
-not copy it to insecure channels. The CSV export is available to admins only (see above).
+not copy it to insecure channels. The CSV export is available to admins only (see above). This includes the exported contact-messages file (full messages): keep it on a protected device, do not forward it to anyone, and delete it when you are done.
 
-### «التسجيلات» and «رسائل التواصل»
-«التسجيلات» lists every registration (with a «form» column: quick or forum) and «رسائل التواصل» the contact page's messages:
+### «رسائل التواصل» and registrations
+Registrations no longer have their own screen: forum registrations are in «تسجيل في المنتدى» and quick registrations in «تسجيل سريع (الرئيسية)». The old `/Admin/Registrations` address opens «كل الطلبات». «رسائل التواصل» lists the contact page's messages:
 newest first, **50 per page**. The page language is shown. A message can be marked read or deleted; deletion is permanent. The
 forms post to `/forms/...` (or `/en/forms/...`).
+
+The **«تصدير إلى Excel (CSV)»** button in «رسائل التواصل» downloads every message, **newest first**, with the **full text** (the list shows the first 80 characters), as `messages-<date>.csv`. Columns: Id, Date (UTC), Name, Email, Subject, Message, Read, Page language. The file is **personal data** (see Personal data above).
 
 ## 15. Changing the password
 

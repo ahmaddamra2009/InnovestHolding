@@ -1,4 +1,6 @@
+using System.Globalization;
 using InnovestHolding.Data;
+using InnovestHolding.Infrastructure.Leads;
 using InnovestHolding.Infrastructure.Localization;
 using InnovestHolding.Models;
 using InnovestHolding.ViewModels.Admin;
@@ -27,6 +29,31 @@ public class MessagesController : AdminControllerBase
         {
             Items = items, Page = current, PageSize = PageSize, TotalCount = total, UnreadCount = unread
         });
+    }
+
+    /// <summary>
+    /// Every contact message as CSV for Excel (UTF-8 with a BOM), newest first, with the full message text (the list
+    /// shows the first 80 characters). A GET behind the admin role that changes nothing; cells go through
+    /// <see cref="LeadCsv"/> (quoted, formula-like values prefixed) and rows are streamed as they are read.
+    /// </summary>
+    [HttpGet]
+    public async Task Export()
+    {
+        var rows = _db.ContactMessages.AsNoTracking()
+            .OrderByDescending(m => m.CreatedAt).ThenByDescending(m => m.Id).AsAsyncEnumerable();
+        string[] header =
+        [
+            MessageKeys.Admin.CsvId, MessageKeys.Admin.CsvDate, MessageKeys.Admin.CsvName, MessageKeys.Admin.CsvEmail,
+            MessageKeys.Admin.CsvSubject, MessageKeys.Admin.CsvMessage, MessageKeys.Admin.CsvRead, MessageKeys.Admin.CsvCulture,
+        ];
+        LeadCsv.Attach(Response, "messages");
+        await LeadCsv.WriteAsync(Response.Body, header.Select(k => L(k)), rows, m => LeadCsv.Row(
+        [
+            m.Id.ToString(CultureInfo.InvariantCulture), m.CreatedAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
+            m.FullName, m.Email, m.Subject, m.Message,
+            L(m.IsRead ? MessageKeys.Admin.CsvYes : MessageKeys.Admin.CsvNo),
+            L(m.Culture == "en" ? MessageKeys.Admin.CsvEnglish : MessageKeys.Admin.CsvArabic),
+        ]), HttpContext.RequestAborted);
     }
 
     [HttpPost]

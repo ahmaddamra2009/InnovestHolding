@@ -49,6 +49,8 @@ public class LeadInboxTests(TestAppFactory f)
     [Theory]
     [InlineData("/Admin/Leads")]
     [InlineData("/Admin/Leads/Details/1?type=sponsorship")]
+    [InlineData("/Admin/Leads?type=forum")]
+    [InlineData("/Admin/Registrations")]           // F11: the old screen only redirects, and only for the Admin
     public async Task Anonymous_is_sent_to_the_login_page(string path)
     {
         var r = await f.NewClient().GetAsync(path);
@@ -105,7 +107,7 @@ public class LeadInboxTests(TestAppFactory f)
     }
 
     [Fact]
-    public async Task Registrations_keep_their_page_and_join_the_inbox_by_kind()
+    public async Task Registrations_join_the_inbox_by_kind_and_the_old_page_redirects()
     {
         var quick = Unique("quick") + "@example.com";
         var forum = Unique("forumreg") + "@example.com";
@@ -116,9 +118,10 @@ public class LeadInboxTests(TestAppFactory f)
             return await db.SaveChangesAsync();
         });
         var client = await f.SignedInClientAsync();
-        var page = await client.GetStringAsync("/Admin/Registrations");
-        Assert.Contains(quick, page);
-        Assert.Contains(forum, page);
+        // F11: the old mixed «التسجيلات» screen sends an old bookmark to all the forms' leads.
+        var old = await client.GetAsync("/Admin/Registrations");
+        Assert.Equal(HttpStatusCode.Redirect, old.StatusCode);
+        Assert.Equal("/Admin/Leads", old.Headers.Location!.OriginalString);
         Assert.Contains(quick, await client.GetStringAsync("/Admin/Leads?type=quick"));
         Assert.DoesNotContain(forum, await client.GetStringAsync("/Admin/Leads?type=quick"));
         Assert.Contains(forum, await client.GetStringAsync("/Admin/Leads?type=forum"));
@@ -135,6 +138,80 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.Equal(await f.DbAsync(db => db.ContactMessages.CountAsync(s => !s.IsRead)), counts.Messages);
         var client = await f.SignedInClientAsync();
         Assert.Contains($"<span class=\"sidebar-badge\">{counts.Leads}</span>", await client.GetStringAsync("/Admin/Dashboard"));
+    }
+
+    /// <summary>The sidebar link of one inbox: its opening tag (active or not) and its whole markup up to the badge.</summary>
+    private static System.Text.RegularExpressions.Match SidebarLink(string html, string href) =>
+        System.Text.RegularExpressions.Regex.Match(html, $"<a href=\"{System.Text.RegularExpressions.Regex.Escape(href)}\" class=\"sidebar-link( active)?\"[^>]*>(.*?)</a>",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+
+    /// <summary>Whether that sidebar link is the current one; fails when the link is missing, so "not current" proves it is there.</summary>
+    private static bool IsActive(string html, string href)
+    {
+        var link = SidebarLink(html, href);
+        Assert.True(link.Success, href);
+        return link.Groups[1].Success;
+    }
+
+    [Fact] // Anas 2026-11-09: every public form has its own place in the dashboard, with its own unread count
+    public async Task Every_form_has_its_own_sidebar_inbox_with_its_own_badge()
+    {
+        await AddSponsorshipAsync();
+        var counts = await f.DbAsync(db => LeadInbox.UnreadAsync(db));
+        var client = await f.SignedInClientAsync();
+
+        var dashboard = await client.GetStringAsync("/Admin/Dashboard");
+        foreach (var (key, label) in LeadInbox.Types)
+        {
+            var link = SidebarLink(dashboard, "/Admin/Leads?type=" + key);
+            Assert.True(link.Success, key);
+            Assert.False(link.Groups[1].Success, key);                       // not current on another screen
+            Assert.Contains(label, link.Groups[2].Value);
+            var unread = counts.Of(key);
+            if (unread > 0) Assert.Contains($"<span class=\"sidebar-badge\">{unread}</span>", link.Groups[2].Value);
+            else Assert.DoesNotContain("sidebar-badge", link.Groups[2].Value);
+        }
+        Assert.True(SidebarLink(dashboard, "/Admin/Leads").Success);        // all forms together stays
+        Assert.False(SidebarLink(dashboard, "/Admin/Registrations").Success); // the old mixed registrations link is gone
+        // The dashboard's unread cards open that form's unread leads (it once sent status=unread, which filtered nothing).
+        Assert.Contains("href=\"/Admin/Leads?type=sponsorship&amp;read=unread\"", dashboard);
+
+        // A form's own inbox: its link is current (not the all-forms one), and the page shows that form only.
+        var own = await client.GetStringAsync("/Admin/Leads?type=sponsorship");
+        Assert.True(IsActive(own, "/Admin/Leads?type=sponsorship"));
+        Assert.False(IsActive(own, "/Admin/Leads"));
+        Assert.False(IsActive(own, "/Admin/Leads?type=investor"));
+        Assert.DoesNotContain("id=\"lead-type\"", own);
+        Assert.Contains("<input type=\"hidden\" name=\"type\" value=\"sponsorship\">", own);
+        Assert.DoesNotContain("lead-type-card", own);                        // no cards of the other forms
+        Assert.Contains("<title>استفسار رعاية - ", own);
+        Assert.Contains("href=\"/Admin/Leads/Export?type=sponsorship\"", own);  // the export keeps the form
+
+        // The all-forms list: its link is current and it keeps the type filter.
+        var all = await client.GetStringAsync("/Admin/Leads");
+        Assert.True(IsActive(all, "/Admin/Leads"));
+        Assert.False(IsActive(all, "/Admin/Leads?type=sponsorship"));
+        Assert.Contains("id=\"lead-type\"", all);
+        Assert.Contains("lead-type-card", all);
+
+        // An unknown type is not a form: the all-forms link is current.
+        Assert.True(IsActive(await client.GetStringAsync("/Admin/Leads?type=nonsense"), "/Admin/Leads"));
+    }
+
+    [Fact]
+    public async Task A_lead_opened_from_a_form_inbox_keeps_that_form_current()
+    {
+        var (id, _) = await AddSponsorshipAsync();
+        var client = await f.SignedInClientAsync();
+        var fromForm = await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship&listType=sponsorship");
+        Assert.True(IsActive(fromForm, "/Admin/Leads?type=sponsorship"));
+        Assert.False(IsActive(fromForm, "/Admin/Leads"));
+        Assert.Contains("href=\"/Admin/Leads?type=sponsorship\" class=\"btn-admin btn-secondary btn-sm\">→ العودة", fromForm); // back to that inbox
+        // A forged listType is not a form: the all-forms link stays current.
+        Assert.True(IsActive(await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship&listType=%22%3E%3Cscript%3E"), "/Admin/Leads"));
+        var fromAll = await client.GetStringAsync($"/Admin/Leads/Details/{id}?type=sponsorship");
+        Assert.True(IsActive(fromAll, "/Admin/Leads"));
+        Assert.False(IsActive(fromAll, "/Admin/Leads?type=sponsorship"));
     }
 
     private async Task<int> AddQuickAsync(string email) => await f.DbAsync(async db =>
@@ -321,6 +398,109 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.Contains(email, text);
         Assert.DoesNotContain(otherEmail, text);   // the type filter is applied
         Assert.DoesNotContain(email, await (await client.GetAsync("/Admin/Leads/Export?type=interest&status=new")).Content.ReadAsStringAsync());
+    }
+
+    [Fact] // Anas 2026-11-09: «ضيف ع كل الجداول export» — contact messages export whole (the list cuts them at 80 characters)
+    public async Task Messages_export_is_admin_only_csv_with_the_full_message_and_neutralised_formulas()
+    {
+        var email = Unique("msgcsv") + "@example.com";
+        var longMessage = "=SUM(1)" + new string('x', 120) + " النهاية";
+        await f.DbAsync(async db =>
+        {
+            db.ContactMessages.Add(new ContactMessage { FullName = "+Name", Email = email, Subject = "s \"q\"", Message = longMessage, Culture = "en", CreatedAt = DateTime.UtcNow });
+            return await db.SaveChangesAsync();
+        });
+        try
+        {
+            var anon = await f.NewClient().GetAsync("/Admin/Messages/Export");
+            Assert.Equal(HttpStatusCode.Redirect, anon.StatusCode);
+            Assert.Contains("/Account/Login", anon.Headers.Location!.OriginalString);
+
+            var client = await f.SignedInClientAsync();
+            Assert.Contains("href=\"/Admin/Messages/Export\"", await client.GetStringAsync("/Admin/Messages"));
+            var r = await client.GetAsync("/Admin/Messages/Export");
+            Assert.Equal(HttpStatusCode.OK, r.StatusCode);
+            Assert.Equal("text/csv", r.Content.Headers.ContentType!.MediaType);
+            Assert.StartsWith("attachment", r.Content.Headers.ContentDisposition!.ToString());
+            Assert.Equal("no-store", r.Headers.CacheControl!.ToString());
+            var bytes = await r.Content.ReadAsByteArrayAsync();
+            Assert.Equal(new byte[] { 0xEF, 0xBB, 0xBF }, bytes[..3]);
+            var text = System.Text.Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
+            Assert.StartsWith("\"" + Msg.Ar(MessageKeys.Admin.CsvId) + "\",", text);
+            Assert.Contains("\"" + Msg.Ar(MessageKeys.Admin.CsvMessage) + "\"", text);
+            Assert.Contains("\"'" + longMessage + "\"", text);       // whole, not the list's 80 characters; formula neutralised
+            Assert.Contains("\"'+Name\"", text);
+            Assert.Contains("\"s \"\"q\"\"\"", text);                 // quotes doubled
+            Assert.Contains("\"" + Msg.Ar(MessageKeys.Admin.CsvEnglish) + "\"", text);
+        }
+        finally
+        {
+            await f.DbAsync(db => db.ContactMessages.Where(m => m.Email == email).ExecuteDeleteAsync());
+        }
+    }
+
+    [Fact] // the generic table export (admin-table-export.js) is on every admin page; the server-exported tables opt out
+    public async Task Every_admin_page_loads_the_table_export_and_server_exported_tables_opt_out()
+    {
+        await AddSponsorshipAsync();
+        var client = await f.SignedInClientAsync();
+        foreach (var path in new[] { "/Admin/Dashboard", "/Admin/News", "/Admin/Partners", "/Admin/Speakers" })
+            Assert.Contains("/js/admin-table-export.js", await client.GetStringAsync(path));
+        Assert.Contains("<table class=\"admin-table lead-table\" data-export=\"server\">", await client.GetStringAsync("/Admin/Leads"));
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/js/admin-table-export.js")).StatusCode);
+
+        var email = Unique("msgtable") + "@example.com";
+        await f.DbAsync(async db =>
+        {
+            db.ContactMessages.Add(new ContactMessage { FullName = "QA", Email = email, Subject = "s", Message = "m", CreatedAt = DateTime.UtcNow });
+            return await db.SaveChangesAsync();
+        });
+        try
+        {
+            Assert.Contains("<table class=\"admin-table\" data-export=\"server\">", await client.GetStringAsync("/Admin/Messages"));
+        }
+        finally
+        {
+            await f.DbAsync(db => db.ContactMessages.Where(m => m.Email == email).ExecuteDeleteAsync());
+        }
+    }
+
+    [Fact] // Nader F11 obs 2: a form's unread card opens its unread leads, or the whole form when none is unread — on both pages
+    public async Task Unread_cards_link_alike_on_the_dashboard_and_the_inbox()
+    {
+        await AddSponsorshipAsync();
+        // One form with nothing unread, so the zero branch runs too.
+        await f.DbAsync(db => db.OpportunityInterests.ExecuteUpdateAsync(s => s.SetProperty(x => x.IsRead, true)));
+        var counts = await f.DbAsync(db => LeadInbox.UnreadAsync(db));
+        var client = await f.SignedInClientAsync();
+        var dashboard = await client.GetStringAsync("/Admin/Dashboard");
+        var inbox = await client.GetStringAsync("/Admin/Leads");
+        Assert.True(counts.Of(LeadInbox.Sponsorship) > 0);
+        Assert.Equal(0, counts.Of(LeadInbox.Interest));
+        foreach (var (key, _) in LeadInbox.Types)
+        {
+            var unreadHref = $"href=\"/Admin/Leads?type={key}&amp;read=unread\"";
+            foreach (var page in new[] { dashboard, inbox })
+            {
+                // The sidebar has href="/Admin/Leads?type=x" on every page, so the zero case is pinned by the absence
+                // of the unread link (no card may send a form with nothing unread to an empty unread list).
+                if (counts.Of(key) > 0) Assert.Contains(unreadHref, page);
+                else Assert.DoesNotContain(unreadHref, page);
+            }
+        }
+    }
+
+    [Fact] // Nader F11 obs 1 and 3: the type in any letter case is that form, and a form's own list has no type column
+    public async Task Form_type_is_case_insensitive_and_a_form_inbox_has_no_type_column()
+    {
+        var (id, _) = await AddSponsorshipAsync();
+        var client = await f.SignedInClientAsync();
+        var upper = await client.GetStringAsync("/Admin/Leads?type=SPONSORSHIP");
+        Assert.True(IsActive(upper, "/Admin/Leads?type=sponsorship"));
+        Assert.Contains("<input type=\"hidden\" name=\"type\" value=\"sponsorship\">", upper);
+        Assert.DoesNotContain("<th>النوع</th>", upper);
+        Assert.Contains("<th>النوع</th>", await client.GetStringAsync("/Admin/Leads"));
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/Admin/Leads/Details/{id}?type=Sponsorship")).StatusCode);
     }
 
     [Theory]
