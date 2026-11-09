@@ -48,14 +48,17 @@
 
     // The text of one table cell as the list shows it: a folded inline editor (details.row-editor, «تعديل») is left
     // out, so a row exports its visible name, not the editor's fields. What stays: the visible words (buttons of
-    // symbols only, like move ▲ ▼, left out; a worded button such as «ظاهر» is the value), then any field still
-    // shown in the cell as "label: value" (empty ones left out), else an image's alt text.
+    // symbols only, like move ▲ ▼, left out; a worded button such as «ظاهر» is the value — unless the cell edits
+    // fields, where the buttons are its «حفظ»), then any field still shown in the cell as "label: value" (empty ones
+    // left out), else an image's alt text.
     function cellText(td) {
         const copy = td.cloneNode(true);
         copy.querySelectorAll('details.row-editor, script, style, .sr-only').forEach(n => n.remove());
-        copy.querySelectorAll('button').forEach(b => { if (!/[\p{L}\p{N}]/u.test(b.textContent)) b.remove(); });
 
         const fields = [...td.querySelectorAll(FIELDS)].filter(f => !f.closest('details.row-editor'));
+        copy.querySelectorAll('button').forEach(b => {
+            if (fields.length || !/[\p{L}\p{N}]/u.test(b.textContent)) b.remove();
+        });
         const parts = fields.map(f => [fieldLabel(f), fieldValue(f)]).filter(([, v]) => v !== '');
         copy.querySelectorAll(`${FIELDS}, label, .field-hint`).forEach(n => n.remove());
         const text = clean(copy.textContent);
