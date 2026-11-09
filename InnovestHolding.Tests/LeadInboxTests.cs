@@ -455,6 +455,13 @@ public class LeadInboxTests(TestAppFactory f)
         Assert.Contains("data-export-group=\"", texts);
         Assert.Contains("data-export-row", texts);
         Assert.Contains("data-export-col=\"المفتاح\"", texts);
+        // After a refused save the fields hold what was typed, not what is saved: no export then (F12 review R2).
+        var refused = await client.PostAsync("/Admin/SiteTexts", Form(await client.GetTokenAsync("/Admin/SiteTexts"),
+            ($"texts[{MessageKeys.Ui.ContactSocial}].Ar", new string('x', 400))));
+        Assert.Equal(HttpStatusCode.OK, refused.StatusCode);
+        var refusedHtml = await refused.Content.ReadAsStringAsync();
+        Assert.Contains("data-export-row", refusedHtml);
+        Assert.DoesNotContain("data-export-list", refusedHtml);
 
         var email = Unique("msgtable") + "@example.com";
         await f.DbAsync(async db =>
